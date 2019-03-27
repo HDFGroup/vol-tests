@@ -50,7 +50,7 @@ int vol_group_test(void);
 #define GROUP_NUMB 16
 
 #define MANY_GROUP_CREATIONS_GNAME "home_for_many_groups"
-#define GROUP_NUMB_MANY	10000u
+#define GROUP_NUMB_MANY	100u
 
 #define DEEP_GROUP_CREATIONS_GNAME "home_for_deep_groups"
 #define GROUP_DEPTH 100u
