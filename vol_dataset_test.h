@@ -50,7 +50,7 @@ int vol_dataset_test(void);
 
 #define DATASET_MANY_CREATE_GROUP_NAME "group_for_many_datasets"
 #define DSET_NAME_BUF_SIZE             64u
-#define DATASET_NUMB                   100000u
+#define DATASET_NUMB                   10000u
 
 #define DATASET_SHAPE_TEST_DSET_BASE_NAME "dataset_shape_test"
 #define DATASET_SHAPE_TEST_SUBGROUP_NAME  "dataset_shape_test"
