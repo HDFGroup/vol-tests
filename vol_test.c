@@ -1121,14 +1121,14 @@ int main(int argc, char **argv)
             continue;
         }
 
-//        nerrors += vol_file_test();
+        nerrors += vol_file_test();
         nerrors += vol_group_test();
-//        nerrors += vol_dataset_test();
-//        nerrors += vol_datatype_test();
-//        nerrors += vol_attribute_test();
-//        nerrors += vol_link_test();
-//        nerrors += vol_object_test();
-//        nerrors += vol_misc_test();
+        nerrors += vol_dataset_test();
+        nerrors += vol_datatype_test();
+        nerrors += vol_attribute_test();
+        nerrors += vol_link_test();
+        nerrors += vol_object_test();
+        nerrors += vol_misc_test();
 
         if (nerrors) {
 #ifdef H5_HAVE_PARALLEL
