@@ -31,9 +31,17 @@ int vol_file_test(void);
 
 #define NONEXISTENT_FILENAME 			"nonexistent_file.h5"
 
+#define FILE_DOT_FILENAME                       "open_dot.h5"
+#define DOT_AS_NAME                             "."
+
+#define OVERLAPPING_FILENAME                    "overlapping_file.h5"
+
 #define FILE_PERMISSION_FILENAME		"file_permission.h5"
 #define DSET_NAME 				"Dataset"
 #define DSET2_NAME 				"Dataset2"
+
+#define GET_FILENAME                            "get_file_name.h5"
+#define TEST_NAME_BUF_SIZE                      64
 
 #define FILE_FLUSH_FILENAME			"flush_file.h5"
 
@@ -43,8 +51,11 @@ int vol_file_test(void);
 
 #define FILE_INTENT_TEST_FILENAME    		"intent_test_file.h5"
 
-#define GET_OBJ_COUNT_FILENAME			"file_obj_count.h5"
+#define GET_OBJ_COUNT_FILENAME1			"file_obj_count1.h5"
+#define GET_OBJ_COUNT_FILENAME2			"file_obj_count2.h5"
 #define GRP_NAME 				"/group"
+#define NAMED_DATATYPE                          "named_dtype"
+#define ATTR_NAME                               "Attribute"
 
 #define FILE_MOUNT_FILENAME			"file_mount.h5"
 

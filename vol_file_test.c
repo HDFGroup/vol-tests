@@ -18,6 +18,8 @@ static int test_create_file_excl(void);
 static int test_open_file(void);
 static int test_open_file_invalid_params(void);
 static int test_open_nonexistent_file(void);
+static int test_file_open_dot(void);
+static int test_file_open_overlap(void);
 static int test_file_permission(void);
 static int test_reopen_file(void);
 static int test_close_file_invalid_id(void);
@@ -50,6 +52,8 @@ static int (*file_tests[])(void) = {
         test_open_file,
         test_open_file_invalid_params,
         test_open_nonexistent_file,
+        test_file_open_dot,
+        test_file_open_overlap,
         test_file_permission,
         test_reopen_file,
         test_close_file_invalid_id,
@@ -445,6 +449,128 @@ error:
 }
 
 /*
+ * A test to check opening objects with the "." as the name
+ */
+static int
+test_file_open_dot(void)
+{
+    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID, dtype_id = H5I_INVALID_HID;
+    herr_t ret = -1;
+
+    TESTING("Testing opening objects with \".\" as the name");
+
+    if ((fapl_id = h5_fileaccess()) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fcreate(FILE_DOT_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", FILE_DOT_FILENAME);
+        goto error;
+    }
+
+    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create data space\n");
+        goto error;
+    }
+
+    /* Create a dataset with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        dset_id = H5Dcreate2(file_id, DOT_AS_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (dset_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a dataset was created with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Create a dataset with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        dset_id = H5Dopen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (dset_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a dataset was opened with the '.' as the name!\n");
+        goto error;
+    }
+
+    if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy a native datatype\n");
+        goto error;
+    }
+
+    /* Commit a datatype with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        ret = H5Tcommit2(file_id, DOT_AS_NAME, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (ret >= 0) {
+        H5_FAILED();
+        HDprintf("    a named datatype was committed with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Open a datatype with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        dset_id = H5Topen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (dset_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a datatype was opened with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Create a group with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        group_id = H5Gcreate2(file_id, DOT_AS_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (group_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a group was created with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Open a group with the "." as the name using the file ID (should open the root group) */
+    if ((group_id = H5Gopen2(file_id, DOT_AS_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open group '%s'\n", DOT_AS_NAME);
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+    if (H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(dspace_id);
+        H5Dclose(dset_id);
+        H5Pclose(fapl_id);
+        H5Tclose(dtype_id);
+        H5Gclose(group_id);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
  * Tests that a file can be opened read-only or read-write
  * and things are handled appropriately.
  */
@@ -453,6 +579,9 @@ test_file_permission(void)
 {
     hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
     hid_t dset_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
+    hid_t dtype_id = H5I_INVALID_HID;
+    herr_t ret = -1;
 
     TESTING("for file permission");
 
@@ -461,7 +590,7 @@ test_file_permission(void)
 
     if ((file_id = H5Fcreate(FILE_PERMISSION_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
+        HDprintf("    couldn't create file '%s'\n", FILE_PERMISSION_FILENAME);
         goto error;
     }
 
@@ -489,6 +618,17 @@ test_file_permission(void)
         goto error;
     }
 
+    /* Create a group with the read-only file handle (should fail) */
+    H5E_BEGIN_TRY {
+        group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (group_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a group was created in a read-only file!\n");
+        goto error;
+    }
+
     /* Create a dataset with the read-only file handle (should fail) */
     H5E_BEGIN_TRY {
         dset_id = H5Dcreate2(file_id, DSET2_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -500,6 +640,36 @@ test_file_permission(void)
         goto error;
     }
 
+    /* Create an attribute with the read-only file handle (should fail) */
+    H5E_BEGIN_TRY {
+        attr_id = H5Acreate2(file_id, ATTR_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (attr_id >= 0) {
+        H5_FAILED();
+        HDprintf("    an attribute was created in a read-only file!\n");
+        goto error;
+    }
+
+    if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy a native datatype\n");
+        goto error;
+    }
+
+    /* Commit a datatype with the read-only file handle (should fail) */
+    H5E_BEGIN_TRY {
+        ret = H5Tcommit2(file_id, NAMED_DATATYPE, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (ret >= 0) {
+        H5_FAILED();
+        HDprintf("    a named datatype was committed in a read-only file!\n");
+        goto error;
+    }
+
+    if (H5Tclose(dtype_id) < 0)
+        TEST_ERROR
     if (H5Sclose(dspace_id) < 0)
         TEST_ERROR
     if (H5Pclose(fapl_id) < 0)
@@ -516,6 +686,9 @@ error:
         H5Sclose(dspace_id);
         H5Dclose(dset_id);
         H5Pclose(fapl_id);
+        H5Aclose(attr_id);
+        H5Tclose(dtype_id);
+        H5Gclose(group_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1037,16 +1210,19 @@ test_get_file_obj_count(void)
 {
     ssize_t obj_count;
     hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id2 = H5I_INVALID_HID;
     hid_t   group_id = H5I_INVALID_HID, object_id = H5I_INVALID_HID;
+    hid_t   named_dtype_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
+    hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
 
     TESTING("retrieval of open object number and IDs")
 
     if ((fapl_id = h5_fileaccess()) < 0)
         TEST_ERROR
 
-    if ((file_id = H5Fcreate(GET_OBJ_COUNT_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
+    if ((file_id = H5Fcreate(GET_OBJ_COUNT_FILENAME1, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", GET_OBJ_COUNT_FILENAME); 
+        HDprintf("    couldn't create file '%s'\n", GET_OBJ_COUNT_FILENAME1);
         goto error;
     }
 
@@ -1083,11 +1259,98 @@ test_get_file_obj_count(void)
         goto error;
     }
 
+    /* Create a second file while keeping the first file open */
+    if ((file_id2 = H5Fcreate(GET_OBJ_COUNT_FILENAME2, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", GET_OBJ_COUNT_FILENAME2);
+        goto error;
+    }
+
+    /* Create a named datatype */
+    if ((named_dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy a native datatype\n");
+        goto error;
+    }
+
+    if (H5Tcommit2(file_id2, NAMED_DATATYPE, named_dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't commit a named datatype\n");
+        goto error;
+    }
+
+    if (H5Tclose(named_dtype_id) < 0)
+        TEST_ERROR
+
+    /* Create a dataspace for the attribute and dataset */
+    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create data space for attribute\n");
+        goto error;
+    }
+
+    /* Create an attribute for the second file */
+    if ((attr_id = H5Acreate2(file_id2, ATTR_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the attribute '%s'\n", ATTR_NAME);
+        goto error;
+    }
+
+    /* Create a dataset for the second file */
+    if ((dset_id = H5Dcreate2(file_id2, DSET_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the dataset '%s'\n", DSET_NAME);
+        goto error;
+    }
+
+    /* Get the number of files currently opened */
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_FILE)) < 0 || obj_count != 2) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of file: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
+    /* Get the number of groups in two opened files */
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_GROUP)) < 0 || obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of group: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
+    /* Get the number of named datatype in two opened files */
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_DATATYPE)) < 0 || obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of datatype: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
+    /* Get the number of attribute in two opened files */
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_ATTR)) < 0 || obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of attribute: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
+    /* Get the number of dataset in two opened files */
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_DATASET)) < 0 || obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of dataset: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Pclose(fapl_id) < 0)
         TEST_ERROR
+    if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+    if (H5Aclose(attr_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id2) < 0)
         TEST_ERROR
 
     PASSED();
@@ -1098,7 +1361,115 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
         H5Pclose(fapl_id);
+        H5Tclose(named_dtype_id);
+        H5Sclose(dspace_id);
+        H5Aclose(attr_id);
+        H5Dclose(dset_id);
         H5Fclose(file_id);
+        H5Fclose(file_id2);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that opening files in an overlapping way
+ * works correctly.
+ */
+static int
+test_file_open_overlap(void)
+{
+    ssize_t obj_count;
+    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id2 = H5I_INVALID_HID;
+    hid_t   group_id = H5I_INVALID_HID, object_id = H5I_INVALID_HID;
+    hid_t   named_dtype_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
+    hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
+
+    TESTING("overlapping file opens")
+
+    if ((fapl_id = h5_fileaccess()) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fcreate(OVERLAPPING_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", OVERLAPPING_FILENAME);
+        goto error;
+    }
+
+    if ((file_id2 = H5Fopen(OVERLAPPING_FILENAME, H5F_ACC_RDWR, fapl_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", GRP_NAME);
+        goto error;
+    }
+
+    /* Create a dataspace for the dataset */
+    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create data space for dataset\n");
+        goto error;
+    }
+
+    /* Create a dataset in the group of the first file */
+    if ((dset_id = H5Dcreate2(group_id, DSET_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the dataset '%s'\n", DSET_NAME);
+        goto error;
+    }
+
+    /* Get the number of objects opened in the first file: 3 == file + dataset + group */
+    if ((obj_count = H5Fget_obj_count(file_id, H5F_OBJ_LOCAL | H5F_OBJ_ALL)) < 0 || obj_count != 3) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of objects: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    /* Create a dataset in the second file */
+    if ((dset_id = H5Dcreate2(file_id2, DSET_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the dataset '%s'\n", DSET_NAME);
+        goto error;
+    }
+
+    /* Get the number of objects opened in the first file: 2 == file + dataset */
+    if ((obj_count = H5Fget_obj_count(file_id2, H5F_OBJ_ALL)) < 0 || obj_count != 2) {
+        H5_FAILED();
+        HDprintf("    couldn't get the number of objects: obj_count=%ld\n", obj_count);
+        goto error;
+    }
+
+    if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id2) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Pclose(fapl_id);
+        H5Sclose(dspace_id);
+        H5Dclose(dset_id);
+        H5Fclose(file_id);
+        H5Fclose(file_id2);
     } H5E_END_TRY;
 
     return 1;
@@ -1181,18 +1552,22 @@ error:
 static int
 test_get_file_name(void)
 {
-    ssize_t  file_name_buf_len = 0;
     hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    group_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
+    hid_t    dspace_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
+    hid_t    named_dtype_id = H5I_INVALID_HID;
+    ssize_t  file_name_buf_len = 0, name_len = 0;
     char    *file_name_buf = NULL;
+    char     file_name[TEST_NAME_BUF_SIZE];
 
     TESTING("retrieval of file name")
 
     if ((fapl_id = h5_fileaccess()) < 0)
         TEST_ERROR
 
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fcreate(GET_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open file\n");
+        HDprintf("    couldn't create file '%s'\n", OVERLAPPING_FILENAME);
         goto error;
     }
 
@@ -1205,12 +1580,15 @@ test_get_file_name(void)
         TEST_ERROR
 
     /* Retrieve the actual file name */
-    if (H5Fget_name(file_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0)
-        TEST_ERROR
-
-    if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+    if (H5Fget_name(file_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
         H5_FAILED();
-        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+        HDprintf("    couldn't get file name %s\n", GET_FILENAME);
+        goto error;
+    }
+
+    if (HDstrncmp(file_name_buf, GET_FILENAME, (size_t) file_name_buf_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILENAME);
         goto error;
     }
 
@@ -1219,6 +1597,120 @@ test_get_file_name(void)
         file_name_buf = NULL;
     }
 
+    if ((group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", GRP_NAME);
+        goto error;
+    }
+
+    /* Get and verify file name from the group */
+    if ((name_len = H5Fget_name(group_id, file_name, (size_t)TEST_NAME_BUF_SIZE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get file name %s\n", GET_FILENAME);
+        goto error;
+    }
+
+    if (HDstrncmp(file_name, GET_FILENAME, (size_t)name_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name, GET_FILENAME);
+        goto error;
+    }
+
+    /* Create a dataspace for the dataset */
+    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create data space for dataset\n");
+        goto error;
+    }
+
+    /* Try get file name from data space.  Supposed to fail because
+     * it's illegal operation. */
+    H5E_BEGIN_TRY {
+        name_len = H5Fget_name(dspace_id, file_name, (size_t)TEST_NAME_BUF_SIZE);
+    } H5E_END_TRY;
+
+    if (name_len >= 0) {
+        H5_FAILED();
+        HDprintf("    shouldn't get file name\n");
+        goto error;
+    }
+
+    /* Create a dataset in the file */
+    if ((dset_id = H5Dcreate2(file_id, DSET_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the dataset '%s'\n", DSET_NAME);
+        goto error;
+    }
+
+    /* Get and verify file name from the dataset */
+    if ((name_len = H5Fget_name(dset_id, file_name, (size_t)TEST_NAME_BUF_SIZE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get file name %s\n", GET_FILENAME);
+        goto error;
+    }
+
+    if (HDstrncmp(file_name, GET_FILENAME, (size_t)name_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name, GET_FILENAME);
+        goto error;
+    }
+
+    /* Create an attribute for the dataset */
+    if ((attr_id = H5Acreate2(dset_id, ATTR_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the attribute '%s'\n", ATTR_NAME);
+        goto error;
+    }
+
+    /* Get and verify file name from the attribute */
+    if ((name_len = H5Fget_name(attr_id, file_name, (size_t)TEST_NAME_BUF_SIZE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get file name %s\n", GET_FILENAME);
+        goto error;
+    }
+
+    if (HDstrncmp(file_name, GET_FILENAME, (size_t)name_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name, GET_FILENAME);
+        goto error;
+    }
+
+    /* Create a named datatype */
+    if ((named_dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy a native datatype\n");
+        goto error;
+    }
+
+    if (H5Tcommit2(file_id, NAMED_DATATYPE, named_dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't commit a named datatype\n");
+        goto error;
+    }
+
+    /* Get and verify file name from the committed datatype */
+    if ((name_len = H5Fget_name(named_dtype_id, file_name, (size_t)TEST_NAME_BUF_SIZE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get file name %s\n", GET_FILENAME);
+        goto error;
+    }
+
+    if (HDstrncmp(file_name, GET_FILENAME, (size_t)name_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name, GET_FILENAME);
+        goto error;
+    }
+
+    if (H5Tclose(named_dtype_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Aclose(attr_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
     if (H5Pclose(fapl_id) < 0)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)
@@ -1232,6 +1724,11 @@ error:
     H5E_BEGIN_TRY {
         if (file_name_buf)
             HDfree(file_name_buf);
+        H5Tclose(named_dtype_id);
+        H5Sclose(dspace_id);
+        H5Dclose(dset_id);
+        H5Aclose(attr_id);
+        H5Gclose(group_id);
         H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
@@ -1976,6 +2473,26 @@ test_double_group_open(void)
         goto error;
     }
 
+    /* Open the root group in the first file open */
+    if ((group_id2 = H5Gopen2(file_id, "/", H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open the root group\n");
+        goto error;
+    }
+
+    /* Open the root group in the second file open */
+    if ((group_id2 = H5Gopen2(file_id2, "/", H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open the root group\n");
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+
+    if (H5Gclose(group_id2) < 0)
+        TEST_ERROR
+
     if ((group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", GRP_NAME);
@@ -2026,12 +2543,16 @@ cleanup_files(void)
     HDremove(FILE_CREATE_TEST_FILENAME);
     HDremove(FILE_CREATE_EXCL_FILE_NAME);
     HDremove(FILE_CREATE_INVALID_PARAMS_FILE_NAME);
+    HDremove(FILE_DOT_FILENAME);
+    HDremove(OVERLAPPING_FILENAME);
     HDremove(FILE_PERMISSION_FILENAME);
+    HDremove(GET_FILENAME);
     HDremove(FILE_FLUSH_FILENAME);
     HDremove(FILE_PROPERTY_LIST_TEST_FNAME1);
     HDremove(FILE_PROPERTY_LIST_TEST_FNAME2);
     HDremove(FILE_INTENT_TEST_FILENAME);
-    HDremove(GET_OBJ_COUNT_FILENAME);
+    HDremove(GET_OBJ_COUNT_FILENAME1);
+    HDremove(GET_OBJ_COUNT_FILENAME2);
     HDremove(FILE_MOUNT_FILENAME);
 #if 0 /* for native VOL connector test only */
     HDremove(FILESPACE_INFO_FILENAME);
