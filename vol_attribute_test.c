@@ -1138,6 +1138,8 @@ test_create_attribute_invalid_params(void)
         TEST_ERROR
     if (H5Tclose(attr_dtype) < 0)
         TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
     if (H5Pclose(fapl_id) < 0)
@@ -1154,6 +1156,7 @@ error:
         H5Sclose(space_id);
         H5Tclose(attr_dtype);
         H5Aclose(attr_id);
+        H5Gclose(group_id);
         H5Gclose(container_group);
         H5Pclose(fapl_id);
         H5Fclose(file_id);

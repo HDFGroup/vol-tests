@@ -862,8 +862,9 @@ error:
 static int
 test_file_is_accessible(void)
 {
-    htri_t   is_accessible;
-    hid_t    fapl_id = H5I_INVALID_HID;
+    const char * const fake_filename = "nonexistent_file.h5";
+    htri_t             is_accessible;
+    hid_t              fapl_id = H5I_INVALID_HID;
 
     TESTING("H5Fis_accessible")
 
@@ -872,7 +873,25 @@ test_file_is_accessible(void)
 
     if ((is_accessible = H5Fis_accessible(vol_test_filename, fapl_id)) < 0) {
         H5_FAILED();
+        HDprintf("    couldn't determine if file '%s' is accessible with VOL connector\n", vol_test_filename);
+        goto error;
+    }
+
+    if (!is_accessible) {
+        H5_FAILED();
         HDprintf("    file '%s' is not accessible with VOL connector\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((is_accessible = H5Fis_accessible(fake_filename, fapl_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if file '%s' is accessible with VOL connector\n", fake_filename);
+        goto error;
+    }
+
+    if (is_accessible) {
+        H5_FAILED();
+        HDprintf("    non-existent file '%s' was accessible with VOL connector!\n", fake_filename);
         goto error;
     }
 
@@ -1589,6 +1608,24 @@ test_get_file_name(void)
     if (HDstrncmp(file_name_buf, GET_FILENAME, (size_t) file_name_buf_len)) {
         H5_FAILED();
         HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILENAME);
+        goto error;
+    }
+
+    /* Attempt to retrieve the name of the file from an object that isn't the root group */
+    memset(file_name_buf, 0, file_name_buf_len);
+
+    if ((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to open group '%s'\n");
+        goto error;
+    }
+
+    if (H5Fget_name(group_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0)
+        TEST_ERROR
+
+    if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
         goto error;
     }
 
