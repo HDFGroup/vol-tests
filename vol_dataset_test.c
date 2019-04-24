@@ -2171,7 +2171,9 @@ test_create_many_dataset(void)
         goto error;
     }
 
+    HDprintf("\n");
     for (i = 0; i < DATASET_NUMB; i++) {
+        HDprintf("\r %u/%u", i+1, DATASET_NUMB);
         sprintf(dset_name, "dset_%02u", i);
         data = i % 256;
 
