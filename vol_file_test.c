@@ -1629,6 +1629,24 @@ test_get_file_name(void)
         goto error;
     }
 
+    /* Attempt to retrieve the name of the file from an object that isn't the root group */
+    memset(file_name_buf, 0, file_name_buf_len);
+
+    if ((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to open group '%s'\n");
+        goto error;
+    }
+
+    if (H5Fget_name(group_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0)
+        TEST_ERROR
+
+    if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+        H5_FAILED();
+        HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+        goto error;
+    }
+
     if (file_name_buf) {
         HDfree(file_name_buf);
         file_name_buf = NULL;
