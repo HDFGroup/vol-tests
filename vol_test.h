@@ -111,13 +111,6 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
 #define ALARM_ON  TestAlarmOn()
 #define ALARM_OFF  HDalarm(0)
 
-/* Flags for h5_fileaccess_flags() */
-#define H5_FILEACCESS_VFD       0x01
-#define H5_FILEACCESS_VOL       0x02
-#define H5_FILEACCESS_LIBVER    0x04
-
-H5TEST_DLL hid_t h5_fileaccess(void);
-
 /******************************************************************************/
 
 /* The name of the file that all of the tests will operate on */
