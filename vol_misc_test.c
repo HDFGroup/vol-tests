@@ -34,7 +34,7 @@ test_open_link_without_leading_slash(void)
 {
     hsize_t dims[OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID;
     hid_t   group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
@@ -43,10 +43,7 @@ test_open_link_without_leading_slash(void)
 
     TESTING("opening a link without a leading slash")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -82,7 +79,7 @@ test_open_link_without_leading_slash(void)
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -111,8 +108,6 @@ test_open_link_without_leading_slash(void)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -127,7 +122,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -140,7 +134,7 @@ test_object_creation_by_absolute_path(void)
     hsize_t dims[OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK];
     htri_t  link_exists;
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID, sub_group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID;
@@ -149,10 +143,7 @@ test_object_creation_by_absolute_path(void)
 
     TESTING("object creation by absolute path")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -273,8 +264,6 @@ test_object_creation_by_absolute_path(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -291,7 +280,6 @@ error:
         H5Gclose(sub_group_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -304,7 +292,7 @@ test_absolute_vs_relative_path(void)
     hsize_t dims[ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK];
     htri_t  link_exists;
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id1 = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID, dset_id3 = H5I_INVALID_HID, dset_id4 = H5I_INVALID_HID, dset_id5 = H5I_INVALID_HID, dset_id6 = H5I_INVALID_HID;
     hid_t   dset_dtype1 = H5I_INVALID_HID, dset_dtype2 = H5I_INVALID_HID, dset_dtype3 = H5I_INVALID_HID, dset_dtype4 = H5I_INVALID_HID, dset_dtype5 = H5I_INVALID_HID, dset_dtype6 = H5I_INVALID_HID;
@@ -312,10 +300,7 @@ test_absolute_vs_relative_path(void)
 
     TESTING("absolute vs. relative pathnames")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -504,8 +489,6 @@ test_absolute_vs_relative_path(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -530,7 +513,6 @@ error:
         H5Dclose(dset_id6);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -548,25 +530,13 @@ error:
 static int
 test_double_init_term(void)
 {
-    hid_t fapl_id = H5I_INVALID_HID;
-
     TESTING("double init/term correctness")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-
-    PASSED();
+    SKIPPED();
 
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
-    } H5E_END_TRY;
-
     return 1;
 }
 
@@ -577,7 +547,7 @@ test_symbols_in_compound_field_name(void)
     size_t   i;
     size_t   total_type_size;
     size_t   next_offset;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    compound_type = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
@@ -590,10 +560,7 @@ test_symbols_in_compound_field_name(void)
     for (i = 0; i < COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES; i++)
         type_pool[i] = H5I_INVALID_HID;
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -682,8 +649,6 @@ test_symbols_in_compound_field_name(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -700,7 +665,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
