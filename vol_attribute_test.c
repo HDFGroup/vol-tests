@@ -36,6 +36,7 @@ static int test_get_attribute_space_and_type_invalid_params(void);
 static int test_attribute_property_lists(void);
 static int test_get_attribute_name(void);
 static int test_get_attribute_name_invalid_params(void);
+static int test_get_attribute_storage_size(void);
 static int test_get_attribute_info(void);
 static int test_get_attribute_info_invalid_params(void);
 static int test_rename_attribute(void);
@@ -79,6 +80,7 @@ static int (*attribute_tests[])(void) = {
         test_attribute_property_lists,
         test_get_attribute_name,
         test_get_attribute_name_invalid_params,
+        test_get_attribute_storage_size,
         test_get_attribute_info,
         test_get_attribute_info_invalid_params,
         test_rename_attribute,
@@ -1631,7 +1633,6 @@ test_write_attribute(void)
     hid_t    attr_id = H5I_INVALID_HID;
     hid_t    space_id = H5I_INVALID_HID;
     void     *data = NULL;
-    hsize_t  attr_storage_size;   /* storage size for attribute */
 
     TESTING("H5Awrite")
 
@@ -1699,18 +1700,6 @@ test_write_attribute(void)
     if (H5Fflush(file_id, H5F_SCOPE_GLOBAL) < 0) {
         H5_FAILED();
         HDprintf("    couldn't flush the attribute\n");
-        goto error;
-    }
-
-    if ((attr_storage_size = H5Aget_storage_size(attr_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get the storage size for the attribute\n");
-        goto error;
-    }
-
-    if (attr_storage_size != data_size) {
-        H5_FAILED();
-        HDprintf("    wrong storage size for the attribute (%ld), supposed to be %lu\n", attr_storage_size, data_size);
         goto error;
     }
 
@@ -2219,7 +2208,6 @@ test_read_empty_attribute(void)
     hid_t    group_id = H5I_INVALID_HID;
     hid_t    attr_id = H5I_INVALID_HID;
     hid_t    space_id = H5I_INVALID_HID;
-    void    *data = NULL;
     void    *read_buf = NULL;
 
     TESTING("reading an empty attribute")
@@ -3388,6 +3376,19 @@ error:
     } H5E_END_TRY;
 
     return 1;
+}
+
+/*
+ * A test for H5Aget_storage_size.
+ */
+static int
+test_get_attribute_storage_size(void)
+{
+    TESTING("H5Aget_storage_size");
+
+    SKIPPED();
+
+    return 0;
 }
 
 /*
@@ -5507,7 +5508,6 @@ test_attribute_exists(void)
 {
     hsize_t    dims[ATTRIBUTE_EXISTS_SPACE_RANK];
     size_t     i;
-    unsigned   u;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -5853,7 +5853,7 @@ test_attribute_many(void)
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_MANY_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container group '%s'\n", ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_GROUP_NAME);
+        HDprintf("    couldn't create the group '%s'\n", ATTRIBUTE_MANY_GROUP_NAME);
     }
 
     for (i = 0; i < ATTRIBUTE_MANY_SPACE_RANK; i++)
@@ -5928,10 +5928,8 @@ error:
 static int
 test_attribute_duplicate_id(void)
 {
-    H5O_info_t obj_info;
     hsize_t    dims[ATTRIBUTE_DUPLICATE_ID_SPACE_RANK];
     size_t     i;
-    unsigned   u;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -6160,6 +6158,7 @@ test_attr_shared_dtype(void)
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
+    hid_t      group_id = H5I_INVALID_HID;
     hid_t      attr_id = H5I_INVALID_HID;
     hid_t      attr_dtype = H5I_INVALID_HID;
     hid_t      space_id = H5I_INVALID_HID;
@@ -6177,6 +6176,11 @@ test_attr_shared_dtype(void)
         H5_FAILED();
         HDprintf("    couldn't open container group\n");
         goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_SHARED_DTYPE_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create the group '%s'\n", ATTRIBUTE_SHARED_DTYPE_GROUP_NAME);
     }
 
     for (i = 0; i < ATTRIBUTE_SHARED_DTYPE_SPACE_RANK; i++)
@@ -6207,7 +6211,7 @@ test_attr_shared_dtype(void)
         goto error;
     }
 
-    if ((attr_id = H5Acreate2(container_group, ATTRIBUTE_SHARED_DTYPE_ATTR_NAME, attr_dtype,
+    if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_SHARED_DTYPE_ATTR_NAME, attr_dtype,
             space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create attribute\n");
@@ -6215,7 +6219,7 @@ test_attr_shared_dtype(void)
     }
 
     /* Verify the attribute has been created */
-    if ((attr_exists = H5Aexists(container_group, ATTRIBUTE_SHARED_DTYPE_ATTR_NAME)) < 0) {
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_SHARED_DTYPE_ATTR_NAME)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if attribute exists\n");
         goto error;
@@ -6239,7 +6243,7 @@ test_attr_shared_dtype(void)
         goto error;
     }
 
-    if ((dset_id = H5Dcreate2(container_group, ATTRIBUTE_SHARED_DTYPE_DSET_NAME, attr_dtype, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_SHARED_DTYPE_DSET_NAME, attr_dtype, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create dataset\n");
         goto error;
@@ -6261,6 +6265,10 @@ test_attr_shared_dtype(void)
         TEST_ERROR
     if (H5Tclose(attr_dtype) < 0)
         TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -6272,6 +6280,7 @@ error:
     H5E_BEGIN_TRY {
         H5Tclose(attr_dtype);
         H5Dclose(dset_id);
+        H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;

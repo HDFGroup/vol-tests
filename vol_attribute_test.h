@@ -182,6 +182,7 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK     1
 
 #define ATTRIBUTE_SHARED_DTYPE_NAME           "/Datatype"
+#define ATTRIBUTE_SHARED_DTYPE_GROUP_NAME     "shared_dtype_group"
 #define ATTRIBUTE_SHARED_DTYPE_ATTR_NAME      "shared_dtype_attr"
 #define ATTRIBUTE_SHARED_DTYPE_DSET_NAME      "shared_dtype_dset"
 #define ATTRIBUTE_SHARED_DTYPE_SPACE_RANK     1
