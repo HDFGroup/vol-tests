@@ -1695,6 +1695,7 @@ test_write_attribute(void)
         goto error;
     }
 
+    /* Make sure that the attribute can be flushed to the file */
     if (H5Fflush(file_id, H5F_SCOPE_GLOBAL) < 0) {
         H5_FAILED();
         HDprintf("    couldn't flush the attribute\n");
@@ -2205,7 +2206,7 @@ error:
 }
 
 /*
- * Test reading an empty attribute
+ * Test reading an empty attribute is ok
  */
 static int
 test_read_empty_attribute(void)
@@ -2247,7 +2248,7 @@ test_read_empty_attribute(void)
     if ((space_id = H5Screate_simple(ATTRIBUTE_READ_EMPTY_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
 
-    if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_TEST_ATTR_NAME, ATTRIBUTE_READ_EMPTY_DTYPE,
+    if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_EMPTY_ATTR_NAME, ATTRIBUTE_READ_EMPTY_DTYPE,
             space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create attribute\n");
@@ -2257,7 +2258,7 @@ test_read_empty_attribute(void)
     if (H5Aclose(attr_id) < 0)
         TEST_ERROR
 
-    if ((attr_id = H5Aopen(group_id, ATTRIBUTE_READ_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
+    if ((attr_id = H5Aopen(group_id, ATTRIBUTE_READ_EMPTY_ATTR_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open attribute\n");
         goto error;
@@ -2269,12 +2270,6 @@ test_read_empty_attribute(void)
 
     if (NULL == (read_buf = HDcalloc(1, data_size)))
         TEST_ERROR
-
-    if ((attr_id = H5Aopen(group_id, ATTRIBUTE_READ_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open attribute\n");
-        goto error;
-    }
 
     if (H5Aread(attr_id, ATTRIBUTE_READ_EMPTY_DTYPE, read_buf) < 0) {
         H5_FAILED();
@@ -5682,7 +5677,7 @@ test_attribute_exists_invalid_params(void)
 
     PASSED();
 
-    TESTING_2("H5Aexists with an invalid attribute name")
+    TESTING_2("H5Aexists with a null as the attribute name")
 
     H5E_BEGIN_TRY {
         err_ret = H5Aexists(group_id, NULL);
@@ -5693,6 +5688,10 @@ test_attribute_exists_invalid_params(void)
         HDprintf("    H5Aexists with a null as the attribute name succeeded!\n");
         goto error;
     }
+
+    PASSED();
+
+    TESTING_2("H5Aexists with an empty attribute name")
 
     H5E_BEGIN_TRY {
         err_ret = H5Aexists(group_id, "");
@@ -5729,20 +5728,6 @@ test_attribute_exists_invalid_params(void)
     if (err_ret >= 0) {
         H5_FAILED();
         HDprintf("    H5Aexists_by_name with null as the object name succeeded!\n");
-        goto error;
-    }
-
-    PASSED();
-
-    TESTING_2("H5Aexists_by_name with an empty object name")
-
-    H5E_BEGIN_TRY {
-        err_ret = H5Aexists_by_name(file_id, "", ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_ATTR_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Aexists_by_name with an empty object name succeeded!\n");
         goto error;
     }
 
@@ -5846,6 +5831,7 @@ test_attribute_many(void)
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
+    hid_t      group_id = H5I_INVALID_HID;
     hid_t      attr_id = H5I_INVALID_HID;
     hid_t      attr_dtype = H5I_INVALID_HID;
     hid_t      space_id = H5I_INVALID_HID;
@@ -5865,6 +5851,11 @@ test_attribute_many(void)
         goto error;
     }
 
+    if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_MANY_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container group '%s'\n", ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_GROUP_NAME);
+    }
+
     for (i = 0; i < ATTRIBUTE_MANY_SPACE_RANK; i++)
         dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
 
@@ -5878,7 +5869,7 @@ test_attribute_many(void)
     for(u = 0; u < ATTRIBUTE_MANY_NUMB; u++) {
         sprintf(attrname, "many-%06u", u);
 
-        if ((attr_id = H5Acreate2(container_group, attrname, attr_dtype,
+        if ((attr_id = H5Acreate2(group_id, attrname, attr_dtype,
                 space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
             H5_FAILED();
             HDprintf("    couldn't create attribute\n");
@@ -5886,7 +5877,7 @@ test_attribute_many(void)
         }
 
         /* Verify the attribute has been created */
-        if ((attr_exists = H5Aexists(container_group, attrname)) < 0) {
+        if ((attr_exists = H5Aexists(group_id, attrname)) < 0) {
             H5_FAILED();
             HDprintf("    couldn't determine if attribute exists\n");
             goto error;
@@ -5906,6 +5897,8 @@ test_attribute_many(void)
         TEST_ERROR
     if (H5Tclose(attr_dtype) < 0)
         TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)
@@ -5920,6 +5913,7 @@ error:
         H5Sclose(space_id);
         H5Tclose(attr_dtype);
         H5Aclose(attr_id);
+        H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;

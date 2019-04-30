@@ -170,8 +170,9 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_GROUP_NAME "attr_exists_invalid_params_test"
 #define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_ATTR_NAME  "invalid_params_attr_exists"
 
+#define ATTRIBUTE_MANY_GROUP_NAME    "group_for_many_attributes"
 #define ATTRIBUTE_MANY_NAME_BUF_SIZE 32U
-#define ATTRIBUTE_MANY_NUMB          8U
+#define ATTRIBUTE_MANY_NUMB          64U
 #define ATTRIBUTE_MANY_SPACE_RANK    1
 
 #define ATTRIBUTE_DUPLICATE_ID_NAME          "attr_duplicated_id"
