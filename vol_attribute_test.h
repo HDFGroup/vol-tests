@@ -86,6 +86,12 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_READ_INVALID_PARAMS_TEST_GROUP_NAME      "attr_read_invalid_params_test"
 #define ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_NAME       "invalid_params_read_test_attr"
 
+#define ATTRIBUTE_READ_EMPTY_SPACE_RANK      1
+#define ATTRIBUTE_READ_EMPTY_ATTR_GROUP_NAME "read_empty_attr_test"
+#define ATTRIBUTE_READ_EMPTY_ATTR_NAME       "read_empty_attr"
+#define ATTRIBUTE_READ_EMPTY_DTYPE           H5T_NATIVE_INT
+#define ATTRIBUTE_READ_EMPTY_DTYPE_SIZE      sizeof(int)
+
 #define ATTRIBUTE_GET_SPACE_TYPE_TEST_SPACE_RANK 1
 #define ATTRIBUTE_GET_SPACE_TYPE_TEST_GROUP_NAME "get_attr_space_type_test"
 #define ATTRIBUTE_GET_SPACE_TYPE_TEST_ATTR_NAME  "get_space_type_test_attr"
@@ -157,7 +163,26 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_GROUP_NAME "attr_deletion_invalid_params_test"
 #define ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_ATTR_NAME  "invalid_params_attr_to_be_deleted"
 
+#define ATTRIBUTE_EXISTS_NAME          "attr_exists"
+#define ATTRIBUTE_EXISTS_SPACE_RANK    1
+
+#define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK 1
+#define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_GROUP_NAME "attr_exists_invalid_params_test"
+#define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_ATTR_NAME  "invalid_params_attr_exists"
+
+#define ATTRIBUTE_MANY_NAME_BUF_SIZE 32U
+#define ATTRIBUTE_MANY_NUMB          8U
+#define ATTRIBUTE_MANY_SPACE_RANK    1
+
+#define ATTRIBUTE_DUPLICATE_ID_NAME          "attr_duplicated_id"
+#define ATTRIBUTE_DUPLICATE_ID_SPACE_RANK    1
+
 #define ATTRIBUTE_GET_NUM_ATTRS_TEST_ATTRIBUTE_NAME "get_num_attrs_test_attribute"
 #define ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK     1
+
+#define ATTRIBUTE_SHARED_DTYPE_NAME           "/Datatype"
+#define ATTRIBUTE_SHARED_DTYPE_ATTR_NAME      "shared_dtype_attr"
+#define ATTRIBUTE_SHARED_DTYPE_DSET_NAME      "shared_dtype_dset"
+#define ATTRIBUTE_SHARED_DTYPE_SPACE_RANK     1
 
 #endif
