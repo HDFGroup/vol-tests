@@ -15,6 +15,7 @@
 static int test_open_link_without_leading_slash(void);
 static int test_object_creation_by_absolute_path(void);
 static int test_absolute_vs_relative_path(void);
+static int test_file_open_dot(void);
 static int test_symbols_in_compound_field_name(void);
 static int test_double_init_term(void);
 
@@ -25,6 +26,7 @@ static int (*misc_tests[])(void) = {
         test_open_link_without_leading_slash,
         test_object_creation_by_absolute_path,
         test_absolute_vs_relative_path,
+        test_file_open_dot,
         test_symbols_in_compound_field_name,
         test_double_init_term,
 };
@@ -513,6 +515,122 @@ error:
         H5Dclose(dset_id6);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check opening objects with the "." as the name
+ */
+static int
+test_file_open_dot(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID, dtype_id = H5I_INVALID_HID;
+    herr_t ret = -1;
+
+    TESTING("opening objects with \".\" as the name");
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file\n");
+        goto error;
+    }
+
+    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create data space\n");
+        goto error;
+    }
+
+    /* Create a dataset with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        dset_id = H5Dcreate2(file_id, DOT_AS_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (dset_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a dataset was created with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Create a dataset with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        dset_id = H5Dopen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (dset_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a dataset was opened with the '.' as the name!\n");
+        goto error;
+    }
+
+    if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy a native datatype\n");
+        goto error;
+    }
+
+    /* Commit a datatype with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        ret = H5Tcommit2(file_id, DOT_AS_NAME, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (ret >= 0) {
+        H5_FAILED();
+        HDprintf("    a named datatype was committed with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Open a datatype with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        dset_id = H5Topen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (dset_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a datatype was opened with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Create a group with the "." as the name.  It should fail. */
+    H5E_BEGIN_TRY {
+        group_id = H5Gcreate2(file_id, DOT_AS_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (group_id >= 0) {
+        H5_FAILED();
+        HDprintf("    a group was created with the '.' as the name!\n");
+        goto error;
+    }
+
+    /* Open a group with the "." as the name using the file ID (should open the root group) */
+    if ((group_id = H5Gopen2(file_id, DOT_AS_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open group '%s'\n", DOT_AS_NAME);
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(dspace_id);
+        H5Dclose(dset_id);
+        H5Tclose(dtype_id);
+        H5Gclose(group_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
