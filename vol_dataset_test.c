@@ -148,17 +148,14 @@ test_create_dataset_under_root(void)
 {
     hsize_t dims[DATASET_CREATE_UNDER_ROOT_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID;
 
     TESTING("dataset creation under root group")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -187,8 +184,6 @@ test_create_dataset_under_root(void)
         TEST_ERROR
     if (H5Dclose(dset_id) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -201,7 +196,6 @@ error:
         H5Sclose(fspace_id);
         H5Tclose(dset_dtype);
         H5Dclose(dset_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -217,7 +211,7 @@ test_create_dataset_under_existing_group(void)
 {
     hsize_t dims[DATASET_CREATE_UNDER_EXISTING_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -225,10 +219,7 @@ test_create_dataset_under_existing_group(void)
 
     TESTING("dataset creation under an existing group")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -272,8 +263,6 @@ test_create_dataset_under_existing_group(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -288,7 +277,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -304,7 +292,7 @@ test_create_dataset_invalid_params(void)
 {
     hsize_t dims[DATASET_CREATE_INVALID_PARAMS_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -314,10 +302,7 @@ test_create_dataset_invalid_params(void)
 
     TESTING_2("H5Dcreate with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -462,8 +447,6 @@ test_create_dataset_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -478,7 +461,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -493,7 +475,7 @@ test_create_anonymous_dataset(void)
 {
     hsize_t dims[DATASET_CREATE_ANONYMOUS_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -501,10 +483,7 @@ test_create_anonymous_dataset(void)
 
     TESTING("anonymous dataset creation")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -553,8 +532,6 @@ test_create_anonymous_dataset(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -569,7 +546,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -586,7 +562,7 @@ test_create_anonymous_dataset_invalid_params(void)
 {
     hsize_t dims[DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -596,10 +572,7 @@ test_create_anonymous_dataset_invalid_params(void)
 
     TESTING_2("H5Dcreate_anon with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -700,8 +673,6 @@ test_create_anonymous_dataset_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -716,7 +687,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -730,7 +700,7 @@ error:
 static int
 test_create_dataset_null_space(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t dset_id = H5I_INVALID_HID;
     hid_t dset_dtype = H5I_INVALID_HID;
@@ -738,10 +708,7 @@ test_create_dataset_null_space(void)
 
     TESTING("dataset creation with a NULL dataspace")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -791,8 +758,6 @@ test_create_dataset_null_space(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -807,7 +772,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -821,7 +785,7 @@ error:
 static int
 test_create_dataset_scalar_space(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t dset_id = H5I_INVALID_HID;
     hid_t dset_dtype = H5I_INVALID_HID;
@@ -829,10 +793,7 @@ test_create_dataset_scalar_space(void)
 
     TESTING("dataset creation with a SCALAR dataspace")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -882,8 +843,6 @@ test_create_dataset_scalar_space(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -898,7 +857,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -914,17 +872,14 @@ test_create_dataset_random_shapes(void)
 {
     hsize_t *dims = NULL;
     size_t   i;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID, space_id = H5I_INVALID_HID;
     hid_t    dset_dtype = H5I_INVALID_HID;
 
     TESTING("dataset creation with random dimension sizes")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -990,8 +945,6 @@ test_create_dataset_random_shapes(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1007,7 +960,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1023,7 +975,7 @@ static int
 test_create_dataset_predefined_types(void)
 {
     size_t i;
-    hid_t  file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  fspace_id = H5I_INVALID_HID;
     hid_t  dset_id = H5I_INVALID_HID;
@@ -1037,10 +989,7 @@ test_create_dataset_predefined_types(void)
 
     TESTING("dataset creation with predefined datatypes")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1096,8 +1045,6 @@ test_create_dataset_predefined_types(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1111,7 +1058,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1127,7 +1073,7 @@ test_create_dataset_string_types(void)
 {
     hsize_t dims[DATASET_STRING_TYPE_TEST_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id_fixed = H5I_INVALID_HID, dset_id_variable = H5I_INVALID_HID;
     hid_t   type_id_fixed = H5I_INVALID_HID, type_id_variable = H5I_INVALID_HID;
@@ -1135,10 +1081,7 @@ test_create_dataset_string_types(void)
 
     TESTING("dataset creation with string types")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1217,8 +1160,6 @@ test_create_dataset_string_types(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1235,7 +1176,6 @@ error:
         H5Dclose(dset_id_variable);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1251,7 +1191,7 @@ test_create_dataset_compound_types(void)
 {
     hsize_t  dims[DATASET_COMPOUND_TYPE_TEST_DSET_RANK];
     size_t   i, j;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    compound_type = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
@@ -1269,10 +1209,7 @@ test_create_dataset_compound_types(void)
     for (j = 0; j < DATASET_COMPOUND_TYPE_TEST_MAX_SUBTYPES; j++)
         type_pool[j] = H5I_INVALID_HID;
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1385,8 +1322,6 @@ test_create_dataset_compound_types(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1403,7 +1338,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1419,7 +1353,7 @@ test_create_dataset_enum_types(void)
 {
     hsize_t     dims[DATASET_ENUM_TYPE_TEST_SPACE_RANK];
     size_t      i;
-    hid_t       file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t       file_id = H5I_INVALID_HID;
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t       dset_id_native = H5I_INVALID_HID, dset_id_non_native = H5I_INVALID_HID;
     hid_t       fspace_id = H5I_INVALID_HID;
@@ -1432,10 +1366,7 @@ test_create_dataset_enum_types(void)
 
     TESTING("dataset creation with enum types")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1529,8 +1460,6 @@ test_create_dataset_enum_types(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1547,7 +1476,6 @@ error:
         H5Dclose(dset_id_non_native);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1566,7 +1494,7 @@ test_create_dataset_array_types(void)
     hsize_t array_dims2[DATASET_ARRAY_TYPE_TEST_RANK2];
     hsize_t array_dims3[DATASET_ARRAY_TYPE_TEST_RANK3];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id1 = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID, dset_id3 = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID;
@@ -1576,10 +1504,7 @@ test_create_dataset_array_types(void)
 
     TESTING("dataset creation with array types")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1719,8 +1644,6 @@ test_create_dataset_array_types(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1743,7 +1666,6 @@ error:
         H5Dclose(dset_id3);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1759,7 +1681,7 @@ test_create_dataset_creation_properties(void)
 {
     hsize_t dims[DATASET_CREATION_PROPERTIES_TEST_SHAPE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID, dcpl_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -1767,10 +1689,7 @@ test_create_dataset_creation_properties(void)
 
     TESTING("dataset creation properties")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -2104,8 +2023,6 @@ test_create_dataset_creation_properties(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -2121,7 +2038,6 @@ error:
         H5Pclose(dcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2134,7 +2050,7 @@ error:
 static int
 test_create_many_dataset(void)
 {
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dataspace_id = H5I_INVALID_HID;
@@ -2144,10 +2060,7 @@ test_create_many_dataset(void)
 
     TESTING("creating many datasets")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -2171,7 +2084,9 @@ test_create_many_dataset(void)
         goto error;
     }
 
+    HDprintf("\n");
     for (i = 0; i < DATASET_NUMB; i++) {
+        HDprintf("\r %u/%u", i+1, DATASET_NUMB);
         sprintf(dset_name, "dset_%02u", i);
         data = i % 256;
 
@@ -2201,8 +2116,6 @@ test_create_many_dataset(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -2216,7 +2129,6 @@ error:
         H5Sclose(dataspace_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2246,7 +2158,7 @@ test_open_dataset_invalid_params(void)
 {
     hsize_t dims[DATASET_OPEN_INVALID_PARAMS_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -2256,10 +2168,7 @@ test_open_dataset_invalid_params(void)
 
     TESTING_2("H5Dopen with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -2352,8 +2261,6 @@ test_open_dataset_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -2368,7 +2275,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2383,14 +2289,11 @@ static int
 test_close_dataset_invalid_params(void)
 {
     herr_t err_ret = -1;
-    hid_t  file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID;
 
     TESTING("H5Dclose with an invalid dataset ID")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -2406,8 +2309,6 @@ test_close_dataset_invalid_params(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -2417,7 +2318,6 @@ test_close_dataset_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2434,7 +2334,7 @@ test_get_dataset_space_and_type(void)
 {
     hsize_t dset_dims[DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID;
     hid_t   group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
@@ -2445,10 +2345,7 @@ test_get_dataset_space_and_type(void)
 
     TESTING("retrieval of a dataset's dataspace and datatype"); HDputs("");
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -2612,8 +2509,6 @@ test_get_dataset_space_and_type(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -2630,7 +2525,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2647,7 +2541,7 @@ test_get_dataset_space_and_type_invalid_params(void)
 {
     hsize_t dset_dims[DATASET_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID;
     hid_t   group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
@@ -2660,10 +2554,7 @@ test_get_dataset_space_and_type_invalid_params(void)
 
     TESTING_2("H5Dget_type with an invalid attr_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -2731,8 +2622,6 @@ test_get_dataset_space_and_type_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -2749,7 +2638,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2797,7 +2685,7 @@ test_dataset_property_lists(void)
     hsize_t     chunk_dims[DATASET_PROPERTY_LIST_TEST_SPACE_RANK];
     size_t      i;
     herr_t      err_ret = -1;
-    hid_t       file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t       file_id = H5I_INVALID_HID;
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t       dset_id1 = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID, dset_id3 = H5I_INVALID_HID, dset_id4 = H5I_INVALID_HID;
     hid_t       dcpl_id1 = H5I_INVALID_HID, dcpl_id2 = H5I_INVALID_HID;
@@ -2810,10 +2698,7 @@ test_dataset_property_lists(void)
 
     TESTING_2("H5Dget_create_plist")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3143,8 +3028,6 @@ test_dataset_property_lists(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3170,7 +3053,6 @@ error:
         H5Dclose(dset_id4);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3273,7 +3155,7 @@ test_read_dataset_small_all(void)
 {
     hsize_t  dims[DATASET_SMALL_READ_TEST_ALL_DSET_SPACE_RANK] = { 10, 5, 3 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -3281,10 +3163,7 @@ test_read_dataset_small_all(void)
 
     TESTING("small read from dataset with H5S_ALL")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3338,8 +3217,6 @@ test_read_dataset_small_all(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3354,7 +3231,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3377,7 +3253,7 @@ test_read_dataset_small_hyperslab(void)
     hsize_t  block[DATASET_SMALL_READ_TEST_HYPERSLAB_DSET_SPACE_RANK];
     hsize_t  dims[DATASET_SMALL_READ_TEST_HYPERSLAB_DSET_SPACE_RANK] = { 10, 5, 3 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID, fspace_id = H5I_INVALID_HID;
@@ -3385,10 +3261,7 @@ test_read_dataset_small_hyperslab(void)
 
     TESTING("small read from dataset with a hyperslab selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3458,8 +3331,6 @@ test_read_dataset_small_hyperslab(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3475,7 +3346,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3496,7 +3366,7 @@ test_read_dataset_small_point_selection(void)
     hsize_t  dims[DATASET_SMALL_READ_TEST_POINT_SELECTION_DSET_SPACE_RANK] = { 10, 10, 10 };
     hsize_t  mspace_dims[] = { DATASET_SMALL_READ_TEST_POINT_SELECTION_NUM_POINTS };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -3505,10 +3375,7 @@ test_read_dataset_small_point_selection(void)
 
     TESTING("small read from dataset with a point selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3577,8 +3444,6 @@ test_read_dataset_small_point_selection(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3594,7 +3459,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3614,7 +3478,7 @@ test_read_dataset_large_all(void)
 {
     hsize_t  dims[DATASET_LARGE_READ_TEST_ALL_DSET_SPACE_RANK] = { 600, 600, 600 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -3622,10 +3486,7 @@ test_read_dataset_large_all(void)
 
     TESTING("large read from dataset with H5S_ALL")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3679,8 +3540,6 @@ test_read_dataset_large_all(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3695,7 +3554,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3718,7 +3576,7 @@ test_read_dataset_large_hyperslab(void)
     hsize_t  block[DATASET_LARGE_READ_TEST_HYPERSLAB_DSET_SPACE_RANK];
     hsize_t  dims[DATASET_LARGE_READ_TEST_HYPERSLAB_DSET_SPACE_RANK] = { 600, 600, 600 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID, fspace_id = H5I_INVALID_HID;
@@ -3726,10 +3584,7 @@ test_read_dataset_large_hyperslab(void)
 
     TESTING("large read from dataset with a hyperslab selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3797,8 +3652,6 @@ test_read_dataset_large_hyperslab(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3813,7 +3666,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3835,7 +3687,7 @@ test_read_dataset_large_point_selection(void)
     hsize_t *points = NULL;
     hsize_t  dims[DATASET_LARGE_READ_TEST_POINT_SELECTION_DSET_SPACE_RANK] = { 225000000 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -3843,10 +3695,7 @@ test_read_dataset_large_point_selection(void)
 
     TESTING("large read from dataset with a point selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -3919,8 +3768,6 @@ test_read_dataset_large_point_selection(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -3936,7 +3783,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3954,7 +3800,7 @@ test_read_dataset_invalid_params(void)
     hsize_t  dims[DATASET_READ_INVALID_PARAMS_TEST_DSET_SPACE_RANK] = { 10, 5, 3 };
     herr_t   err_ret = -1;
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -3964,10 +3810,7 @@ test_read_dataset_invalid_params(void)
 
     TESTING_2("H5Dread with an invalid dataset ID")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -4095,8 +3938,6 @@ test_read_dataset_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -4111,7 +3952,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4128,7 +3968,7 @@ test_write_dataset_small_all(void)
     hssize_t  space_npoints;
     hsize_t   dims[DATASET_SMALL_WRITE_TEST_ALL_DSET_SPACE_RANK] = { 10, 5, 3 };
     size_t    i;
-    hid_t     file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t     file_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t     dset_id = H5I_INVALID_HID;
     hid_t     fspace_id = H5I_INVALID_HID;
@@ -4136,10 +3976,7 @@ test_write_dataset_small_all(void)
 
     TESTING("small write to dataset with H5S_ALL")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -4216,8 +4053,6 @@ test_write_dataset_small_all(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -4232,7 +4067,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4252,7 +4086,7 @@ test_write_dataset_small_hyperslab(void)
     hsize_t  block[DATASET_SMALL_WRITE_TEST_HYPERSLAB_DSET_SPACE_RANK];
     hsize_t  dims[DATASET_SMALL_WRITE_TEST_HYPERSLAB_DSET_SPACE_RANK] = { 10, 5, 3 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID, fspace_id = H5I_INVALID_HID;
@@ -4260,10 +4094,7 @@ test_write_dataset_small_hyperslab(void)
 
     TESTING("small write to dataset with a hyperslab selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -4336,8 +4167,6 @@ test_write_dataset_small_hyperslab(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -4353,7 +4182,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4371,7 +4199,7 @@ test_write_dataset_small_point_selection(void)
     hsize_t  dims[DATASET_SMALL_WRITE_TEST_POINT_SELECTION_DSET_SPACE_RANK] = { 10, 10, 10 };
     hsize_t  mdims[] = { DATASET_SMALL_WRITE_TEST_POINT_SELECTION_NUM_POINTS };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -4380,10 +4208,7 @@ test_write_dataset_small_point_selection(void)
 
     TESTING("small write to dataset with a point selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -4455,8 +4280,6 @@ test_write_dataset_small_point_selection(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -4472,7 +4295,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4490,7 +4312,7 @@ test_write_dataset_large_all(void)
     hssize_t  space_npoints;
     hsize_t   dims[DATASET_LARGE_WRITE_TEST_ALL_DSET_SPACE_RANK] = { 600, 600, 600 };
     size_t    i, data_size;
-    hid_t     file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t     file_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t     dset_id = H5I_INVALID_HID;
     hid_t     fspace_id = H5I_INVALID_HID;
@@ -4498,10 +4320,7 @@ test_write_dataset_large_all(void)
 
     TESTING("large write to dataset with H5S_ALL")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -4578,8 +4397,6 @@ test_write_dataset_large_all(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -4593,7 +4410,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4613,7 +4429,7 @@ test_write_dataset_large_hyperslab(void)
     hsize_t  block[DATASET_LARGE_WRITE_TEST_HYPERSLAB_DSET_SPACE_RANK];
     hsize_t  dims[DATASET_LARGE_WRITE_TEST_HYPERSLAB_DSET_SPACE_RANK] = { 600, 600, 600 };
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID, fspace_id = H5I_INVALID_HID;
@@ -4621,10 +4437,7 @@ test_write_dataset_large_hyperslab(void)
 
     TESTING("large write to dataset with a hyperslab selection")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -4695,8 +4508,6 @@ test_write_dataset_large_hyperslab(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -4712,7 +4523,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4752,7 +4562,7 @@ test_write_dataset_data_verification(void)
     hsize_t  block[DATASET_DATA_VERIFY_WRITE_TEST_DSET_SPACE_RANK];
     hsize_t  points[DATASET_DATA_VERIFY_WRITE_TEST_NUM_POINTS * DATASET_DATA_VERIFY_WRITE_TEST_DSET_SPACE_RANK];
     size_t   i, data_size;
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
     hid_t    fspace_id = H5I_INVALID_HID;
@@ -4765,10 +4575,7 @@ test_write_dataset_data_verification(void)
 
     TESTING_2("H5Dwrite using H5S_ALL then H5Dread")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -5096,8 +4903,6 @@ test_write_dataset_data_verification(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -5115,7 +4920,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -5133,7 +4937,7 @@ test_write_dataset_invalid_params(void)
     hsize_t   dims[DATASET_WRITE_INVALID_PARAMS_TEST_DSET_SPACE_RANK] = { 10, 5, 3 };
     herr_t    err_ret = -1;
     size_t    i;
-    hid_t     file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t     file_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t     dset_id = H5I_INVALID_HID;
     hid_t     fspace_id = H5I_INVALID_HID;
@@ -5143,10 +4947,7 @@ test_write_dataset_invalid_params(void)
 
     TESTING_2("H5Dwrite with an invalid dataset ID")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -5279,8 +5080,6 @@ test_write_dataset_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -5295,7 +5094,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -5357,7 +5155,7 @@ test_dataset_set_extent_chunked_unlimited(void)
     hsize_t chunk_dims[DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_SPACE_RANK];
     hsize_t new_dims[DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -5366,10 +5164,7 @@ test_dataset_set_extent_chunked_unlimited(void)
 
     TESTING("H5Dset_extent on chunked dataset with unlimited dimensions")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -5544,8 +5339,6 @@ test_dataset_set_extent_chunked_unlimited(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -5561,7 +5354,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -5582,7 +5374,7 @@ test_dataset_set_extent_chunked_fixed(void)
     hsize_t chunk_dims[DATASET_SET_EXTENT_CHUNKED_FIXED_TEST_SPACE_RANK];
     hsize_t new_dims[DATASET_SET_EXTENT_CHUNKED_FIXED_TEST_SPACE_RANK];
     size_t  i;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -5591,10 +5383,7 @@ test_dataset_set_extent_chunked_fixed(void)
 
     TESTING("H5Dset_extent on chunked dataset with fixed dimensions")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -5815,8 +5604,6 @@ test_dataset_set_extent_chunked_fixed(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -5834,7 +5621,6 @@ error:
         H5Dclose(dset_id2);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -5853,7 +5639,7 @@ test_dataset_set_extent_invalid_params(void)
     hsize_t new_dims[DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK];
     size_t  i;
     herr_t  err_ret = -1;
-    hid_t   file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t   dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
@@ -5864,10 +5650,7 @@ test_dataset_set_extent_invalid_params(void)
 
     TESTING_2("H5Dset_extent with an invalid dataset ID")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -5953,8 +5736,6 @@ test_dataset_set_extent_invalid_params(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -5970,7 +5751,6 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 

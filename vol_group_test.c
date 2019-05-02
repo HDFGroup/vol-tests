@@ -60,16 +60,13 @@ static int (*group_tests[])(void) = {
 static int
 test_create_group_under_root(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t parent_gid = H5I_INVALID_HID, child_gid = H5I_INVALID_HID,
           absolute_gid = H5I_INVALID_HID;
 
     TESTING("creation of group under the root group")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -102,8 +99,6 @@ test_create_group_under_root(void)
         TEST_ERROR
     if (H5Gclose(parent_gid) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -116,7 +111,6 @@ error:
         H5Gclose(absolute_gid);
         H5Gclose(child_gid);
         H5Gclose(parent_gid);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -133,14 +127,10 @@ test_create_group_under_existing_group(void)
     hid_t file_id = H5I_INVALID_HID;
     hid_t parent_group_id = H5I_INVALID_HID, child_group_id = H5I_INVALID_HID,
           grandchild_group_id = H5I_INVALID_HID;
-    hid_t fapl_id = H5I_INVALID_HID;
 
     TESTING("creation of group under existing group using a relative path")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -173,8 +163,6 @@ test_create_group_under_existing_group(void)
         TEST_ERROR
     if (H5Gclose(parent_group_id) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -187,7 +175,6 @@ error:
         H5Gclose(grandchild_group_id);
         H5Gclose(child_group_id);
         H5Gclose(parent_group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -200,17 +187,14 @@ error:
 static int
 test_create_many_groups(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t parent_group_id = H5I_INVALID_HID, child_group_id = H5I_INVALID_HID;
     char  group_name[NAME_BUF_SIZE];
     unsigned i;
 
     TESTING("H5Gcreate many groups")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -224,7 +208,9 @@ test_create_many_groups(void)
     }
 
     /* Create multiple groups under the parent group */
+    HDprintf("\n");
     for(i = 0; i < GROUP_NUMB_MANY; i++) {
+        HDprintf("\r %u/%u", i+1, GROUP_NUMB_MANY);
         sprintf(group_name, "group %02u", i);
         if ((child_group_id = H5Gcreate2(parent_group_id, group_name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
             H5_FAILED();
@@ -238,8 +224,6 @@ test_create_many_groups(void)
 
     if (H5Gclose(parent_group_id) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -251,7 +235,6 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(child_group_id);
         H5Gclose(parent_group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -264,15 +247,12 @@ error:
 static int
 test_create_deep_groups(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Gcreate groups of great depths")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -285,12 +265,11 @@ test_create_deep_groups(void)
         goto error;
     }
 
+    HDprintf("\n");
     if (create_group_recursive(group_id, 1) < 0)
         TEST_ERROR
 
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
@@ -302,7 +281,6 @@ test_create_deep_groups(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -318,6 +296,7 @@ create_group_recursive(hid_t parent_gid, int counter)
     hid_t child_gid = H5I_INVALID_HID;
     char  gname[NAME_BUF_SIZE];
 
+    HDprintf("\r %u/%u", counter, GROUP_DEPTH);
     sprintf(gname, "%dth_child_group", counter+1);
     if ((child_gid = H5Gcreate2(parent_gid, gname, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -350,17 +329,14 @@ error:
 static int
 test_create_group_invalid_params(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Gcreate with invalid parameters"); HDputs("");
 
     TESTING_2("H5Gcreate with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -442,8 +418,6 @@ test_create_group_invalid_params(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -454,7 +428,6 @@ test_create_group_invalid_params(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -470,14 +443,10 @@ test_create_anonymous_group(void)
 {
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, new_group_id = H5I_INVALID_HID;
-    hid_t fapl_id = H5I_INVALID_HID;
 
     TESTING("creation of anonymous group")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -499,8 +468,6 @@ test_create_anonymous_group(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -512,7 +479,6 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(new_group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -528,16 +494,12 @@ test_create_anonymous_group_invalid_params(void)
 {
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, new_group_id = H5I_INVALID_HID;
-    hid_t fapl_id = H5I_INVALID_HID;
 
     TESTING("H5Gcreate_anon with invalid parameters"); HDputs("");
 
     TESTING_2("H5Gcreate_anon with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -589,8 +551,6 @@ test_create_anonymous_group_invalid_params(void)
 
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -602,7 +562,6 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(new_group_id);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -616,15 +575,12 @@ error:
 static int
 test_open_nonexistent_group(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("for failure when opening a nonexistent group")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -640,8 +596,6 @@ test_open_nonexistent_group(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -652,7 +606,6 @@ test_open_nonexistent_group(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -666,17 +619,14 @@ error:
 static int
 test_open_group_invalid_params(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Gopen with invalid parameters"); HDputs("");
 
     TESTING_2("H5Gopen with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -730,8 +680,6 @@ test_open_group_invalid_params(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -742,7 +690,6 @@ test_open_group_invalid_params(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -757,12 +704,8 @@ static int
 test_close_group_invalid_id(void)
 {
     herr_t err_ret = -1;
-    hid_t  fapl_id = H5I_INVALID_HID;
 
     TESTING("H5Gclose with an invalid group ID")
-
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
 
     H5E_BEGIN_TRY {
         err_ret = H5Gclose(H5I_INVALID_HID);
@@ -774,18 +717,11 @@ test_close_group_invalid_id(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-
     PASSED();
 
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
-    } H5E_END_TRY;
-
     return 1;
 }
 
@@ -797,17 +733,14 @@ static int
 test_group_property_lists(void)
 {
     size_t dummy_prop_val = GROUP_PROPERTY_LIST_TEST_DUMMY_VAL;
-    hid_t  file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID;
     hid_t  group_id1 = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
     hid_t  gcpl_id1 = H5I_INVALID_HID, gcpl_id2 = H5I_INVALID_HID;
 
     TESTING("group property list operations")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -972,8 +905,6 @@ test_group_property_lists(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -988,7 +919,6 @@ error:
         H5Gclose(group_id1);
         H5Gclose(group_id2);
         H5Gclose(container_group);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1002,7 +932,7 @@ static int
 test_get_group_info(void)
 {
     H5G_info_t 	group_info;
-    hid_t      	file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t      	file_id = H5I_INVALID_HID;
     hid_t      	parent_group_id = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char        group_name[NAME_BUF_SIZE];
     unsigned    i;
@@ -1011,10 +941,7 @@ test_get_group_info(void)
 
     TESTING_2("retrieval of group info with H5Gget_info")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1089,8 +1016,6 @@ test_get_group_info(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1102,7 +1027,6 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(parent_group_id);
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1118,16 +1042,13 @@ test_get_group_info_invalid_params(void)
 {
     H5G_info_t group_info;
     herr_t     err_ret = -1;
-    hid_t      file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t      file_id = H5I_INVALID_HID;
 
     TESTING("H5Gget_info with invalid parameters"); HDputs("");
 
     TESTING_2("H5Gget_info with an invalid loc_id")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1341,8 +1262,6 @@ test_get_group_info_invalid_params(void)
         goto error;
     }
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1352,7 +1271,6 @@ test_get_group_info_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1365,15 +1283,12 @@ error:
 static int
 test_flush_group(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Gflush")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1395,8 +1310,6 @@ test_flush_group(void)
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1407,7 +1320,6 @@ test_flush_group(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1449,15 +1361,12 @@ error:
 static int
 test_refresh_group(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Grefresh")
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
@@ -1479,8 +1388,6 @@ test_refresh_group(void)
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1491,7 +1398,6 @@ test_refresh_group(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
-        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 

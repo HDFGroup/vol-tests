@@ -39,7 +39,6 @@
 #include "vol_object_test.h"
 #include "vol_misc_test.h"
 
-static int test_vol_connector_setup(void);
 static int create_test_container(void);
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
@@ -86,240 +85,7 @@ char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
  */
 #define STRING_TYPE_MAX_SIZE 1024
 
-/*-------------------------------------------------------------------------
- * Function:    h5_get_vol_fapl
- *
- * Purpose:     Returns a file access property list which is the default
- *              fapl but with a VOL connector set according to the constant
- *              or environment variable HDF5_VOL_CONNECTOR.
- *
- * Return:      Success:    0
- *              Failure:    -1
- *
- * Programmer:  Jordan Henderson
- *              November 2018
- *
- *-------------------------------------------------------------------------
- */
-herr_t
-h5_get_vol_fapl(hid_t fapl)
-{
-    const char *env = NULL;
-    const char *tok = NULL;
-    char        *lasts = NULL;  /* Context pointer for strtok_r() call */
-    htri_t      connector_is_registered;
-    char        buf[1024];              /* Buffer for tokenizing HDF5_VOL_CONNECTOR */
-    void       *vol_info = NULL;        /* VOL connector info */
-    hid_t       connector_id = -1;
-
-    /* Get the environment variable, if it exists */
-    env = HDgetenv("HDF5_VOL_CONNECTOR");
-#ifdef HDF5_VOL_CONNECTOR
-    /* Use the environment variable, then the compile-time constant */
-    if(!env)
-        env = HDF5_VOL_CONNECTOR;
-#endif
-
-    /* If the environment variable was not set, just return. */
-    if(!env || !*env)
-        goto done;
-
-    /* Get the first 'word' of the environment variable.
-     * If it's nothing (environment variable was whitespace) just return.
-     */
-    HDstrncpy(buf, env, sizeof(buf));
-    buf[sizeof(buf) - 1] = '\0';
-    if(NULL == (tok = HDstrtok_r(buf, " \t\n\r", &lasts)))
-        goto done;
-
-    /* First, check to see if the connector is already registered */
-    if((connector_is_registered = H5VLis_connector_registered(tok)) < 0)
-        goto done;
-    else if(connector_is_registered) {
-        /* Retrieve the ID of the already-registered VOL connector */
-        if((connector_id = H5VLget_connector_id(tok)) < 0)
-            goto error;
-    } /* end else-if */
-    else {
-        /* Check for VOL connectors that ship with the library */
-        if(!HDstrcmp(tok, "native")) {
-            connector_id = H5VL_NATIVE;
-            if(H5Iinc_ref(connector_id) < 0)
-                goto error;
-        } else if(!HDstrcmp(tok, "pass_through")) {
-            connector_id = H5VL_PASSTHRU;
-            if(H5Iinc_ref(connector_id) < 0)
-                goto error;
-        } else {
-            /* Register the VOL connector */
-            /* (NOTE: No provisions for vipl_id currently) */
-            if((connector_id = H5VLregister_connector_by_name(tok, H5P_DEFAULT)) < 0)
-                goto error;
-        } /* end else */
-    } /* end else */
-
-    /* Was there any connector info specified in the environment variable? */
-    if(NULL != (tok = HDstrtok_r(NULL, " \t\n\r", &lasts)))
-        if(H5VLconnector_str_to_info(tok, connector_id, &vol_info) < 0)
-            goto error;
-
-    /* Set the VOL connector in the FAPL */
-    if(H5Pset_vol(fapl, connector_id, vol_info) < 0)
-        goto error;
-
-    /* Release VOL connector info, if there was any */
-    if(vol_info)
-        if(H5VLfree_connector_info(connector_id, vol_info) < 0)
-            goto error;
-
-    /* Close the connector ID */
-    if(connector_id >= 0)
-        if(H5VLunregister_connector(connector_id) < 0)
-            goto error;
-
-done:
-    return 0;
-
-error:
-    if(vol_info)
-        H5VLfree_connector_info(connector_id, vol_info);
-    if(connector_id >= 0)
-        H5VLunregister_connector(connector_id);
-
-    return -1;
-} /* end h5_get_vol_fapl() */
-
-/*-------------------------------------------------------------------------
- * Function:    h5_get_libver_fapl
- *
- * Purpose:     Sets the library version bounds for a FAPL according to the
- *              value in the constant or environment variable "HDF5_LIBVER_BOUNDS".
- *
- * Return:      Success:    0
- *              Failure:    -1
- *
- * Programmer:  Quincey Koziol
- *              November 2018
- *
- *-------------------------------------------------------------------------
- */
-herr_t
-h5_get_libver_fapl(hid_t fapl)
-{
-    const char  *env = NULL;    /* HDF5_DRIVER environment variable     */
-    const char  *tok = NULL;    /* strtok pointer                       */
-    char        *lasts = NULL;  /* Context pointer for strtok_r() call */
-    char        buf[1024];      /* buffer for tokenizing HDF5_DRIVER    */
-
-    /* Get the environment variable, if it exists */
-    env = HDgetenv("HDF5_LIBVER_BOUNDS");
-#ifdef HDF5_LIBVER_BOUNDS
-    /* Use the environment variable, then the compile-time constant */
-    if(!env)
-        env = HDF5_LIBVER_BOUNDS;
-#endif
-
-    /* If the environment variable was not set, just return
-     * without modifying the FAPL.
-     */
-    if(!env || !*env)
-        goto done;
-
-    /* Get the first 'word' of the environment variable.
-     * If it's nothing (environment variable was whitespace)
-     * just return the default fapl.
-     */
-    HDstrncpy(buf, env, sizeof(buf));
-    buf[sizeof(buf) - 1] = '\0';
-    if(NULL == (tok = HDstrtok_r(buf, " \t\n\r", &lasts)))
-        goto done;
-
-    if(!HDstrcmp(tok, "latest")) {
-        /* use the latest format */
-        if(H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) < 0)
-            goto error;
-    } /* end if */
-    else {
-        /* Unknown setting */
-        goto error;
-    } /* end else */
-
-done:
-    return 0;
-
-error:
-    return -1;
-} /* end h5_get_libver_fapl() */
-
-/*-------------------------------------------------------------------------
- * Function:    h5_fileaccess
- *
- * Purpose:     Returns a file access template which is the default template
- *              but with a file driver, VOL connector, or libver bound set
- *              according to a constant or environment variable
- *
- * Return:      Success:    A file access property list
- *              Failure:    H5I_INVALID_HID
- *
- * Programmer:  Robb Matzke
- *              Thursday, November 19, 1998
- *
- *-------------------------------------------------------------------------
- */
-hid_t
-h5_fileaccess(void)
-{
-    hid_t       fapl_id = H5I_INVALID_HID;
-
-    if((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        goto error;
-
-    /* Attempt to set up a file driver first */
-//    if(h5_get_vfd_fapl(fapl_id) < 0)
-//        goto error;
-
-    /* Next, try to set up a VOL connector */
-    if(h5_get_vol_fapl(fapl_id) < 0)
-        goto error;
-
-    /* Finally, check for libver bounds */
-    if(h5_get_libver_fapl(fapl_id) < 0)
-        goto error;
-
-    return fapl_id;
-
-error:
-    if(fapl_id != H5I_INVALID_HID)
-        H5Pclose(fapl_id);
-    return H5I_INVALID_HID;
-} /* end h5_fileaccess() */
-
 /******************************************************************************/
-
-static int
-test_vol_connector_setup(void)
-{
-    hid_t fapl_id = H5I_INVALID_HID;
-
-    TESTING("VOL connector setup");
-
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
 
 /*
  * Helper function to generate a random HDF5 datatype in order to thoroughly
@@ -982,15 +748,12 @@ error:
 static int
 create_test_container(void)
 {
-    hid_t file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
 #ifdef GROUP_CREATION_IS_SUPPORTED
     hid_t group_id = H5I_INVALID_HID;
 #endif
 
-    if ((fapl_id = h5_fileaccess()) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fcreate(vol_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
+    if ((file_id = H5Fcreate(vol_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         HDprintf("    couldn't create testing container file\n");
         goto error;
     }
@@ -1035,8 +798,6 @@ create_test_container(void)
     }
 #endif
 
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1044,7 +805,6 @@ create_test_container(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
 #ifdef GROUP_CREATION_IS_SUPPORTED
         H5Gclose(group_id);
 #endif
@@ -1102,15 +862,6 @@ int main(int argc, char **argv)
          * Reset the number of errors on each iteration.
          */
         nerrors = 0;
-
-        /*
-         * Check that the VOL connector can be setup properly
-         * before attempting to use it.
-         */
-        if (test_vol_connector_setup()) {
-            HDfprintf(stderr, "Unable to initialize VOL connector '%s'\n", vol_connector_name);
-            continue;
-        }
 
         /*
          * Create the file that will be used for all of the tests,
