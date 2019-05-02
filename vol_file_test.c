@@ -801,7 +801,6 @@ test_file_is_accessible(void)
         HDprintf("    file '%s' is not accessible with VOL connector\n", vol_test_filename);
         goto error;
     }
-
    
     is_accessible = -1;
 
@@ -809,13 +808,6 @@ test_file_is_accessible(void)
         is_accessible = H5Fis_accessible(fake_filename, H5P_DEFAULT);
     } H5E_END_TRY;
 
-/*
-    if ((is_accessible = H5Fis_accessible(fake_filename, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if file '%s' is accessible with VOL connector: is_accessible=%d\n", fake_filename, is_accessible);
-        goto error;
-    }
- */
     if (is_accessible >= 0) {
         H5_FAILED();
         HDprintf("    non-existent file '%s' was accessible with VOL connector: is_accessible=%d!\n", fake_filename, is_accessible);
