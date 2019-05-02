@@ -18,7 +18,6 @@ static int test_create_file_excl(void);
 static int test_open_file(void);
 static int test_open_file_invalid_params(void);
 static int test_open_nonexistent_file(void);
-static int test_file_open_dot(void);
 static int test_file_open_overlap(void);
 static int test_file_permission(void);
 static int test_reopen_file(void);
@@ -52,7 +51,6 @@ static int (*file_tests[])(void) = {
         test_open_file,
         test_open_file_invalid_params,
         test_open_nonexistent_file,
-        test_file_open_dot,
         test_file_open_overlap,
         test_file_permission,
         test_reopen_file,
@@ -400,122 +398,6 @@ test_open_nonexistent_file(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test to check opening objects with the "." as the name
- */
-static int
-test_file_open_dot(void)
-{
-    hid_t file_id = H5I_INVALID_HID;
-    hid_t dset_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
-    hid_t group_id = H5I_INVALID_HID, dtype_id = H5I_INVALID_HID;
-    herr_t ret = -1;
-
-    TESTING("Testing opening objects with \".\" as the name");
-
-    if ((file_id = H5Fcreate(FILE_DOT_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_DOT_FILENAME);
-        goto error;
-    }
-
-    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create data space\n");
-        goto error;
-    }
-
-    /* Create a dataset with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        dset_id = H5Dcreate2(file_id, DOT_AS_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (dset_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a dataset was created with the '.' as the name!\n");
-        goto error;
-    }
-
-    /* Create a dataset with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        dset_id = H5Dopen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (dset_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a dataset was opened with the '.' as the name!\n");
-        goto error;
-    }
-
-    if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't copy a native datatype\n");
-        goto error;
-    }
-
-    /* Commit a datatype with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        ret = H5Tcommit2(file_id, DOT_AS_NAME, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (ret >= 0) {
-        H5_FAILED();
-        HDprintf("    a named datatype was committed with the '.' as the name!\n");
-        goto error;
-    }
-
-    /* Open a datatype with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        dset_id = H5Topen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (dset_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a datatype was opened with the '.' as the name!\n");
-        goto error;
-    }
-
-    /* Create a group with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, DOT_AS_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a group was created with the '.' as the name!\n");
-        goto error;
-    }
-
-    /* Open a group with the "." as the name using the file ID (should open the root group) */
-    if ((group_id = H5Gopen2(file_id, DOT_AS_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s'\n", DOT_AS_NAME);
-        goto error;
-    }
-
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Sclose(dspace_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Sclose(dspace_id);
-        H5Dclose(dset_id);
-        H5Tclose(dtype_id);
-        H5Gclose(group_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1195,9 +1077,6 @@ test_get_file_obj_count(void)
         goto error;
     }
 
-    if (H5Tclose(named_dtype_id) < 0)
-        TEST_ERROR
-
     /* Create a dataspace for the attribute and dataset */
     if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
         H5_FAILED();
@@ -1259,6 +1138,8 @@ test_get_file_obj_count(void)
     if (H5Sclose(dspace_id) < 0)
         TEST_ERROR
     if (H5Aclose(attr_id) < 0)
+        TEST_ERROR
+    if (H5Tclose(named_dtype_id) < 0)
         TEST_ERROR
     if (H5Dclose(dset_id) < 0)
         TEST_ERROR
@@ -2441,7 +2322,6 @@ cleanup_files(void)
     HDremove(FILE_CREATE_TEST_FILENAME);
     HDremove(FILE_CREATE_EXCL_FILE_NAME);
     HDremove(FILE_CREATE_INVALID_PARAMS_FILE_NAME);
-    HDremove(FILE_DOT_FILENAME);
     HDremove(OVERLAPPING_FILENAME);
     HDremove(FILE_PERMISSION_FILENAME);
     HDremove(GET_FILENAME);

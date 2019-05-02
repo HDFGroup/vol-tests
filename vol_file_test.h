@@ -31,9 +31,6 @@ int vol_file_test(void);
 
 #define NONEXISTENT_FILENAME 			"nonexistent_file.h5"
 
-#define FILE_DOT_FILENAME                       "open_dot.h5"
-#define DOT_AS_NAME                             "."
-
 #define OVERLAPPING_FILENAME                    "overlapping_file.h5"
 
 #define FILE_PERMISSION_FILENAME		"file_permission.h5"
