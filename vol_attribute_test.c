@@ -3941,6 +3941,31 @@ test_rename_attribute(void)
         goto error;
     }
 
+    /* Verify the attribute has been renamed */
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_RENAME_TEST_ATTR_NAME)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if attribute exists\n");
+        goto error;
+    }
+
+    if (attr_exists) {
+        H5_FAILED();
+        HDprintf("    attribute did not get renamed!\n");
+        goto error;
+    }
+
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_RENAME_TEST_NEW_NAME)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if attribute exists\n");
+        goto error;
+    }
+
+    if (!attr_exists) {
+        H5_FAILED();
+        HDprintf("    attribute did not get renamed!\n");
+        goto error;
+    }
+
     PASSED();
 
     TESTING_2("H5Arename_by_name")
@@ -3952,9 +3977,30 @@ test_rename_attribute(void)
         goto error;
     }
 
-    /*
-     * XXX: Check name if H5Aget_name is available and test renaming back to original name.
-     */
+    /* Verify the attribute has been renamed */
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_RENAME_TEST_ATTR_NAME2)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if attribute exists\n");
+        goto error;
+    }
+
+    if (attr_exists) {
+        H5_FAILED();
+        HDprintf("    attribute did not get renamed!\n");
+        goto error;
+    }
+
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_RENAME_TEST_NEW_NAME2)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if attribute exists\n");
+        goto error;
+    }
+
+    if (!attr_exists) {
+        H5_FAILED();
+        HDprintf("    attribute did not get renamed!\n");
+        goto error;
+    }
 
     if (H5Sclose(attr_space_id) < 0)
         TEST_ERROR
