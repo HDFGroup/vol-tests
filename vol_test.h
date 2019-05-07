@@ -108,8 +108,10 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
  * Macros used for multipart tests
  */
 #define TESTING_MULTIPART(WHAT)  {printf("Testing %-62s",WHAT); HDputs(""); fflush(stdout);}
-#define MULTIPART_FAILED  {H5_FAILED();nerrors++;}
 
+/*
+ * Begin and end an entire section of multipart tests.
+ */
 #define BEGIN_MULTIPART \
 {                       \
     int nerrors = 0;
@@ -118,6 +120,18 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
     if (nerrors > 0)  \
         goto error;   \
 }
+
+/*
+ * Begin, end and handle errors within a single part of a multipart test.
+ * The PART_END macro creates a goto label based on the given "part name".
+ * When a failure occurs in the current part, the PART_ERROR macro uses
+ * this label to skip to the next part of the multipart test. The PART_ERROR
+ * macro also increments the error count so that the END_MULTIPART macro
+ * knows to skip to the test's 'error' label once all test parts have finished.
+ */
+#define PART_BEGIN(part_name) {
+#define PART_END(part_name) } part_##part_name##end:
+#define PART_ERROR(part_name) { nerrors++; goto part_##part_name##end; }
 
 /*
  * Alarm definitions to wait up (terminate) a test that runs too long.

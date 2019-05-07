@@ -129,7 +129,7 @@ test_create_committed_datatype_invalid_params(void)
 
     TESTING_MULTIPART("H5Tcommit2 with invalid parameters");
 
-    TESTING_2("H5Tcommit2 with an invalid loc_id")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -155,100 +155,122 @@ test_create_committed_datatype_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(H5I_INVALID_HID, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid loc_id!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Tcommit2 with an invalid datatype name");
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Tcommit2_invalid_loc_id) {
+            TESTING_2("H5Tcommit2 with an invalid loc_id")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, NULL, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(H5I_INVALID_HID, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
+                        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid datatype name!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid loc_id!\n");
+                PART_ERROR(H5Tcommit2_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, "", type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Tcommit2_invalid_loc_id);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid datatype name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Tcommit2_invalid_type_name) {
+            TESTING_2("H5Tcommit2 with an invalid datatype name");
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(group_id, NULL, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Tcommit2 with an invalid datatype ID");
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid datatype name!\n");
+                PART_ERROR(H5Tcommit2_invalid_type_name);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, H5I_INVALID_HID,
-                H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(group_id, "", type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid datatype ID!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid datatype name!\n");
+                PART_ERROR(H5Tcommit2_invalid_type_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Tcommit2_invalid_type_name);
 
-    TESTING_2("H5Tcommit2 with an invalid LCPL");
+        PART_BEGIN(H5Tcommit2_invalid_type_id) {
+            TESTING_2("H5Tcommit2 with an invalid datatype ID");
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, H5I_INVALID_HID,
+                        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid LCPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid datatype ID!\n");
+                PART_ERROR(H5Tcommit2_invalid_type_id);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Tcommit2_invalid_type_id);
 
-    TESTING_2("H5Tcommit2 with an invalid TCPL");
+        PART_BEGIN(H5Tcommit2_invalid_lcpl) {
+            TESTING_2("H5Tcommit2 with an invalid LCPL");
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                H5P_DEFAULT, H5I_INVALID_HID, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
+                        H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid TCPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid LCPL!\n");
+                PART_ERROR(H5Tcommit2_invalid_lcpl);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Tcommit2_invalid_lcpl);
 
-    TESTING_2("H5Tcommit2 with an invalid TAPL");
+        PART_BEGIN(H5Tcommit2_invalid_tcpl) {
+            TESTING_2("H5Tcommit2 with an invalid TCPL");
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                H5P_DEFAULT, H5P_DEFAULT, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
+                        H5P_DEFAULT, H5I_INVALID_HID, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit2 succeeded with an invalid TAPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid TCPL!\n");
+                PART_ERROR(H5Tcommit2_invalid_tcpl);
+            }
+
+            PASSED();
+        } PART_END(H5Tcommit2_invalid_tcpl);
+
+        PART_BEGIN(H5Tcommit2_invalid_tapl) {
+            TESTING_2("H5Tcommit2 with an invalid TAPL");
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
+                        H5P_DEFAULT, H5P_DEFAULT, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit2 succeeded with an invalid TAPL!\n");
+                PART_ERROR(H5Tcommit2_invalid_tapl);
+            }
+
+            PASSED();
+        } PART_END(H5Tcommit2_invalid_tapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Tclose(type_id) < 0)
         TEST_ERROR
@@ -361,7 +383,7 @@ test_create_anonymous_committed_datatype_invalid_params(void)
 
     TESTING_MULTIPART("H5Tcommit_anon with invalid parameters");
 
-    TESTING_2("H5Tcommit_anon with an invalid loc_id");
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -387,57 +409,75 @@ test_create_anonymous_committed_datatype_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit_anon(H5I_INVALID_HID, type_id, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit_anon succeeded with an invalid loc_id!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Tcommit_anon with an invalid datatype ID")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Tcommit_anon_invalid_loc_id) {
+            TESTING_2("H5Tcommit_anon with an invalid loc_id");
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit_anon(group_id, H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit_anon(H5I_INVALID_HID, type_id, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit_anon succeeded with an invalid datatype ID!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit_anon succeeded with an invalid loc_id!\n");
+                PART_ERROR(H5Tcommit_anon_invalid_loc_id);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Tcommit_anon_invalid_loc_id);
 
-    TESTING_2("H5Tcommit_anon with an invalid TCPL")
+        PART_BEGIN(H5Tcommit_anon_invalid_type_id) {
+            TESTING_2("H5Tcommit_anon with an invalid datatype ID")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit_anon(group_id, type_id, H5I_INVALID_HID, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit_anon(group_id, H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit_anon succeeded with an invalid TCPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit_anon succeeded with an invalid datatype ID!\n");
+                PART_ERROR(H5Tcommit_anon_invalid_type_id);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Tcommit_anon_invalid_type_id);
 
-    TESTING_2("H5Tcommit_anon with an invalid TAPL")
+        PART_BEGIN(H5Tcommit_anon_invalid_tcpl) {
+            TESTING_2("H5Tcommit_anon with an invalid TCPL")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit_anon(group_id, type_id, H5P_DEFAULT, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit_anon(group_id, type_id, H5I_INVALID_HID, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Tcommit_anon succeeded with an invalid TAPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit_anon succeeded with an invalid TCPL!\n");
+                PART_ERROR(H5Tcommit_anon_invalid_tcpl);
+            }
+
+            PASSED();
+        } PART_END(H5Tcommit_anon_invalid_tcpl);
+
+        PART_BEGIN(H5Tcommit_anon_invalid_tapl) {
+            TESTING_2("H5Tcommit_anon with an invalid TAPL")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Tcommit_anon(group_id, type_id, H5P_DEFAULT, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Tcommit_anon succeeded with an invalid TAPL!\n");
+                PART_ERROR(H5Tcommit_anon_invalid_tapl);
+            }
+
+            PASSED();
+        } PART_END(H5Tcommit_anon_invalid_tapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Tclose(type_id) < 0)
         TEST_ERROR
@@ -552,7 +592,7 @@ test_open_committed_datatype_invalid_params(void)
 
     TESTING_MULTIPART("H5Topen2 with invalid parameters");
 
-    TESTING_2("H5Topen2 with an invalid location ID");
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -587,53 +627,69 @@ test_open_committed_datatype_invalid_params(void)
     if (H5Tclose(type_id) < 0)
         TEST_ERROR
 
-    H5E_BEGIN_TRY {
-        type_id = H5Topen2(H5I_INVALID_HID, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (type_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened committed datatype with an invalid location ID!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Topen2 with an invalid datatype name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Topen2_invalid_loc_id) {
+            TESTING_2("H5Topen2 with an invalid location ID");
 
-    H5E_BEGIN_TRY {
-        type_id = H5Topen2(group_id, NULL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                type_id = H5Topen2(H5I_INVALID_HID, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (type_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened committed datatype with an invalid datatype name!\n");
-        goto error;
-    }
+            if (type_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened committed datatype with an invalid location ID!\n");
+                PART_ERROR(H5Topen2_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        type_id = H5Topen2(group_id, "", H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Topen2_invalid_loc_id);
 
-    if (type_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened committed datatype with an invalid datatype name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Topen2_invalid_type_name) {
+            TESTING_2("H5Topen2 with an invalid datatype name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                type_id = H5Topen2(group_id, NULL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Topen2 with an invalid TAPL")
+            if (type_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened committed datatype with an invalid datatype name!\n");
+                PART_ERROR(H5Topen2_invalid_type_name);
+            }
 
-    H5E_BEGIN_TRY {
-        type_id = H5Topen2(group_id, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                type_id = H5Topen2(group_id, "", H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (type_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened committed datatype with an invalid TAPL!\n");
-        goto error;
-    }
+            if (type_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened committed datatype with an invalid datatype name!\n");
+                PART_ERROR(H5Topen2_invalid_type_name);
+            }
+
+            PASSED();
+        } PART_END(H5Topen2_invalid_type_name);
+
+        PART_BEGIN(H5Topen2_invalid_tapl) {
+            TESTING_2("H5Topen2 with an invalid TAPL")
+
+            H5E_BEGIN_TRY {
+                type_id = H5Topen2(group_id, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (type_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened committed datatype with an invalid TAPL!\n");
+                PART_ERROR(H5Topen2_invalid_tapl);
+            }
+
+            PASSED();
+        } PART_END(H5Topen2_invalid_tapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR

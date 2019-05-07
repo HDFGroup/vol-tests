@@ -117,77 +117,85 @@ test_create_file_invalid_params(void)
 
     TESTING_MULTIPART("H5Fcreate with invalid parameters");
 
-    TESTING_2("H5Fcreate with invalid file name");
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Fcreate_invalid_name) {
+            TESTING_2("H5Fcreate with invalid file name");
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fcreate(NULL, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fcreate(NULL, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was created with an invalid name!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was created with a NULL name!\n");
+                PART_ERROR(H5Fcreate_invalid_name);
+            }
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fcreate("", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fcreate("", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was created with an invalid name!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was created with an invalid name of ''!\n");
+                PART_ERROR(H5Fcreate_invalid_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Fcreate_invalid_name);
 
-    TESTING_2("H5Fcreate with invalid flags");
+        PART_BEGIN(H5Fcreate_invalid_flags) {
+            TESTING_2("H5Fcreate with invalid flags");
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_RDWR, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_RDWR, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was created with invalid flag H5F_ACC_RDWR!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was created with invalid flag H5F_ACC_RDWR!\n");
+                PART_ERROR(H5Fcreate_invalid_flags);
+            }
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_CREAT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_CREAT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was created with invalid flag H5F_ACC_CREAT!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was created with invalid flag H5F_ACC_CREAT!\n");
+                PART_ERROR(H5Fcreate_invalid_flags);
+            }
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_SWMR_READ, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_SWMR_READ, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was created with invalid flag H5F_ACC_SWMR_READ!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was created with invalid flag H5F_ACC_SWMR_READ!\n");
+                PART_ERROR(H5Fcreate_invalid_flags);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Fcreate_invalid_flags);
 
-    TESTING_2("H5Fcreate with invalid FCPL");
+        PART_BEGIN(H5Fcreate_invalid_fcpl) {
+            TESTING_2("H5Fcreate with invalid FCPL");
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_TRUNC, H5I_INVALID_HID, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fcreate(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5F_ACC_TRUNC, H5I_INVALID_HID, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was created with invalid FCPL!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was created with invalid FCPL!\n");
+                PART_ERROR(H5Fcreate_invalid_fcpl);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Fcreate_invalid_fcpl);
+    } END_MULTIPART;
 
     return 0;
 
@@ -311,53 +319,59 @@ test_open_file_invalid_params(void)
 
     TESTING_MULTIPART("H5Fopen with invalid parameters");
 
-    TESTING_2("H5Fopen with invalid file name");
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Fopen_invalid_name) {
+            TESTING_2("H5Fopen with invalid file name");
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fopen(NULL, H5F_ACC_RDWR, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fopen(NULL, H5F_ACC_RDWR, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was opened with an invalid name!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was opened with a NULL name!\n");
+                PART_ERROR(H5Fopen_invalid_name);
+            }
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fopen("", H5F_ACC_RDWR, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fopen("", H5F_ACC_RDWR, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was opened with an invalid name!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was opened with an invalid name of ''!\n");
+                PART_ERROR(H5Fopen_invalid_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Fopen_invalid_name);
 
-    TESTING_2("H5Fopen with invalid flags");
+        PART_BEGIN(H5Fopen_invalid_flags) {
+            TESTING_2("H5Fopen with invalid flags");
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fopen(vol_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fopen(vol_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was opened with invalid flag H5F_ACC_TRUNC!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was opened with invalid flag H5F_ACC_TRUNC!\n");
+                PART_ERROR(H5Fopen_invalid_flags);
+            }
 
-    H5E_BEGIN_TRY {
-        file_id = H5Fopen(vol_test_filename, H5F_ACC_EXCL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                file_id = H5Fopen(vol_test_filename, H5F_ACC_EXCL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (file_id >= 0) {
-        H5_FAILED();
-        HDprintf("    file was opened with invalid flag H5F_ACC_EXCL!\n");
-        goto error;
-    }
+            if (file_id >= 0) {
+                H5_FAILED();
+                HDprintf("    file was opened with invalid flag H5F_ACC_EXCL!\n");
+                PART_ERROR(H5Fopen_invalid_flags);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Fopen_invalid_flags);
+    } END_MULTIPART;
 
     return 0;
 
