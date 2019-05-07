@@ -266,7 +266,7 @@ test_create_hard_link_invalid_params(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
-    TESTING("hard link creation with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("hard link creation with invalid parameters");
 
     TESTING_2("H5Lcreate_hard with an invalid cur_loc_id")
 
@@ -830,7 +830,7 @@ test_create_soft_link_invalid_params(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
-    TESTING("soft link creation with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("soft link creation with invalid parameters");
 
     TESTING_2("H5Lcreate_soft with an invalid link target")
 
@@ -1202,7 +1202,7 @@ test_create_external_link_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("H5Lcreate_external with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Lcreate_external with invalid parameters");
 
     TESTING_2("H5Lcreate_external with an invalid file name")
 
@@ -1465,7 +1465,7 @@ test_create_user_defined_link_invalid_params(void)
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char    udata[UD_LINK_INVALID_PARAMS_TEST_UDATA_MAX_SIZE];
 
-    TESTING("H5Lcreate_ud with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Lcreate_ud with invalid parameters");
 
     TESTING_2("H5Lcreate_ud with an invalid link location ID")
 
@@ -1634,7 +1634,7 @@ test_delete_link(void)
     hid_t  gcpl_id = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link deletion"); HDputs("");
+    TESTING_MULTIPART("link deletion");
 
     TESTING_2("H5Ldelete")
 
@@ -1940,7 +1940,7 @@ test_delete_link_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("H5Ldelete with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Ldelete with invalid parameters");
 
     TESTING_2("H5Ldelete with an invalid location ID")
 
@@ -2362,7 +2362,7 @@ test_copy_link_invalid_params(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
-    TESTING("H5Lcopy with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Lcopy with invalid parameters");
 
     TESTING_2("H5Lcopy with an invalid source location ID")
 
@@ -2725,7 +2725,7 @@ test_move_link_invalid_params(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
-    TESTING("H5Lmove with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Lmove with invalid parameters");
 
     TESTING_2("H5Lmove with an invalid source location ID")
 
@@ -2948,7 +2948,7 @@ test_get_link_val(void)
     hid_t       gcpl_id = H5I_INVALID_HID;
     char        ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link value retrieval"); HDputs("");
+    TESTING_MULTIPART("link value retrieval");
 
     TESTING_2("H5Lget_val")
 
@@ -3248,7 +3248,7 @@ test_get_link_val_invalid_params(void)
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char        ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link value retrieval with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("link value retrieval with invalid parameters");
 
     TESTING_2("H5Lget_val with an invalid location ID")
 
@@ -3532,7 +3532,7 @@ test_get_link_info(void)
     hid_t      gcpl_id = H5I_INVALID_HID;
     char       ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link info retrieval"); HDputs("");
+    TESTING_MULTIPART("link info retrieval");
 
     TESTING_2("H5Lget_info")
 
@@ -3759,7 +3759,7 @@ test_get_link_info_invalid_params(void)
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char       ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link info retrieval with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("link info retrieval with invalid parameters");
 
     TESTING_2("H5Lget_info with an invalid location ID")
 
@@ -4100,7 +4100,7 @@ test_get_link_name_invalid_params(void)
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char    *link_name_buf = NULL;
 
-    TESTING("link name retrieval with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("link name retrieval with invalid parameters");
 
     TESTING_2("H5Lget_name_by_idx with an invalid location ID")
 
@@ -4283,7 +4283,6 @@ error:
 static int
 test_link_iterate(void)
 {
-    hsize_t dims[LINK_ITER_TEST_DSET_SPACE_RANK];
     hsize_t saved_idx;
     size_t  i;
     htri_t  link_exists;
@@ -4296,7 +4295,7 @@ test_link_iterate(void)
     int     halted;
     char    ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link iteration"); HDputs("");
+    TESTING_MULTIPART("link iteration");
 
     TESTING_2("H5Literate by link name in increasing order")
 
@@ -4344,10 +4343,7 @@ test_link_iterate(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < LINK_ITER_TEST_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((dset_dspace = H5Screate_simple(LINK_ITER_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((dset_dspace = generate_random_dataspace(LINK_ITER_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, LINK_ITER_TEST_HARD_LINK_NAME, dset_dtype, dset_dspace,
@@ -4587,19 +4583,18 @@ error:
 static int
 test_link_iterate_invalid_params(void)
 {
-    hsize_t dims[LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK];
-    herr_t  err_ret = -1;
-    size_t  i;
-    htri_t  link_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   gcpl_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dset_dspace = H5I_INVALID_HID;
-    char    ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    herr_t err_ret = -1;
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  dset_dspace = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link iteration with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("link iteration with invalid parameters");
 
     TESTING_2("H5Literate with an invalid group ID")
 
@@ -4647,10 +4642,7 @@ test_link_iterate_invalid_params(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((dset_dspace = H5Screate_simple(LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((dset_dspace = generate_random_dataspace(LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, LINK_ITER_INVALID_PARAMS_TEST_HARD_LINK_NAME, dset_dtype, dset_dspace,
@@ -4920,7 +4912,7 @@ test_link_iterate_0_links(void)
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t gcpl_id = H5I_INVALID_HID;
 
-    TESTING("link iteration on group with 0 links"); HDputs("");
+    TESTING_MULTIPART("link iteration on group with 0 links");
 
     TESTING_2("H5Literate on group with 0 links")
 
@@ -5045,18 +5037,17 @@ error:
 static int
 test_link_visit(void)
 {
-    hsize_t dims[LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK];
-    size_t  i;
-    htri_t  link_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
-    char    ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link visiting without cycles"); HDputs("");
+    TESTING_MULTIPART("link visiting without cycles");
 
     TESTING_2("H5Lvisit by link name in increasing order")
 
@@ -5098,10 +5089,7 @@ test_link_visit(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(subgroup1, LINK_VISIT_TEST_NO_CYCLE_DSET_NAME, dset_dtype, fspace_id,
@@ -5341,7 +5329,7 @@ test_link_visit_cycles(void)
     hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link visiting with cycles"); HDputs("");
+    TESTING_MULTIPART("link visiting with cycles");
 
     TESTING_2("H5Lvisit by link name in increasing order")
 
@@ -5579,19 +5567,17 @@ error:
 static int
 test_link_visit_invalid_params(void)
 {
-    hsize_t dims[LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK];
-    herr_t  err_ret = -1;
-    size_t  i;
-    htri_t  link_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
-    char    ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    herr_t err_ret = -1;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("link visiting with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("link visiting with invalid parameters");
 
     TESTING_2("H5Lvisit with an invalid group ID")
 
@@ -5630,10 +5616,7 @@ test_link_visit_invalid_params(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(subgroup1, LINK_VISIT_INVALID_PARAMS_TEST_DSET_NAME, dset_dtype, fspace_id,
@@ -5939,7 +5922,7 @@ test_link_visit_0_links(void)
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
 
-    TESTING("link visiting on group with subgroups containing 0 links"); HDputs("");
+    TESTING_MULTIPART("link visiting on group with subgroups containing 0 links");
 
     TESTING_2("H5Lvisit by link name in increasing order")
 

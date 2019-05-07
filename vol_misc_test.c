@@ -34,14 +34,12 @@ static int (*misc_tests[])(void) = {
 static int
 test_open_link_without_leading_slash(void)
 {
-    hsize_t dims[OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
 
     TESTING("opening a link without a leading slash")
 
@@ -57,10 +55,7 @@ test_open_link_without_leading_slash(void)
         goto error;
     }
 
-    for (i = 0; i < OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -133,15 +128,13 @@ error:
 static int
 test_object_creation_by_absolute_path(void)
 {
-    hsize_t dims[OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK];
-    htri_t  link_exists;
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID, sub_group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
-    hid_t   dtype_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID, sub_group_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    hid_t  dtype_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
 
     TESTING("object creation by absolute path")
 
@@ -173,10 +166,7 @@ test_object_creation_by_absolute_path(void)
     }
 
     /* Next try to create a dataset nested at the end of this group chain by using an absolute pathname */
-    for (i = 0; i < OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK, dims, NULL)) <0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -291,14 +281,12 @@ error:
 static int
 test_absolute_vs_relative_path(void)
 {
-    hsize_t dims[ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK];
-    htri_t  link_exists;
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id1 = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID, dset_id3 = H5I_INVALID_HID, dset_id4 = H5I_INVALID_HID, dset_id5 = H5I_INVALID_HID, dset_id6 = H5I_INVALID_HID;
-    hid_t   dset_dtype1 = H5I_INVALID_HID, dset_dtype2 = H5I_INVALID_HID, dset_dtype3 = H5I_INVALID_HID, dset_dtype4 = H5I_INVALID_HID, dset_dtype5 = H5I_INVALID_HID, dset_dtype6 = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  dset_id1 = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID, dset_id3 = H5I_INVALID_HID, dset_id4 = H5I_INVALID_HID, dset_id5 = H5I_INVALID_HID, dset_id6 = H5I_INVALID_HID;
+    hid_t  dset_dtype1 = H5I_INVALID_HID, dset_dtype2 = H5I_INVALID_HID, dset_dtype3 = H5I_INVALID_HID, dset_dtype4 = H5I_INVALID_HID, dset_dtype5 = H5I_INVALID_HID, dset_dtype6 = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
 
     TESTING("absolute vs. relative pathnames")
 
@@ -321,10 +309,7 @@ test_absolute_vs_relative_path(void)
         goto error;
     }
 
-    for (i = 0; i < ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype1 = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -661,17 +646,16 @@ error:
 static int
 test_symbols_in_compound_field_name(void)
 {
-    hsize_t  dims[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK];
-    size_t   i;
-    size_t   total_type_size;
-    size_t   next_offset;
-    hid_t    file_id = H5I_INVALID_HID;
-    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t    compound_type = H5I_INVALID_HID;
-    hid_t    dset_id = H5I_INVALID_HID;
-    hid_t    fspace_id = H5I_INVALID_HID;
-    hid_t    type_pool[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES];
-    char     member_names[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES][256];
+    size_t i;
+    size_t total_type_size;
+    size_t next_offset;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  compound_type = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    hid_t  type_pool[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES];
+    char   member_names[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES][256];
 
     TESTING("usage of '{', '}' and '\\\"' symbols in compound type\'s field name")
 
@@ -731,10 +715,7 @@ test_symbols_in_compound_field_name(void)
     if (H5Tpack(compound_type) < 0)
         TEST_ERROR
 
-    for (i = 0; i < COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_NAME, compound_type,

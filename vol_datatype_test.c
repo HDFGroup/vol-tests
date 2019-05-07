@@ -127,7 +127,7 @@ test_create_committed_datatype_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
-    TESTING("H5Tcommit2 with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Tcommit2 with invalid parameters");
 
     TESTING_2("H5Tcommit2 with an invalid loc_id")
 
@@ -359,7 +359,7 @@ test_create_anonymous_committed_datatype_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
-    TESTING("H5Tcommit_anon with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Tcommit_anon with invalid parameters");
 
     TESTING_2("H5Tcommit_anon with an invalid loc_id");
 
@@ -550,7 +550,7 @@ test_open_committed_datatype_invalid_params(void)
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t type_id = H5I_INVALID_HID;
 
-    TESTING("H5Topen2 with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Topen2 with invalid parameters");
 
     TESTING_2("H5Topen2 with an invalid location ID");
 
@@ -857,13 +857,11 @@ error:
 static int
 test_create_dataset_with_committed_type(void)
 {
-    hsize_t dims[DATASET_CREATE_WITH_DATATYPE_TEST_DATASET_DIMS];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   type_id = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t type_id = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
     TESTING("dataset creation with a committed datatype")
 
@@ -932,10 +930,7 @@ test_create_dataset_with_committed_type(void)
         goto error;
     }
 
-    for (i = 0; i < DATATYPE_CREATE_TEST_DATASET_DIMS; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATATYPE_CREATE_TEST_DATASET_DIMS, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATATYPE_CREATE_TEST_DATASET_DIMS, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_CREATE_WITH_DATATYPE_TEST_DSET_NAME, type_id, fspace_id,
@@ -991,14 +986,12 @@ error:
 static int
 test_create_attribute_with_committed_type(void)
 {
-    hsize_t dims[ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   type_id = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  type_id = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("attribute creation with a committed datatype")
 
@@ -1042,10 +1035,7 @@ test_create_attribute_with_committed_type(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME, type_id,

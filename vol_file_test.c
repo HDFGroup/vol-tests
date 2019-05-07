@@ -115,7 +115,7 @@ test_create_file_invalid_params(void)
 {
     hid_t file_id = H5I_INVALID_HID;
 
-    TESTING("H5Fcreate with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Fcreate with invalid parameters");
 
     TESTING_2("H5Fcreate with invalid file name");
 
@@ -309,7 +309,7 @@ test_open_file_invalid_params(void)
 {
     hid_t file_id = H5I_INVALID_HID;
 
-    TESTING("H5Fopen with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Fopen with invalid parameters");
 
     TESTING_2("H5Fopen with invalid file name");
 
@@ -690,7 +690,7 @@ test_file_is_accessible(void)
         is_accessible = H5Fis_accessible(fake_filename, H5P_DEFAULT);
     } H5E_END_TRY;
 
-    if (is_accessible >= 0) {
+    if (is_accessible > 0) {
         H5_FAILED();
         HDprintf("    non-existent file '%s' was accessible with VOL connector: is_accessible=%d!\n", fake_filename, is_accessible);
         goto error;

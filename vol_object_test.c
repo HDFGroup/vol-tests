@@ -103,17 +103,15 @@ static int (*object_tests[])(void) = {
 static int
 test_open_object(void)
 {
-    hsize_t dims[OBJECT_OPEN_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   group_id2 = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   type_id = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t group_id2 = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t type_id = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING("object opening"); HDputs("");
+    TESTING_MULTIPART("object opening");
 
     TESTING_2("H5Oopen on a group")
 
@@ -136,10 +134,7 @@ test_open_object(void)
         goto error;
     }
 
-    for (i = 0; i < OBJECT_OPEN_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(OBJECT_OPEN_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_OPEN_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -330,7 +325,7 @@ test_open_object_invalid_params(void)
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t group_id2 = H5I_INVALID_HID;
 
-    TESTING("object opening with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("object opening with invalid parameters");
 
     TESTING_2("H5Oopen with an invalid location ID")
 
@@ -587,18 +582,16 @@ error:
 static int
 test_object_exists(void)
 {
-    hsize_t dims[OBJECT_EXISTS_TEST_DSET_SPACE_RANK];
-    htri_t  object_exists;
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   group_id2 = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dtype_id = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
+    htri_t object_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  group_id2 = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dtype_id = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
 
-    TESTING("object existence"); HDputs("");
+    TESTING_MULTIPART("object existence");
 
     TESTING_2("H5Oexists_by_name on a group")
 
@@ -621,10 +614,7 @@ test_object_exists(void)
         goto error;
     }
 
-    for (i = 0; i < OBJECT_EXISTS_TEST_DSET_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(OBJECT_EXISTS_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_EXISTS_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -753,7 +743,7 @@ test_object_exists_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  group_id2 = H5I_INVALID_HID;
 
-    TESTING("object existence with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("object existence with invalid parameters");
 
     TESTING_2("H5Oexists_by_name with an invalid location ID")
 
@@ -945,18 +935,16 @@ test_incr_decr_object_refcount_invalid_params(void)
 static int
 test_copy_object(void)
 {
-    hsize_t dims[OBJECT_COPY_TEST_SPACE_RANK];
-    htri_t  object_link_exists;
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   group_id2 = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dtype_id = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    htri_t object_link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  group_id2 = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  dtype_id = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("object copying"); HDputs("");
+    TESTING_MULTIPART("object copying");
 
     TESTING_2("H5Ocopy on a group")
 
@@ -979,10 +967,7 @@ test_copy_object(void)
         goto error;
     }
 
-    for (i = 0; i < OBJECT_COPY_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(OBJECT_COPY_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OBJECT_COPY_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -1128,7 +1113,7 @@ test_copy_object_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  group_id2 = H5I_INVALID_HID;
 
-    TESTING("object copying with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("object copying with invalid parameters");
 
     TESTING_2("H5Ocopy with an invalid source location ID")
 
@@ -1323,17 +1308,16 @@ test_object_comments_invalid_params(void)
 static int
 test_object_visit(void)
 {
-    hsize_t dims[OBJECT_VISIT_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   group_id2 = H5I_INVALID_HID;
-    hid_t   type_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    size_t i;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  group_id2 = H5I_INVALID_HID;
+    hid_t  type_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
 
-    TESTING("object visiting"); HDputs("");
+    TESTING_MULTIPART("object visiting");
 
     TESTING_2("H5Ovisit by object name in increasing order")
 
@@ -1356,10 +1340,7 @@ test_object_visit(void)
         goto error;
     }
 
-    for (i = 0; i < OBJECT_VISIT_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(OBJECT_VISIT_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_VISIT_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -1529,7 +1510,7 @@ test_object_visit_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  group_id2 = H5I_INVALID_HID;
 
-    TESTING("object visiting with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("object visiting with invalid parameters");
 
     TESTING_2("H5Ovisit with an invalid object ID")
 
@@ -1747,17 +1728,15 @@ error:
 static int
 test_close_object(void)
 {
-    hsize_t dims[OBJECT_CLOSE_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   group_id2 = H5I_INVALID_HID;
-    hid_t   dtype_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t group_id2 = H5I_INVALID_HID;
+    hid_t dtype_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING("H5Oclose"); HDputs("");
+    TESTING_MULTIPART("H5Oclose");
 
     TESTING_2("H5Oclose on a group")
 
@@ -1780,10 +1759,7 @@ test_close_object(void)
         goto error;
     }
 
-    for (i = 0; i < OBJECT_CLOSE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(OBJECT_CLOSE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_CLOSE_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2047,7 +2023,6 @@ test_get_ref_type(void)
 {
     vol_test_obj_ref_t ref_array[3];
     H5O_type_t         obj_type;
-    hsize_t            dims[OBJ_REF_GET_TYPE_TEST_SPACE_RANK];
     size_t             i;
     hid_t              file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
     hid_t              container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -2079,10 +2054,7 @@ test_get_ref_type(void)
         goto error;
     }
 
-    for (i = 0; i < OBJ_REF_GET_TYPE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % 8 + 1);
-
-    if ((space_id = H5Screate_simple(OBJ_REF_GET_TYPE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OBJ_REF_GET_TYPE_TEST_SPACE_RANK, NULL)) < 0)
         TEST_ERROR
 
     if ((ref_dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2245,7 +2217,6 @@ static int
 test_write_dataset_w_obj_refs(void)
 {
     vol_test_obj_ref_t *ref_array = NULL;
-    hsize_t             dims[OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK];
     size_t              i, ref_array_size = 0;
     hid_t               file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
     hid_t               container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -2277,10 +2248,7 @@ test_write_dataset_w_obj_refs(void)
         goto error;
     }
 
-    for (i = 0; i < OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % 8 + 1);
-
-    if ((space_id = H5Screate_simple(OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK, NULL)) < 0)
         TEST_ERROR
 
     if ((ref_dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2422,7 +2390,6 @@ static int
 test_read_dataset_w_obj_refs(void)
 {
     vol_test_obj_ref_t *ref_array = NULL;
-    hsize_t             dims[OBJ_REF_DATASET_READ_TEST_SPACE_RANK];
     size_t              i, ref_array_size = 0;
     hid_t               file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
     hid_t               container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -2454,10 +2421,7 @@ test_read_dataset_w_obj_refs(void)
         goto error;
     }
 
-    for (i = 0; i < OBJ_REF_DATASET_READ_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % 8 + 1);
-
-    if ((space_id = H5Screate_simple(OBJ_REF_DATASET_READ_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OBJ_REF_DATASET_READ_TEST_SPACE_RANK, NULL)) < 0)
         TEST_ERROR
 
     if ((ref_dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2651,7 +2615,6 @@ static int
 test_write_dataset_w_obj_refs_empty_data(void)
 {
     vol_test_obj_ref_t *ref_array = NULL;
-    hsize_t             dims[OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK];
     size_t              i, ref_array_size = 0;
     hid_t               file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
     hid_t               container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -2681,10 +2644,7 @@ test_write_dataset_w_obj_refs_empty_data(void)
         goto error;
     }
 
-    for (i = 0; i < OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % 8 + 1);
-
-    if ((space_id = H5Screate_simple(OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, OBJ_REF_DATASET_EMPTY_WRITE_TEST_DSET_NAME, H5T_STD_REF_OBJ,

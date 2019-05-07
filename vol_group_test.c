@@ -332,7 +332,7 @@ test_create_group_invalid_params(void)
     hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
-    TESTING("H5Gcreate with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Gcreate with invalid parameters");
 
     TESTING_2("H5Gcreate with an invalid loc_id")
 
@@ -495,7 +495,7 @@ test_create_anonymous_group_invalid_params(void)
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, new_group_id = H5I_INVALID_HID;
 
-    TESTING("H5Gcreate_anon with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Gcreate_anon with invalid parameters");
 
     TESTING_2("H5Gcreate_anon with an invalid loc_id")
 
@@ -622,7 +622,7 @@ test_open_group_invalid_params(void)
     hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
-    TESTING("H5Gopen with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Gopen with invalid parameters");
 
     TESTING_2("H5Gopen with an invalid loc_id")
 
@@ -937,7 +937,7 @@ test_get_group_info(void)
     char        group_name[NAME_BUF_SIZE];
     unsigned    i;
 
-    TESTING("retrieval of group info"); HDputs("");
+    TESTING_MULTIPART("retrieval of group info");
 
     TESTING_2("retrieval of group info with H5Gget_info")
 
@@ -1044,7 +1044,7 @@ test_get_group_info_invalid_params(void)
     herr_t     err_ret = -1;
     hid_t      file_id = H5I_INVALID_HID;
 
-    TESTING("H5Gget_info with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Gget_info with invalid parameters");
 
     TESTING_2("H5Gget_info with an invalid loc_id")
 
@@ -1080,7 +1080,7 @@ test_get_group_info_invalid_params(void)
 
     PASSED();
 
-    TESTING("H5Gget_info_by_name with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Gget_info_by_name with invalid parameters");
 
     TESTING_2("H5Gget_info_by_name with an invalid loc_id")
 
@@ -1148,7 +1148,7 @@ test_get_group_info_invalid_params(void)
 
     PASSED();
 
-    TESTING("H5Gget_info_by_idx with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Gget_info_by_idx with invalid parameters");
 
     TESTING_2("H5Gget_info_by_idx with an invalid loc_id")
 

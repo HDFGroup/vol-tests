@@ -726,7 +726,7 @@ error:
  * test the VOL connector's support for dataspaces.
  */
 hid_t
-generate_random_dataspace(int rank, const hsize_t *max_dims)
+generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out)
 {
     hsize_t dataspace_dims[H5S_MAX_RANK];
     size_t  i;
@@ -735,14 +735,23 @@ generate_random_dataspace(int rank, const hsize_t *max_dims)
     if (rank < 0)
         TEST_ERROR
 
-    for (i = 0; i < (size_t) rank; i++)
+    /*
+     * XXX: if max_dims is specified, make sure that the dimensions generated
+     * are not larger than this.
+     */
+    for (i = 0; i < (size_t) rank; i++) {
         dataspace_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
+        if (dims_out)
+            dims_out[i] = dataspace_dims[i];
+    }
 
     if ((dataspace_id = H5Screate_simple(rank, dataspace_dims, max_dims)) < 0)
         TEST_ERROR
 
-error:
     return dataspace_id;
+
+error:
+    return H5I_INVALID_HID;
 }
 
 static int

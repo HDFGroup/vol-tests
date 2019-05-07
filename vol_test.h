@@ -105,6 +105,21 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
 #define FAIL_PUTS_ERROR(s) {H5_FAILED(); AT(); puts(s); goto error;}
 
 /*
+ * Macros used for multipart tests
+ */
+#define TESTING_MULTIPART(WHAT)  {printf("Testing %-62s",WHAT); HDputs(""); fflush(stdout);}
+#define MULTIPART_FAILED  {H5_FAILED();nerrors++;}
+
+#define BEGIN_MULTIPART \
+{                       \
+    int nerrors = 0;
+
+#define END_MULTIPART \
+    if (nerrors > 0)  \
+        goto error;   \
+}
+
+/*
  * Alarm definitions to wait up (terminate) a test that runs too long.
  */
 #define H5_ALARM_SEC  1200  /* default is 20 minutes */
@@ -148,6 +163,6 @@ extern char vol_test_filename[];
 #define GROUP_CREATION_IS_SUPPORTED
 
 hid_t generate_random_datatype(H5T_class_t parent_class);
-hid_t generate_random_dataspace(int rank, const hsize_t *max_dims);
+hid_t generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out);
 
 #endif

@@ -146,12 +146,10 @@ static int (*dataset_tests[])(void) = {
 static int
 test_create_dataset_under_root(void)
 {
-    hsize_t dims[DATASET_CREATE_UNDER_ROOT_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
     TESTING("dataset creation under root group")
 
@@ -161,10 +159,7 @@ test_create_dataset_under_root(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_CREATE_UNDER_ROOT_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_CREATE_UNDER_ROOT_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_CREATE_UNDER_ROOT_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -209,13 +204,11 @@ error:
 static int
 test_create_dataset_under_existing_group(void)
 {
-    hsize_t dims[DATASET_CREATE_UNDER_EXISTING_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
     TESTING("dataset creation under an existing group")
 
@@ -237,10 +230,7 @@ test_create_dataset_under_existing_group(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_CREATE_UNDER_EXISTING_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_CREATE_UNDER_EXISTING_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_CREATE_UNDER_EXISTING_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -290,15 +280,13 @@ error:
 static int
 test_create_dataset_invalid_params(void)
 {
-    hsize_t dims[DATASET_CREATE_INVALID_PARAMS_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING("H5Dcreate with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Dcreate with invalid parameters");
 
     TESTING_2("H5Dcreate with an invalid loc_id")
 
@@ -320,10 +308,7 @@ test_create_dataset_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_CREATE_INVALID_PARAMS_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_CREATE_INVALID_PARAMS_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_CREATE_INVALID_PARAMS_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -473,13 +458,11 @@ error:
 static int
 test_create_anonymous_dataset(void)
 {
-    hsize_t dims[DATASET_CREATE_ANONYMOUS_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
     TESTING("anonymous dataset creation")
 
@@ -501,10 +484,7 @@ test_create_anonymous_dataset(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_CREATE_ANONYMOUS_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_CREATE_ANONYMOUS_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_CREATE_ANONYMOUS_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -560,15 +540,13 @@ error:
 static int
 test_create_anonymous_dataset_invalid_params(void)
 {
-    hsize_t dims[DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING("anonymous dataset creation with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("anonymous dataset creation with invalid parameters");
 
     TESTING_2("H5Dcreate_anon with an invalid loc_id")
 
@@ -590,10 +568,7 @@ test_create_anonymous_dataset_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -870,12 +845,11 @@ error:
 static int
 test_create_dataset_random_shapes(void)
 {
-    hsize_t *dims = NULL;
-    size_t   i;
-    hid_t    file_id = H5I_INVALID_HID;
-    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t    dset_id = H5I_INVALID_HID, space_id = H5I_INVALID_HID;
-    hid_t    dset_dtype = H5I_INVALID_HID;
+    size_t i;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID, space_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
 
     TESTING("dataset creation with random dimension sizes")
 
@@ -901,20 +875,10 @@ test_create_dataset_random_shapes(void)
         TEST_ERROR
 
     for (i = 0; i < DATASET_SHAPE_TEST_NUM_ITERATIONS; i++) {
-        size_t j;
-        char   name[100];
-        int    ndims = rand() % DATASET_SHAPE_TEST_MAX_DIMS + 1;
+        char name[100];
+        int  ndims = rand() % DATASET_SHAPE_TEST_MAX_DIMS + 1;
 
-        if (NULL == (dims = (hsize_t *) HDmalloc((size_t) ndims * sizeof(*dims)))) {
-            H5_FAILED();
-            HDprintf("    couldn't allocate space for dataspace dimensions\n");
-            goto error;
-        }
-
-        for (j = 0; j < (size_t) ndims; j++)
-            dims[j] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-        if ((space_id = H5Screate_simple(ndims, dims, NULL)) < 0) {
+        if ((space_id = generate_random_dataspace(ndims, NULL, NULL)) < 0) {
             H5_FAILED();
             HDprintf("    couldn't create dataspace\n");
             goto error;
@@ -926,11 +890,6 @@ test_create_dataset_random_shapes(void)
             H5_FAILED();
             HDprintf("    couldn't create dataset\n");
             goto error;
-        }
-
-        if (dims) {
-            HDfree(dims);
-            dims = NULL;
         }
 
         if (H5Sclose(space_id) < 0)
@@ -954,7 +913,6 @@ test_create_dataset_random_shapes(void)
 
 error:
     H5E_BEGIN_TRY {
-        if (dims) HDfree(dims);
         H5Sclose(space_id);
         H5Tclose(dset_dtype);
         H5Dclose(dset_id);
@@ -1008,14 +966,9 @@ test_create_dataset_predefined_types(void)
     }
 
     for (i = 0; i < ARRAY_LENGTH(predefined_type_test_table); i++) {
-        hsize_t dims[DATASET_PREDEFINED_TYPE_TEST_SPACE_RANK];
-        size_t  j;
-        char    name[100];
+        char name[100];
 
-        for (j = 0; j < DATASET_PREDEFINED_TYPE_TEST_SPACE_RANK; j++)
-            dims[j] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-        if ((fspace_id = H5Screate_simple(DATASET_PREDEFINED_TYPE_TEST_SPACE_RANK, dims, NULL)) < 0)
+        if ((fspace_id = generate_random_dataspace(DATASET_PREDEFINED_TYPE_TEST_SPACE_RANK, NULL, NULL)) < 0)
             TEST_ERROR
 
         HDsprintf(name, "%s%zu", DATASET_PREDEFINED_TYPE_TEST_BASE_NAME, i);
@@ -1071,13 +1024,11 @@ error:
 static int
 test_create_dataset_string_types(void)
 {
-    hsize_t dims[DATASET_STRING_TYPE_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id_fixed = H5I_INVALID_HID, dset_id_variable = H5I_INVALID_HID;
-    hid_t   type_id_fixed = H5I_INVALID_HID, type_id_variable = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id_fixed = H5I_INVALID_HID, dset_id_variable = H5I_INVALID_HID;
+    hid_t type_id_fixed = H5I_INVALID_HID, type_id_variable = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
     TESTING("dataset creation with string types")
 
@@ -1111,10 +1062,7 @@ test_create_dataset_string_types(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_STRING_TYPE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_STRING_TYPE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_STRING_TYPE_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id_fixed = H5Dcreate2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME1, type_id_fixed, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -1189,15 +1137,14 @@ error:
 static int
 test_create_dataset_compound_types(void)
 {
-    hsize_t  dims[DATASET_COMPOUND_TYPE_TEST_DSET_RANK];
-    size_t   i, j;
-    hid_t    file_id = H5I_INVALID_HID;
-    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t    compound_type = H5I_INVALID_HID;
-    hid_t    dset_id = H5I_INVALID_HID;
-    hid_t    fspace_id = H5I_INVALID_HID;
-    hid_t    type_pool[DATASET_COMPOUND_TYPE_TEST_MAX_SUBTYPES];
-    int      num_passes;
+    size_t i, j;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  compound_type = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    hid_t  type_pool[DATASET_COMPOUND_TYPE_TEST_MAX_SUBTYPES];
+    int    num_passes;
 
     TESTING("dataset creation with compound datatypes")
 
@@ -1227,10 +1174,7 @@ test_create_dataset_compound_types(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_COMPOUND_TYPE_TEST_DSET_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_COMPOUND_TYPE_TEST_DSET_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_COMPOUND_TYPE_TEST_DSET_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     num_passes = (rand() % DATASET_COMPOUND_TYPE_TEST_MAX_PASSES) + 1;
@@ -1351,7 +1295,6 @@ error:
 static int
 test_create_dataset_enum_types(void)
 {
-    hsize_t     dims[DATASET_ENUM_TYPE_TEST_SPACE_RANK];
     size_t      i;
     hid_t       file_id = H5I_INVALID_HID;
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -1409,10 +1352,7 @@ test_create_dataset_enum_types(void)
             TEST_ERROR
     }
 
-    for (i = 0; i < DATASET_ENUM_TYPE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_ENUM_TYPE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_ENUM_TYPE_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id_native = H5Dcreate2(group_id, DATASET_ENUM_TYPE_TEST_DSET_NAME1, enum_native, fspace_id,
@@ -1489,7 +1429,6 @@ error:
 static int
 test_create_dataset_array_types(void)
 {
-    hsize_t dset_dims[DATASET_ARRAY_TYPE_TEST_SPACE_RANK];
     hsize_t array_dims1[DATASET_ARRAY_TYPE_TEST_RANK1];
     hsize_t array_dims2[DATASET_ARRAY_TYPE_TEST_RANK2];
     hsize_t array_dims3[DATASET_ARRAY_TYPE_TEST_RANK3];
@@ -1566,10 +1505,7 @@ test_create_dataset_array_types(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_ARRAY_TYPE_TEST_SPACE_RANK; i++)
-        dset_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_ARRAY_TYPE_TEST_SPACE_RANK, dset_dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_ARRAY_TYPE_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id1 = H5Dcreate2(group_id, DATASET_ARRAY_TYPE_TEST_DSET_NAME1, array_type_id1, fspace_id,
@@ -1707,10 +1643,7 @@ test_create_dataset_creation_properties(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_CREATION_PROPERTIES_TEST_SHAPE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_CREATION_PROPERTIES_TEST_SHAPE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_CREATION_PROPERTIES_TEST_SHAPE_RANK, NULL, dims)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2156,15 +2089,13 @@ test_open_dataset(void)
 static int
 test_open_dataset_invalid_params(void)
 {
-    hsize_t dims[DATASET_OPEN_INVALID_PARAMS_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING("H5Dopen with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Dopen with invalid parameters");
 
     TESTING_2("H5Dopen with an invalid loc_id")
 
@@ -2186,10 +2117,7 @@ test_open_dataset_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_OPEN_INVALID_PARAMS_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((fspace_id = H5Screate_simple(DATASET_OPEN_INVALID_PARAMS_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_OPEN_INVALID_PARAMS_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2343,7 +2271,7 @@ test_get_dataset_space_and_type(void)
     hid_t   tmp_type_id = H5I_INVALID_HID;
     hid_t   tmp_space_id = H5I_INVALID_HID;
 
-    TESTING("retrieval of a dataset's dataspace and datatype"); HDputs("");
+    TESTING_MULTIPART("retrieval of a dataset's dataspace and datatype");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2363,10 +2291,7 @@ test_get_dataset_space_and_type(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK; i++)
-        dset_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((dset_space_id = H5Screate_simple(DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK, dset_dims, NULL)) < 0)
+    if ((dset_space_id = generate_random_dataspace(DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK, NULL, dset_dims)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2539,18 +2464,16 @@ error:
 static int
 test_get_dataset_space_and_type_invalid_params(void)
 {
-    hsize_t dset_dims[DATASET_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dset_space_id = H5I_INVALID_HID;
-    hid_t   tmp_type_id = H5I_INVALID_HID;
-    hid_t   tmp_space_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t dset_space_id = H5I_INVALID_HID;
+    hid_t tmp_type_id = H5I_INVALID_HID;
+    hid_t tmp_space_id = H5I_INVALID_HID;
 
-    TESTING("H5Dget_type/H5Dget_space with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Dget_type/H5Dget_space with invalid parameters");
 
     TESTING_2("H5Dget_type with an invalid attr_id")
 
@@ -2572,10 +2495,7 @@ test_get_dataset_space_and_type_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dset_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((dset_space_id = H5Screate_simple(DATASET_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK, dset_dims, NULL)) < 0)
+    if ((dset_space_id = generate_random_dataspace(DATASET_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2694,7 +2614,7 @@ test_dataset_property_lists(void)
     hid_t       space_id = H5I_INVALID_HID;
     char       *tmp_prefix = NULL;
 
-    TESTING("dataset property list operations"); HDputs("");
+    TESTING_MULTIPART("dataset property list operations");
 
     TESTING_2("H5Dget_create_plist")
 
@@ -2716,13 +2636,11 @@ test_dataset_property_lists(void)
         goto error;
     }
 
-    for (i = 0; i < DATASET_PROPERTY_LIST_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
+    if ((space_id = generate_random_dataspace(DATASET_PROPERTY_LIST_TEST_SPACE_RANK, NULL, dims)) < 0)
+        TEST_ERROR
+
     for (i = 0; i < DATASET_PROPERTY_LIST_TEST_SPACE_RANK; i++)
         chunk_dims[i] = (hsize_t) (rand() % (int) dims[i] + 1);
-
-    if ((space_id = H5Screate_simple(DATASET_PROPERTY_LIST_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
 
     if ((dset_dtype1 = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
@@ -3806,7 +3724,7 @@ test_read_dataset_invalid_params(void)
     hid_t    fspace_id = H5I_INVALID_HID;
     void    *read_buf = NULL;
 
-    TESTING("H5Dread with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Dread with invalid parameters");
 
     TESTING_2("H5Dread with an invalid dataset ID")
 
@@ -4571,7 +4489,7 @@ test_write_dataset_data_verification(void)
     void    *write_buf = NULL;
     void    *read_buf = NULL;
 
-    TESTING("verification of dataset data using H5Dwrite then H5Dread"); HDputs("");
+    TESTING_MULTIPART("verification of dataset data using H5Dwrite then H5Dread");
 
     TESTING_2("H5Dwrite using H5S_ALL then H5Dread")
 
@@ -4943,7 +4861,7 @@ test_write_dataset_invalid_params(void)
     hid_t     fspace_id = H5I_INVALID_HID;
     void     *data = NULL;
 
-    TESTING("H5Dwrite with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Dwrite with invalid parameters");
 
     TESTING_2("H5Dwrite with an invalid dataset ID")
 
@@ -5183,12 +5101,11 @@ test_dataset_set_extent_chunked_unlimited(void)
     }
 
     for (i = 0; i < DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_SPACE_RANK; i++) {
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
         max_dims[i] = H5S_UNLIMITED;
         chunk_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
     }
 
-    if ((fspace_id = H5Screate_simple(DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_SPACE_RANK, dims, max_dims)) < 0)
+    if ((fspace_id = generate_random_dataspace(DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_SPACE_RANK, max_dims, dims)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -5646,7 +5563,7 @@ test_dataset_set_extent_invalid_params(void)
     hid_t   dcpl_id = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID;
 
-    TESTING("H5Dset_extent with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Dset_extent with invalid parameters");
 
     TESTING_2("H5Dset_extent with an invalid dataset ID")
 
@@ -5668,8 +5585,10 @@ test_dataset_set_extent_invalid_params(void)
         goto error;
     }
 
+    if ((fspace_id = generate_random_dataspace(DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK, NULL, dims)) < 0)
+        TEST_ERROR
+
     for (i = 0; i < DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK; i++) {
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
         do {
             new_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
         } while (new_dims[i] > dims[i]);
@@ -5677,9 +5596,6 @@ test_dataset_set_extent_invalid_params(void)
             chunk_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
         } while (chunk_dims[i] > dims[i]);
     }
-
-    if ((fspace_id = H5Screate_simple(DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR

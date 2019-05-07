@@ -105,17 +105,15 @@ static int (*attribute_tests[])(void) = {
 static int
 test_create_attribute_on_root(void)
 {
-    hsize_t dims[ATTRIBUTE_CREATE_ON_ROOT_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
-    hid_t   attr_dtype1 = H5I_INVALID_HID, attr_dtype2 = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype1 = H5I_INVALID_HID, attr_dtype2 = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("attribute creation on the root group"); HDputs("");
+    TESTING_MULTIPART("attribute creation on the root group");
 
-    TESTING_2("H5Acreate on the root group")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -123,16 +121,17 @@ test_create_attribute_on_root(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_CREATE_ON_ROOT_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_CREATE_ON_ROOT_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_ROOT_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
     if ((attr_dtype2 = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
+
+    PASSED();
+
+    TESTING_2("H5Acreate on the root group")
 
     if ((attr_id = H5Acreate2(file_id, ATTRIBUTE_CREATE_ON_ROOT_ATTR_NAME, attr_dtype1, space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -213,21 +212,18 @@ error:
 static int
 test_create_attribute_on_dataset(void)
 {
-    hsize_t dset_dims[ATTRIBUTE_CREATE_ON_DATASET_DSET_SPACE_RANK];
-    hsize_t attr_dims[ATTRIBUTE_CREATE_ON_DATASET_ATTR_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
-    hid_t   attr_dtype1 = H5I_INVALID_HID, attr_dtype2 = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dset_space_id = H5I_INVALID_HID;
-    hid_t   attr_space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype1 = H5I_INVALID_HID, attr_dtype2 = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  dset_space_id = H5I_INVALID_HID;
+    hid_t  attr_space_id = H5I_INVALID_HID;
 
-    TESTING("attribute creation on a dataset"); HDputs("");
+    TESTING_MULTIPART("attribute creation on a dataset");
 
     TESTING_2("H5Acreate on a dataset")
 
@@ -249,14 +245,9 @@ test_create_attribute_on_dataset(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_CREATE_ON_DATASET_DSET_SPACE_RANK; i++)
-        dset_dims[i] = (hsize_t) rand() % MAX_DIM_SIZE + 1;
-    for (i = 0; i < ATTRIBUTE_CREATE_ON_DATASET_ATTR_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) rand() % MAX_DIM_SIZE + 1;
-
-    if ((dset_space_id = H5Screate_simple(ATTRIBUTE_CREATE_ON_DATASET_DSET_SPACE_RANK, dset_dims, NULL)) < 0)
+    if ((dset_space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATASET_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_CREATE_ON_DATASET_ATTR_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATASET_ATTR_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -369,18 +360,16 @@ error:
 static int
 test_create_attribute_on_datatype(void)
 {
-    hsize_t dims[ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   type_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
-    hid_t   attr_dtype1 = H5I_INVALID_HID, attr_dtype2 = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  type_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype1 = H5I_INVALID_HID, attr_dtype2 = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("attribute creation on a committed datatype"); HDputs("");
+    TESTING_MULTIPART("attribute creation on a committed datatype");
 
     TESTING_2("H5Acreate on a committed datatype")
 
@@ -426,10 +415,7 @@ test_create_attribute_on_datatype(void)
         }
     }
 
-    for (i = 0; i < ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK; i++)
-        dims[i] = (hsize_t) rand() % MAX_DIM_SIZE + 1;
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -724,16 +710,14 @@ error:
 static int
 test_create_attribute_with_space_in_name(void)
 {
-    hsize_t dims[ATTRIBUTE_CREATE_WITH_SPACE_IN_NAME_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   attr_id2 = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("attribute creation with a space in attribute's name")
 
@@ -755,10 +739,7 @@ test_create_attribute_with_space_in_name(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_CREATE_WITH_SPACE_IN_NAME_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_CREATE_WITH_SPACE_IN_NAME_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_WITH_SPACE_IN_NAME_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -834,15 +815,13 @@ error:
 static int
 test_create_attribute_invalid_params(void)
 {
-    hsize_t dims[ATTRIBUTE_CREATE_INVALID_PARAMS_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("H5Acreate with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Acreate with invalid parameters");
 
     TESTING_2("H5Acreate with invalid loc_id")
 
@@ -864,10 +843,7 @@ test_create_attribute_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_CREATE_INVALID_PARAMS_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_CREATE_INVALID_PARAMS_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_INVALID_PARAMS_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
@@ -969,7 +945,7 @@ test_create_attribute_invalid_params(void)
 
     PASSED();
 
-    TESTING("H5Acreate_by_name with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Acreate_by_name with invalid parameters");
 
     TESTING_2("H5Acreate_by_name with an invalid loc_id")
 
@@ -1151,15 +1127,13 @@ error:
 static int
 test_open_attribute(void)
 {
-    hsize_t attr_dims[ATTRIBUTE_OPEN_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
-    hid_t   attr_type = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t attr_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t attr_type = H5I_INVALID_HID;
 
-    TESTING("attribute opening"); HDputs("");
+    TESTING_MULTIPART("attribute opening");
 
     TESTING_2("H5Aopen")
 
@@ -1181,10 +1155,7 @@ test_open_attribute(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_OPEN_TEST_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_OPEN_TEST_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_OPEN_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_type = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -1274,15 +1245,13 @@ error:
 static int
 test_open_attribute_invalid_params(void)
 {
-    hsize_t attr_dims[ATTRIBUTE_OPEN_TEST_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
-    hid_t   attr_type = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
+    hid_t  attr_type = H5I_INVALID_HID;
 
-    TESTING("H5Aopen with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Aopen with invalid parameters");
 
     TESTING_2("H5Aopen with an invalid loc_id")
 
@@ -1304,10 +1273,7 @@ test_open_attribute_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_OPEN_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_OPEN_INVALID_PARAMS_TEST_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_OPEN_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_type = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -1388,7 +1354,7 @@ test_open_attribute_invalid_params(void)
 
     PASSED();
 
-    TESTING("H5Aopen_by_name with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Aopen_by_name with invalid parameters");
 
     TESTING_2("H5Aopen_by_name with an invalid object name")
 
@@ -1468,7 +1434,7 @@ test_open_attribute_invalid_params(void)
 
     PASSED();
 
-    TESTING("H5Aopen_by_idx with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Aopen_by_idx with invalid parameters");
 
     TESTING_2("H5Aopen_by_idx with an invalid loc_id")
 
@@ -1632,7 +1598,7 @@ test_write_attribute(void)
     hid_t    group_id = H5I_INVALID_HID;
     hid_t    attr_id = H5I_INVALID_HID;
     hid_t    space_id = H5I_INVALID_HID;
-    void     *data = NULL;
+    void    *data = NULL;
 
     TESTING("H5Awrite")
 
@@ -1654,10 +1620,7 @@ test_write_attribute(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_WRITE_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_WRITE_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_WRITE_TEST_SPACE_RANK, NULL, dims)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_WRITE_TEST_ATTR_NAME, ATTRIBUTE_WRITE_TEST_ATTR_DTYPE,
@@ -1754,7 +1717,7 @@ test_write_attribute_invalid_params(void)
     hid_t    space_id = H5I_INVALID_HID;
     void    *data = NULL;
 
-    TESTING("H5Awrite with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Awrite with invalid parameters");
 
     TESTING_2("H5Awrite with an invalid attr_id")
 
@@ -1776,10 +1739,7 @@ test_write_attribute_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_SPACE_RANK, NULL, dims)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_ATTR_NAME, ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_ATTR_DTYPE,
@@ -1922,10 +1882,7 @@ test_read_attribute(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_READ_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_READ_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_READ_TEST_SPACE_RANK, NULL, dims)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_TEST_ATTR_NAME, ATTRIBUTE_READ_TEST_ATTR_DTYPE,
@@ -2047,7 +2004,7 @@ test_read_attribute_invalid_params(void)
     void    *data = NULL;
     void    *read_buf = NULL;
 
-    TESTING("H5Aread with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Aread with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2067,10 +2024,7 @@ test_read_attribute_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_READ_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_READ_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_READ_INVALID_PARAMS_TEST_SPACE_RANK, NULL, dims)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_NAME, ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_DTYPE,
@@ -2230,10 +2184,7 @@ test_read_empty_attribute(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_READ_EMPTY_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_READ_EMPTY_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_READ_EMPTY_SPACE_RANK, NULL, dims)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_EMPTY_ATTR_NAME, ATTRIBUTE_READ_EMPTY_DTYPE,
@@ -2360,7 +2311,7 @@ test_get_attribute_space_and_type(void)
     hid_t   tmp_type_id = H5I_INVALID_HID;
     hid_t   tmp_space_id = H5I_INVALID_HID;
 
-    TESTING("retrieval of an attribute's dataspace and datatype"); HDputs("");
+    TESTING_MULTIPART("retrieval of an attribute's dataspace and datatype");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2380,10 +2331,7 @@ test_get_attribute_space_and_type(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_SPACE_TYPE_TEST_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_GET_SPACE_TYPE_TEST_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_GET_SPACE_TYPE_TEST_SPACE_RANK, NULL, attr_dims)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2569,19 +2517,17 @@ error:
 static int
 test_get_attribute_space_and_type_invalid_params(void)
 {
-    hsize_t attr_dims[ATTRIBUTE_GET_SPACE_TYPE_TEST_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   attr_space_id = H5I_INVALID_HID;
-    hid_t   tmp_type_id = H5I_INVALID_HID;
-    hid_t   tmp_space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  attr_space_id = H5I_INVALID_HID;
+    hid_t  tmp_type_id = H5I_INVALID_HID;
+    hid_t  tmp_space_id = H5I_INVALID_HID;
 
-    TESTING("H5Aget_type/H5Aget_space with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Aget_type/H5Aget_space with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2601,10 +2547,7 @@ test_get_attribute_space_and_type_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2698,8 +2641,6 @@ static int
 test_attribute_property_lists(void)
 {
     H5T_cset_t encoding = H5T_CSET_UTF8;
-    hsize_t    dims[ATTRIBUTE_PROPERTY_LIST_TEST_SPACE_RANK];
-    size_t     i;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -2708,7 +2649,7 @@ test_attribute_property_lists(void)
     hid_t      acpl_id1 = H5I_INVALID_HID, acpl_id2 = H5I_INVALID_HID;
     hid_t      space_id = H5I_INVALID_HID;
 
-    TESTING("attribute property list operations"); HDputs("");
+    TESTING_MULTIPART("attribute property list operations");
 
     TESTING_2("H5Aget_create_plist")
 
@@ -2730,10 +2671,7 @@ test_attribute_property_lists(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_PROPERTY_LIST_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_PROPERTY_LIST_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_PROPERTY_LIST_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -2927,9 +2865,7 @@ error:
 static int
 test_get_attribute_name(void)
 {
-    hsize_t  dims[ATTRIBUTE_GET_NAME_TEST_SPACE_RANK];
     ssize_t  name_buf_size;
-    size_t   i;
     htri_t   attr_exists;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID;
@@ -2939,7 +2875,7 @@ test_get_attribute_name(void)
     hid_t    space_id = H5I_INVALID_HID;
     char    *name_buf = NULL;
 
-    TESTING("retrieval of an attribute's name"); HDputs("");
+    TESTING_MULTIPART("retrieval of an attribute's name");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2959,10 +2895,7 @@ test_get_attribute_name(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_NAME_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_GET_NAME_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_NAME_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -3117,9 +3050,7 @@ error:
 static int
 test_get_attribute_name_invalid_params(void)
 {
-    hsize_t  dims[ATTRIBUTE_GET_NAME_TEST_SPACE_RANK];
     ssize_t  name_buf_size;
-    size_t   i;
     htri_t   attr_exists;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID;
@@ -3129,7 +3060,7 @@ test_get_attribute_name_invalid_params(void)
     hid_t    space_id = H5I_INVALID_HID;
     char    *name_buf = NULL;
 
-    TESTING("retrieval of an attribute's name with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("retrieval of an attribute's name with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3149,10 +3080,7 @@ test_get_attribute_name_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_NAME_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_GET_NAME_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_NAME_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -3398,8 +3326,6 @@ static int
 test_get_attribute_info(void)
 {
     H5A_info_t attr_info;
-    hsize_t    dims[ATTRIBUTE_GET_INFO_TEST_SPACE_RANK];
-    size_t     i;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -3408,7 +3334,7 @@ test_get_attribute_info(void)
     hid_t      attr_dtype = H5I_INVALID_HID;
     hid_t      space_id = H5I_INVALID_HID;
 
-    TESTING("retrieval of attribute info"); HDputs("");
+    TESTING_MULTIPART("retrieval of attribute info");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3428,10 +3354,7 @@ test_get_attribute_info(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_INFO_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_GET_INFO_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_INFO_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -3523,8 +3446,6 @@ static int
 test_get_attribute_info_invalid_params(void)
 {
     H5A_info_t attr_info;
-    hsize_t    dims[ATTRIBUTE_GET_INFO_TEST_SPACE_RANK];
-    size_t     i;
     htri_t     attr_exists;
     herr_t     err_ret = -1;
     hid_t      file_id = H5I_INVALID_HID;
@@ -3534,7 +3455,7 @@ test_get_attribute_info_invalid_params(void)
     hid_t      attr_dtype = H5I_INVALID_HID;
     hid_t      space_id = H5I_INVALID_HID;
 
-    TESTING("retrieval of attribute info with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("retrieval of attribute info with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3554,10 +3475,7 @@ test_get_attribute_info_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_INFO_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_GET_INFO_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_INFO_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -3855,17 +3773,15 @@ error:
 static int
 test_rename_attribute(void)
 {
-    hsize_t attr_dims[ATTRIBUTE_RENAME_TEST_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   attr_space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  attr_space_id = H5I_INVALID_HID;
 
-    TESTING("attribute renaming"); HDputs("");
+    TESTING_MULTIPART("attribute renaming");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3885,10 +3801,7 @@ test_rename_attribute(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_RENAME_TEST_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_RENAME_TEST_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_RENAME_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -4042,18 +3955,16 @@ error:
 static int
 test_rename_attribute_invalid_params(void)
 {
-    hsize_t attr_dims[ATTRIBUTE_RENAME_TEST_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    herr_t  err_ret = -1;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   attr_space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    herr_t err_ret = -1;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  attr_space_id = H5I_INVALID_HID;
 
-    TESTING("attribute renaming with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("attribute renaming with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4073,10 +3984,7 @@ test_rename_attribute_invalid_params(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -4327,20 +4235,18 @@ error:
 static int
 test_attribute_iterate(void)
 {
-    hsize_t dset_dims[ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK];
-    hsize_t attr_dims[ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID, attr_id3 = H5I_INVALID_HID, attr_id4 = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   dset_space_id = H5I_INVALID_HID;
-    hid_t   attr_space_id = H5I_INVALID_HID;
+    size_t i;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID, attr_id3 = H5I_INVALID_HID, attr_id4 = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  dset_space_id = H5I_INVALID_HID;
+    hid_t  attr_space_id = H5I_INVALID_HID;
 
-    TESTING("attribute iteration"); HDputs("");
+    TESTING_MULTIPART("attribute iteration");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4365,14 +4271,9 @@ test_attribute_iterate(void)
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK; i++)
-        dset_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-    for (i = 0; i < ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((dset_space_id = H5Screate_simple(ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK, dset_dims, NULL)) < 0)
+    if ((dset_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_ITERATE_TEST_DSET_NAME, dset_dtype,
@@ -4615,17 +4516,15 @@ error:
 static int
 test_attribute_iterate_invalid_params(void)
 {
-    hsize_t attr_dims[ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_SPACE_RANK];
-    herr_t  err_ret = -1;
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID, attr_id3 = H5I_INVALID_HID, attr_id4 = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   attr_space_id = H5I_INVALID_HID;
+    herr_t err_ret = -1;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID, attr_id3 = H5I_INVALID_HID, attr_id4 = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  attr_space_id = H5I_INVALID_HID;
 
-    TESTING("attribute iteration with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("attribute iteration with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4648,10 +4547,7 @@ test_attribute_iterate_invalid_params(void)
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_SPACE_RANK; i++)
-        attr_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((attr_space_id = H5Screate_simple(ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_SPACE_RANK, attr_dims, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype,
@@ -4938,13 +4834,11 @@ error:
 static int
 test_attribute_iterate_0_attributes(void)
 {
-    hsize_t dset_dims[ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK];
-    size_t  i;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dset_space_id = H5I_INVALID_HID;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t dset_dtype = H5I_INVALID_HID;
+    hid_t dset_space_id = H5I_INVALID_HID;
 
     TESTING("attribute iteration on object with 0 attributes")
 
@@ -4969,10 +4863,7 @@ test_attribute_iterate_0_attributes(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    for (i = 0; i < ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK; i++)
-        dset_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((dset_space_id = H5Screate_simple(ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK, dset_dims, NULL)) < 0)
+    if ((dset_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, dset_dtype,
@@ -5031,17 +4922,15 @@ error:
 static int
 test_delete_attribute(void)
 {
-    hsize_t dims[ATTRIBUTE_DELETION_TEST_SPACE_RANK];
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("attribute deletion"); HDputs("");
+    TESTING_MULTIPART("attribute deletion");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5060,10 +4949,7 @@ test_delete_attribute(void)
         HDprintf("    couldn't create container group '%s'\n", ATTRIBUTE_DELETION_TEST_GROUP_NAME);
     }
 
-    for (i = 0; i < ATTRIBUTE_DELETION_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_DELETION_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_DELETION_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -5245,18 +5131,16 @@ error:
 static int
 test_delete_attribute_invalid_params(void)
 {
-    hsize_t dims[ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_SPACE_RANK];
-    herr_t  err_ret = -1;
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    herr_t err_ret = -1;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("attribute deletion with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("attribute deletion with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5275,10 +5159,7 @@ test_delete_attribute_invalid_params(void)
         HDprintf("    couldn't create container group '%s'\n", ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_GROUP_NAME);
     }
 
-    for (i = 0; i < ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -5552,14 +5433,12 @@ error:
 static int
 test_attribute_exists(void)
 {
-    hsize_t    dims[ATTRIBUTE_EXISTS_SPACE_RANK];
-    size_t     i;
-    htri_t     attr_exists;
-    hid_t      file_id = H5I_INVALID_HID;
-    hid_t      container_group = H5I_INVALID_HID;
-    hid_t      attr_id = H5I_INVALID_HID;
-    hid_t      attr_dtype = H5I_INVALID_HID;
-    hid_t      space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("H5Aexists and H5Aexists_by_name")
 
@@ -5575,10 +5454,7 @@ test_attribute_exists(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_EXISTS_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_EXISTS_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_EXISTS_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -5650,18 +5526,16 @@ error:
 static int
 test_attribute_exists_invalid_params(void)
 {
-    hsize_t dims[ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK];
-    herr_t  err_ret = -1;
-    size_t  i;
-    htri_t  attr_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID;
-    hid_t   attr_id = H5I_INVALID_HID;
-    hid_t   attr_dtype = H5I_INVALID_HID;
-    hid_t   space_id = H5I_INVALID_HID;
+    herr_t err_ret = -1;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
-    TESTING("H5Aexists and H5Aexists_by_name with invalid parameters"); HDputs("");
+    TESTING_MULTIPART("H5Aexists and H5Aexists_by_name with invalid parameters");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5680,10 +5554,7 @@ test_attribute_exists_invalid_params(void)
         HDprintf("    couldn't create container group '%s'\n", ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_GROUP_NAME);
     }
 
-    for (i = 0; i < ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -5871,8 +5742,6 @@ static int
 test_attribute_many(void)
 {
     H5O_info_t obj_info;
-    hsize_t    dims[ATTRIBUTE_MANY_SPACE_RANK];
-    size_t     i;
     unsigned   u;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
@@ -5902,10 +5771,7 @@ test_attribute_many(void)
         HDprintf("    couldn't create the group '%s'\n", ATTRIBUTE_MANY_GROUP_NAME);
     }
 
-    for (i = 0; i < ATTRIBUTE_MANY_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_MANY_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_MANY_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -5974,14 +5840,12 @@ error:
 static int
 test_attribute_duplicate_id(void)
 {
-    hsize_t    dims[ATTRIBUTE_DUPLICATE_ID_SPACE_RANK];
-    size_t     i;
-    htri_t     attr_exists;
-    hid_t      file_id = H5I_INVALID_HID;
-    hid_t      container_group = H5I_INVALID_HID;
-    hid_t      attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
-    hid_t      attr_dtype = H5I_INVALID_HID;
-    hid_t      space_id = H5I_INVALID_HID;
+    htri_t attr_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID;
+    hid_t  attr_dtype = H5I_INVALID_HID;
+    hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("duplicated IDs for an attribute")
 
@@ -5997,10 +5861,7 @@ test_attribute_duplicate_id(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_DUPLICATE_ID_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_DUPLICATE_ID_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_DUPLICATE_ID_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -6073,8 +5934,6 @@ static int
 test_get_number_attributes(void)
 {
     H5O_info_t obj_info;
-    hsize_t    dims[ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK];
-    size_t     i;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -6096,10 +5955,7 @@ test_get_number_attributes(void)
         goto error;
     }
 
-    for (i = 0; i < ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
@@ -6199,8 +6055,6 @@ static int
 test_attr_shared_dtype(void)
 {
     H5O_info_t obj_info;
-    hsize_t    dims[ATTRIBUTE_SHARED_DTYPE_SPACE_RANK];
-    size_t     i;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -6229,10 +6083,7 @@ test_attr_shared_dtype(void)
         HDprintf("    couldn't create the group '%s'\n", ATTRIBUTE_SHARED_DTYPE_GROUP_NAME);
     }
 
-    for (i = 0; i < ATTRIBUTE_SHARED_DTYPE_SPACE_RANK; i++)
-        dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
-
-    if ((space_id = H5Screate_simple(ATTRIBUTE_SHARED_DTYPE_SPACE_RANK, dims, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(ATTRIBUTE_SHARED_DTYPE_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
