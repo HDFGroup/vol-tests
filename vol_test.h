@@ -110,7 +110,9 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
 #define TESTING_MULTIPART(WHAT)  {printf("Testing %-62s",WHAT); HDputs(""); fflush(stdout);}
 
 /*
- * Begin and end an entire section of multipart tests.
+ * Begin and end an entire section of multipart tests. By placing all the
+ * parts of a test between these macros, skipping to the 'error' cleanup
+ * section of a test is deferred until all parts have finished.
  */
 #define BEGIN_MULTIPART \
 {                       \
