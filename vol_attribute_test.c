@@ -3013,6 +3013,7 @@ test_attribute_property_lists(void)
             }
 
             /* XXX: Check the value to be tested as above */
+            PASSED();
         } PART_END(H5Aget_create_plist_reopened);
     } END_MULTIPART;
 
@@ -6181,6 +6182,8 @@ test_attribute_exists_invalid_params(void)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
+
+    PASSED();
 
     return 0;
 

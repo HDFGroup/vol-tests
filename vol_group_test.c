@@ -334,7 +334,7 @@ test_create_group_invalid_params(void)
 
     TESTING_MULTIPART("H5Gcreate with invalid parameters");
 
-    TESTING_2("H5Gcreate with an invalid loc_id")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -342,81 +342,101 @@ test_create_group_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(H5I_INVALID_HID, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created group with invalid loc_id!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Gcreate with an invalid group name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gcreate_invalid_loc_id) {
+            TESTING_2("H5Gcreate with an invalid loc_id")
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, NULL, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(H5I_INVALID_HID, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created group with invalid name!\n");
-        goto error;
-    }
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created group with invalid loc_id!\n");
+                PART_ERROR(H5Gcreate_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, "", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gcreate_invalid_loc_id);
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created group with invalid name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gcreate_invalid_grp_name) {
+            TESTING_2("H5Gcreate with an invalid group name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(file_id, NULL, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gcreate with an invalid LCPL")
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created group with a NULL name!\n");
+                PART_ERROR(H5Gcreate_invalid_grp_name);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(file_id, "", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created group with invalid LCPL!\n");
-        goto error;
-    }
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created group with an invalid group name of ''!\n");
+                PART_ERROR(H5Gcreate_invalid_grp_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Gcreate_invalid_grp_name);
 
-    TESTING_2("H5Gcreate with an invalid GCPL")
+        PART_BEGIN(H5Gcreate_invalid_lcpl) {
+            TESTING_2("H5Gcreate with an invalid LCPL")
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5I_INVALID_HID, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(file_id, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created group with invalid GCPL!\n");
-        goto error;
-    }
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created group with invalid LCPL!\n");
+                PART_ERROR(H5Gcreate_invalid_lcpl);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Gcreate_invalid_lcpl);
 
-    TESTING_2("H5Gcreate with an invalid GAPL")
+        PART_BEGIN(H5Gcreate_invalid_gcpl) {
+            TESTING_2("H5Gcreate with an invalid GCPL")
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(file_id, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5I_INVALID_HID, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created group with invalid GAPL!\n");
-        goto error;
-    }
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created group with invalid GCPL!\n");
+                PART_ERROR(H5Gcreate_invalid_gcpl);
+            }
+
+            PASSED();
+        } PART_END(H5Gcreate_invalid_gcpl);
+
+        PART_BEGIN(H5Gcreate_invalid_gapl) {
+            TESTING_2("H5Gcreate with an invalid GAPL")
+
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(file_id, GROUP_CREATE_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created group with invalid GAPL!\n");
+                PART_ERROR(H5Gcreate_invalid_gapl);
+            }
+
+            PASSED();
+        } PART_END(H5Gcreate_invalid_gapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
@@ -497,7 +517,7 @@ test_create_anonymous_group_invalid_params(void)
 
     TESTING_MULTIPART("H5Gcreate_anon with invalid parameters");
 
-    TESTING_2("H5Gcreate_anon with an invalid loc_id")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -511,43 +531,59 @@ test_create_anonymous_group_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        new_group_id = H5Gcreate_anon(H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (new_group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created anonymous group with invalid loc_id!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Gcreate_anon with an invalid GCPL")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gcreate_anon_invalid_loc_id) {
+            TESTING_2("H5Gcreate_anon with an invalid loc_id")
 
-    H5E_BEGIN_TRY {
-        new_group_id = H5Gcreate_anon(container_group, H5I_INVALID_HID, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                new_group_id = H5Gcreate_anon(H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (new_group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created anonymous group with invalid GCPL!\n");
-        goto error;
-    }
+            if (new_group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created anonymous group with invalid loc_id!\n");
+                PART_ERROR(H5Gcreate_anon_invalid_loc_id);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Gcreate_anon_invalid_loc_id);
 
-    TESTING_2("H5Gcreate_anon with an invalid GAPL")
+        PART_BEGIN(H5Gcreate_anon_invalid_gcpl) {
+            TESTING_2("H5Gcreate_anon with an invalid GCPL")
 
-    H5E_BEGIN_TRY {
-        new_group_id = H5Gcreate_anon(container_group, H5P_DEFAULT, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                new_group_id = H5Gcreate_anon(container_group, H5I_INVALID_HID, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (new_group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    created anonymous group with invalid GAPL!\n");
-        goto error;
-    }
+            if (new_group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created anonymous group with invalid GCPL!\n");
+                PART_ERROR(H5Gcreate_anon_invalid_gcpl);
+            }
+
+            PASSED();
+        } PART_END(H5Gcreate_anon_invalid_gcpl);
+
+        PART_BEGIN(H5Gcreate_anon_invalid_gapl) {
+            TESTING_2("H5Gcreate_anon with an invalid GAPL")
+
+            H5E_BEGIN_TRY {
+                new_group_id = H5Gcreate_anon(container_group, H5P_DEFAULT, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (new_group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    created anonymous group with invalid GAPL!\n");
+                PART_ERROR(H5Gcreate_anon_invalid_gapl);
+            }
+
+            PASSED();
+        } PART_END(H5Gcreate_anon_invalid_gapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
@@ -624,7 +660,7 @@ test_open_group_invalid_params(void)
 
     TESTING_MULTIPART("H5Gopen with invalid parameters");
 
-    TESTING_2("H5Gopen with an invalid loc_id")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -632,53 +668,69 @@ test_open_group_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gopen2(H5I_INVALID_HID, GROUP_TEST_GROUP_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened group using an invalid loc_id!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Gopen with an invalid group name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gopen_invalid_loc_id) {
+            TESTING_2("H5Gopen with an invalid loc_id")
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gopen2(file_id, NULL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id = H5Gopen2(H5I_INVALID_HID, GROUP_TEST_GROUP_NAME, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened group using an invalid name!\n");
-        goto error;
-    }
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened group using an invalid loc_id!\n");
+                PART_ERROR(H5Gopen_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gopen2(file_id, "", H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gopen_invalid_loc_id);
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened group using an invalid name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gopen_invalid_grp_name) {
+            TESTING_2("H5Gopen with an invalid group name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                group_id = H5Gopen2(file_id, NULL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gopen with an invalid GAPL")
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened group using a NULL name!\n");
+                PART_ERROR(H5Gopen_invalid_grp_name);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id = H5Gopen2(file_id, "", H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    opened group using an invalid GAPL!\n");
-        goto error;
-    }
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened group using an invalid name of ''!\n");
+                PART_ERROR(H5Gopen_invalid_grp_name);
+            }
+
+            PASSED();
+        } PART_END(H5Gopen_invalid_grp_name);
+
+        PART_BEGIN(H5Gopen_invalid_gapl) {
+            TESTING_2("H5Gopen with an invalid GAPL")
+
+            H5E_BEGIN_TRY {
+                group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    opened group using an invalid GAPL!\n");
+                PART_ERROR(H5Gopen_invalid_gapl);
+            }
+
+            PASSED();
+        } PART_END(H5Gopen_invalid_gapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
@@ -939,7 +991,7 @@ test_get_group_info(void)
 
     TESTING_MULTIPART("retrieval of group info");
 
-    TESTING_2("retrieval of group info with H5Gget_info")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -966,55 +1018,71 @@ test_get_group_info(void)
             TEST_ERROR
     }
 
-    /* Retrieve information about the parent group */
-    if (H5Gget_info(parent_group_id, &group_info) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get group info\n");
-        goto error;
-    }
-
-    if (group_info.nlinks != GROUP_NUMB) {
-        H5_FAILED();
-        HDprintf("    the number of groups %llu is different from the expected number %u\n", group_info.nlinks, (unsigned int)GROUP_NUMB);
-        goto error;
-    }
-
-    if (H5Gclose(parent_group_id) < 0)
-        TEST_ERROR
-
     PASSED();
 
-    TESTING_2("retrieval of group info with H5Gget_info_by_name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gget_info) {
+            TESTING_2("retrieval of group info with H5Gget_info")
 
-    /* Retrieve information about the parent group */
-    if (H5Gget_info_by_name(file_id, GROUP_FOR_INFO, &group_info, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get group info by name\n");
-        goto error;
-    }
+            /* Retrieve information about the parent group */
+            if (H5Gget_info(parent_group_id, &group_info) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get group info\n");
+                PART_ERROR(H5Gget_info);
+            }
 
-    if (group_info.nlinks != GROUP_NUMB) {
-        H5_FAILED();
-        HDprintf("    the number of groups %llu is different from the expected number %u\n", group_info.nlinks, (unsigned int)GROUP_NUMB);
-        goto error;
-    }
+            if (group_info.nlinks != GROUP_NUMB) {
+                H5_FAILED();
+                HDprintf("    the number of groups %llu is different from the expected number %u\n", group_info.nlinks, (unsigned int)GROUP_NUMB);
+                PART_ERROR(H5Gget_info);
+            }
 
-    PASSED();
+            if (H5Gclose(parent_group_id) < 0)
+                TEST_ERROR
 
-    TESTING_2("retrieval of group info with H5Gget_info_by_idx")
+            PASSED();
+        } PART_END(H5Gget_info);
 
-    /* Retrieve information about the first group under the parent group */
-    if (H5Gget_info_by_idx(file_id, GROUP_FOR_INFO, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get group info by index\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_name) {
+            TESTING_2("retrieval of group info with H5Gget_info_by_name")
 
-    if (group_info.nlinks != 0) {
-        H5_FAILED();
-        HDprintf("    the number of groups %llu is different from the expected number 0\n", group_info.nlinks);
-        goto error;
-    }
+            /* Retrieve information about the parent group */
+            if (H5Gget_info_by_name(file_id, GROUP_FOR_INFO, &group_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get group info by name\n");
+                PART_ERROR(H5Gget_info_by_name);
+            }
+
+            if (group_info.nlinks != GROUP_NUMB) {
+                H5_FAILED();
+                HDprintf("    the number of groups %llu is different from the expected number %u\n", group_info.nlinks, (unsigned int)GROUP_NUMB);
+                PART_ERROR(H5Gget_info_by_name);
+            }
+
+            PASSED();
+        } PART_END(H5Gget_info_by_name);
+
+        PART_BEGIN(H5Gget_info_by_idx) {
+            TESTING_2("retrieval of group info with H5Gget_info_by_idx")
+
+            /* Retrieve information about the first group under the parent group */
+            if (H5Gget_info_by_idx(file_id, GROUP_FOR_INFO, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get group info by index\n");
+                PART_ERROR(H5Gget_info_by_idx);
+            }
+
+            if (group_info.nlinks != 0) {
+                H5_FAILED();
+                HDprintf("    the number of groups %llu is different from the expected number 0\n", group_info.nlinks);
+                PART_ERROR(H5Gget_info_by_idx);
+            }
+
+            PASSED();
+        } PART_END(H5Gget_info_by_idx);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
@@ -1044,9 +1112,9 @@ test_get_group_info_invalid_params(void)
     herr_t     err_ret = -1;
     hid_t      file_id = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("H5Gget_info with invalid parameters");
+    TESTING_MULTIPART("retrieval of group info with invalid parameters");
 
-    TESTING_2("H5Gget_info with an invalid loc_id")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1054,213 +1122,243 @@ test_get_group_info_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info(H5I_INVALID_HID, &group_info);
-    } H5E_END_TRY;
-
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info with an invalid loc_id!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Gget_info with an invalid group info pointer")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gget_info_invalid_loc_id) {
+            TESTING_2("H5Gget_info with an invalid loc_id")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info(file_id, NULL);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info(H5I_INVALID_HID, &group_info);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info with invalid group info pointer!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info with an invalid loc_id!\n");
+                PART_ERROR(H5Gget_info_invalid_loc_id);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Gget_info_invalid_loc_id);
 
-    TESTING_MULTIPART("H5Gget_info_by_name with invalid parameters");
+        PART_BEGIN(H5Gget_info_invalid_grp_info_pointer) {
+            TESTING_2("H5Gget_info with an invalid group info pointer")
 
-    TESTING_2("H5Gget_info_by_name with an invalid loc_id")
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info(file_id, NULL);
+            } H5E_END_TRY;
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_name(H5I_INVALID_HID, ".", &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info with invalid group info pointer!\n");
+                PART_ERROR(H5Gget_info_invalid_grp_info_pointer);
+            }
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid loc_id!\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Gget_info_invalid_grp_info_pointer);
 
-    PASSED();
+        PART_BEGIN(H5Gget_info_by_name_invalid_loc_id) {
+            TESTING_2("H5Gget_info_by_name with an invalid loc_id")
 
-    TESTING_2("H5Gget_info_by_name with an invalid group name")
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_name(H5I_INVALID_HID, ".", &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_name(file_id, NULL, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid loc_id!\n");
+                PART_ERROR(H5Gget_info_by_name_invalid_loc_id);
+            }
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid name!\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Gget_info_by_name_invalid_loc_id);
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_name(file_id, "", &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+        PART_BEGIN(H5Gget_info_by_name_invalid_grp_name) {
+            TESTING_2("H5Gget_info_by_name with an invalid group name")
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid name!\n");
-        goto error;
-    }
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_name(file_id, NULL, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    PASSED();
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_name with a NULL name!\n");
+                PART_ERROR(H5Gget_info_by_name_invalid_grp_name);
+            }
 
-    TESTING_2("H5Gget_info_by_name with an invalid group info pointer")
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_name(file_id, "", &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_name(file_id, ".", NULL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid name of ''!\n");
+                PART_ERROR(H5Gget_info_by_name_invalid_grp_name);
+            }
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid group info pointer!\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Gget_info_by_name_invalid_grp_name);
 
-    PASSED();
+        PART_BEGIN(H5Gget_info_by_name_invalid_grp_info_pointer) {
+            TESTING_2("H5Gget_info_by_name with an invalid group info pointer")
 
-    TESTING_2("H5Gget_info_by_name with an invalid LAPL")
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_name(file_id, ".", NULL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_name(file_id, ".", &group_info, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid group info pointer!\n");
+                PART_ERROR(H5Gget_info_by_name_invalid_grp_info_pointer);
+            }
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid LAPL!\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Gget_info_by_name_invalid_grp_info_pointer);
 
-    PASSED();
+        PART_BEGIN(H5Gget_info_by_name_invalid_lapl) {
+            TESTING_2("H5Gget_info_by_name with an invalid LAPL")
 
-    TESTING_MULTIPART("H5Gget_info_by_idx with invalid parameters");
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_name(file_id, ".", &group_info, H5I_INVALID_HID);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gget_info_by_idx with an invalid loc_id")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_name with an invalid LAPL!\n");
+                PART_ERROR(H5Gget_info_by_name_invalid_lapl);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(H5I_INVALID_HID, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gget_info_by_name_invalid_lapl);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid loc_id!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_idx_invalid_loc_id) {
+            TESTING_2("H5Gget_info_by_idx with an invalid loc_id")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(H5I_INVALID_HID, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gget_info_by_idx with an invalid group name")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid loc_id!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, NULL, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gget_info_by_idx_invalid_loc_id);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid group name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_idx_invalid_grp_name) {
+            TESTING_2("H5Gget_info_by_idx with an invalid group name")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, "", H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, NULL, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid group name!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with a NULL group name!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_grp_name);
+            }
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, "", H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gget_info_by_idx with an invalid index type")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid group name of ''!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_grp_name);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_UNKNOWN, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gget_info_by_idx_invalid_grp_name);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid index type!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_idx_invalid_index_type) {
+            TESTING_2("H5Gget_info_by_idx with an invalid index type")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_N, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_UNKNOWN, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid index type!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with invalid index type H5_INDEX_UNKNOWN!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_index_type);
+            }
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_N, H5_ITER_INC, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gget_info_by_idx with an invalid iteration order")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with invalid index type H5_INDEX_N!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_UNKNOWN, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gget_info_by_idx_invalid_index_type);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid iteration order!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_idx_invalid_iter_order) {
+            TESTING_2("H5Gget_info_by_idx with an invalid iteration order")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_N, 0, &group_info, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_UNKNOWN, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid iteration order!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with invalid iteration order H5_ITER_UNKNOWN!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_iter_order);
+            }
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_N, 0, &group_info, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gget_info_by_idx with an invalid group info pointer")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with invalid iteration order H5_ITER_N!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_iter_order);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, NULL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gget_info_by_idx_invalid_iter_order);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid group info pointer!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_idx_invalid_grp_info_pointer) {
+            TESTING_2("H5Gget_info_by_idx with an invalid group info pointer")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, NULL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Gget_info_by_idx with an invalid LAPL")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid group info pointer!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_grp_info_pointer);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Gget_info_by_idx_invalid_grp_info_pointer);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid LAPL!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_info_by_idx_invalid_lapl) {
+            TESTING_2("H5Gget_info_by_idx with an invalid LAPL")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Gget_info_by_idx(file_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    retrieved info of group using H5Gget_info_by_idx with an invalid LAPL!\n");
+                PART_ERROR(H5Gget_info_by_idx_invalid_lapl);
+            }
+
+            PASSED();
+        } PART_END(H5Gget_info_by_idx_invalid_lapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Fclose(file_id) < 0)
         TEST_ERROR

@@ -113,7 +113,7 @@ test_open_object(void)
 
     TESTING_MULTIPART("object opening");
 
-    TESTING_2("H5Oopen on a group")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -174,108 +174,136 @@ test_open_object(void)
     if (H5Tclose(type_id) < 0)
         TEST_ERROR
 
-    if ((group_id2 = H5Oopen(group_id, OBJECT_OPEN_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s' with H5Oopen\n", OBJECT_OPEN_TEST_GRP_NAME);
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Oopen on a dataset")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Oopen_group) {
+            TESTING_2("H5Oopen on a group")
 
-    if ((dset_id = H5Oopen(group_id, OBJECT_OPEN_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open dataset '%s' with H5Oopen\n", OBJECT_OPEN_TEST_DSET_NAME);
-        goto error;
-    }
+            if ((group_id2 = H5Oopen(group_id, OBJECT_OPEN_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open group '%s' with H5Oopen\n", OBJECT_OPEN_TEST_GRP_NAME);
+                PART_ERROR(H5Oopen_group);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_group);
 
-    TESTING_2("H5Oopen on a committed datatype")
+        PART_BEGIN(H5Oopen_dset) {
+            TESTING_2("H5Oopen on a dataset")
 
-    if ((type_id = H5Oopen(group_id, OBJECT_OPEN_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open datatype '%s' with H5Oopen\n", OBJECT_OPEN_TEST_TYPE_NAME);
-        goto error;
-    }
+            if ((dset_id = H5Oopen(group_id, OBJECT_OPEN_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s' with H5Oopen\n", OBJECT_OPEN_TEST_DSET_NAME);
+                PART_ERROR(H5Oopen_dset);
+            }
 
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(type_id) < 0)
-        TEST_ERROR
+            PASSED();
+        } PART_END(H5Oopen_dset);
 
-    PASSED();
+        PART_BEGIN(H5Oopen_dtype) {
+            TESTING_2("H5Oopen on a committed datatype")
 
-    TESTING_2("H5Oopen_by_idx on a group")
+            if ((type_id = H5Oopen(group_id, OBJECT_OPEN_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open datatype '%s' with H5Oopen\n", OBJECT_OPEN_TEST_TYPE_NAME);
+                PART_ERROR(H5Oopen_dtype);
+            }
 
-    if ((group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_TEST_GROUP_NAME,
-            H5_INDEX_NAME, H5_ITER_INC, 1, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s' with H5Oopen_by_idx\n", OBJECT_OPEN_TEST_GRP_NAME);
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Oopen_dtype);
 
-    PASSED();
+        if (H5Gclose(group_id2) < 0)
+            TEST_ERROR
+        if (H5Dclose(dset_id) < 0)
+            TEST_ERROR
+        if (H5Tclose(type_id) < 0)
+            TEST_ERROR
 
-    TESTING_2("H5Oopen_by_idx on a dataset")
+        PART_BEGIN(H5Oopen_by_idx_group) {
+            TESTING_2("H5Oopen_by_idx on a group")
 
-    if ((dset_id = H5Oopen_by_idx(container_group, OBJECT_OPEN_TEST_GROUP_NAME,
-            H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open dataset '%s' with H5Oopen_by_idx\n", OBJECT_OPEN_TEST_DSET_NAME);
-        goto error;
-    }
+            if ((group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_TEST_GROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, 1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open group '%s' with H5Oopen_by_idx\n", OBJECT_OPEN_TEST_GRP_NAME);
+                PART_ERROR(H5Oopen_by_idx_group);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_by_idx_group);
 
-    TESTING_2("H5Oopen_by_idx on a committed datatype")
+        PART_BEGIN(H5Oopen_by_idx_dset) {
+            TESTING_2("H5Oopen_by_idx on a dataset")
 
-    if ((type_id = H5Oopen_by_idx(container_group, OBJECT_OPEN_TEST_GROUP_NAME,
-            H5_INDEX_NAME, H5_ITER_INC, 2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open committed datatype '%s' with H5Oopen_by_idx\n", OBJECT_OPEN_TEST_TYPE_NAME);
-        goto error;
-    }
+            if ((dset_id = H5Oopen_by_idx(container_group, OBJECT_OPEN_TEST_GROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s' with H5Oopen_by_idx\n", OBJECT_OPEN_TEST_DSET_NAME);
+                PART_ERROR(H5Oopen_by_idx_dset);
+            }
 
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(type_id) < 0)
-        TEST_ERROR
+            PASSED();
+        } PART_END(H5Oopen_by_idx_dset);
 
-    PASSED();
+        PART_BEGIN(H5Oopen_by_idx_dtype) {
+            TESTING_2("H5Oopen_by_idx on a committed datatype")
 
-    TESTING_2("H5Oopen_by_addr on a group")
+            if ((type_id = H5Oopen_by_idx(container_group, OBJECT_OPEN_TEST_GROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, 2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open committed datatype '%s' with H5Oopen_by_idx\n", OBJECT_OPEN_TEST_TYPE_NAME);
+                PART_ERROR(H5Oopen_by_idx_dtype);
+            }
 
-    if ((group_id2 = H5Oopen_by_addr(file_id, 0)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_GRP_NAME);
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Oopen_by_idx_dtype);
 
-    PASSED();
+        if (H5Gclose(group_id2) < 0)
+            TEST_ERROR
+        if (H5Dclose(dset_id) < 0)
+            TEST_ERROR
+        if (H5Tclose(type_id) < 0)
+            TEST_ERROR
 
-    TESTING_2("H5Oopen_by_addr on a dataset")
+        PART_BEGIN(H5Oopen_by_addr_group) {
+            TESTING_2("H5Oopen_by_addr on a group")
 
-    if ((dset_id = H5Oopen_by_addr(file_id, 0)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open dataset '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_DSET_NAME);
-        goto error;
-    }
+            if ((group_id2 = H5Oopen_by_addr(file_id, 0)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open group '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_GRP_NAME);
+                PART_ERROR(H5Oopen_by_addr_group);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_by_addr_group);
 
-    TESTING_2("H5Oopen_by_addr on a committed datatype")
+        PART_BEGIN(H5Oopen_by_addr_dset) {
+            TESTING_2("H5Oopen_by_addr on a dataset")
 
-    if ((type_id = H5Oopen_by_addr(file_id, 0)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open committed datatype '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_TYPE_NAME);
-        goto error;
-    }
+            if ((dset_id = H5Oopen_by_addr(file_id, 0)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_DSET_NAME);
+                PART_ERROR(H5Oopen_by_addr_dset);
+            }
+
+            PASSED();
+        } PART_END(H5Oopen_by_addr_dset);
+
+        PART_BEGIN(H5Oopen_by_addr_dtype) {
+            TESTING_2("H5Oopen_by_addr on a committed datatype")
+
+            if ((type_id = H5Oopen_by_addr(file_id, 0)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open committed datatype '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_TYPE_NAME);
+                PART_ERROR(H5Oopen_by_addr_dtype);
+            }
+
+            PASSED();
+        } PART_END(H5Oopen_by_addr_dtype);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
@@ -327,7 +355,7 @@ test_open_object_invalid_params(void)
 
     TESTING_MULTIPART("object opening with invalid parameters");
 
-    TESTING_2("H5Oopen with an invalid location ID")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -358,201 +386,231 @@ test_open_object_invalid_params(void)
     if (H5Gclose(group_id2) < 0)
         TEST_ERROR
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen(H5I_INVALID_HID, OBJECT_OPEN_INVALID_PARAMS_TEST_GRP_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen succeeded with an invalid location ID!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Oopen with an invalid object name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Oopen_invalid_loc_id) {
+            TESTING_2("H5Oopen with an invalid location ID")
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen(group_id, NULL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen(H5I_INVALID_HID, OBJECT_OPEN_INVALID_PARAMS_TEST_GRP_NAME, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen succeeded with an invalid object name!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen succeeded with an invalid location ID!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen(group_id, "", H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Oopen_invalid_loc_id);
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen succeeded with an invalid object name!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+        PART_BEGIN(H5Oopen_invalid_obj_name) {
+            TESTING_2("H5Oopen with an invalid object name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen(group_id, NULL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Oopen with an invalid LAPL")
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen succeeded with a NULL object name!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_invalid_obj_name);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen(group_id, OBJECT_OPEN_INVALID_PARAMS_TEST_GRP_NAME, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen(group_id, "", H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen succeeded with an invalid LAPL!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen succeeded with an invalid object name of ''!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_invalid_obj_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_invalid_obj_name);
 
-    TESTING_2("H5Oopen_by_idx with an invalid location ID")
+        PART_BEGIN(H5Oopen_invalid_lapl) {
+            TESTING_2("H5Oopen with an invalid LAPL")
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(H5I_INVALID_HID, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
-                H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen(group_id, OBJECT_OPEN_INVALID_PARAMS_TEST_GRP_NAME, H5I_INVALID_HID);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid location ID!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen succeeded with an invalid LAPL!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_invalid_lapl);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_invalid_lapl);
 
-    TESTING_2("H5Oopen_by_idx with an invalid group name")
+        PART_BEGIN(H5Oopen_by_idx_invalid_loc_id) {
+            TESTING_2("H5Oopen_by_idx with an invalid location ID")
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, NULL, H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(H5I_INVALID_HID, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
+                        H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid group name!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with an invalid location ID!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, "", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Oopen_by_idx_invalid_loc_id);
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid group name!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+        PART_BEGIN(H5Oopen_by_idx_invalid_grp_name) {
+            TESTING_2("H5Oopen_by_idx with an invalid group name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, NULL, H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Oopen_by_idx with an invalid index type")
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with a NULL group name!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_grp_name);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
-                H5_INDEX_UNKNOWN, H5_ITER_INC, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, "", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid index type H5_INDEX_UNKNOWN!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with an invalid group name of ''!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_grp_name);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
-                H5_INDEX_N, H5_ITER_INC, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Oopen_by_idx_invalid_grp_name);
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid index type H5_INDEX_N!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+        PART_BEGIN(H5Oopen_by_idx_invalid_index_type) {
+            TESTING_2("H5Oopen_by_idx with an invalid index type")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
+                        H5_INDEX_UNKNOWN, H5_ITER_INC, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Oopen_by_idx with an invalid iteration order")
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with invalid index type H5_INDEX_UNKNOWN!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
-                H5_INDEX_NAME, H5_ITER_UNKNOWN, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
+                        H5_INDEX_N, H5_ITER_INC, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid iteration ordering H5_ITER_UNKNOWN!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with invalid index type H5_INDEX_N!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
-                H5_INDEX_NAME, H5_ITER_N, 0, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Oopen_by_idx_invalid_index_type);
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid iteration ordering H5_ITER_N!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+        PART_BEGIN(H5Oopen_by_idx_invalid_iter_order) {
+            TESTING_2("H5Oopen_by_idx with an invalid iteration order")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
+                        H5_INDEX_NAME, H5_ITER_UNKNOWN, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Oopen_by_idx with an invalid LAPL")
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with an invalid iteration ordering H5_ITER_UNKNOWN!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_iter_order);
+            }
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
-                H5_INDEX_NAME, H5_ITER_INC, 0, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
+                        H5_INDEX_NAME, H5_ITER_N, 0, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_idx succeeded with an invalid LAPL!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with an invalid iteration ordering H5_ITER_N!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_iter_order);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_by_idx_invalid_iter_order);
 
-    TESTING_2("H5Oopen_by_addr with an invalid location ID")
+        PART_BEGIN(H5Oopen_by_idx_invalid_lapl) {
+            TESTING_2("H5Oopen_by_idx with an invalid LAPL")
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_addr(H5I_INVALID_HID, 0);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_idx(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
+                        H5_INDEX_NAME, H5_ITER_INC, 0, H5I_INVALID_HID);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_addr succeeded with an invalid location ID!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_idx succeeded with an invalid LAPL!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_idx_invalid_lapl);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Oopen_by_idx_invalid_lapl);
 
-    TESTING_2("H5Oopen_by_addr with an invalid address")
+        PART_BEGIN(H5Oopen_by_addr_invalid_loc_id) {
+            TESTING_2("H5Oopen_by_addr with an invalid location ID")
 
-    H5E_BEGIN_TRY {
-        group_id2 = H5Oopen_by_addr(file_id, 0);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_addr(H5I_INVALID_HID, 0);
+            } H5E_END_TRY;
 
-    if (group_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oopen_by_addr succeeded with an invalid address!\n");
-        H5Gclose(group_id2);
-        goto error;
-    }
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_addr succeeded with an invalid location ID!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_addr_invalid_loc_id);
+            }
+
+            PASSED();
+        } PART_END(H5Oopen_by_addr_invalid_loc_id);
+
+        PART_BEGIN(H5Oopen_by_addr_invalid_addr) {
+            TESTING_2("H5Oopen_by_addr with an invalid address")
+
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_addr(file_id, 0);
+            } H5E_END_TRY;
+
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_addr succeeded with an invalid address!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_addr_invalid_addr);
+            }
+
+            PASSED();
+        } PART_END(H5Oopen_by_addr_invalid_addr);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -593,7 +651,7 @@ test_object_exists(void)
 
     TESTING_MULTIPART("object existence");
 
-    TESTING_2("H5Oexists_by_name on a group")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -647,53 +705,69 @@ test_object_exists(void)
         goto error;
     }
 
+    PASSED();
+
     /*
      * NOTE: H5Oexists_by_name for hard links should always succeed.
      *       H5Oexists_by_name for a soft link may fail if the link doesn't resolve.
      */
-    if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_GRP_NAME);
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Oexists_by_name_group) {
+            TESTING_2("H5Oexists_by_name on a group")
 
-    if (!object_exists) {
-        H5_FAILED();
-        HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_GRP_NAME);
-        goto error;
-    }
+            if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_GRP_NAME);
+                PART_ERROR(H5Oexists_by_name_group);
+            }
 
-    PASSED();
+            if (!object_exists) {
+                H5_FAILED();
+                HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_GRP_NAME);
+                PART_ERROR(H5Oexists_by_name_group);
+            }
 
-    TESTING_2("H5Oexists_by_name on a dataset")
+            PASSED();
+        } PART_END(H5Oexists_by_name_group);
 
-    if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_DSET_NAME);
-        goto error;
-    }
+        PART_BEGIN(H5Oexists_by_name_dset) {
+            TESTING_2("H5Oexists_by_name on a dataset")
 
-    if (!object_exists) {
-        H5_FAILED();
-        HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_DSET_NAME);
-        goto error;
-    }
+            if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_DSET_NAME);
+                PART_ERROR(H5Oexists_by_name_dset);
+            }
 
-    PASSED();
+            if (!object_exists) {
+                H5_FAILED();
+                HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_DSET_NAME);
+                PART_ERROR(H5Oexists_by_name_dset);
+            }
 
-    TESTING_2("H5Oexists_by_name on a committed datatype")
+            PASSED();
+        } PART_END(H5Oexists_by_name_dset);
 
-    if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_TYPE_NAME);
-        goto error;
-    }
+        PART_BEGIN(H5Oexists_by_name_dtype) {
+            TESTING_2("H5Oexists_by_name on a committed datatype")
 
-    if (!object_exists) {
-        H5_FAILED();
-        HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_TYPE_NAME);
-        goto error;
-    }
+            if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_TYPE_NAME);
+                PART_ERROR(H5Oexists_by_name_dtype);
+            }
+
+            if (!object_exists) {
+                H5_FAILED();
+                HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_TYPE_NAME);
+                PART_ERROR(H5Oexists_by_name_dtype);
+            }
+
+            PASSED();
+        } PART_END(H5Oexists_by_name_dtype);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
@@ -745,7 +819,7 @@ test_object_exists_invalid_params(void)
 
     TESTING_MULTIPART("object existence with invalid parameters");
 
-    TESTING_2("H5Oexists_by_name with an invalid location ID")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -776,53 +850,69 @@ test_object_exists_invalid_params(void)
     if (H5Gclose(group_id2) < 0)
         TEST_ERROR
 
-    H5E_BEGIN_TRY {
-        object_exists = H5Oexists_by_name(H5I_INVALID_HID, OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (object_exists >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oexists_by_name succeeded with an invalid location ID!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Oexists_by_name with an invalid object name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Oexists_by_name_invalid_loc_id) {
+            TESTING_2("H5Oexists_by_name with an invalid location ID")
 
-    H5E_BEGIN_TRY {
-        object_exists = H5Oexists_by_name(group_id, NULL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                object_exists = H5Oexists_by_name(H5I_INVALID_HID, OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (object_exists >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oexists_by_name succeeded with an invalid object name!\n");
-        goto error;
-    }
+            if (object_exists >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oexists_by_name succeeded with an invalid location ID!\n");
+                PART_ERROR(H5Oexists_by_name_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        object_exists = H5Oexists_by_name(group_id, "", H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Oexists_by_name_invalid_loc_id);
 
-    if (object_exists >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oexists_by_name succeeded with an invalid object name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Oexists_by_name_invalid_obj_name) {
+            TESTING_2("H5Oexists_by_name with an invalid object name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                object_exists = H5Oexists_by_name(group_id, NULL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Oexists_by_name with an invalid LAPL")
+            if (object_exists >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oexists_by_name succeeded with a NULL object name!\n");
+                PART_ERROR(H5Oexists_by_name_invalid_obj_name);
+            }
 
-    H5E_BEGIN_TRY {
-        object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                object_exists = H5Oexists_by_name(group_id, "", H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (object_exists >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Oexists_by_name succeeded with an invalid LAPL!\n");
-        goto error;
-    }
+            if (object_exists >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oexists_by_name succeeded with an invalid object name of ''!\n");
+                PART_ERROR(H5Oexists_by_name_invalid_obj_name);
+            }
+
+            PASSED();
+        } PART_END(H5Oexists_by_name_invalid_obj_name);
+
+        PART_BEGIN(H5Oexists_by_name_invalid_lapl) {
+            TESTING_2("H5Oexists_by_name with an invalid LAPL")
+
+            H5E_BEGIN_TRY {
+                object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (object_exists >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oexists_by_name succeeded with an invalid LAPL!\n");
+                PART_ERROR(H5Oexists_by_name_invalid_lapl);
+            }
+
+            PASSED();
+        } PART_END(H5Oexists_by_name_invalid_lapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -946,7 +1036,7 @@ test_copy_object(void)
 
     TESTING_MULTIPART("object copying");
 
-    TESTING_2("H5Ocopy on a group")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1000,70 +1090,86 @@ test_copy_object(void)
         goto error;
     }
 
-    if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_GROUP_NAME2,
-            H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
-        goto error;
-    }
-
-    if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_GROUP_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_GROUP_NAME2);
-        goto error;
-    }
-
-    if (!object_link_exists) {
-        H5_FAILED();
-        HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_GROUP_NAME2);
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Ocopy on a dataset")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Ocopy_group) {
+            TESTING_2("H5Ocopy on a group")
 
-    if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_NAME2,
-            H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
-        goto error;
-    }
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_GROUP_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
+                PART_ERROR(H5Ocopy_group);
+            }
 
-    if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' to copied dataset exists\n", OBJECT_COPY_TEST_DSET_NAME2);
-        goto error;
-    }
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_GROUP_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_GROUP_NAME2);
+                PART_ERROR(H5Ocopy_group);
+            }
 
-    if (!object_link_exists) {
-        H5_FAILED();
-        HDprintf("    link '%s' to copied dataset didn't exist!\n", OBJECT_COPY_TEST_DSET_NAME2);
-        goto error;
-    }
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_GROUP_NAME2);
+                PART_ERROR(H5Ocopy_group);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Ocopy_group);
 
-    TESTING_2("H5Ocopy on a committed datatype")
+        PART_BEGIN(H5Ocopy_dset) {
+            TESTING_2("H5Ocopy on a dataset")
 
-    if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_NAME2,
-            H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
-        goto error;
-    }
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
+                PART_ERROR(H5Ocopy_dset);
+            }
 
-    if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_TYPE_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' to copied datatype exists\n", OBJECT_COPY_TEST_TYPE_NAME2);
-        goto error;
-    }
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied dataset exists\n", OBJECT_COPY_TEST_DSET_NAME2);
+                PART_ERROR(H5Ocopy_dset);
+            }
 
-    if (!object_link_exists) {
-        H5_FAILED();
-        HDprintf("    link '%s' to copied datatype didn't exist!\n", OBJECT_COPY_TEST_TYPE_NAME2);
-        goto error;
-    }
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied dataset didn't exist!\n", OBJECT_COPY_TEST_DSET_NAME2);
+                PART_ERROR(H5Ocopy_dset);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dset);
+
+        PART_BEGIN(H5Ocopy_dtype) {
+            TESTING_2("H5Ocopy on a committed datatype")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
+                PART_ERROR(H5Ocopy_dtype);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_TYPE_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied datatype exists\n", OBJECT_COPY_TEST_TYPE_NAME2);
+                PART_ERROR(H5Ocopy_dtype);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied datatype didn't exist!\n", OBJECT_COPY_TEST_TYPE_NAME2);
+                PART_ERROR(H5Ocopy_dtype);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dtype);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(space_id) < 0)
         TEST_ERROR
@@ -1115,7 +1221,7 @@ test_copy_object_invalid_params(void)
 
     TESTING_MULTIPART("object copying with invalid parameters");
 
-    TESTING_2("H5Ocopy with an invalid source location ID")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1143,113 +1249,135 @@ test_copy_object_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(H5I_INVALID_HID, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
-                OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid source location ID!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Ocopy with an invalid source object name")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Ocopy_invalid_src_loc_id) {
+            TESTING_2("H5Ocopy with an invalid source location ID")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, NULL, group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2,
-                H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(H5I_INVALID_HID, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
+                        OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid source object name!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with an invalid source location ID!\n");
+                PART_ERROR(H5Ocopy_invalid_src_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, "", group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2,
-                H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ocopy_invalid_src_loc_id);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid source object name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ocopy_invalid_src_obj_name) {
+            TESTING_2("H5Ocopy with an invalid source object name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, NULL, group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2,
+                        H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ocopy with an invalid destination location ID")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with a NULL source object name!\n");
+                PART_ERROR(H5Ocopy_invalid_src_obj_name);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, H5I_INVALID_HID,
-                OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, "", group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2,
+                        H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid destination location ID!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with an invalid source object name of ''!\n");
+                PART_ERROR(H5Ocopy_invalid_src_obj_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Ocopy_invalid_src_obj_name);
 
-    TESTING_2("H5Ocopy with an invalid destination object name")
+        PART_BEGIN(H5Ocopy_invalid_dst_loc_id) {
+            TESTING_2("H5Ocopy with an invalid destination location ID")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
-                NULL, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, H5I_INVALID_HID,
+                        OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid destination object name!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with an invalid destination location ID!\n");
+                PART_ERROR(H5Ocopy_invalid_dst_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
-                "", H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ocopy_invalid_dst_loc_id);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid destination object name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ocopy_invalid_dst_obj_name) {
+            TESTING_2("H5Ocopy with an invalid destination object name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
+                        NULL, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ocopy with an invalid OcpyPL")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with a NULL destination object name!\n");
+                PART_ERROR(H5Ocopy_invalid_dst_obj_name);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
-                OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5I_INVALID_HID, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
+                        "", H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid OcpyPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with an invalid destination object name of ''!\n");
+                PART_ERROR(H5Ocopy_invalid_dst_obj_name);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Ocopy_invalid_dst_obj_name);
 
-    TESTING_2("H5Ocopy with an invalid LCPL")
+        PART_BEGIN(H5Ocopy_invalid_ocpypl) {
+            TESTING_2("H5Ocopy with an invalid OcpyPL")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
-                OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5P_DEFAULT, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
+                        OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5I_INVALID_HID, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ocopy succeeded with an invalid LCPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with an invalid OcpyPL!\n");
+                PART_ERROR(H5Ocopy_invalid_ocpypl);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_invalid_ocpypl);
+
+        PART_BEGIN(H5Ocopy_invalid_lcpl) {
+            TESTING_2("H5Ocopy with an invalid LCPL")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME, group_id,
+                        OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME2, H5P_DEFAULT, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ocopy succeeded with an invalid LCPL!\n");
+                PART_ERROR(H5Ocopy_invalid_lcpl);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_invalid_lcpl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id2) < 0)
         TEST_ERROR
@@ -1319,7 +1447,7 @@ test_object_visit(void)
 
     TESTING_MULTIPART("object visiting");
 
-    TESTING_2("H5Ovisit by object name in increasing order")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1373,94 +1501,120 @@ test_object_visit(void)
         goto error;
     }
 
-    /*
-     * NOTE: Pass a counter to the iteration callback to try to match up the
-     * expected objects with a given step throughout all of the following
-     * iterations. This is to try and check that the objects are indeed being
-     * returned in the correct order.
-     */
-    i = 0;
-
-    if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit by object name in increasing order failed\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Ovisit by object name in decreasing order")
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected objects with a given step throughout all of the following
+         * iterations. This is to try and check that the objects are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
 
-    if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit by object name in decreasing order failed\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_obj_name_increasing) {
+            TESTING_2("H5Ovisit by object name in increasing order")
 
-    PASSED();
+            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by object name in increasing order failed\n");
+                PART_ERROR(H5Ovisit_obj_name_increasing);
+            }
 
-    TESTING_2("H5Ovisit by creation order in increasing order")
+            PASSED();
+        } PART_END(H5Ovisit_obj_name_increasing);
 
-    if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit by creation order in increasing order failed\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_obj_name_decreasing) {
+            TESTING_2("H5Ovisit by object name in decreasing order")
 
-    PASSED();
+            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by object name in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_obj_name_decreasing);
+            }
 
-    TESTING_2("H5Ovisit by creation order in decreasing order")
+            PASSED();
+        } PART_END(H5Ovisit_obj_name_decreasing);
 
-    if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_create_order_increasing) {
+            TESTING_2("H5Ovisit by creation order in increasing order")
 
-    PASSED();
+            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by creation order in increasing order failed\n");
+                PART_ERROR(H5Ovisit_create_order_increasing);
+            }
 
-    /*
-     * Make sure to reset the special counter.
-     */
-    i = 0;
+            PASSED();
+        } PART_END(H5Ovisit_create_order_increasing);
 
-    TESTING_2("H5Ovisit_by_name by object name in increasing order")
+        PART_BEGIN(H5Ovisit_create_order_decreasing) {
+            TESTING_2("H5Ovisit by creation order in decreasing order")
 
-    if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
-        goto error;
-    }
+            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_create_order_decreasing);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Ovisit_create_order_decreasing);
 
-    TESTING_2("H5Ovisit_by_name by object name in decreasing order")
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
 
-    if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_by_name_obj_name_increasing) {
+            TESTING_2("H5Ovisit_by_name by object name in increasing order")
 
-    PASSED();
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
+            }
 
-    TESTING_2("H5Ovisit_by_name by creation order in increasing order")
+            PASSED();
+        } PART_END(H5Ovisit_by_name_obj_name_increasing);
 
-    if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
+            TESTING_2("H5Ovisit_by_name by object name in decreasing order")
 
-    PASSED();
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
+            }
 
-    TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
+            PASSED();
+        } PART_END(H5Ovisit_by_name_obj_name_decreasing);
 
-    if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_by_name_create_order_increasing) {
+            TESTING_2("H5Ovisit_by_name by creation order in increasing order")
+
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_create_order_increasing);
+
+        PART_BEGIN(H5Ovisit_by_name_create_order_decreasing) {
+            TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
+
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_create_order_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
@@ -1512,7 +1666,7 @@ test_object_visit_invalid_params(void)
 
     TESTING_MULTIPART("object visiting with invalid parameters");
 
-    TESTING_2("H5Ovisit with an invalid object ID")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1540,163 +1694,189 @@ test_object_visit_invalid_params(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit2(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL);
-    } H5E_END_TRY;
-
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit succeeded with an invalid object ID!\n");
-        goto error;
-    }
-
     PASSED();
 
-    TESTING_2("H5Ovisit with an invalid index type")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Ovisit_invalid_obj_id) {
+            TESTING_2("H5Ovisit with an invalid object ID")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit2(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit2(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit succeeded with an invalid index type H5_INDEX_UNKNOWN!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit succeeded with an invalid object ID!\n");
+                PART_ERROR(H5Ovisit_invalid_obj_id);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit2(group_id, H5_INDEX_N, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ovisit_invalid_obj_id);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit succeeded with an invalid index type H5_INDEX_N!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_invalid_index_type) {
+            TESTING_2("H5Ovisit with an invalid index type")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit2(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ovisit with an invalid iteration ordering")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit succeeded with invalid index type H5_INDEX_UNKNOWN!\n");
+                PART_ERROR(H5Ovisit_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_callback2, NULL, H5O_INFO_ALL);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit2(group_id, H5_INDEX_N, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit succeeded with an invalid iteration ordering H5_ITER_UNKNOWN!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit succeeded with invalid index type H5_INDEX_N!\n");
+                PART_ERROR(H5Ovisit_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ovisit_invalid_index_type);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit succeeded with an invalid iteration ordering H5_ITER_N!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_invalid_iter_order) {
+            TESTING_2("H5Ovisit with an invalid iteration ordering")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_callback2, NULL, H5O_INFO_ALL);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ovisit_by_name with an invalid location ID")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit succeeded with invalid iteration ordering H5_ITER_UNKNOWN!\n");
+                PART_ERROR(H5Ovisit_invalid_iter_order);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(H5I_INVALID_HID, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid location ID!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit succeeded with invalid iteration ordering H5_ITER_N!\n");
+                PART_ERROR(H5Ovisit_invalid_iter_order);
+            }
 
-    PASSED();
+            PASSED();
+        } PART_END(H5Ovisit_invalid_iter_order);
 
-    TESTING_2("H5Ovisit_by_name with an invalid object name")
+        PART_BEGIN(H5Ovisit_by_name_invalid_loc_id) {
+            TESTING_2("H5Ovisit_by_name with an invalid location ID")
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, NULL, H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(H5I_INVALID_HID, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid object name!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with an invalid location ID!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_loc_id);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, "", H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ovisit_by_name_invalid_loc_id);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid object name!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_by_name_invalid_obj_name) {
+            TESTING_2("H5Ovisit_by_name with an invalid object name")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, NULL, H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ovisit_by_name with an invalid index type")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with a NULL object name!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_obj_name);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_UNKNOWN, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, "", H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid index type H5_INDEX_UNKNOWN!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with an invalid object name of ''!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_obj_name);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_N, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ovisit_by_name_invalid_obj_name);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid index type H5_INDEX_N!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_by_name_invalid_index_type) {
+            TESTING_2("H5Ovisit_by_name with an invalid index type")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_UNKNOWN, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ovisit_by_name with an invalid iteration ordering")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with invalid index type H5_INDEX_UNKNOWN!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_N, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid iteration ordering H5_ITER_UNKNOWN!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with invalid index type H5_INDEX_N!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_index_type);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
-    } H5E_END_TRY;
+            PASSED();
+        } PART_END(H5Ovisit_by_name_invalid_index_type);
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid iteration ordering H5_ITER_N!\n");
-        goto error;
-    }
+        PART_BEGIN(H5Ovisit_by_name_invalid_iter_order) {
+            TESTING_2("H5Ovisit_by_name with an invalid iteration ordering")
 
-    PASSED();
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    TESTING_2("H5Ovisit_by_name with an invalid LAPL")
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with invalid iteration ordering H5_ITER_UNKNOWN!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_iter_order);
+            }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL, H5I_INVALID_HID);
-    } H5E_END_TRY;
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_callback2, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-    if (err_ret >= 0) {
-        H5_FAILED();
-        HDprintf("    H5Ovisit_by_name succeeded with an invalid LAPL!\n");
-        goto error;
-    }
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with invalid iteration ordering H5_ITER_N!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_iter_order);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_invalid_iter_order);
+
+        PART_BEGIN(H5Ovisit_by_name_invalid_lapl) {
+            TESTING_2("H5Ovisit_by_name with an invalid LAPL")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback2, NULL, H5O_INFO_ALL, H5I_INVALID_HID);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name succeeded with an invalid LAPL!\n");
+                PART_ERROR(H5Ovisit_by_name_invalid_lapl);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_invalid_lapl);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id2) < 0)
         TEST_ERROR
@@ -1738,7 +1918,7 @@ test_close_object(void)
 
     TESTING_MULTIPART("H5Oclose");
 
-    TESTING_2("H5Oclose on a group")
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1799,40 +1979,56 @@ test_close_object(void)
     if (H5Tclose(dtype_id) < 0)
         TEST_ERROR
 
-    if ((group_id2 = H5Oopen(group_id, OBJECT_CLOSE_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_GRP_NAME);
-        goto error;
-    }
-
-    if ((dset_id = H5Oopen(group_id, OBJECT_CLOSE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open dataset '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_DSET_NAME);
-        goto error;
-    }
-
-    if ((dtype_id = H5Oopen(group_id, OBJECT_CLOSE_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open datatype '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if (H5Oclose(group_id2) < 0)
-        TEST_ERROR
-
     PASSED();
 
-    TESTING_2("H5Oclose on a dataset")
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Oclose_group) {
+            TESTING_2("H5Oclose on a group")
 
-    if (H5Oclose(dset_id) < 0)
-        TEST_ERROR
+            if ((group_id2 = H5Oopen(group_id, OBJECT_CLOSE_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open group '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_GRP_NAME);
+                PART_ERROR(H5Oclose_group);
+            }
 
-    PASSED();
+            if (H5Oclose(group_id2) < 0)
+                TEST_ERROR
 
-    TESTING_2("H5Oclose on a committed datatype")
+            PASSED();
+        } PART_END(H5Oclose_group);
 
-    if (H5Oclose(dtype_id) < 0)
-        TEST_ERROR
+        PART_BEGIN(H5Oclose_dset) {
+            TESTING_2("H5Oclose on a dataset")
+
+            if ((dset_id = H5Oopen(group_id, OBJECT_CLOSE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_DSET_NAME);
+                PART_ERROR(H5Oclose_dset);
+            }
+
+            if (H5Oclose(dset_id) < 0)
+                TEST_ERROR
+
+            PASSED();
+        } PART_END(H5Oclose_dset);
+
+        PART_BEGIN(H5Oclose_dtype) {
+            TESTING_2("H5Oclose on a committed datatype")
+
+            if ((dtype_id = H5Oopen(group_id, OBJECT_CLOSE_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open datatype '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_TYPE_NAME);
+                PART_ERROR(H5Oclose_dtype);
+            }
+
+            if (H5Oclose(dtype_id) < 0)
+                TEST_ERROR
+
+            PASSED();
+        } PART_END(H5Oclose_dtype);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
