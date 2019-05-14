@@ -1047,27 +1047,39 @@ test_get_file_obj_count(void)
     /* Get the number of all open objects */
     if ((obj_count = H5Fget_obj_count(file_id, H5F_OBJ_ALL)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't retrieve number of objects in file '%s'\n", vol_test_filename);
+        HDprintf("    couldn't retrieve number of open objects\n");
         goto error;
     }
 
     /* One for the file and another for the group */
     if (obj_count != 2) {
         H5_FAILED();
-        HDprintf("    1. incorrect object count: obj_count=%ld\n", obj_count);
+        HDprintf("    number of open objects (%ld) did not match expected number (2)\n", obj_count);
         goto error;
     }
 
     /* Get the number of groups */
-    if ((obj_count = H5Fget_obj_count(file_id, H5F_OBJ_GROUP)) < 0 || obj_count != 1) {
+    if ((obj_count = H5Fget_obj_count(file_id, H5F_OBJ_GROUP)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of group: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't retrieve number of opened objects\n");
         goto error;
     }
 
-    if (H5Fget_obj_ids(file_id, H5F_OBJ_GROUP, (size_t)obj_count, &object_id) < 0 || object_id != group_id) {
+    if (obj_count != 1) {
         H5_FAILED();
-        HDprintf("    couldn't get the group ID: object_id=%lld\n", object_id);
+        HDprintf("    number of open objects (%ld) did not match expected number (1)\n", obj_count);
+        goto error;
+    }
+
+    if (H5Fget_obj_ids(file_id, H5F_OBJ_GROUP, (size_t)obj_count, &object_id) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get opened group IDs\n");
+        goto error;
+    }
+
+    if (object_id != group_id) {
+        H5_FAILED();
+        HDprintf("    opened object ID (%ld) did not match only currently open group ID (%ld)\n", object_id, group_id);
         goto error;
     }
 
@@ -1113,37 +1125,67 @@ test_get_file_obj_count(void)
     }
 
     /* Get the number of files currently opened */
-    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_FILE)) < 0 || obj_count != 2) {
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_FILE)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of file: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't get the number of open files\n");
+        goto error;
+    }
+
+    if (obj_count != 2) {
+        H5_FAILED();
+        HDprintf("    number of open files (%ld) did not match expected number (2)\n", obj_count);
         goto error;
     }
 
     /* Get the number of groups in two opened files */
-    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_GROUP)) < 0 || obj_count != 1) {
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_GROUP)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of group: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't get the number of open groups\n");
+        goto error;
+    }
+
+    if (obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    number of open groups (%ld) did not match expected number (1)\n", obj_count);
         goto error;
     }
 
     /* Get the number of named datatype in two opened files */
-    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_DATATYPE)) < 0 || obj_count != 1) {
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_DATATYPE)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of datatype: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't get the number of open named datatypes\n");
+        goto error;
+    }
+
+    if (obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    number of open named datatypes (%ld) did not match expected number (1)\n", obj_count);
         goto error;
     }
 
     /* Get the number of attribute in two opened files */
-    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_ATTR)) < 0 || obj_count != 1) {
+    if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_ATTR)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of attribute: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't get the number of open attributes\n");
+        goto error;
+    }
+
+    if (obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    number of open attributes (%ld) did not match expected number (1)\n", obj_count);
         goto error;
     }
 
     /* Get the number of dataset in two opened files */
     if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_DATASET)) < 0 || obj_count != 1) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of dataset: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't get the number of open datasets\n");
+        goto error;
+    }
+
+    if (obj_count != 1) {
+        H5_FAILED();
+        HDprintf("    number of open datasets (%ld) did not match expected number (1)\n", obj_count);
         goto error;
     }
 
@@ -1190,8 +1232,7 @@ test_file_open_overlap(void)
     ssize_t obj_count;
     hid_t   file_id = H5I_INVALID_HID;
     hid_t   file_id2 = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID, object_id = H5I_INVALID_HID;
-    hid_t   named_dtype_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
+    hid_t   group_id = H5I_INVALID_HID;
     hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
 
     TESTING("overlapping file opens")
@@ -1229,9 +1270,15 @@ test_file_open_overlap(void)
     }
 
     /* Get the number of objects opened in the first file: 3 == file + dataset + group */
-    if ((obj_count = H5Fget_obj_count(file_id, H5F_OBJ_LOCAL | H5F_OBJ_ALL)) < 0 || obj_count != 3) {
+    if ((obj_count = H5Fget_obj_count(file_id, H5F_OBJ_LOCAL | H5F_OBJ_ALL)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of objects: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't retrieve the number of objects opened in the file\n");
+        goto error;
+    }
+
+    if (obj_count != 3) {
+        H5_FAILED();
+        HDprintf("    number of objects opened in file (%ld) did not match expected number (3)\n", obj_count);
         goto error;
     }
 
@@ -1250,9 +1297,15 @@ test_file_open_overlap(void)
     }
 
     /* Get the number of objects opened in the first file: 2 == file + dataset */
-    if ((obj_count = H5Fget_obj_count(file_id2, H5F_OBJ_ALL)) < 0 || obj_count != 2) {
+    if ((obj_count = H5Fget_obj_count(file_id2, H5F_OBJ_ALL)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get the number of objects: obj_count=%ld\n", obj_count);
+        HDprintf("    couldn't retrieve the number of objects opened in the file\n");
+        goto error;
+    }
+
+    if (obj_count != 2) {
+        H5_FAILED();
+        HDprintf("    number of objects opened in the file (%ld) did not match expected number (2)\n", obj_count);
         goto error;
     }
 

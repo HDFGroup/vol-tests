@@ -2410,8 +2410,11 @@ test_get_dataset_space_and_type(void)
             {
                 hsize_t space_dims[DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK];
 
-                if (H5Sget_simple_extent_dims(tmp_space_id, space_dims, NULL) < 0)
-                    TEST_ERROR
+                if (H5Sget_simple_extent_dims(tmp_space_id, space_dims, NULL) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't retrieve dataspace dimensions\n");
+                    PART_ERROR(H5Dget_space);
+                }
 
                 for (i = 0; i < DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK; i++)
                     if (space_dims[i] != dset_dims[i]) {
@@ -2427,21 +2430,33 @@ test_get_dataset_space_and_type(void)
         /* Now close the dataset and verify that this still works after
          * opening an attribute instead of creating it.
          */
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-        if (H5Tclose(tmp_type_id) < 0)
-            TEST_ERROR
-        if (H5Sclose(tmp_space_id) < 0)
-            TEST_ERROR
-
-        if ((dset_id = H5Dopen2(group_id, DATASET_GET_SPACE_TYPE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset '%s'\n", DATASET_GET_SPACE_TYPE_TEST_DSET_NAME);
-            goto error;
+        if (dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+            dset_id = H5I_INVALID_HID;
+        }
+        if (tmp_type_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(tmp_type_id);
+            } H5E_END_TRY;
+            tmp_type_id = H5I_INVALID_HID;
+        }
+        if (tmp_space_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Sclose(tmp_space_id);
+            } H5E_END_TRY;
+            tmp_space_id = H5I_INVALID_HID;
         }
 
         PART_BEGIN(H5Dget_type_reopened) {
             TESTING_2("H5Dget_type after re-opening a dataset")
+
+            if ((dset_id = H5Dopen2(group_id, DATASET_GET_SPACE_TYPE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_GET_SPACE_TYPE_TEST_DSET_NAME);
+                PART_ERROR(H5Dget_type_reopened);
+            }
 
             if ((tmp_type_id = H5Dget_type(dset_id)) < 0) {
                 H5_FAILED();
@@ -2465,11 +2480,24 @@ test_get_dataset_space_and_type(void)
                 }
             }
 
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
+
             PASSED();
         } PART_END(H5Dget_type_reopened);
 
         PART_BEGIN(H5Dget_space_reopened) {
             TESTING_2("H5Dget_space after re-opening a dataset")
+
+            if ((dset_id = H5Dopen2(group_id, DATASET_GET_SPACE_TYPE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_GET_SPACE_TYPE_TEST_DSET_NAME);
+                PART_ERROR(H5Dget_space_reopened);
+            }
 
             if ((tmp_space_id = H5Dget_space(dset_id)) < 0) {
                 H5_FAILED();
@@ -2480,8 +2508,11 @@ test_get_dataset_space_and_type(void)
             {
                 hsize_t space_dims[DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK];
 
-                if (H5Sget_simple_extent_dims(tmp_space_id, space_dims, NULL) < 0)
-                    TEST_ERROR
+                if (H5Sget_simple_extent_dims(tmp_space_id, space_dims, NULL) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't retrieve dataspace dimensions\n");
+                    PART_ERROR(H5Dget_space_reopened);
+                }
 
                 for (i = 0; i < DATASET_GET_SPACE_TYPE_TEST_SPACE_RANK; i++) {
                     if (space_dims[i] != dset_dims[i]) {
@@ -2490,6 +2521,13 @@ test_get_dataset_space_and_type(void)
                         PART_ERROR(H5Dget_space_reopened);
                     }
                 }
+            }
+
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
             }
 
             PASSED();
@@ -2505,8 +2543,6 @@ test_get_dataset_space_and_type(void)
     if (H5Tclose(tmp_type_id) < 0)
         TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -2853,8 +2889,12 @@ test_dataset_property_lists(void)
                 PART_ERROR(H5Dget_access_plist);
             }
 
-            if (H5Pclose(dapl_id1) < 0)
-                TEST_ERROR
+            if (dapl_id1 >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dapl_id1);
+                } H5E_END_TRY;
+                dapl_id1 = H5I_INVALID_HID;
+            }
 
             /* Try to receive copies of the two property lists, one which has the property set and one which does not */
             if ((dapl_id1 = H5Dget_access_plist(dset_id3)) < 0) {
@@ -2879,8 +2919,11 @@ test_dataset_property_lists(void)
                     PART_ERROR(H5Dget_access_plist);
                 }
 
-                if (NULL == (tmp_prefix = (char *) HDcalloc(1, (size_t) buf_size + 1)))
-                    TEST_ERROR
+                if (NULL == (tmp_prefix = (char *) HDcalloc(1, (size_t) buf_size + 1))) {
+                    H5_FAILED();
+                    HDprintf("    couldn't allocate buffer for property value\n");
+                    PART_ERROR(H5Dget_access_plist);
+                }
 
                 if (H5Pget_efile_prefix(dapl_id1, tmp_prefix, (size_t) buf_size + 1) < 0) {
                     H5_FAILED();
@@ -4685,10 +4728,18 @@ test_write_dataset_data_verification(void)
                 data = NULL;
             }
 
-            if (H5Sclose(fspace_id) < 0)
-                TEST_ERROR
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
+            if (fspace_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Sclose(fspace_id);
+                } H5E_END_TRY;
+                fspace_id = H5I_INVALID_HID;
+            }
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
 
             if ((dset_id = H5Dopen2(group_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -4708,8 +4759,11 @@ test_write_dataset_data_verification(void)
                 PART_ERROR(H5Dwrite_all_read);
             }
 
-            if (NULL == (data = HDmalloc((hsize_t) space_npoints * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE)))
-                TEST_ERROR
+            if (NULL == (data = HDmalloc((hsize_t) space_npoints * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset read\n");
+                PART_ERROR(H5Dwrite_all_read);
+            }
 
             if (H5Dread(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0) {
                 H5_FAILED();
@@ -4737,8 +4791,11 @@ test_write_dataset_data_verification(void)
 
             data_size = dims[1] * 2 * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE;
 
-            if (NULL == (write_buf = HDmalloc(data_size)))
-                TEST_ERROR
+            if (NULL == (write_buf = HDmalloc(data_size))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset write\n");
+                PART_ERROR(H5Dwrite_hyperslab_read);
+            }
 
             for (i = 0; i < data_size / DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE; i++)
                 ((int *) write_buf)[i] = 56;
@@ -4747,8 +4804,11 @@ test_write_dataset_data_verification(void)
                 data_size *= dims[i];
             data_size *= DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE;
 
-            if (NULL == (data = HDmalloc(data_size)))
-                TEST_ERROR
+            if (NULL == (data = HDmalloc(data_size))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset data verification\n");
+                PART_ERROR(H5Dwrite_hyperslab_read);
+            }
 
             if (H5Dread(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0) {
                 H5_FAILED();
@@ -4769,14 +4829,20 @@ test_write_dataset_data_verification(void)
             count[0] = 2; count[1] = dims[1]; count[2] = 1;
             block[0] = block[1] = block[2] = 1;
 
-            if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, stride, count, block) < 0)
-                TEST_ERROR
+            if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, stride, count, block) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't select hyperslab for dataset write\n");
+                PART_ERROR(H5Dwrite_hyperslab_read);
+            }
 
             {
                 hsize_t mdims[] = { (hsize_t) 2 * dims[1] };
 
-                if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0)
-                    TEST_ERROR
+                if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create memory dataspace\n");
+                    PART_ERROR(H5Dwrite_hyperslab_read);
+                }
             }
 
             if (H5Dwrite(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
@@ -4785,12 +4851,24 @@ test_write_dataset_data_verification(void)
                 PART_ERROR(H5Dwrite_hyperslab_read);
             }
 
-            if (H5Sclose(mspace_id) < 0)
-                TEST_ERROR
-            if (H5Sclose(fspace_id) < 0)
-                TEST_ERROR
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
+            if (mspace_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Sclose(mspace_id);
+                } H5E_END_TRY;
+                mspace_id = H5I_INVALID_HID;
+            }
+            if (fspace_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Sclose(fspace_id);
+                } H5E_END_TRY;
+                fspace_id = H5I_INVALID_HID;
+            }
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
 
             if ((dset_id = H5Dopen2(group_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -4810,8 +4888,11 @@ test_write_dataset_data_verification(void)
                 PART_ERROR(H5Dwrite_hyperslab_read);
             }
 
-            if (NULL == (read_buf = HDmalloc((hsize_t) space_npoints * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE)))
-                TEST_ERROR
+            if (NULL == (read_buf = HDmalloc((hsize_t) space_npoints * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset read\n");
+                PART_ERROR(H5Dwrite_hyperslab_read);
+            }
 
             if (H5Dread(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_buf) < 0) {
                 H5_FAILED();
@@ -4848,8 +4929,11 @@ test_write_dataset_data_verification(void)
 
             data_size = DATASET_DATA_VERIFY_WRITE_TEST_NUM_POINTS * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE;
 
-            if (NULL == (write_buf = HDmalloc(data_size)))
-                TEST_ERROR
+            if (NULL == (write_buf = HDmalloc(data_size))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset write\n");
+                PART_ERROR(H5Dwrite_point_sel_read);
+            }
 
             for (i = 0; i < data_size / DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE; i++)
                 ((int *) write_buf)[i] = 13;
@@ -4858,8 +4942,11 @@ test_write_dataset_data_verification(void)
                 data_size *= dims[i];
             data_size *= DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE;
 
-            if (NULL == (data = HDmalloc(data_size)))
-                TEST_ERROR
+            if (NULL == (data = HDmalloc(data_size))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset data verification\n");
+                PART_ERROR(H5Dwrite_point_sel_read);
+            }
 
             if (H5Dread(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0) {
                 H5_FAILED();
@@ -4889,14 +4976,20 @@ test_write_dataset_data_verification(void)
                     points[(i * DATASET_DATA_VERIFY_WRITE_TEST_DSET_SPACE_RANK) + j] = i;
             }
 
-            if (H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_DATA_VERIFY_WRITE_TEST_NUM_POINTS, points) < 0)
-                TEST_ERROR
+            if (H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_DATA_VERIFY_WRITE_TEST_NUM_POINTS, points) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't select elements in dataspace\n");
+                PART_ERROR(H5Dwrite_point_sel_read);
+            }
 
             {
                 hsize_t mdims[] = { (hsize_t) DATASET_DATA_VERIFY_WRITE_TEST_NUM_POINTS };
 
-                if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0)
-                    TEST_ERROR
+                if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create memory dataspace\n");
+                    PART_ERROR(H5Dwrite_point_sel_read);
+                }
             }
 
             if (H5Dwrite(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
@@ -4905,12 +4998,24 @@ test_write_dataset_data_verification(void)
                 PART_ERROR(H5Dwrite_point_sel_read);
             }
 
-            if (H5Sclose(mspace_id) < 0)
-                TEST_ERROR
-            if (H5Sclose(fspace_id) < 0)
-                TEST_ERROR
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
+            if (mspace_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Sclose(mspace_id);
+                } H5E_END_TRY;
+                mspace_id = H5I_INVALID_HID;
+            }
+            if (fspace_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Sclose(fspace_id);
+                } H5E_END_TRY;
+                fspace_id = H5I_INVALID_HID;
+            }
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
 
             if ((dset_id = H5Dopen2(group_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -4930,8 +5035,11 @@ test_write_dataset_data_verification(void)
                 PART_ERROR(H5Dwrite_point_sel_read);
             }
 
-            if (NULL == (read_buf = HDmalloc((hsize_t) space_npoints * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE)))
-                TEST_ERROR
+            if (NULL == (read_buf = HDmalloc((hsize_t) space_npoints * DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPESIZE))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for dataset read\n");
+                PART_ERROR(H5Dwrite_point_sel_read);
+            }
 
             if (H5Dread(dset_id, DATASET_DATA_VERIFY_WRITE_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_buf) < 0) {
                 H5_FAILED();

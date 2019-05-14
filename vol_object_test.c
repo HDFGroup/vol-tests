@@ -213,12 +213,24 @@ test_open_object(void)
             PASSED();
         } PART_END(H5Oopen_dtype);
 
-        if (H5Gclose(group_id2) < 0)
-            TEST_ERROR
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-        if (H5Tclose(type_id) < 0)
-            TEST_ERROR
+        if (group_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id2);
+            } H5E_END_TRY;
+            group_id = H5I_INVALID_HID;
+        }
+        if (dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+            dset_id = H5I_INVALID_HID;
+        }
+        if (type_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(type_id);
+            } H5E_END_TRY;
+            type_id = H5I_INVALID_HID;
+        }
 
         PART_BEGIN(H5Oopen_by_idx_group) {
             TESTING_2("H5Oopen_by_idx on a group")
@@ -259,12 +271,24 @@ test_open_object(void)
             PASSED();
         } PART_END(H5Oopen_by_idx_dtype);
 
-        if (H5Gclose(group_id2) < 0)
-            TEST_ERROR
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-        if (H5Tclose(type_id) < 0)
-            TEST_ERROR
+        if (group_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id2);
+            } H5E_END_TRY;
+            group_id = H5I_INVALID_HID;
+        }
+        if (dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+            dset_id = H5I_INVALID_HID;
+        }
+        if (type_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(type_id);
+            } H5E_END_TRY;
+            type_id = H5I_INVALID_HID;
+        }
 
         PART_BEGIN(H5Oopen_by_addr_group) {
             TESTING_2("H5Oopen_by_addr on a group")
@@ -301,6 +325,25 @@ test_open_object(void)
 
             PASSED();
         } PART_END(H5Oopen_by_addr_dtype);
+
+        if (group_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id2);
+            } H5E_END_TRY;
+            group_id = H5I_INVALID_HID;
+        }
+        if (dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+            dset_id = H5I_INVALID_HID;
+        }
+        if (type_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(type_id);
+            } H5E_END_TRY;
+            type_id = H5I_INVALID_HID;
+        }
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -308,12 +351,6 @@ test_open_object(void)
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
-    if (H5Tclose(type_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id2) < 0)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -1991,8 +2028,11 @@ test_close_object(void)
                 PART_ERROR(H5Oclose_group);
             }
 
-            if (H5Oclose(group_id2) < 0)
-                TEST_ERROR
+            if (H5Oclose(group_id2) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close group '%s' with H5Oclose\n", OBJECT_CLOSE_TEST_GRP_NAME);
+                PART_ERROR(H5Oclose_group);
+            }
 
             PASSED();
         } PART_END(H5Oclose_group);
@@ -2006,8 +2046,11 @@ test_close_object(void)
                 PART_ERROR(H5Oclose_dset);
             }
 
-            if (H5Oclose(dset_id) < 0)
-                TEST_ERROR
+            if (H5Oclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close dataset '%s' with H5Oclose\n", OBJECT_CLOSE_TEST_DSET_NAME);
+                PART_ERROR(H5Oclose_dset);
+            }
 
             PASSED();
         } PART_END(H5Oclose_dset);
@@ -2021,8 +2064,11 @@ test_close_object(void)
                 PART_ERROR(H5Oclose_dtype);
             }
 
-            if (H5Oclose(dtype_id) < 0)
-                TEST_ERROR
+            if (H5Oclose(dtype_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close datatype '%s' with H5Oclose\n", OBJECT_CLOSE_TEST_TYPE_NAME);
+                PART_ERROR(H5Oclose_dtype);
+            }
 
             PASSED();
         } PART_END(H5Oclose_dtype);

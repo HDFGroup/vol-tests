@@ -1037,9 +1037,6 @@ test_get_group_info(void)
                 PART_ERROR(H5Gget_info);
             }
 
-            if (H5Gclose(parent_group_id) < 0)
-                TEST_ERROR
-
             PASSED();
         } PART_END(H5Gget_info);
 
@@ -1084,6 +1081,8 @@ test_get_group_info(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Gclose(parent_group_id) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
