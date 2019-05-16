@@ -640,6 +640,7 @@ test_open_committed_datatype_invalid_params(void)
             if (type_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened committed datatype with an invalid location ID!\n");
+                H5Tclose(type_id);
                 PART_ERROR(H5Topen2_invalid_loc_id);
             }
 
@@ -656,6 +657,7 @@ test_open_committed_datatype_invalid_params(void)
             if (type_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened committed datatype with an invalid datatype name!\n");
+                H5Tclose(type_id);
                 PART_ERROR(H5Topen2_invalid_type_name);
             }
 
@@ -666,6 +668,7 @@ test_open_committed_datatype_invalid_params(void)
             if (type_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened committed datatype with an invalid datatype name!\n");
+                H5Tclose(type_id);
                 PART_ERROR(H5Topen2_invalid_type_name);
             }
 
@@ -682,6 +685,7 @@ test_open_committed_datatype_invalid_params(void)
             if (type_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened committed datatype with an invalid TAPL!\n");
+                H5Tclose(type_id);
                 PART_ERROR(H5Topen2_invalid_tapl);
             }
 

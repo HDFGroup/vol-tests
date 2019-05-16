@@ -128,6 +128,7 @@ test_create_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was created with a NULL name!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fcreate_invalid_name);
             }
 
@@ -138,6 +139,7 @@ test_create_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was created with an invalid name of ''!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fcreate_invalid_name);
             }
 
@@ -154,6 +156,7 @@ test_create_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was created with invalid flag H5F_ACC_RDWR!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fcreate_invalid_flags);
             }
 
@@ -164,6 +167,7 @@ test_create_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was created with invalid flag H5F_ACC_CREAT!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fcreate_invalid_flags);
             }
 
@@ -174,6 +178,7 @@ test_create_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was created with invalid flag H5F_ACC_SWMR_READ!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fcreate_invalid_flags);
             }
 
@@ -190,6 +195,7 @@ test_create_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was created with invalid FCPL!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fcreate_invalid_fcpl);
             }
 
@@ -330,6 +336,7 @@ test_open_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was opened with a NULL name!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fopen_invalid_name);
             }
 
@@ -340,6 +347,7 @@ test_open_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was opened with an invalid name of ''!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fopen_invalid_name);
             }
 
@@ -356,6 +364,7 @@ test_open_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was opened with invalid flag H5F_ACC_TRUNC!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fopen_invalid_flags);
             }
 
@@ -366,6 +375,7 @@ test_open_file_invalid_params(void)
             if (file_id >= 0) {
                 H5_FAILED();
                 HDprintf("    file was opened with invalid flag H5F_ACC_EXCL!\n");
+                H5Fclose(file_id);
                 PART_ERROR(H5Fopen_invalid_flags);
             }
 

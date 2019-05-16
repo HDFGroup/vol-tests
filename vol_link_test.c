@@ -3305,8 +3305,11 @@ test_get_link_val(void)
             }
 
             link_val_buf_size = link_info.u.val_size;
-            if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size)))
-                TEST_ERROR
+            if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for link value\n");
+                PART_ERROR(H5Lget_val_soft);
+            }
 
             if (H5Lget_val(group_id, GET_LINK_VAL_TEST_SOFT_LINK_NAME, link_val_buf, link_val_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -3363,8 +3366,12 @@ test_get_link_val(void)
 
                 link_val_buf_size *= 2;
 
-                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size)))
-                    TEST_ERROR
+                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size))) {
+                    H5_FAILED();
+                    HDprintf("    couldn't reallocate buffer for storing link value\n");
+                    PART_ERROR(H5Lget_val_external);
+                }
+
                 link_val_buf = tmp_realloc;
             }
 
@@ -3417,8 +3424,12 @@ test_get_link_val(void)
 
                 link_val_buf_size *= 2;
 
-                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size)))
-                    TEST_ERROR
+                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size))) {
+                    H5_FAILED();
+                    HDprintf("    couldn't reallocate buffer for storing link value\n");
+                    PART_ERROR(H5Lget_val_by_idx_soft);
+                }
+
                 link_val_buf = tmp_realloc;
             }
 
@@ -3459,8 +3470,12 @@ test_get_link_val(void)
 
                 link_val_buf_size *= 2;
 
-                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size)))
-                    TEST_ERROR
+                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size))) {
+                    H5_FAILED();
+                    HDprintf("    couldn't reallocate buffer for storing link value\n");
+                    PART_ERROR(H5Lget_val_by_idx_external);
+                }
+
                 link_val_buf = tmp_realloc;
             }
 
@@ -3618,8 +3633,11 @@ test_get_link_val_invalid_params(void)
             }
 
             link_val_buf_size = link_info.u.val_size;
-            if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size)))
-                TEST_ERROR
+            if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size))) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate buffer for storing link value\n");
+                PART_ERROR(H5Lget_val_invalid_loc_id);
+            }
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lget_val(H5I_INVALID_HID, GET_LINK_VAL_INVALID_PARAMS_TEST_SOFT_LINK_NAME, link_val_buf, link_val_buf_size, H5P_DEFAULT);
@@ -3698,8 +3716,12 @@ test_get_link_val_invalid_params(void)
 
                 link_val_buf_size *= 2;
 
-                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size)))
-                    TEST_ERROR
+                if (NULL == (tmp_realloc = (char *) HDrealloc(link_val_buf, link_val_buf_size))) {
+                    H5_FAILED();
+                    HDprintf("    couldn't reallocate buffer for storing link value\n");
+                    PART_ERROR(H5Lget_val_by_idx_invalid_loc_id);
+                }
+
                 link_val_buf = tmp_realloc;
             }
 
@@ -3986,6 +4008,24 @@ test_get_link_info(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
+            if (H5Lcreate_external(ext_link_filename, "/", group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_external);
+            }
+
+            if ((link_exists = H5Lexists(group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_external);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lget_info_external);
+            }
+
             if (H5Lget_info(group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get external link info\n");
@@ -4005,24 +4045,6 @@ test_get_link_info(void)
             TESTING_2("H5Lget_info_by_idx on hard link")
 
             HDmemset(&link_info, 0, sizeof(link_info));
-
-            if (H5Lcreate_external(ext_link_filename, "/", group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
-                PART_ERROR(H5Lget_info_by_idx_hard);
-            }
-
-            if ((link_exists = H5Lexists(group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
-                PART_ERROR(H5Lget_info_by_idx_hard);
-            }
-
-            if (!link_exists) {
-                H5_FAILED();
-                HDprintf("    external link did not exist\n");
-                PART_ERROR(H5Lget_info_by_idx_hard);
-            }
 
             if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4935,6 +4957,7 @@ test_link_iterate(void)
             /* Test the H5Literate index-saving capabilities */
             saved_idx = 0;
             halted = 0;
+
             if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, &saved_idx, link_iter_callback2, &halted) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate index-saving capability test failed\n");

@@ -328,6 +328,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid loc_id!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_loc_id);
             }
 
@@ -344,6 +345,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with a NULL dataset name!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_dataset_name);
             }
 
@@ -354,6 +356,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid dataset name of ''!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_dataset_name);
             }
 
@@ -371,6 +374,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid datatype!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_datatype);
             }
 
@@ -388,6 +392,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid dataspace!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_dataspace);
             }
 
@@ -405,6 +410,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid LCPL!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_lcpl);
             }
 
@@ -422,6 +428,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid DCPL!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_dcpl);
             }
 
@@ -439,6 +446,7 @@ test_create_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created dataset using H5Dcreate with an invalid DAPL!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_invalid_dapl);
             }
 
@@ -611,6 +619,7 @@ test_create_anonymous_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous dataset using an invalid loc_id!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_anon_invalid_loc_id);
             }
 
@@ -627,6 +636,7 @@ test_create_anonymous_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous dataset using an invalid dataset datatype!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_anon_invalid_datatype);
             }
 
@@ -643,6 +653,7 @@ test_create_anonymous_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous dataset using an invalid dataset dataspace!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_anon_invalid_dataspace);
             }
 
@@ -659,6 +670,7 @@ test_create_anonymous_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous dataset using an invalid DCPL!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_anon_invalid_dcpl);
             }
 
@@ -675,6 +687,7 @@ test_create_anonymous_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous dataset using an invalid DAPL!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dcreate_anon_invalid_dapl);
             }
 
@@ -2190,6 +2203,7 @@ test_open_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened dataset using H5Dopen2 with an invalid loc_id!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dopen_invalid_loc_id);
             }
 
@@ -2206,6 +2220,7 @@ test_open_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened dataset using H5Dopen2 with a NULL dataset name!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dopen_invalid_dataset_name);
             }
 
@@ -2216,6 +2231,7 @@ test_open_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened dataset using H5Dopen2 with an invalid dataset name of ''!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dopen_invalid_dataset_name);
             }
 
@@ -2232,6 +2248,7 @@ test_open_dataset_invalid_params(void)
             if (dset_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened dataset using H5Dopen2 with an invalid DAPL!\n");
+                H5Dclose(dset_id);
                 PART_ERROR(H5Dopen_invalid_dapl);
             }
 
@@ -2958,49 +2975,45 @@ test_dataset_property_lists(void)
         /* Now close the property lists and datasets and see if we can still retrieve copies of
          * the property lists upon opening (instead of creating) a dataset
          */
-        if (H5Pclose(dcpl_id1) < 0)
-            TEST_ERROR
-        if (H5Pclose(dcpl_id2) < 0)
-            TEST_ERROR
-        if (H5Pclose(dapl_id1) < 0)
-            TEST_ERROR
-        if (H5Pclose(dapl_id2) < 0)
-            TEST_ERROR
-        if (H5Dclose(dset_id1) < 0)
-            TEST_ERROR
-        if (H5Dclose(dset_id2) < 0)
-            TEST_ERROR
-        if (H5Dclose(dset_id3) < 0)
-            TEST_ERROR
-        if (H5Dclose(dset_id4) < 0)
-            TEST_ERROR
-
-        if ((dset_id1 = H5Dopen2(group_id, DATASET_PROPERTY_LIST_TEST_DSET_NAME1, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset\n");
-            goto error;
+        if (dcpl_id1 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(dcpl_id1);
+            } H5E_END_TRY;
+            dcpl_id1 = H5I_INVALID_HID;
         }
-
-        if ((dset_id2 = H5Dopen2(group_id, DATASET_PROPERTY_LIST_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset\n");
-            goto error;
+        if (dcpl_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(dcpl_id2);
+            } H5E_END_TRY;
+            dcpl_id2 = H5I_INVALID_HID;
         }
-
-        if ((dset_id3 = H5Dopen2(group_id, DATASET_PROPERTY_LIST_TEST_DSET_NAME3, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset\n");
-            goto error;
+        if (dset_id1 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id1);
+            } H5E_END_TRY;
+            dset_id1 = H5I_INVALID_HID;
         }
-
-        if ((dset_id4 = H5Dopen2(group_id, DATASET_PROPERTY_LIST_TEST_DSET_NAME4, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset\n");
-            goto error;
+        if (dset_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id2);
+            } H5E_END_TRY;
+            dset_id2 = H5I_INVALID_HID;
         }
 
         PART_BEGIN(H5Dget_create_plist_reopened) {
             TESTING_2("H5Dget_create_plist after re-opening a dataset")
+
+            if ((dset_id1 = H5Dopen2(group_id, DATASET_PROPERTY_LIST_TEST_DSET_NAME1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_PROPERTY_LIST_TEST_DSET_NAME1);
+                PART_ERROR(H5Dget_create_plist_reopened);
+            }
+
+            if ((dset_id2 = H5Dopen2(group_id, DATASET_PROPERTY_LIST_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_PROPERTY_LIST_TEST_DSET_NAME2);
+                PART_ERROR(H5Dget_create_plist_reopened);
+            }
 
             if ((dcpl_id1 = H5Dget_create_plist(dset_id1)) < 0) {
                 H5_FAILED();
@@ -3046,25 +3059,6 @@ test_dataset_property_lists(void)
 
             PASSED();
         } PART_END(H5Dget_create_plist_reopened);
-
-        PART_BEGIN(H5Dget_access_plist_reopened) {
-            TESTING_2("H5Dget_access_plist after re-opening a dataset")
-
-            if ((dapl_id1 = H5Dget_access_plist(dset_id3)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get property list\n");
-                PART_ERROR(H5Dget_access_plist_reopened);
-            }
-
-            if ((dapl_id2 = H5Dget_create_plist(dset_id4)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get property list\n");
-                PART_ERROR(H5Dget_access_plist_reopened);
-            }
-
-            /* XXX: Check the value to be tested as above */
-            PASSED();
-        } PART_END(H5Dget_access_plist_reopened);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")

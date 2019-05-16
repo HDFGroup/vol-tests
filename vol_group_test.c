@@ -355,6 +355,7 @@ test_create_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created group with invalid loc_id!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gcreate_invalid_loc_id);
             }
 
@@ -371,6 +372,7 @@ test_create_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created group with a NULL name!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gcreate_invalid_grp_name);
             }
 
@@ -381,6 +383,7 @@ test_create_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created group with an invalid group name of ''!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gcreate_invalid_grp_name);
             }
 
@@ -397,6 +400,7 @@ test_create_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created group with invalid LCPL!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gcreate_invalid_lcpl);
             }
 
@@ -413,6 +417,7 @@ test_create_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created group with invalid GCPL!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gcreate_invalid_gcpl);
             }
 
@@ -429,6 +434,7 @@ test_create_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created group with invalid GAPL!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gcreate_invalid_gapl);
             }
 
@@ -544,6 +550,7 @@ test_create_anonymous_group_invalid_params(void)
             if (new_group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous group with invalid loc_id!\n");
+                H5Gclose(new_group_id);
                 PART_ERROR(H5Gcreate_anon_invalid_loc_id);
             }
 
@@ -560,6 +567,7 @@ test_create_anonymous_group_invalid_params(void)
             if (new_group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous group with invalid GCPL!\n");
+                H5Gclose(new_group_id);
                 PART_ERROR(H5Gcreate_anon_invalid_gcpl);
             }
 
@@ -576,6 +584,7 @@ test_create_anonymous_group_invalid_params(void)
             if (new_group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    created anonymous group with invalid GAPL!\n");
+                H5Gclose(new_group_id);
                 PART_ERROR(H5Gcreate_anon_invalid_gapl);
             }
 
@@ -681,6 +690,7 @@ test_open_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened group using an invalid loc_id!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gopen_invalid_loc_id);
             }
 
@@ -697,6 +707,7 @@ test_open_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened group using a NULL name!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gopen_invalid_grp_name);
             }
 
@@ -707,6 +718,7 @@ test_open_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened group using an invalid name of ''!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gopen_invalid_grp_name);
             }
 
@@ -723,6 +735,7 @@ test_open_group_invalid_params(void)
             if (group_id >= 0) {
                 H5_FAILED();
                 HDprintf("    opened group using an invalid GAPL!\n");
+                H5Gclose(group_id);
                 PART_ERROR(H5Gopen_invalid_gapl);
             }
 
