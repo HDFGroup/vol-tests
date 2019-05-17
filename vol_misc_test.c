@@ -136,7 +136,9 @@ test_object_creation_by_absolute_path(void)
     hid_t  dtype_id = H5I_INVALID_HID;
     hid_t  dset_dtype = H5I_INVALID_HID;
 
-    TESTING("object creation by absolute path")
+    TESTING_MULTIPART("object creation by absolute path")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -157,43 +159,6 @@ test_object_creation_by_absolute_path(void)
         goto error;
     }
 
-    /* Next try to create a group under the container group by using an absolute pathname */
-    if ((sub_group_id = H5Gcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create subgroup by absolute pathname\n");
-        goto error;
-    }
-
-    /* Next try to create a dataset nested at the end of this group chain by using an absolute pathname */
-    if ((fspace_id = generate_random_dataspace(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
-        TEST_ERROR
-
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
-        TEST_ERROR
-
-    if ((dset_id = H5Dcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_NAME,
-            dset_dtype, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset\n");
-        goto error;
-    }
-
-    /* Next try to create a committed datatype in the same fashion as the preceding dataset */
-    if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype\n");
-        goto error;
-    }
-
-    if (H5Tcommit2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DTYPE_NAME,
-            dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't commit datatype\n");
-        goto error;
-    }
-
-    /* Finally try to verify that all of the previously-created objects exist in the correct location */
     if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if link exists\n");
@@ -206,41 +171,107 @@ test_object_creation_by_absolute_path(void)
         goto error;
     }
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+    PASSED();
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    subgroup didn't exist at the correct location\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gcreate_using_absolute_path) {
+            TESTING_2("creation of group using absolute pathname")
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+            /* Try to create a group under the container group by using an absolute pathname */
+            if ((sub_group_id = H5Gcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup by absolute pathname\n");
+                PART_ERROR(H5Gcreate_using_absolute_path);
+            }
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    dataset didn't exist at the correct location\n");
-        goto error;
-    }
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Gcreate_using_absolute_path);
+            }
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DTYPE_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    subgroup didn't exist at the correct location\n");
+                PART_ERROR(H5Gcreate_using_absolute_path);
+            }
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    datatype didn't exist at the correct location\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Gcreate_using_absolute_path);
+
+        PART_BEGIN(H5Dcreate_using_absolute_path) {
+            TESTING_2("creation of dataset using absolute pathname")
+
+            /* Try to create a dataset nested at the end of this group chain by using an absolute pathname */
+            if ((fspace_id = generate_random_dataspace(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to generate dataspace\n");
+                PART_ERROR(H5Dcreate_using_absolute_path);
+            }
+
+            if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to generate datatype\n");
+                PART_ERROR(H5Dcreate_using_absolute_path);
+            }
+
+            if ((dset_id = H5Dcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_NAME,
+                    dset_dtype, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset\n");
+                PART_ERROR(H5Dcreate_using_absolute_path);
+            }
+
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_using_absolute_path);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    dataset didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_using_absolute_path);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_using_absolute_path);
+
+        PART_BEGIN(H5Tcommit_using_absolute_path) {
+            TESTING_2("creation of committed datatype using absolute pathname")
+
+            /* Try to create a committed datatype in the same fashion as the preceding dataset */
+            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create datatype\n");
+                PART_ERROR(H5Tcommit_using_absolute_path);
+            }
+
+            if (H5Tcommit2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DTYPE_NAME,
+                    dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't commit datatype\n");
+                PART_ERROR(H5Tcommit_using_absolute_path);
+            }
+
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_CONTAINER_GROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_SUBGROUP_NAME "/" OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DTYPE_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Tcommit_using_absolute_path);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    datatype didn't exist at the correct location\n");
+                PART_ERROR(H5Tcommit_using_absolute_path);
+            }
+
+            PASSED();
+        } PART_END(H5Tcommit_using_absolute_path);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
@@ -278,6 +309,7 @@ error:
     return 1;
 }
 
+/* XXX: Add testing for groups */
 static int
 test_absolute_vs_relative_path(void)
 {
@@ -288,7 +320,9 @@ test_absolute_vs_relative_path(void)
     hid_t  dset_dtype1 = H5I_INVALID_HID, dset_dtype2 = H5I_INVALID_HID, dset_dtype3 = H5I_INVALID_HID, dset_dtype4 = H5I_INVALID_HID, dset_dtype5 = H5I_INVALID_HID, dset_dtype6 = H5I_INVALID_HID;
     hid_t  fspace_id = H5I_INVALID_HID;
 
-    TESTING("absolute vs. relative pathnames")
+    TESTING_MULTIPART("absolute vs. relative pathnames")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -325,126 +359,169 @@ test_absolute_vs_relative_path(void)
     if ((dset_dtype6 = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    /* Create a dataset by absolute path in the form "/group/dataset" starting from the root group */
-    if ((dset_id1 = H5Dcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET1_NAME,
-            dset_dtype1, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset by absolute path from root\n");
-        goto error;
-    }
+    PASSED();
 
-    /* Create a dataset by relative path in the form "group/dataset" starting from the container group */
-    if ((dset_id2 = H5Dcreate2(container_group, ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET2_NAME,
-            dset_dtype2, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset by relative path from root\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Dcreate_absolute_from_root) {
+            TESTING_2("creation of dataset by absolute path from root group")
 
-    /* Create a dataset by relative path in the form "./group/dataset" starting from the root group */
-    if ((dset_id3 = H5Dcreate2(file_id, "./" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET3_NAME,
-            dset_dtype3, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset by relative path from root with leading '.'\n");
-        goto error;
-    }
+            /* Create a dataset by absolute path in the form "/group/dataset" starting from the root group */
+            if ((dset_id1 = H5Dcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET1_NAME,
+                    dset_dtype1, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset by absolute path from root\n");
+                PART_ERROR(H5Dcreate_absolute_from_root);
+            }
 
-    /* Create a dataset by absolute path in the form "/group/dataset" starting from the container group */
-    if ((dset_id4 = H5Dcreate2(container_group, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET4_NAME,
-            dset_dtype4, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset by absolute path from container group\n");
-        goto error;
-    }
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET1_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_absolute_from_root);
+            }
 
-    /* Create a dataset by relative path in the form "dataset" starting from the container group */
-    if ((dset_id5 = H5Dcreate2(group_id, ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET5_NAME, dset_dtype5,
-            fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset by relative path from container group\n");
-        goto error;
-    }
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_absolute_from_root);
+            }
 
-    /* Create a dataset by relative path in the form "./dataset" starting from the container group */
-    if ((dset_id6 = H5Dcreate2(group_id, "./" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME, dset_dtype6,
-            fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset by relative path from container group with leading '.'\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Dcreate_absolute_from_root);
 
-    /* Verify that all of the previously-created datasets exist in the correct locations */
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET1_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+        PART_BEGIN(H5Dcreate_absolute_from_nonroot) {
+            TESTING_2("creation of dataset by absolute path from non-root group")
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    didn't exist at the correct location\n");
-        goto error;
-    }
+            /* Create a dataset by absolute path in the form "/group/dataset" starting from the container group */
+            if ((dset_id4 = H5Dcreate2(container_group, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET4_NAME,
+                    dset_dtype4, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset by absolute path from container group\n");
+                PART_ERROR(H5Dcreate_absolute_from_nonroot);
+            }
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET2_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET4_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_absolute_from_nonroot);
+            }
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    didn't exist at the correct location\n");
-        goto error;
-    }
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_absolute_from_nonroot);
+            }
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET3_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Dcreate_absolute_from_nonroot);
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    didn't exist at the correct location\n");
-        goto error;
-    }
+        PART_BEGIN(H5Dcreate_relative_from_root) {
+            TESTING_2("creation of dataset by relative path from root group")
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET4_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+            /* TODO: */
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    didn't exist at the correct location\n");
-        goto error;
-    }
+            SKIPPED();
+        } PART_END(H5Dcreate_relative_from_root);
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET5_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+        PART_BEGIN(H5Dcreate_relative_from_nonroot) {
+            TESTING_2("creation of dataset by relative path from non-root group")
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    didn't exist at the correct location\n");
-        goto error;
-    }
+            /* Create a dataset by relative path in the form "dataset" starting from the test container group */
+            if ((dset_id5 = H5Dcreate2(group_id, ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET5_NAME, dset_dtype5,
+                    fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset by relative path from container group\n");
+                PART_ERROR(H5Dcreate_relative_from_nonroot);
+            }
 
-    if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+            /* Create a dataset by relative path in the form "group/dataset" starting from the top-level container group */
+            if ((dset_id2 = H5Dcreate2(container_group, ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET2_NAME,
+                    dset_dtype2, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset by relative path from container group\n");
+                PART_ERROR(H5Dcreate_relative_from_nonroot);
+            }
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    didn't exist at the correct location\n");
-        goto error;
-    }
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET2_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_relative_from_nonroot);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_relative_from_nonroot);
+            }
+
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET5_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_relative_from_nonroot);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_relative_from_nonroot);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_relative_from_nonroot);
+
+        PART_BEGIN(H5Dcreate_relative_leading_dot_root) {
+            TESTING_2("creation of dataset by path with leading '.' from root group")
+
+            /* Create a dataset by relative path in the form "./group/dataset" starting from the root group */
+            if ((dset_id3 = H5Dcreate2(file_id, "./" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET3_NAME,
+                    dset_dtype3, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset by relative path from root with leading '.'\n");
+                PART_ERROR(H5Dcreate_relative_leading_dot_root);
+            }
+
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET3_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_relative_leading_dot_root);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_relative_leading_dot_root);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_relative_leading_dot_root);
+
+        PART_BEGIN(H5Dcreate_relative_leading_dot_nonroot) {
+            TESTING_2("creation of dataset by path with leading '.' from non-root group")
+
+            /* Create a dataset by relative path in the form "./dataset" starting from the container group */
+            if ((dset_id6 = H5Dcreate2(group_id, "./" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME, dset_dtype6,
+                    fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset by relative path from container group with leading '.'\n");
+                PART_ERROR(H5Dcreate_relative_leading_dot_nonroot);
+            }
+
+            if ((link_exists = H5Lexists(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5Dcreate_relative_leading_dot_nonroot);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    didn't exist at the correct location\n");
+                PART_ERROR(H5Dcreate_relative_leading_dot_nonroot);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_relative_leading_dot_nonroot);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
@@ -507,7 +584,7 @@ error:
 }
 
 /*
- * A test to check opening objects with the "." as the name
+ * A test to check creating/opening objects with the "." as the name
  */
 static int
 test_file_open_dot(void)
@@ -517,7 +594,9 @@ test_file_open_dot(void)
     hid_t group_id = H5I_INVALID_HID, dtype_id = H5I_INVALID_HID;
     herr_t ret = -1;
 
-    TESTING("opening objects with \".\" as the name");
+    TESTING_MULTIPART("creating/opening objects with \".\" as the name");
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -531,17 +610,79 @@ test_file_open_dot(void)
         goto error;
     }
 
-    /* Create a dataset with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        dset_id = H5Dcreate2(file_id, DOT_AS_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+    PASSED();
 
-    if (dset_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a dataset was created with the '.' as the name!\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gcreate_dot_as_name) {
+            TESTING_2("invalid creation of group with '.' as name")
 
+            /* Create a group with the "." as the name.  It should fail. */
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate2(file_id, DOT_AS_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    a group was created with '.' as the name!\n");
+                PART_ERROR(H5Gcreate_dot_as_name);
+            }
+
+            PASSED();
+        } PART_END(H5Gcreate_dot_as_name);
+
+        PART_BEGIN(H5Dcreate_dot_as_name) {
+            TESTING_2("invalid creation of dataset with '.' as name")
+
+            /* Create a dataset with the "." as the name.  It should fail. */
+            H5E_BEGIN_TRY {
+                dset_id = H5Dcreate2(file_id, DOT_AS_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (dset_id >= 0) {
+                H5_FAILED();
+                HDprintf("    a dataset was created with '.' as the name!\n");
+                PART_ERROR(H5Dcreate_dot_as_name);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_dot_as_name);
+
+        PART_BEGIN(H5Acreate_dot_as_name) {
+            TESTING_2("invalid creation of attribute with '.' as name")
+
+            /* TODO: */
+
+            SKIPPED();
+        } PART_END(H5Acreate_dot_as_name);
+
+        PART_BEGIN(H5Tcommit_dot_as_name) {
+            TESTING_2("invalid creation of committed datatype with '.' as name")
+
+            if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't copy a native datatype\n");
+                PART_ERROR(H5Tcommit_dot_as_name);
+            }
+
+            /* Commit a datatype with the "." as the name.  It should fail. */
+            H5E_BEGIN_TRY {
+                ret = H5Tcommit2(file_id, DOT_AS_NAME, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (ret >= 0) {
+                H5_FAILED();
+                HDprintf("    a named datatype was committed with '.' as the name!\n");
+                PART_ERROR(H5Tcommit_dot_as_name);
+            }
+
+            PASSED();
+        } PART_END(H5Tcommit_dot_as_name);
+    } END_MULTIPART;
+
+    /* XXX: If we can't create an object with '.' as the name, then we can't reliably test
+     * opening of such objects.
+     */
+#if 0
     /* Create a dataset with the "." as the name.  It should fail. */
     H5E_BEGIN_TRY {
         dset_id = H5Dopen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
@@ -550,23 +691,6 @@ test_file_open_dot(void)
     if (dset_id >= 0) {
         H5_FAILED();
         HDprintf("    a dataset was opened with the '.' as the name!\n");
-        goto error;
-    }
-
-    if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't copy a native datatype\n");
-        goto error;
-    }
-
-    /* Commit a datatype with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        ret = H5Tcommit2(file_id, DOT_AS_NAME, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (ret >= 0) {
-        H5_FAILED();
-        HDprintf("    a named datatype was committed with the '.' as the name!\n");
         goto error;
     }
 
@@ -581,26 +705,16 @@ test_file_open_dot(void)
         goto error;
     }
 
-    /* Create a group with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        group_id = H5Gcreate2(file_id, DOT_AS_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (group_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a group was created with the '.' as the name!\n");
-        goto error;
-    }
-
     /* Open a group with the "." as the name using the file ID (should open the root group) */
     if ((group_id = H5Gopen2(file_id, DOT_AS_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open group '%s'\n", DOT_AS_NAME);
         goto error;
     }
+#endif
 
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+    TESTING_2("test cleanup")
+
     if (H5Sclose(dspace_id) < 0)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)

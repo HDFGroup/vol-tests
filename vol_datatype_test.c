@@ -339,12 +339,6 @@ test_create_anonymous_committed_datatype(void)
         goto error;
     }
 
-    if (H5Olink(type_id, group_id, DATATYPE_CREATE_ANONYMOUS_TYPE_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't link anonymous datatype into file structure\n");
-        goto error;
-    }
-
     if (H5Tclose(type_id) < 0)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
@@ -773,7 +767,9 @@ test_datatype_property_lists(void)
     hid_t type_id1 = H5I_INVALID_HID, type_id2 = H5I_INVALID_HID;
     hid_t tcpl_id1 = H5I_INVALID_HID, tcpl_id2 = H5I_INVALID_HID;
 
-    TESTING("datatype property list operations")
+    TESTING_MULTIPART("datatype property list operations")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -828,54 +824,88 @@ test_datatype_property_lists(void)
     if (H5Pclose(tcpl_id1) < 0)
         TEST_ERROR
 
-    /* Try to receive copies for the two property lists */
-    if ((tcpl_id1 = H5Tget_create_plist(type_id1)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get property list\n");
-        goto error;
-    }
+    PASSED();
 
-    if ((tcpl_id2 = H5Tget_create_plist(type_id2)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get property list\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Tget_create_plist) {
+            TESTING_2("H5Tget_create_plist")
 
-    /* Now close the property lists and datatypes and see if we can still retieve copies of
-     * the property lists upon opening (instead of creating) a datatype
-     */
-    if (H5Pclose(tcpl_id1) < 0)
-        TEST_ERROR
-    if (H5Pclose(tcpl_id2) < 0)
-        TEST_ERROR
-    if (H5Tclose(type_id1) < 0)
-        TEST_ERROR
-    if (H5Tclose(type_id2) < 0)
-        TEST_ERROR
+            /* Try to receive copies for the two property lists */
+            if ((tcpl_id1 = H5Tget_create_plist(type_id1)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get property list\n");
+                PART_ERROR(H5Tget_create_plist);
+            }
 
-    if ((type_id1 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1);
-        goto error;
-    }
+            if ((tcpl_id2 = H5Tget_create_plist(type_id2)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get property list\n");
+                PART_ERROR(H5Tget_create_plist);
+            }
 
-    if ((type_id2 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2);
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Tget_create_plist);
 
-    if ((tcpl_id1 = H5Tget_create_plist(type_id1)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get property list\n");
-        goto error;
-    }
+        /* Now close the property lists and datatypes and see if we can still retieve copies of
+         * the property lists upon opening (instead of creating) a datatype
+         */
+        if (tcpl_id1 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(tcpl_id1);
+            } H5E_END_TRY;
+            tcpl_id1 = H5I_INVALID_HID;
+        }
+        if (tcpl_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(tcpl_id2);
+            } H5E_END_TRY;
+            tcpl_id2 = H5I_INVALID_HID;
+        }
+        if (type_id1 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(type_id1);
+            } H5E_END_TRY;
+            type_id1 = H5I_INVALID_HID;
+        }
+        if (type_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(type_id2);
+            } H5E_END_TRY;
+            type_id2 = H5I_INVALID_HID;
+        }
 
-    if ((tcpl_id2 = H5Tget_create_plist(type_id2)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get property list\n");
-        goto error;
-    }
+        PART_BEGIN(H5Tget_create_plist_reopened) {
+            TESTING_2("H5Tget_create_plist after re-opening committed datatype")
+
+            if ((type_id1 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1);
+                PART_ERROR(H5Tget_create_plist_reopened);
+            }
+
+            if ((type_id2 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2);
+                PART_ERROR(H5Tget_create_plist_reopened);
+            }
+
+            if ((tcpl_id1 = H5Tget_create_plist(type_id1)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get property list\n");
+                PART_ERROR(H5Tget_create_plist_reopened);
+            }
+
+            if ((tcpl_id2 = H5Tget_create_plist(type_id2)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get property list\n");
+                PART_ERROR(H5Tget_create_plist_reopened);
+            }
+
+            PASSED();
+        } PART_END(H5Tget_create_plist_reopened);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Pclose(tcpl_id1) < 0)
         TEST_ERROR

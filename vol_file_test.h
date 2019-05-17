@@ -37,9 +37,6 @@ int vol_file_test(void);
 #define DSET_NAME 				"Dataset"
 #define DSET2_NAME 				"Dataset2"
 
-#define GET_FILENAME                            "get_file_name.h5"
-#define TEST_NAME_BUF_SIZE                      64
-
 #define FILE_FLUSH_FILENAME			"flush_file.h5"
 
 #define FILE_PROPERTY_LIST_TEST_FCPL_PROP_VAL 	65536

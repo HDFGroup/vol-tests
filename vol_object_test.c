@@ -13,7 +13,7 @@
 #include "vol_object_test.h"
 
 /*
- * XXX: Implement tests for H5Olink.
+ * XXX: Implement tests for H5Olink. Pull tests from other interface tests for H5Xcreate_anon.
  */
 
 /*
@@ -99,6 +99,8 @@ static int (*object_tests[])(void) = {
 /*
  * A test to check that various objects (group, dataset, datatype)
  * can be opened by using H5Oopen, H5Oopen_by_idx and H5Oopen_by_addr.
+ *
+ * XXX: create separate objects for each test part.
  */
 static int
 test_open_object(void)
@@ -140,49 +142,32 @@ test_open_object(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    if ((type_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype '%s'\n", OBJECT_OPEN_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if ((group_id2 = H5Gcreate2(group_id, OBJECT_OPEN_TEST_GRP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", OBJECT_OPEN_TEST_GRP_NAME);
-        goto error;
-    }
-
-    if ((dset_id = H5Dcreate2(group_id, OBJECT_OPEN_TEST_DSET_NAME, dset_dtype,
-            fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset '%s'\n", OBJECT_OPEN_TEST_DSET_NAME);
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJECT_OPEN_TEST_TYPE_NAME, type_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't commit datatype '%s'\n", OBJECT_OPEN_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(type_id) < 0)
-        TEST_ERROR
-
     PASSED();
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Oopen_group) {
             TESTING_2("H5Oopen on a group")
 
+            if ((group_id2 = H5Gcreate2(group_id, OBJECT_OPEN_TEST_GRP_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create group '%s'\n", OBJECT_OPEN_TEST_GRP_NAME);
+                PART_ERROR(H5Oopen_group);
+            }
+
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id2);
+            } H5E_END_TRY;
+
             if ((group_id2 = H5Oopen(group_id, OBJECT_OPEN_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't open group '%s' with H5Oopen\n", OBJECT_OPEN_TEST_GRP_NAME);
+                PART_ERROR(H5Oopen_group);
+            }
+
+            if (H5Gclose(group_id2) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close group opened with H5Oopen\n");
                 PART_ERROR(H5Oopen_group);
             }
 
@@ -192,9 +177,26 @@ test_open_object(void)
         PART_BEGIN(H5Oopen_dset) {
             TESTING_2("H5Oopen on a dataset")
 
+            if ((dset_id = H5Dcreate2(group_id, OBJECT_OPEN_TEST_DSET_NAME, dset_dtype,
+                    fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", OBJECT_OPEN_TEST_DSET_NAME);
+                PART_ERROR(H5Oopen_dset);
+            }
+
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+
             if ((dset_id = H5Oopen(group_id, OBJECT_OPEN_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't open dataset '%s' with H5Oopen\n", OBJECT_OPEN_TEST_DSET_NAME);
+                PART_ERROR(H5Oopen_dset);
+            }
+
+            if (H5Dclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close dataset opened with H5Oopen\n");
                 PART_ERROR(H5Oopen_dset);
             }
 
@@ -204,10 +206,33 @@ test_open_object(void)
         PART_BEGIN(H5Oopen_dtype) {
             TESTING_2("H5Oopen on a committed datatype")
 
+            if ((type_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create datatype '%s'\n", OBJECT_OPEN_TEST_TYPE_NAME);
+                PART_ERROR(H5Oopen_dtype);
+            }
+
+            if (H5Tcommit2(group_id, OBJECT_OPEN_TEST_TYPE_NAME, type_id,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't commit datatype '%s'\n", OBJECT_OPEN_TEST_TYPE_NAME);
+                PART_ERROR(H5Oopen_dtype);
+            }
+
+            H5E_BEGIN_TRY {
+                H5Tclose(type_id);
+            } H5E_END_TRY;
+
             if ((type_id = H5Oopen(group_id, OBJECT_OPEN_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't open datatype '%s' with H5Oopen\n", OBJECT_OPEN_TEST_TYPE_NAME);
                 PART_ERROR(H5Oopen_dtype);
+            }
+
+            if (H5Tclose(type_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close committed datatype opened with H5Oopen\n");
+                PART_ERROR(H5Oopen_dset);
             }
 
             PASSED();
@@ -715,33 +740,6 @@ test_object_exists(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype '%s'\n", OBJECT_EXISTS_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if ((group_id2 = H5Gcreate2(group_id, OBJECT_EXISTS_TEST_GRP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", OBJECT_EXISTS_TEST_GRP_NAME);
-        goto error;
-    }
-
-    if ((dset_id = H5Dcreate2(group_id, OBJECT_EXISTS_TEST_DSET_NAME, dset_dtype, fspace_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset '%s'\n", OBJECT_EXISTS_TEST_DSET_NAME);
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJECT_EXISTS_TEST_TYPE_NAME, dtype_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't commit datatype '%s'\n", OBJECT_EXISTS_TEST_TYPE_NAME);
-        goto error;
-    }
-
     PASSED();
 
     /*
@@ -751,6 +749,13 @@ test_object_exists(void)
     BEGIN_MULTIPART {
         PART_BEGIN(H5Oexists_by_name_group) {
             TESTING_2("H5Oexists_by_name on a group")
+
+            if ((group_id2 = H5Gcreate2(group_id, OBJECT_EXISTS_TEST_GRP_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create group '%s'\n", OBJECT_EXISTS_TEST_GRP_NAME);
+                PART_ERROR(H5Oexists_by_name_group);
+            }
 
             if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -764,11 +769,24 @@ test_object_exists(void)
                 PART_ERROR(H5Oexists_by_name_group);
             }
 
+            if (H5Gclose(group_id2) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close group\n");
+                PART_ERROR(H5Oexists_by_name_group);
+            }
+
             PASSED();
         } PART_END(H5Oexists_by_name_group);
 
         PART_BEGIN(H5Oexists_by_name_dset) {
             TESTING_2("H5Oexists_by_name on a dataset")
+
+            if ((dset_id = H5Dcreate2(group_id, OBJECT_EXISTS_TEST_DSET_NAME, dset_dtype, fspace_id,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", OBJECT_EXISTS_TEST_DSET_NAME);
+                PART_ERROR(H5Oexists_by_name_dset);
+            }
 
             if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -782,11 +800,30 @@ test_object_exists(void)
                 PART_ERROR(H5Oexists_by_name_dset);
             }
 
+            if (H5Dclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close dataset\n");
+                PART_ERROR(H5Oexists_by_name_dset);
+            }
+
             PASSED();
         } PART_END(H5Oexists_by_name_dset);
 
         PART_BEGIN(H5Oexists_by_name_dtype) {
             TESTING_2("H5Oexists_by_name on a committed datatype")
+
+            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create datatype '%s'\n", OBJECT_EXISTS_TEST_TYPE_NAME);
+                PART_ERROR(H5Oexists_by_name_dtype);
+            }
+
+            if (H5Tcommit2(group_id, OBJECT_EXISTS_TEST_TYPE_NAME, dtype_id,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't commit datatype '%s'\n", OBJECT_EXISTS_TEST_TYPE_NAME);
+                PART_ERROR(H5Oexists_by_name_dtype);
+            }
 
             if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -800,6 +837,12 @@ test_object_exists(void)
                 PART_ERROR(H5Oexists_by_name_dtype);
             }
 
+            if (H5Tclose(dtype_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close datatype\n");
+                PART_ERROR(H5Oexists_by_name_dtype);
+            }
+
             PASSED();
         } PART_END(H5Oexists_by_name_dtype);
     } END_MULTIPART;
@@ -809,12 +852,6 @@ test_object_exists(void)
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
-    if (H5Tclose(dtype_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id2) < 0)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -1100,38 +1137,18 @@ test_copy_object(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if ((group_id2 = H5Gcreate2(group_id, OBJECT_COPY_TEST_GROUP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
-        goto error;
-    }
-
-    if ((dset_id = H5Dcreate2(group_id, OBJECT_COPY_TEST_DSET_NAME, dset_dtype, space_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJECT_COPY_TEST_TYPE_NAME, dtype_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't commit datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
-        goto error;
-    }
-
     PASSED();
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Ocopy_group) {
             TESTING_2("H5Ocopy on a group")
+
+            if ((group_id2 = H5Gcreate2(group_id, OBJECT_COPY_TEST_GROUP_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create group '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
+                PART_ERROR(H5Ocopy_group);
+            }
 
             if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_GROUP_NAME2,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
@@ -1158,6 +1175,13 @@ test_copy_object(void)
         PART_BEGIN(H5Ocopy_dset) {
             TESTING_2("H5Ocopy on a dataset")
 
+            if ((dset_id = H5Dcreate2(group_id, OBJECT_COPY_TEST_DSET_NAME, dset_dtype, space_id,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
+                PART_ERROR(H5Ocopy_dset);
+            }
+
             if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_NAME2,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -1182,6 +1206,19 @@ test_copy_object(void)
 
         PART_BEGIN(H5Ocopy_dtype) {
             TESTING_2("H5Ocopy on a committed datatype")
+
+            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
+                PART_ERROR(H5Ocopy_dtype);
+            }
+
+            if (H5Tcommit2(group_id, OBJECT_COPY_TEST_TYPE_NAME, dtype_id,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't commit datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
+                PART_ERROR(H5Ocopy_dtype);
+            }
 
             if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_NAME2,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
@@ -1982,45 +2019,22 @@ test_close_object(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype '%s'\n", OBJECT_CLOSE_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if ((group_id2 = H5Gcreate2(group_id, OBJECT_CLOSE_TEST_GRP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", OBJECT_CLOSE_TEST_GRP_NAME);
-        goto error;
-    }
-
-    if ((dset_id = H5Dcreate2(group_id, OBJECT_CLOSE_TEST_DSET_NAME, dset_dtype,
-            fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset '%s'\n", OBJECT_CLOSE_TEST_DSET_NAME);
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJECT_CLOSE_TEST_TYPE_NAME, dtype_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't commit datatype '%s'\n", OBJECT_CLOSE_TEST_TYPE_NAME);
-        goto error;
-    }
-
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(dtype_id) < 0)
-        TEST_ERROR
-
     PASSED();
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Oclose_group) {
             TESTING_2("H5Oclose on a group")
+
+            if ((group_id2 = H5Gcreate2(group_id, OBJECT_CLOSE_TEST_GRP_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create group '%s'\n", OBJECT_CLOSE_TEST_GRP_NAME);
+                PART_ERROR(H5Oclose_group);
+            }
+
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id2);
+            } H5E_END_TRY;
 
             if ((group_id2 = H5Oopen(group_id, OBJECT_CLOSE_TEST_GRP_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -2040,6 +2054,17 @@ test_close_object(void)
         PART_BEGIN(H5Oclose_dset) {
             TESTING_2("H5Oclose on a dataset")
 
+            if ((dset_id = H5Dcreate2(group_id, OBJECT_CLOSE_TEST_DSET_NAME, dset_dtype,
+                    fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", OBJECT_CLOSE_TEST_DSET_NAME);
+                PART_ERROR(H5Oclose_dset);
+            }
+
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+
             if ((dset_id = H5Oopen(group_id, OBJECT_CLOSE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't open dataset '%s' with H5Oopen\n", OBJECT_CLOSE_TEST_DSET_NAME);
@@ -2057,6 +2082,23 @@ test_close_object(void)
 
         PART_BEGIN(H5Oclose_dtype) {
             TESTING_2("H5Oclose on a committed datatype")
+
+            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create datatype '%s'\n", OBJECT_CLOSE_TEST_TYPE_NAME);
+                PART_ERROR(H5Oclose_dtype);
+            }
+
+            if (H5Tcommit2(group_id, OBJECT_CLOSE_TEST_TYPE_NAME, dtype_id,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't commit datatype '%s'\n", OBJECT_CLOSE_TEST_TYPE_NAME);
+                PART_ERROR(H5Oclose_dtype);
+            }
+
+            H5E_BEGIN_TRY {
+                H5Tclose(dtype_id);
+            } H5E_END_TRY;
 
             if ((dtype_id = H5Oopen(group_id, OBJECT_CLOSE_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();

@@ -3010,7 +3010,7 @@ test_attribute_property_lists(void)
         PART_BEGIN(H5Aget_create_plist) {
             TESTING_2("H5Aget_create_plist")
 
-            /* Try to retrieve copies of the two property lists, one which ahs the property set and one which does not */
+            /* Try to retrieve copies of the two property lists, one which has the property set and one which does not */
             if ((acpl_id1 = H5Aget_create_plist(attr_id1)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get property list\n");
@@ -5355,7 +5355,9 @@ test_attribute_iterate_0_attributes(void)
     hid_t dset_dtype = H5I_INVALID_HID;
     hid_t dset_space_id = H5I_INVALID_HID;
 
-    TESTING("attribute iteration on object with 0 attributes")
+    TESTING_MULTIPART("attribute iteration on object with 0 attributes")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5388,18 +5390,36 @@ test_attribute_iterate_0_attributes(void)
         goto error;
     }
 
-    if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback2, NULL) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Aiterate2 on object with 0 attributes failed\n");
-        goto error;
-    }
+    PASSED();
 
-    if (H5Aiterate_by_name(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, H5_INDEX_NAME, H5_ITER_INC,
-            NULL, attr_iter_callback2, NULL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    H5Aiterate_by_name on object with 0 attributes failed\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Aiterate_0_attributes) {
+            TESTING_2("H5Aiterate")
+
+            if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback2, NULL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate2 on object with 0 attributes failed\n");
+                PART_ERROR(H5Aiterate_0_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Aiterate_0_attributes);
+
+        PART_BEGIN(H5Aiterate_by_name_0_attributes) {
+            TESTING_2("H5Aiterate_by_name")
+
+            if (H5Aiterate_by_name(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, H5_INDEX_NAME, H5_ITER_INC,
+                    NULL, attr_iter_callback2, NULL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate_by_name on object with 0 attributes failed\n");
+                PART_ERROR(H5Aiterate_by_name_0_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Aiterate_by_name_0_attributes);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(dset_space_id) < 0)
         TEST_ERROR
@@ -6499,7 +6519,7 @@ test_attribute_duplicate_id(void)
 
     if (H5Aclose(attr_id) < 0)
         TEST_ERROR
-     if (H5Aclose(attr_id2) < 0)
+    if (H5Aclose(attr_id2) < 0)
         TEST_ERROR
     if (H5Sclose(space_id) < 0)
         TEST_ERROR
@@ -6544,7 +6564,9 @@ test_get_number_attributes(void)
     hid_t      attr_dtype = H5I_INVALID_HID;
     hid_t      space_id = H5I_INVALID_HID;
 
-    TESTING("retrieve the number of attributes on an object")
+    TESTING_MULTIPART("retrieval of the number of attributes on an object")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -6584,42 +6606,66 @@ test_get_number_attributes(void)
         goto error;
     }
 
-    /* Now get the number of attributes from the group */
-    if (H5Oget_info2(container_group, &obj_info, H5O_INFO_ALL) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve root group info using H5Oget_info2\n");
-        goto error;
-    }
+    PASSED();
 
-    if (obj_info.num_attrs < 1) {
-        H5_FAILED();
-        HDprintf("    invalid number of attributes received\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Oget_info) {
+            TESTING_2("H5Oget_info")
 
-    if (H5Oget_info_by_name2(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name2\n");
-        goto error;
-    }
+            /* Now get the number of attributes from the group */
+            if (H5Oget_info2(container_group, &obj_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve root group info using H5Oget_info2\n");
+                PART_ERROR(H5Oget_info);
+            }
 
-    if (obj_info.num_attrs < 1) {
-        H5_FAILED();
-        HDprintf("    invalid number of attributes received\n");
-        goto error;
-    }
+            if (obj_info.num_attrs < 1) {
+                H5_FAILED();
+                HDprintf("    invalid number of attributes received\n");
+                PART_ERROR(H5Oget_info);
+            }
 
-    if (H5Oget_info_by_idx2(file_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_idx2\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Oget_info);
 
-    if (obj_info.num_attrs < 1) {
-        H5_FAILED();
-        HDprintf("    invalid number of attributes received\n");
-        goto error;
-    }
+        PART_BEGIN(H5Oget_info_by_name) {
+            TESTING_2("H5Oget_info_by_name")
+
+            if (H5Oget_info_by_name2(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name2\n");
+                PART_ERROR(H5Oget_info_by_name);
+            }
+
+            if (obj_info.num_attrs < 1) {
+                H5_FAILED();
+                HDprintf("    invalid number of attributes received\n");
+                PART_ERROR(H5Oget_info_by_name);
+            }
+
+            PASSED();
+        } PART_END(H5Oget_info_by_name);
+
+        PART_BEGIN(H5Oget_info_by_idx) {
+            TESTING_2("H5Oget_info_by_idx")
+
+            if (H5Oget_info_by_idx2(file_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve root group info using H5Oget_info_by_idx2\n");
+                PART_ERROR(H5Oget_info_by_idx);
+            }
+
+            if (obj_info.num_attrs < 1) {
+                H5_FAILED();
+                HDprintf("    invalid number of attributes received\n");
+                PART_ERROR(H5Oget_info_by_idx);
+            }
+
+            PASSED();
+        } PART_END(H5Oget_info_by_idx);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(space_id) < 0)
         TEST_ERROR

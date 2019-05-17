@@ -528,12 +528,6 @@ test_create_anonymous_dataset(void)
         goto error;
     }
 
-    if (H5Olink(dset_id, group_id, DATASET_CREATE_ANONYMOUS_DATASET_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't link anonymous dataset into file structure\n");
-        goto error;
-    }
-
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
@@ -1087,7 +1081,9 @@ test_create_dataset_string_types(void)
     hid_t type_id_fixed = H5I_INVALID_HID, type_id_variable = H5I_INVALID_HID;
     hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING("dataset creation with string types")
+    TESTING_MULTIPART("dataset creation with string types")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1122,34 +1118,61 @@ test_create_dataset_string_types(void)
     if ((fspace_id = generate_random_dataspace(DATASET_STRING_TYPE_TEST_SPACE_RANK, NULL, NULL)) < 0)
         TEST_ERROR
 
-    if ((dset_id_fixed = H5Dcreate2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME1, type_id_fixed, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create fixed-length string dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME1);
-        goto error;
-    }
+    PASSED();
 
-    if ((dset_id_variable = H5Dcreate2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME2, type_id_variable, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create variable-length string dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME2);
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Dcreate_fixed_string_type) {
+            TESTING_2("creation of fixed-size string dataset")
 
-    if (H5Dclose(dset_id_fixed) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id_variable) < 0)
-        TEST_ERROR
+            if ((dset_id_fixed = H5Dcreate2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME1, type_id_fixed, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create fixed-length string dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME1);
+                PART_ERROR(H5Dcreate_fixed_string_type);
+            }
 
-    if ((dset_id_fixed = H5Dopen2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME1, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to open dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME1);
-        goto error;
-    }
+            if (dset_id_fixed >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id_fixed);
+                } H5E_END_TRY;
+                dset_id_fixed = H5I_INVALID_HID;
+            }
 
-    if ((dset_id_variable = H5Dopen2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to open dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME2);
-        goto error;
-    }
+            if ((dset_id_fixed = H5Dopen2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME1);
+                PART_ERROR(H5Dcreate_fixed_string_type);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_fixed_string_type);
+
+        PART_BEGIN(H5Dcreate_variable_string_type) {
+            TESTING_2("creation of variable-length string dataset")
+
+            if ((dset_id_variable = H5Dcreate2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME2, type_id_variable, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create variable-length string dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME2);
+                PART_ERROR(H5Dcreate_variable_string_type);
+            }
+
+            if (dset_id_variable >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id_variable);
+                } H5E_END_TRY;
+                dset_id_variable = H5I_INVALID_HID;
+            }
+
+            if ((dset_id_variable = H5Dopen2(group_id, DATASET_STRING_TYPE_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset '%s'\n", DATASET_STRING_TYPE_TEST_DSET_NAME2);
+                PART_ERROR(H5Dcreate_variable_string_type);
+            }
+
+            PASSED();
+        } PART_END(H5Dcreate_variable_string_type);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Tclose(type_id_fixed) < 0)
         TEST_ERROR
@@ -1680,7 +1703,9 @@ test_create_dataset_creation_properties(void)
     hid_t   dset_dtype = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID;
 
-    TESTING("dataset creation properties")
+    TESTING_MULTIPART("dataset creation properties")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1706,304 +1731,489 @@ test_create_dataset_creation_properties(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    /* Test the alloc time property */
-    {
-        H5D_alloc_time_t alloc_times[] = {
-                H5D_ALLOC_TIME_DEFAULT, H5D_ALLOC_TIME_EARLY,
-                H5D_ALLOC_TIME_INCR, H5D_ALLOC_TIME_LATE
-        };
+    PASSED();
 
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
+    BEGIN_MULTIPART {
+        /* Test the alloc time property */
+        PART_BEGIN(DCPL_alloc_time_test) {
+            H5D_alloc_time_t alloc_times[] = {
+                    H5D_ALLOC_TIME_DEFAULT, H5D_ALLOC_TIME_EARLY,
+                    H5D_ALLOC_TIME_INCR, H5D_ALLOC_TIME_LATE
+            };
 
-        for (i = 0; i < ARRAY_LENGTH(alloc_times); i++) {
-            char name[100];
+            TESTING_2("dataset storage space allocation time property")
 
-            if (H5Pset_alloc_time(dcpl_id, alloc_times[i]) < 0)
-                TEST_ERROR
-
-            HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_ALLOC_TIMES_BASE_NAME, i);
-
-            if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_alloc_time_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
+            for (i = 0; i < ARRAY_LENGTH(alloc_times); i++) {
+                char name[100];
 
-            if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+                if (H5Pset_alloc_time(dcpl_id, alloc_times[i]) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't set alloc time property value\n");
+                    PART_ERROR(DCPL_alloc_time_test);
+                }
+
+                HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_ALLOC_TIMES_BASE_NAME, i);
+
+                if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create dataset '%s'\n", name);
+                    PART_ERROR(DCPL_alloc_time_test);
+                }
+
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+
+                if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't open dataset '%s'\n", name);
+                    PART_ERROR(DCPL_alloc_time_test);
+                }
+
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+            }
+
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
+            }
+
+            PASSED();
+        } PART_END(DCPL_alloc_time_test);
+
+        /* Test the attribute creation order property */
+        PART_BEGIN(DCPL_attr_crt_order_test) {
+            unsigned creation_orders[] = {
+                    H5P_CRT_ORDER_TRACKED,
+                    H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED
+            };
+
+            TESTING_2("attribute creation order property for DCPL")
+
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_attr_crt_order_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
-        }
+            for (i = 0; i < ARRAY_LENGTH(creation_orders); i++) {
+                char name[100];
 
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
+                if (H5Pset_attr_creation_order(dcpl_id, creation_orders[i]) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't set attribute creation order property\n");
+                    PART_ERROR(DCPL_attr_crt_order_test);
+                }
 
-    /* Test the attribute creation order property */
-    {
-        unsigned creation_orders[] = {
-                H5P_CRT_ORDER_TRACKED,
-                H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED
-        };
+                HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_CRT_ORDER_BASE_NAME, i);
 
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
+                if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create dataset '%s'\n", name);
+                    PART_ERROR(DCPL_attr_crt_order_test);
+                }
 
-        for (i = 0; i < ARRAY_LENGTH(creation_orders); i++) {
-            char name[100];
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
 
-            if (H5Pset_attr_creation_order(dcpl_id, creation_orders[i]) < 0)
-                TEST_ERROR
+                if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't open dataset '%s'\n", name);
+                    PART_ERROR(DCPL_attr_crt_order_test);
+                }
 
-            HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_CRT_ORDER_BASE_NAME, i);
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+            }
 
-            if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
+            }
+
+            PASSED();
+        } PART_END(DCPL_attr_crt_order_test);
+
+        /* Test the attribute phase change property */
+        PART_BEGIN(DCPL_attr_phase_change_test) {
+            TESTING_2("attribute phase change property for DCPL")
+
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_attr_phase_change_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
-
-            if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+            if (H5Pset_attr_phase_change(dcpl_id, DATASET_CREATION_PROPERTIES_TEST_MAX_COMPACT,
+                    DATASET_CREATION_PROPERTIES_TEST_MIN_DENSE) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't set attribute phase change property\n");
+                PART_ERROR(DCPL_attr_phase_change_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
-        }
-
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
-
-    /* Test the attribute phase change property */
-    {
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
-
-        if (H5Pset_attr_phase_change(dcpl_id, DATASET_CREATION_PROPERTIES_TEST_MAX_COMPACT,
-                DATASET_CREATION_PROPERTIES_TEST_MIN_DENSE) < 0)
-            TEST_ERROR
-
-        if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME,
-                dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME);
-            goto error;
-        }
-
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-
-        if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME);
-            goto error;
-        }
-
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
-
-    /* Test the fill time property */
-    {
-        H5D_fill_time_t fill_times[] = {
-                H5D_FILL_TIME_IFSET, H5D_FILL_TIME_ALLOC,
-                H5D_FILL_TIME_NEVER
-        };
-
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
-
-        for (i = 0; i < ARRAY_LENGTH(fill_times); i++) {
-            char name[100];
-
-            if (H5Pset_fill_time(dcpl_id, fill_times[i]) < 0)
-                TEST_ERROR
-
-            HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_FILL_TIMES_BASE_NAME, i);
-
-            if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME,
+                    dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME);
+                PART_ERROR(DCPL_attr_phase_change_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
 
-            if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_PHASE_CHANGE_DSET_NAME);
+                PART_ERROR(DCPL_attr_phase_change_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
-        }
-
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
-
-    /* TODO: Test the fill value property */
-    {
-
-    }
-
-    {
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
-
-        /* Set all of the available filters on the DCPL */
-        if (H5Pset_deflate(dcpl_id, 7) < 0)
-            TEST_ERROR
-        if (H5Pset_shuffle(dcpl_id) < 0)
-            TEST_ERROR
-        if (H5Pset_fletcher32(dcpl_id) < 0)
-            TEST_ERROR
-        if (H5Pset_nbit(dcpl_id) < 0)
-            TEST_ERROR
-        if (H5Pset_scaleoffset(dcpl_id, H5Z_SO_FLOAT_ESCALE, 2) < 0)
-            TEST_ERROR
-
-        if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME);
-            goto error;
-        }
-
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-
-        if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME);
-            goto error;
-        }
-
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
-
-    /* Test the storage layout property */
-    {
-        H5D_layout_t layouts[] = {
-                H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED
-        };
-
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
-
-        for (i = 0; i < ARRAY_LENGTH(layouts); i++) {
-            char name[100];
-
-            if (H5Pset_layout(dcpl_id, layouts[i]) < 0)
-                TEST_ERROR
-
-            if (H5D_CHUNKED == layouts[i]) {
-                hsize_t chunk_dims[DATASET_CREATION_PROPERTIES_TEST_CHUNK_DIM_RANK];
-                size_t  j;
-
-                for (j = 0; j < DATASET_CREATION_PROPERTIES_TEST_CHUNK_DIM_RANK; j++)
-                    chunk_dims[j] = (hsize_t) (rand() % (int) dims[j] + 1);
-
-                if (H5Pset_chunk(dcpl_id , DATASET_CREATION_PROPERTIES_TEST_CHUNK_DIM_RANK, chunk_dims) < 0)
-                    TEST_ERROR
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
             }
 
-            HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_LAYOUTS_BASE_NAME, i);
+            PASSED();
+        } PART_END(DCPL_attr_phase_change_test);
 
-            if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        /* Test the fill time property */
+        PART_BEGIN(DCPL_fill_time_property_test) {
+            H5D_fill_time_t fill_times[] = {
+                    H5D_FILL_TIME_IFSET, H5D_FILL_TIME_ALLOC,
+                    H5D_FILL_TIME_NEVER
+            };
+
+            TESTING_2("dataset fill time property")
+
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_fill_time_property_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
+            for (i = 0; i < ARRAY_LENGTH(fill_times); i++) {
+                char name[100];
 
-            if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+                if (H5Pset_fill_time(dcpl_id, fill_times[i]) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't set dataset fill time property\n");
+                    PART_ERROR(DCPL_fill_time_property_test);
+                }
+
+                HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_FILL_TIMES_BASE_NAME, i);
+
+                if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create dataset '%s'\n", name);
+                    PART_ERROR(DCPL_fill_time_property_test);
+                }
+
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+
+                if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't open dataset '%s'\n", name);
+                    PART_ERROR(DCPL_fill_time_property_test);
+                }
+
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+            }
+
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
+            }
+
+            PASSED();
+        } PART_END(DCPL_fill_time_property_test);
+
+        /* TODO: Test the fill value property */
+
+        /* Test filters */
+        PART_BEGIN(DCPL_filters_test) {
+            TESTING_2("dataset filters")
+
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open dataset '%s'\n", name);
-                goto error;
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_filters_test);
             }
 
-            if (H5Dclose(dset_id) < 0)
-                TEST_ERROR
-        }
+            /* Set all of the available filters on the DCPL */
+            if (H5Pset_deflate(dcpl_id, 7) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set deflate filter on DCPL\n");
+                PART_ERROR(DCPL_filters_test);
+            }
+            if (H5Pset_shuffle(dcpl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set shuffle filter on DCPL\n");
+                PART_ERROR(DCPL_filters_test);
+            }
+            if (H5Pset_fletcher32(dcpl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set fletcher32 filter on DCPL\n");
+                PART_ERROR(DCPL_filters_test);
+            }
+            if (H5Pset_nbit(dcpl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set nbit filter on DCPL\n");
+                PART_ERROR(DCPL_filters_test);
+            }
+            if (H5Pset_scaleoffset(dcpl_id, H5Z_SO_FLOAT_ESCALE, 2) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set scaleoffset filter on DCPL\n");
+                PART_ERROR(DCPL_filters_test);
+            }
 
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
+            if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME);
+                PART_ERROR(DCPL_filters_test);
+            }
 
-    /* Test the "track object times" property */
-    {
-        if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
-            TEST_ERROR
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
 
-        if (H5Pset_obj_track_times(dcpl_id, true) < 0)
-            TEST_ERROR
+            if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_FILTERS_DSET_NAME);
+                PART_ERROR(DCPL_filters_test);
+            }
 
-        if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME,
-                dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME);
-            goto error;
-        }
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
 
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
+            }
 
-        if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME);
-            goto error;
-        }
+            PASSED();
+        } PART_END(DCPL_filters_test);
 
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
+        /* Test the dataset storage layout property */
+        PART_BEGIN(DCPL_storage_layout_test) {
+            H5D_layout_t layouts[] = {
+                    H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED
+            };
 
-        if (H5Pset_obj_track_times(dcpl_id, false) < 0)
-            TEST_ERROR
+            TESTING_2("dataset storage layouts")
 
-        if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME,
-                dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME);
-            goto error;
-        }
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_storage_layout_test);
+            }
 
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
+            for (i = 0; i < ARRAY_LENGTH(layouts); i++) {
+                char name[100];
 
-        if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME);
-            goto error;
-        }
+                if (H5Pset_layout(dcpl_id, layouts[i]) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't set storage layout property\n");
+                    PART_ERROR(DCPL_storage_layout_test);
+                }
 
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-        if (H5Pclose(dcpl_id) < 0)
-            TEST_ERROR
-    }
+                if (H5D_CHUNKED == layouts[i]) {
+                    hsize_t chunk_dims[DATASET_CREATION_PROPERTIES_TEST_CHUNK_DIM_RANK];
+                    size_t  j;
+
+                    for (j = 0; j < DATASET_CREATION_PROPERTIES_TEST_CHUNK_DIM_RANK; j++)
+                        chunk_dims[j] = (hsize_t) (rand() % (int) dims[j] + 1);
+
+                    if (H5Pset_chunk(dcpl_id , DATASET_CREATION_PROPERTIES_TEST_CHUNK_DIM_RANK, chunk_dims) < 0) {
+                        H5_FAILED();
+                        HDprintf("    couldn't set chunk dimensionality\n");
+                        PART_ERROR(DCPL_storage_layout_test);
+                    }
+                }
+
+                HDsprintf(name, "%s%zu", DATASET_CREATION_PROPERTIES_TEST_LAYOUTS_BASE_NAME, i);
+
+                if ((dset_id = H5Dcreate2(group_id, name, dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create dataset '%s'\n", name);
+                    PART_ERROR(DCPL_storage_layout_test);
+                }
+
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+
+                if ((dset_id = H5Dopen2(group_id, name, H5P_DEFAULT)) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't open dataset '%s'\n", name);
+                    PART_ERROR(DCPL_storage_layout_test);
+                }
+
+                if (dset_id >= 0) {
+                    H5E_BEGIN_TRY {
+                        H5Dclose(dset_id);
+                    } H5E_END_TRY;
+                    dset_id = H5I_INVALID_HID;
+                }
+            }
+
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
+            }
+
+            PASSED();
+        } PART_END(DCPL_storage_layout_test);
+
+        /* Test the "track object times" property */
+        PART_BEGIN(DCPL_track_obj_times_test) {
+            TESTING_2("object time tracking property for DCPL")
+
+            if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create DCPL\n");
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if (H5Pset_obj_track_times(dcpl_id, true) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set object time tracking property\n");
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME,
+                    dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME);
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
+
+            if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_YES_DSET_NAME);
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
+
+            if (H5Pset_obj_track_times(dcpl_id, false) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set object time tracking property\n");
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if ((dset_id = H5Dcreate2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME,
+                    dset_dtype, fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME);
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
+
+            if ((dset_id = H5Dopen2(group_id, DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATION_PROPERTIES_TEST_TRACK_TIMES_NO_DSET_NAME);
+                PART_ERROR(DCPL_track_obj_times_test);
+            }
+
+            if (dset_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Dclose(dset_id);
+                } H5E_END_TRY;
+                dset_id = H5I_INVALID_HID;
+            }
+            if (dcpl_id >= 0) {
+                H5E_BEGIN_TRY {
+                    H5Pclose(dcpl_id);
+                } H5E_END_TRY;
+                dcpl_id = H5I_INVALID_HID;
+            }
+
+            PASSED();
+        } PART_END(DCPL_track_obj_times_test);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
@@ -3215,10 +3425,7 @@ test_get_dataset_offset_invalid_params(void)
 
 /*
  * A test to check that a small amount of data can be
- * read back from a dataset using an H5S_ALL selection
- * and then verified.
- *
- * XXX: Add dataset write and data verification.
+ * read back from a dataset using an H5S_ALL selection.
  */
 static int
 test_read_dataset_small_all(void)
@@ -3309,10 +3516,7 @@ error:
 
 /*
  * A test to check that a small amount of data can be
- * read back from a dataset using a hyperslab selection
- * and then verified.
- *
- * XXX: Add dataset write and data verification.
+ * read back from a dataset using a hyperslab selection.
  */
 static int
 test_read_dataset_small_hyperslab(void)
@@ -3424,10 +3628,7 @@ error:
 
 /*
  * A test to check that a small amount of data can be
- * read back from a dataset using a point selection and
- * then verified.
- *
- * XXX: Add dataset write and data verification.
+ * read back from a dataset using a point selection.
  */
 static int
 test_read_dataset_small_point_selection(void)
@@ -3538,10 +3739,7 @@ error:
 #ifndef NO_LARGE_TESTS
 /*
  * A test to check that a large amount of data can be
- * read back from a dataset using an H5S_ALL selection
- * and then verified.
- *
- * XXX: Add dataset write and data verification.
+ * read back from a dataset using an H5S_ALL selection.
  */
 static int
 test_read_dataset_large_all(void)
@@ -3632,10 +3830,7 @@ error:
 
 /*
  * A test to check that a large amount of data can be
- * read back from a dataset using a hyperslab selection
- * and then verified.
- *
- * XXX: Add dataset write and data verification.
+ * read back from a dataset using a hyperslab selection.
  */
 static int
 test_read_dataset_large_hyperslab(void)
@@ -3744,12 +3939,9 @@ error:
 
 /*
  * A test to check that a large amount of data can be
- * read back from a dataset using a large point selection
- * and then verified.
+ * read back from a dataset using a large point selection.
  *
  * XXX: Test takes up significant amounts of memory.
- *
- * XXX: Add dataset write and data verification.
  */
 static int
 test_read_dataset_large_point_selection(void)

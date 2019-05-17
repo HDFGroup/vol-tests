@@ -173,7 +173,9 @@ test_create_hard_link_same_loc(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
-    TESTING("hard link creation with H5L_SAME_LOC")
+    TESTING_MULTIPART("hard link creation with H5L_SAME_LOC")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -193,45 +195,64 @@ test_create_hard_link_same_loc(void)
         goto error;
     }
 
-#if 0 /* Library functionality for this part of the test is broken */
-    if (H5Lcreate_hard(H5L_SAME_LOC, ".", group_id, H5L_SAME_LOC_TEST_LINK_NAME1, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create first link '%s'\n", H5L_SAME_LOC_TEST_LINK_NAME1);
-        goto error;
-    }
+    PASSED();
 
-    /* Verify the link has been created */
-    if ((link_exists = H5Lexists(group_id, H5L_SAME_LOC_TEST_LINK_NAME1, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5L_SAME_LOC_first_param) {
+            TESTING_2("usage of H5L_SAME_LOC for first parameter of H5Lcreate_hard")
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    link did not exist\n");
-        goto error;
-    }
+            /* Library functionality for this part of the test is broken */
+#if 0
+            if (H5Lcreate_hard(H5L_SAME_LOC, ".", group_id, H5L_SAME_LOC_TEST_LINK_NAME1, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create first link '%s'\n", H5L_SAME_LOC_TEST_LINK_NAME1);
+                PART_ERROR(H5L_SAME_LOC_first_param);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(group_id, H5L_SAME_LOC_TEST_LINK_NAME1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                PART_ERROR(H5L_SAME_LOC_first_param);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link did not exist\n");
+                PART_ERROR(H5L_SAME_LOC_first_param);
+            }
 #endif
 
-    if (H5Lcreate_hard(group_id, ".", H5L_SAME_LOC, H5L_SAME_LOC_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create second link '%s'\n", H5L_SAME_LOC_TEST_LINK_NAME2);
-        goto error;
-    }
+            SKIPPED();
+        } PART_END(H5L_SAME_LOC_first_param);
 
-    /* Verify the link has been created */
-    if ((link_exists = H5Lexists(group_id, H5L_SAME_LOC_TEST_LINK_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' exists\n", H5L_SAME_LOC_TEST_LINK_NAME2);
-        goto error;
-    }
+        PART_BEGIN(H5L_SAME_LOC_third_param) {
+            TESTING_2("usage of H5L_SAME_LOC for third parameter of H5Lcreate_hard")
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    link did not exist\n");
-        goto error;
-    }
+            if (H5Lcreate_hard(group_id, ".", H5L_SAME_LOC, H5L_SAME_LOC_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create second link '%s'\n", H5L_SAME_LOC_TEST_LINK_NAME2);
+                PART_ERROR(H5L_SAME_LOC_third_param);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(group_id, H5L_SAME_LOC_TEST_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", H5L_SAME_LOC_TEST_LINK_NAME2);
+                PART_ERROR(H5L_SAME_LOC_third_param);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link did not exist\n");
+                PART_ERROR(H5L_SAME_LOC_third_param);
+            }
+
+            PASSED();
+        } PART_END(H5L_SAME_LOC_third_param);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -3292,18 +3313,6 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_soft);
             }
 
-            if (H5Lget_info(group_id, GET_LINK_VAL_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get soft link info\n");
-                PART_ERROR(H5Lget_val_soft);
-            }
-
-            if (link_info.type != H5L_TYPE_SOFT) {
-                H5_FAILED();
-                HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_val_soft);
-            }
-
             link_val_buf_size = link_info.u.val_size;
             if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size))) {
                 H5_FAILED();
@@ -3346,18 +3355,6 @@ test_get_link_val(void)
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    external link did not exist\n");
-                PART_ERROR(H5Lget_val_external);
-            }
-
-            if (H5Lget_info(group_id, GET_LINK_VAL_TEST_EXT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get external link info\n");
-                PART_ERROR(H5Lget_val_external);
-            }
-
-            if (link_info.type != H5L_TYPE_EXTERNAL) {
-                H5_FAILED();
-                HDprintf("    incorrect link type returned\n");
                 PART_ERROR(H5Lget_val_external);
             }
 
@@ -3407,18 +3404,6 @@ test_get_link_val(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
-            if (H5Lget_info(group_id, GET_LINK_VAL_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get soft link info\n");
-                PART_ERROR(H5Lget_val_by_idx_soft);
-            }
-
-            if (link_info.type != H5L_TYPE_SOFT) {
-                H5_FAILED();
-                HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_val_by_idx_soft);
-            }
-
             while (link_info.u.val_size > link_val_buf_size) {
                 char *tmp_realloc;
 
@@ -3452,18 +3437,6 @@ test_get_link_val(void)
             TESTING_2("H5Lget_val_by_idx on external link")
 
             HDmemset(&link_info, 0, sizeof(link_info));
-
-            if (H5Lget_info(group_id, GET_LINK_VAL_TEST_EXT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get external link info\n");
-                PART_ERROR(H5Lget_val_by_idx_external);
-            }
-
-            if (link_info.type != H5L_TYPE_EXTERNAL) {
-                H5_FAILED();
-                HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_val_by_idx_external);
-            }
 
             while (link_info.u.val_size > link_val_buf_size) {
                 char *tmp_realloc;
@@ -3620,18 +3593,6 @@ test_get_link_val_invalid_params(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
-            if (H5Lget_info(group_id, GET_LINK_VAL_INVALID_PARAMS_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get soft link info\n");
-                PART_ERROR(H5Lget_val_invalid_loc_id);
-            }
-
-            if (link_info.type != H5L_TYPE_SOFT) {
-                H5_FAILED();
-                HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_val_invalid_loc_id);
-            }
-
             link_val_buf_size = link_info.u.val_size;
             if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size))) {
                 H5_FAILED();
@@ -3698,18 +3659,6 @@ test_get_link_val_invalid_params(void)
             TESTING_2("H5Lget_val_by_idx with an invalid location ID")
 
             HDmemset(&link_info, 0, sizeof(link_info));
-
-            if (H5Lget_info(group_id, GET_LINK_VAL_INVALID_PARAMS_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get soft link info\n");
-                PART_ERROR(H5Lget_val_by_idx_invalid_loc_id);
-            }
-
-            if (link_info.type != H5L_TYPE_SOFT) {
-                H5_FAILED();
-                HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_val_by_idx_invalid_loc_id);
-            }
 
             while (link_info.u.val_size > link_val_buf_size) {
                 char *tmp_realloc;
@@ -6536,7 +6485,6 @@ test_link_visit_0_links(void)
 {
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link visiting on group with subgroups containing 0 links");
 
@@ -6558,20 +6506,6 @@ test_link_visit_0_links(void)
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME);
-        goto error;
-    }
-
-    if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME2,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME2);
-        goto error;
-    }
-
-    if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME3,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME3);
         goto error;
     }
 
@@ -6681,10 +6615,6 @@ test_link_visit_0_links(void)
 
     TESTING_2("test cleanup")
 
-    if (H5Gclose(subgroup1) < 0)
-        TEST_ERROR
-    if (H5Gclose(subgroup2) < 0)
-        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -6698,8 +6628,6 @@ test_link_visit_0_links(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Gclose(subgroup1);
-        H5Gclose(subgroup2);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);

@@ -61,8 +61,7 @@ static int
 test_create_group_under_root(void)
 {
     hid_t file_id = H5I_INVALID_HID;
-    hid_t parent_gid = H5I_INVALID_HID, child_gid = H5I_INVALID_HID,
-          absolute_gid = H5I_INVALID_HID;
+    hid_t parent_gid = H5I_INVALID_HID;
 
     TESTING("creation of group under the root group")
 
@@ -79,24 +78,6 @@ test_create_group_under_root(void)
         goto error;
     }
 
-    /* Create another group under the first group (relative pathname) */
-    if ((child_gid = H5Gcreate2(parent_gid, CHILD_GROUP_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", CHILD_GROUP_GNAME);
-        goto error;
-    }
-
-    /* Create a group with an absolute pathname */
-    if ((absolute_gid = H5Gcreate2(file_id, GROUP_WITH_ABSOLUTE_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", GROUP_WITH_ABSOLUTE_GNAME);
-        goto error;
-    }
-
-    if (H5Gclose(absolute_gid) < 0)
-        TEST_ERROR
-    if (H5Gclose(child_gid) < 0)
-        TEST_ERROR
     if (H5Gclose(parent_gid) < 0)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)
@@ -108,8 +89,6 @@ test_create_group_under_root(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Gclose(absolute_gid);
-        H5Gclose(child_gid);
         H5Gclose(parent_gid);
         H5Fclose(file_id);
     } H5E_END_TRY;
@@ -803,7 +782,9 @@ test_group_property_lists(void)
     hid_t  group_id1 = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
     hid_t  gcpl_id1 = H5I_INVALID_HID, gcpl_id2 = H5I_INVALID_HID;
 
-    TESTING("group property list operations")
+    TESTING_MULTIPART("group property list operations")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -846,119 +827,152 @@ test_group_property_lists(void)
     if (H5Pclose(gcpl_id1) < 0)
         TEST_ERROR
 
-    /* Try to retrieve copies of the two property lists, one which has the property set and one which does not */
-    if ((gcpl_id1 = H5Gget_create_plist(group_id1)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get GCPL\n");
-        goto error;
-    }
+    PASSED();
 
-    if ((gcpl_id2 = H5Gget_create_plist(group_id2)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get GCPL\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Gget_create_plist) {
+            TESTING_2("H5Gget_create_plist")
 
-    /* Ensure that property list 1 has the property set and property list 2 does not */
-    dummy_prop_val = 0;
+            /* Try to retrieve copies of the two property lists, one which has the property set and one which does not */
+            if ((gcpl_id1 = H5Gget_create_plist(group_id1)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get GCPL\n");
+                PART_ERROR(H5Gget_create_plist);
+            }
 
-    if (H5Pget_local_heap_size_hint(gcpl_id1, &dummy_prop_val) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve GCPL property value\n");
-        goto error;
-    }
+            if ((gcpl_id2 = H5Gget_create_plist(group_id2)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get GCPL\n");
+                PART_ERROR(H5Gget_create_plist);
+            }
 
-    if (dummy_prop_val != GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
-        H5_FAILED();
-        HDprintf("    1. retrieved GCPL property value '%llu' did not match expected value '%llu'\n",
-                (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
-        goto error;
-    }
+            /* Ensure that property list 1 has the property set and property list 2 does not */
+            dummy_prop_val = 0;
 
-    dummy_prop_val = 0;
+            if (H5Pget_local_heap_size_hint(gcpl_id1, &dummy_prop_val) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve GCPL property value\n");
+                PART_ERROR(H5Gget_create_plist);
+            }
 
-    if (H5Pget_local_heap_size_hint(gcpl_id2, &dummy_prop_val) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve GCPL property value\n");
-        goto error;
-    }
+            if (dummy_prop_val != GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
+                H5_FAILED();
+                HDprintf("    retrieved GCPL property value '%llu' did not match expected value '%llu'\n",
+                        (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
+                PART_ERROR(H5Gget_create_plist);
+            }
 
-    if (dummy_prop_val == GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
-        H5_FAILED();
-        HDprintf("    1. retrieved GCPL property value '%llu' matched control value '%llu' when it shouldn't have\n",
-                (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
-        goto error;
-    }
+            dummy_prop_val = 0;
 
-    if (H5Pclose(gcpl_id1) < 0)
-        TEST_ERROR
-    if (H5Pclose(gcpl_id2) < 0)
-        TEST_ERROR
+            if (H5Pget_local_heap_size_hint(gcpl_id2, &dummy_prop_val) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve GCPL property value\n");
+                PART_ERROR(H5Gget_create_plist);
+            }
 
-    /* Now see if we can still retrieve copies of the property lists upon opening
-     * (instead of creating) a group. If they were reconstructed properly upon file
-     * open, the creation property lists should also have the same test values
-     * as set before.
-     */
-    if (H5Gclose(group_id1) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
+            if (dummy_prop_val == GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
+                H5_FAILED();
+                HDprintf("    retrieved GCPL property value '%llu' matched control value '%llu' when it shouldn't have\n",
+                        (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
+                PART_ERROR(H5Gget_create_plist);
+            }
 
-    if ((group_id1 = H5Gopen2(container_group, GROUP_PROPERTY_LIST_TEST_GROUP_NAME1, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group\n");
-        goto error;
-    }
+            PASSED();
+        } PART_END(H5Gget_create_plist);
 
-    if ((group_id2 = H5Gopen2(container_group, GROUP_PROPERTY_LIST_TEST_GROUP_NAME2, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group\n");
-        goto error;
-    }
+        /* Now see if we can still retrieve copies of the property lists upon opening
+         * (instead of creating) a group. If they were reconstructed properly upon file
+         * open, the creation property lists should also have the same test values
+         * as set before.
+         */
+        if (gcpl_id1 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(gcpl_id1);
+            } H5E_END_TRY;
+            gcpl_id1 = H5I_INVALID_HID;
+        }
+        if (gcpl_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(gcpl_id2);
+            } H5E_END_TRY;
+            gcpl_id2 = H5I_INVALID_HID;
+        }
+        if (group_id1 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id1);
+            } H5E_END_TRY;
+            group_id1 = H5I_INVALID_HID;
+        }
+        if (group_id2 >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(group_id2);
+            } H5E_END_TRY;
+            group_id2 = H5I_INVALID_HID;
+        }
 
-    if ((gcpl_id1 = H5Gget_create_plist(group_id1)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get property list\n");
-        goto error;
-    }
+        PART_BEGIN(H5Gget_create_plist_reopened) {
+            TESTING_2("H5Gget_create_plist after re-opening a group")
 
-    if ((gcpl_id2 = H5Gget_create_plist(group_id2)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get property list\n");
-        goto error;
-    }
+            if ((group_id1 = H5Gopen2(container_group, GROUP_PROPERTY_LIST_TEST_GROUP_NAME1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open group\n");
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
 
-    /* Re-check the property values */
-    dummy_prop_val = 0;
+            if ((group_id2 = H5Gopen2(container_group, GROUP_PROPERTY_LIST_TEST_GROUP_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open group\n");
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
 
-    if (H5Pget_local_heap_size_hint(gcpl_id1, &dummy_prop_val) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve GCPL property value\n");
-        goto error;
-    }
+            if ((gcpl_id1 = H5Gget_create_plist(group_id1)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get property list\n");
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
 
-    if (dummy_prop_val != GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
-        H5_FAILED();
-        HDprintf("    2. retrieved GCPL property value '%llu' did not match expected value '%llu'\n",
-                (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
-        goto error;
-    }
+            if ((gcpl_id2 = H5Gget_create_plist(group_id2)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get property list\n");
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
 
-    dummy_prop_val = 0;
+            /* Re-check the property values */
+            dummy_prop_val = 0;
 
-    if (H5Pget_local_heap_size_hint(gcpl_id2, &dummy_prop_val) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't retrieve GCPL property value\n");
-        goto error;
-    }
+            if (H5Pget_local_heap_size_hint(gcpl_id1, &dummy_prop_val) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve GCPL property value\n");
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
 
-    if (dummy_prop_val == GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
-        H5_FAILED();
-        HDprintf("    2. retrieved GCPL property value '%llu' matched control value '%llu' when it shouldn't have\n",
-                (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
-        goto error;
-    }
+            if (dummy_prop_val != GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
+                H5_FAILED();
+                HDprintf("    retrieved GCPL property value '%llu' did not match expected value '%llu'\n",
+                        (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
+
+            dummy_prop_val = 0;
+
+            if (H5Pget_local_heap_size_hint(gcpl_id2, &dummy_prop_val) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve GCPL property value\n");
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
+
+            if (dummy_prop_val == GROUP_PROPERTY_LIST_TEST_DUMMY_VAL) {
+                H5_FAILED();
+                HDprintf("    retrieved GCPL property value '%llu' matched control value '%llu' when it shouldn't have\n",
+                        (unsigned long long) dummy_prop_val, (unsigned long long) GROUP_PROPERTY_LIST_TEST_DUMMY_VAL);
+                PART_ERROR(H5Gget_create_plist_reopened);
+            }
+
+            PASSED();
+        } PART_END(H5Gget_create_plist_reopened);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Pclose(gcpl_id1) < 0)
         TEST_ERROR
