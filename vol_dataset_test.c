@@ -6228,6 +6228,5 @@ vol_dataset_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }

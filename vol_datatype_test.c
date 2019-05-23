@@ -1344,6 +1344,5 @@ vol_datatype_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }

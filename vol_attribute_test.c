@@ -6900,6 +6900,5 @@ vol_attribute_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }

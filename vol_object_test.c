@@ -3079,6 +3079,5 @@ vol_object_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }

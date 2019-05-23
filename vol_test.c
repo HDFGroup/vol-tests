@@ -26,10 +26,6 @@
 
 #include "vol_test.h"
 
-#ifdef H5_HAVE_PARALLEL
-#include "vol_test_parallel.h"
-#endif
-
 #include "vol_file_test.h"
 #include "vol_group_test.h"
 #include "vol_dataset_test.h"
@@ -38,6 +34,18 @@
 #include "vol_link_test.h"
 #include "vol_object_test.h"
 #include "vol_misc_test.h"
+
+#ifdef H5_HAVE_PARALLEL
+#include "vol_test_parallel.h"
+#include "vol_file_test_parallel.h"
+#include "vol_group_test_parallel.h"
+#include "vol_dataset_test_parallel.h"
+#include "vol_datatype_test_parallel.h"
+#include "vol_attribute_test_parallel.h"
+#include "vol_link_test_parallel.h"
+#include "vol_object_test_parallel.h"
+#include "vol_misc_test_parallel.h"
+#endif
 
 static int create_test_container(void);
 
@@ -860,9 +868,11 @@ int main(int argc, char **argv)
 #ifdef H5_HAVE_PARALLEL
         if (MAINPROCESS) {
 #endif
-            HDprintf("Test parameters:\n");
-            HDprintf("  - Test file name: '%s'\n", vol_test_filename);
-            HDprintf("\n\n");
+
+        HDprintf("Test parameters:\n");
+        HDprintf("  - Test file name: '%s'\n", vol_test_filename);
+        HDprintf("\n\n");
+
 #ifdef H5_HAVE_PARALLEL
         }
 #endif
@@ -877,9 +887,13 @@ int main(int argc, char **argv)
          * except for those which test file creation.
          */
         if (create_test_container() < 0) {
-            HDfprintf(stderr, "Unable to create testing container file\n");
+            HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
             continue;
         }
+
+#ifdef H5_HAVE_PARALLEL
+        if (MAINPROCESS) {
+#endif
 
         nerrors += vol_file_test();
         nerrors += vol_group_test();
@@ -890,22 +904,47 @@ int main(int argc, char **argv)
         nerrors += vol_object_test();
         nerrors += vol_misc_test();
 
+#ifdef H5_HAVE_PARALLEL
+        }
+#endif
+
+#ifdef H5_HAVE_PARALLEL
+        nerrors += vol_file_test_parallel();
+        nerrors += vol_group_test_parallel();
+        nerrors += vol_dataset_test_parallel();
+        nerrors += vol_datatype_test_parallel();
+        nerrors += vol_attribute_test_parallel();
+        nerrors += vol_link_test_parallel();
+        nerrors += vol_object_test_parallel();
+        nerrors += vol_misc_test_parallel();
+#endif
+
         if (nerrors) {
 #ifdef H5_HAVE_PARALLEL
-            if (MAINPROCESS)
+            if (MAINPROCESS) {
 #endif
-                HDprintf("*** %d TEST%s FAILED WITH VOL CONNECTOR '%s' ***\n", nerrors, (!nerrors || nerrors > 1) ? "S" : "", vol_connector_name);
+
+            HDprintf("*** %d TEST%s FAILED WITH VOL CONNECTOR '%s' ***\n", nerrors, (!nerrors || nerrors > 1) ? "S" : "", vol_connector_name);
+
+#ifdef H5_HAVE_PARALLEL
+            }
+#endif
+
             continue;
         }
 
 #ifdef H5_HAVE_PARALLEL
-        if (MAINPROCESS)
+        if (MAINPROCESS) {
 #endif
-            HDprintf("All VOL tests passed with VOL connector '%s'\n\n", vol_connector_name);
+
+        HDprintf("All VOL tests passed with VOL connector '%s'\n\n", vol_connector_name);
+
+#ifdef H5_HAVE_PARALLEL
+        }
+#endif
     } /* end for */
 
 done:
-
     ALARM_OFF;
 
     H5close();

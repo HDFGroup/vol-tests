@@ -171,6 +171,12 @@ foreach(vol_test ${vol_tests})
     ${HDF5_VOL_TEST_SRCS}
     ${CMAKE_CURRENT_SOURCE_DIR}/vol_${vol_test}_test.c
   )
+  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+    set(HDF5_VOL_TEST_SRCS
+      ${HDF5_VOL_TEST_SRCS}
+      ${CMAKE_CURRENT_SOURCE_DIR}/vol_${vol_test}_test_parallel.c
+  )
+  endif()
 endforeach()
 
 add_executable(h5vl_test ${HDF5_VOL_TEST_SRCS} vol_test.c)

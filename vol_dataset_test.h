@@ -61,11 +61,11 @@ int vol_dataset_test(void);
 #define DATASET_PREDEFINED_TYPE_TEST_BASE_NAME     "predefined_type_dset"
 #define DATASET_PREDEFINED_TYPE_TEST_SUBGROUP_NAME "predefined_type_dataset_test"
 
-#define DATASET_STRING_TYPE_TEST_STRING_LENGTH  40
-#define DATASET_STRING_TYPE_TEST_SPACE_RANK     2
-#define DATASET_STRING_TYPE_TEST_DSET_NAME1     "fixed_length_string_dset"
-#define DATASET_STRING_TYPE_TEST_DSET_NAME2     "variable_length_string_dset"
-#define DATASET_STRING_TYPE_TEST_SUBGROUP_NAME  "string_type_dataset_test"
+#define DATASET_STRING_TYPE_TEST_STRING_LENGTH 40
+#define DATASET_STRING_TYPE_TEST_SPACE_RANK    2
+#define DATASET_STRING_TYPE_TEST_DSET_NAME1    "fixed_length_string_dset"
+#define DATASET_STRING_TYPE_TEST_DSET_NAME2    "variable_length_string_dset"
+#define DATASET_STRING_TYPE_TEST_SUBGROUP_NAME "string_type_dataset_test"
 
 #define DATASET_COMPOUND_TYPE_TEST_SUBGROUP_NAME "compound_type_dataset_test"
 #define DATASET_COMPOUND_TYPE_TEST_DSET_NAME     "compound_type_test"

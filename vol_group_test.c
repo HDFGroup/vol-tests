@@ -1575,6 +1575,5 @@ vol_group_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }

@@ -902,6 +902,5 @@ vol_misc_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }

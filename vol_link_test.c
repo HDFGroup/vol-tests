@@ -6961,6 +6961,5 @@ vol_link_test(void)
 
     HDprintf("\n");
 
-done:
     return nerrors;
 }
