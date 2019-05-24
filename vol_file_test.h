@@ -60,6 +60,8 @@ int vol_file_test(void);
 #define FILE_MOUNT_TEST_FILENAME "file_mount.h5"
 #define FILE_MOUNT_TEST_GRP_NAME "group"
 
+#define GET_FILE_NAME_TEST_FNAME       "file_name_retrieval.h5"
+#define GET_FILE_NAME_TEST_GRP_NAME    "group"
 #define GET_FILE_NAME_TEST_DSET_NAME   "dataset"
 #define GET_FILE_NAME_TEST_ATTR_NAME   "attribute"
 #define GET_FILE_NAME_TEST_NAMED_DTYPE "datatype"

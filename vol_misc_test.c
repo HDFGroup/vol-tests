@@ -363,7 +363,7 @@ test_absolute_vs_relative_path(void)
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Dcreate_absolute_from_root) {
-            TESTING_2("creation of dataset by absolute path from root group")
+            TESTING_2("dataset creation by absolute path from root group")
 
             /* Create a dataset by absolute path in the form "/group/dataset" starting from the root group */
             if ((dset_id1 = H5Dcreate2(file_id, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET1_NAME,
@@ -389,7 +389,7 @@ test_absolute_vs_relative_path(void)
         } PART_END(H5Dcreate_absolute_from_root);
 
         PART_BEGIN(H5Dcreate_absolute_from_nonroot) {
-            TESTING_2("creation of dataset by absolute path from non-root group")
+            TESTING_2("dataset creation by absolute path from non-root group")
 
             /* Create a dataset by absolute path in the form "/group/dataset" starting from the container group */
             if ((dset_id4 = H5Dcreate2(container_group, "/" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET4_NAME,
@@ -415,7 +415,7 @@ test_absolute_vs_relative_path(void)
         } PART_END(H5Dcreate_absolute_from_nonroot);
 
         PART_BEGIN(H5Dcreate_relative_from_root) {
-            TESTING_2("creation of dataset by relative path from root group")
+            TESTING_2("dataset creation by relative path from root group")
 
             /* TODO: */
 
@@ -423,7 +423,7 @@ test_absolute_vs_relative_path(void)
         } PART_END(H5Dcreate_relative_from_root);
 
         PART_BEGIN(H5Dcreate_relative_from_nonroot) {
-            TESTING_2("creation of dataset by relative path from non-root group")
+            TESTING_2("dataset creation by relative path from non-root group")
 
             /* Create a dataset by relative path in the form "dataset" starting from the test container group */
             if ((dset_id5 = H5Dcreate2(group_id, ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET5_NAME, dset_dtype5,
@@ -469,7 +469,7 @@ test_absolute_vs_relative_path(void)
         } PART_END(H5Dcreate_relative_from_nonroot);
 
         PART_BEGIN(H5Dcreate_relative_leading_dot_root) {
-            TESTING_2("creation of dataset by path with leading '.' from root group")
+            TESTING_2("dataset creation by path with leading '.' from root group")
 
             /* Create a dataset by relative path in the form "./group/dataset" starting from the root group */
             if ((dset_id3 = H5Dcreate2(file_id, "./" MISCELLANEOUS_TEST_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_CONTAINER_GROUP_NAME "/" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET3_NAME,
@@ -495,7 +495,7 @@ test_absolute_vs_relative_path(void)
         } PART_END(H5Dcreate_relative_leading_dot_root);
 
         PART_BEGIN(H5Dcreate_relative_leading_dot_nonroot) {
-            TESTING_2("creation of dataset by path with leading '.' from non-root group")
+            TESTING_2("dataset creation by path with leading '.' from non-root group")
 
             /* Create a dataset by relative path in the form "./dataset" starting from the container group */
             if ((dset_id6 = H5Dcreate2(group_id, "./" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME, dset_dtype6,
@@ -771,7 +771,7 @@ test_symbols_in_compound_field_name(void)
     hid_t  type_pool[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES];
     char   member_names[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES][256];
 
-    TESTING("usage of '{', '}' and '\\\"' symbols in compound type\'s field name")
+    TESTING("usage of '{', '}' and '\\\"' symbols in compound field name")
 
     for (i = 0; i < COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES; i++)
         type_pool[i] = H5I_INVALID_HID;

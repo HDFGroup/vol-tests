@@ -54,7 +54,7 @@ int vol_link_test(void);
 #define SOFT_LINK_INVALID_PARAMS_TEST_LINK_NAME  "soft_link_to_root"
 
 #define EXTERNAL_LINK_TEST_SUBGROUP_NAME "external_link_test"
-#define EXTERNAL_LINK_TEST_FILE_NAME     "ext_link_file"
+#define EXTERNAL_LINK_TEST_FILE_NAME     "ext_link_file.h5"
 #define EXTERNAL_LINK_TEST_LINK_NAME     "ext_link"
 
 #define EXTERNAL_LINK_TEST_DANGLING_SUBGROUP_NAME "external_link_dangling_test"
@@ -62,7 +62,7 @@ int vol_link_test(void);
 #define EXTERNAL_LINK_TEST_DANGLING_OBJECT_NAME   "external_group"
 
 #define EXTERNAL_LINK_INVALID_PARAMS_TEST_GROUP_NAME "external_link_creation_invalid_params_test"
-#define EXTERNAL_LINK_INVALID_PARAMS_TEST_FILE_NAME  "ext_link_invalid_params_file"
+#define EXTERNAL_LINK_INVALID_PARAMS_TEST_FILE_NAME  "ext_link_invalid_params_file.h5"
 #define EXTERNAL_LINK_INVALID_PARAMS_TEST_LINK_NAME  "external_link"
 
 #define UD_LINK_TEST_UDATA_MAX_SIZE 256

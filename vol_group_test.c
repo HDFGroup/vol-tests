@@ -72,9 +72,9 @@ test_create_group_under_root(void)
     }
 
     /* Create the group under the root group of the file */
-    if ((parent_gid = H5Gcreate2(file_id, PARENT_GROUP_UNDER_ROOT_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((parent_gid = H5Gcreate2(file_id, GROUP_CREATE_UNDER_ROOT_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", PARENT_GROUP_UNDER_ROOT_GNAME);
+        HDprintf("    couldn't create group '%s'\n", GROUP_CREATE_UNDER_ROOT_GNAME);
         goto error;
     }
 
@@ -167,6 +167,7 @@ static int
 test_create_many_groups(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
     hid_t parent_group_id = H5I_INVALID_HID, child_group_id = H5I_INVALID_HID;
     char  group_name[NAME_BUF_SIZE];
     unsigned i;
@@ -179,8 +180,13 @@ test_create_many_groups(void)
         goto error;
     }
 
-    /* Create the group under the root group of the file */
-    if ((parent_group_id = H5Gcreate2(file_id, MANY_GROUP_CREATIONS_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((container_group = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group\n");
+        goto error;
+    }
+
+    if ((parent_group_id = H5Gcreate2(container_group, MANY_GROUP_CREATIONS_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", MANY_GROUP_CREATIONS_GNAME);
         goto error;
@@ -203,6 +209,8 @@ test_create_many_groups(void)
 
     if (H5Gclose(parent_group_id) < 0)
         TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -214,6 +222,7 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(child_group_id);
         H5Gclose(parent_group_id);
+        H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -227,6 +236,7 @@ static int
 test_create_deep_groups(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Gcreate groups of great depths")
@@ -237,8 +247,14 @@ test_create_deep_groups(void)
         goto error;
     }
 
+    if ((container_group = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group\n");
+        goto error;
+    }
+
     /* Create the group under the root group of the file */
-    if ((group_id = H5Gcreate2(file_id, DEEP_GROUP_CREATIONS_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DEEP_GROUP_CREATIONS_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", DEEP_GROUP_CREATIONS_GNAME);
         goto error;
@@ -250,6 +266,8 @@ test_create_deep_groups(void)
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -260,6 +278,7 @@ test_create_deep_groups(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
+        H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -276,7 +295,12 @@ create_group_recursive(hid_t parent_gid, int counter)
     char  gname[NAME_BUF_SIZE];
 
     HDprintf("\r %u/%u", counter, GROUP_DEPTH);
-    sprintf(gname, "%dth_child_group", counter+1);
+    if (counter == 1)
+        sprintf(gname, "2nd_child_group");
+    else if (counter == 2)
+        sprintf(gname, "3rd_child_group");
+    else
+        sprintf(gname, "%dth_child_group", counter+1);
     if ((child_gid = H5Gcreate2(parent_gid, gname, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", gname);
@@ -1010,11 +1034,12 @@ error:
 static int
 test_get_group_info(void)
 {
-    H5G_info_t 	group_info;
-    hid_t      	file_id = H5I_INVALID_HID;
-    hid_t      	parent_group_id = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    char        group_name[NAME_BUF_SIZE];
-    unsigned    i;
+    H5G_info_t group_info;
+    unsigned   i;
+    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      container_group = H5I_INVALID_HID;
+    hid_t      parent_group_id = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    char       group_name[NAME_BUF_SIZE];
 
     TESTING_MULTIPART("retrieval of group info");
 
@@ -1026,9 +1051,15 @@ test_get_group_info(void)
         goto error;
     }
 
-    if ((parent_group_id = H5Gcreate2(file_id, GROUP_FOR_INFO, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((container_group = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", group_name);
+        HDprintf("    couldn't open container group\n");
+        goto error;
+    }
+
+    if ((parent_group_id = H5Gcreate2(container_group, GROUP_FOR_INFO, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", GROUP_FOR_INFO);
         goto error;
     }
 
@@ -1071,7 +1102,7 @@ test_get_group_info(void)
             TESTING_2("retrieval of group info with H5Gget_info_by_name")
 
             /* Retrieve information about the parent group */
-            if (H5Gget_info_by_name(file_id, GROUP_FOR_INFO, &group_info, H5P_DEFAULT) < 0) {
+            if (H5Gget_info_by_name(container_group, GROUP_FOR_INFO, &group_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get group info by name\n");
                 PART_ERROR(H5Gget_info_by_name);
@@ -1090,7 +1121,7 @@ test_get_group_info(void)
             TESTING_2("retrieval of group info with H5Gget_info_by_idx")
 
             /* Retrieve information about the first group under the parent group */
-            if (H5Gget_info_by_idx(file_id, GROUP_FOR_INFO, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
+            if (H5Gget_info_by_idx(container_group, GROUP_FOR_INFO, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get group info by index\n");
                 PART_ERROR(H5Gget_info_by_idx);
@@ -1110,6 +1141,8 @@ test_get_group_info(void)
 
     if (H5Gclose(parent_group_id) < 0)
         TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1121,6 +1154,7 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(parent_group_id);
         H5Gclose(group_id);
+        H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1408,6 +1442,7 @@ static int
 test_flush_group(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Gflush")
@@ -1418,8 +1453,13 @@ test_flush_group(void)
         goto error;
     }
 
-    /* Create the group under the root group of the file */
-    if ((group_id = H5Gcreate2(file_id, GROUP_FLUSH_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((container_group = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, GROUP_FLUSH_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", GROUP_FLUSH_GNAME);
         goto error;
@@ -1434,6 +1474,8 @@ test_flush_group(void)
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1444,6 +1486,7 @@ test_flush_group(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
+        H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -1486,6 +1529,7 @@ static int
 test_refresh_group(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
     TESTING("H5Grefresh")
@@ -1496,8 +1540,13 @@ test_refresh_group(void)
         goto error;
     }
 
-    /* Create the group under the root group of the file */
-    if ((group_id = H5Gcreate2(file_id, GROUP_REFRESH_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((container_group = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, GROUP_REFRESH_GNAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", GROUP_REFRESH_GNAME);
         goto error;
@@ -1512,6 +1561,8 @@ test_refresh_group(void)
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1522,6 +1573,7 @@ test_refresh_group(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
+        H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 

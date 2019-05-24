@@ -1402,10 +1402,9 @@ test_get_file_obj_count(void)
                 PART_ERROR(H5Fget_obj_count_all);
             }
 
-            /* One for the file and another for the group */
-            if (obj_count != 2) {
+            if (obj_count != 6) {
                 H5_FAILED();
-                HDprintf("    number of open objects (%ld) did not match expected number (2)\n", obj_count);
+                HDprintf("    number of open objects (%ld) did not match expected number (6)\n", obj_count);
                 PART_ERROR(H5Fget_obj_count_all);
             }
 
@@ -1658,9 +1657,9 @@ test_get_file_name(void)
 
     TESTING_2("test setup")
 
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fcreate(GET_FILE_NAME_TEST_FNAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        HDprintf("    couldn't create file '%s'\n", GET_FILE_NAME_TEST_FNAME);
         goto error;
     }
 
@@ -1683,13 +1682,13 @@ test_get_file_name(void)
             /* Retrieve the actual file name */
             if (H5Fget_name(file_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", vol_test_filename);
+                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_file_id);
             }
 
-            if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t) file_name_buf_len)) {
                 H5_FAILED();
-                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_file_id);
             }
 
@@ -1702,21 +1701,21 @@ test_get_file_name(void)
             /* Attempt to retrieve the name of the file from an object that isn't the root group */
             memset(file_name_buf, 0, file_name_buf_len);
 
-            if ((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+            if ((group_id = H5Gcreate2(file_id, GET_FILE_NAME_TEST_GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to open group '%s'\n");
+                HDprintf("    failed to create group '%s'\n", GET_FILE_NAME_TEST_GRP_NAME);
                 PART_ERROR(H5Fget_name_grp_id);
             }
 
             if (H5Fget_name(group_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", vol_test_filename);
+                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_file_id);
             }
 
-            if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t) file_name_buf_len)) {
                 H5_FAILED();
-                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_grp_id);
             }
 
@@ -1749,13 +1748,13 @@ test_get_file_name(void)
             /* Get and verify file name from the dataset */
             if (H5Fget_name(dset_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", vol_test_filename);
+                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_dset_id);
             }
 
-            if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t) file_name_buf_len)) {
                 H5_FAILED();
-                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_dset_id);
             }
 
@@ -1785,7 +1784,7 @@ test_get_file_name(void)
             }
 
             /* Create an attribute for the dataset */
-            if ((attr_id = H5Acreate2(dset_id, GET_FILE_NAME_TEST_ATTR_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((attr_id = H5Acreate2(file_id, GET_FILE_NAME_TEST_ATTR_NAME, H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create the attribute '%s'\n", GET_FILE_NAME_TEST_ATTR_NAME);
                 PART_ERROR(H5Fget_name_attr_id);
@@ -1794,13 +1793,13 @@ test_get_file_name(void)
             /* Get and verify file name from the attribute */
             if (H5Fget_name(attr_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", vol_test_filename);
+                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_attr_id);
             }
 
-            if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t) file_name_buf_len)) {
                 H5_FAILED();
-                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_attr_id);
             }
 
@@ -1839,13 +1838,13 @@ test_get_file_name(void)
             /* Get and verify file name from the committed datatype */
             if (H5Fget_name(named_dtype_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", vol_test_filename);
+                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_dtype_id);
             }
 
-            if (HDstrncmp(file_name_buf, vol_test_filename, (size_t) file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t) file_name_buf_len)) {
                 H5_FAILED();
-                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, vol_test_filename);
+                HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf, GET_FILE_NAME_TEST_FNAME);
                 PART_ERROR(H5Fget_name_dtype_id);
             }
 
@@ -2698,6 +2697,7 @@ cleanup_files(void)
     HDremove(GET_OBJ_COUNT_TEST_FILENAME1);
     HDremove(GET_OBJ_COUNT_TEST_FILENAME2);
     HDremove(FILE_MOUNT_TEST_FILENAME);
+    HDremove(GET_FILE_NAME_TEST_FNAME);
 #if 0 /* for native VOL connector test only */
     HDremove(FILESPACE_INFO_FILENAME);
     HDremove(FILE_GET_ID_TEST_FILENAME);

@@ -434,7 +434,7 @@ test_open_object_invalid_params(void)
     if ((group_id = H5Gcreate2(container_group, OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        printf("    couldn't create container sub-group '%s'\n", OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME);
+        HDprintf("    couldn't create container sub-group '%s'\n", OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME);
         goto error;
     }
 
@@ -1072,7 +1072,7 @@ test_link_object_invalid_params(void)
 static int
 test_incr_decr_object_refcount(void)
 {
-    TESTING("incrementing/decrementing object reference count")
+    TESTING("object reference count increment/decrement")
 
     SKIPPED();
 
@@ -1086,7 +1086,7 @@ test_incr_decr_object_refcount(void)
 static int
 test_incr_decr_object_refcount_invalid_params(void)
 {
-    TESTING("incrementing/decrementing object reference count with invalid parameters")
+    TESTING("object reference count incr./decr. with invalid parameters")
 
     SKIPPED();
 
