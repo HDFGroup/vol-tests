@@ -13,7 +13,7 @@
 #ifndef VOL_LINK_TEST_PARALLEL_H_
 #define VOL_LINK_TEST_PARALLEL_H_
 
-#include "vol_test.h"
+#include "vol_test_parallel.h"
 
 int vol_link_test_parallel(void);
 

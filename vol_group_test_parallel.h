@@ -13,7 +13,7 @@
 #ifndef VOL_GROUP_TEST_PARALLEL_H_
 #define VOL_GROUP_TEST_PARALLEL_H_
 
-#include "vol_test.h"
+#include "vol_test_parallel.h"
 
 int vol_group_test_parallel(void);
 

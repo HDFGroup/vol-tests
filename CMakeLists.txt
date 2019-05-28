@@ -172,34 +172,48 @@ foreach(vol_test ${vol_tests})
     ${CMAKE_CURRENT_SOURCE_DIR}/vol_${vol_test}_test.c
   )
   if(HDF5_VOL_TEST_ENABLE_PARALLEL)
-    set(HDF5_VOL_TEST_SRCS
-      ${HDF5_VOL_TEST_SRCS}
+    set(HDF5_VOL_TEST_PARALLEL_SRCS
+      ${HDF5_VOL_TEST_PARALLEL_SRCS}
       ${CMAKE_CURRENT_SOURCE_DIR}/vol_${vol_test}_test_parallel.c
   )
   endif()
 endforeach()
 
-add_executable(h5vl_test ${HDF5_VOL_TEST_SRCS} vol_test.c)
+add_executable(h5vl_test ${HDF5_VOL_TEST_SRCS} vol_test.c vol_test_util.c)
+if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  add_executable(h5vl_test_parallel ${HDF5_VOL_TEST_PARALLEL_SRCS} vol_test_parallel.c vol_test_util.c)
+endif()
 #  target_include_directories(h5vl_test
 #    PUBLIC  "$<BUILD_INTERFACE:${HDF5_VOL_TEST_BUILD_INCLUDE_DEPENDENCIES}>"
 #  )
 target_include_directories(h5vl_test
   SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
 )
+if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  target_include_directories(h5vl_test_parallel
+    SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+  )
+endif()
 target_link_libraries(h5vl_test
   ${HDF5_VOL_TEST_EXPORTED_LIBS}
   ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
   ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
 )
+if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  target_link_libraries(h5vl_test_parallel
+    ${HDF5_VOL_TEST_EXPORTED_LIBS}
+    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+    ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
+  )
+endif()
 if(NOT HDF5_VOL_TEST_SERVER)
-  if(NOT HDF5_VOL_TEST_ENABLE_PARALLEL)
-    add_test(NAME "h5vl_test"
-      COMMAND $<TARGET_FILE:h5vl_test>
-    )
-  else()
-    add_test(NAME "h5vl_test"
+  add_test(NAME "h5vl_test"
+    COMMAND $<TARGET_FILE:h5vl_test>
+  )
+  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+    add_test(NAME "h5vl_test_parallel"
       COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-        ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test>
+        ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test_parallel>
         ${MPIEXEC_POSTFLAGS}
     )
   endif()
@@ -209,5 +223,10 @@ else()
     COMMAND $<TARGET_FILE:h5vl_test_driver>
     --server ${HDF5_VOL_TEST_SERVER}
     --client $<TARGET_FILE:h5vl_test>
+  )
+  add_test(NAME "h5vl_test_parallel"
+    COMMAND $<TARGET_FILE:h5vl_test_driver>
+    --server ${HDF5_VOL_TEST_SERVER}
+    --client $<TARGET_FILE:h5vl_test_parallel>
   )
 endif()

@@ -10,11 +10,13 @@
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef VOL_DATASET_TEST_PARALLEL_H_
-#define VOL_DATASET_TEST_PARALLEL_H_
+#ifndef VOL_TEST_UTIL_H_
+#define VOL_TEST_UTIL_H_
 
-#include "vol_test_parallel.h"
+#include "hdf5.h"
 
-int vol_dataset_test_parallel(void);
+hid_t generate_random_datatype(H5T_class_t parent_class);
+hid_t generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out);
+int create_test_container(char *filename);
 
-#endif /* VOL_DATASET_TEST_PARALLEL_H_ */
+#endif /* VOL_TEST_UTIL_H_ */

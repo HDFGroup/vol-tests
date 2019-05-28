@@ -13,7 +13,7 @@
 #ifndef VOL_ATTRIBUTE_TEST_PARALLEL_H_
 #define VOL_ATTRIBUTE_TEST_PARALLEL_H_
 
-#include "vol_test.h"
+#include "vol_test_parallel.h"
 
 int vol_attribute_test_parallel(void);
 

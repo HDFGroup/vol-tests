@@ -178,7 +178,4 @@ extern char vol_test_filename[];
  */
 #define GROUP_CREATION_IS_SUPPORTED
 
-hid_t generate_random_datatype(H5T_class_t parent_class);
-hid_t generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out);
-
 #endif
