@@ -45,6 +45,15 @@ int main(int argc, char **argv)
     char *vol_connector_name;
     int   nerrors = 0;
 
+#ifdef H5_HAVE_PARALLEL
+    /* If HDF5 was built with parallel enabled, go ahead and call MPI_Init before
+     * running these tests. Even though these are meant to be serial tests, they will
+     * likely be run using mpirun (or similar) and we cannot necessarily expect HDF5 or
+     * an HDF5 VOL connector to call MPI_Init.
+     */
+    MPI_Init(&argc, &argv);
+#endif
+
     /* h5_reset(); */
 
     srand((unsigned) HDtime(NULL));
@@ -89,6 +98,10 @@ int main(int argc, char **argv)
 
 done:
     H5close();
+
+#ifdef H5_HAVE_PARALLEL
+    MPI_Finalize();
+#endif
 
     HDexit((nerrors ? EXIT_FAILURE : EXIT_SUCCESS));
 }

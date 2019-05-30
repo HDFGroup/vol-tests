@@ -207,10 +207,16 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   )
 endif()
 if(NOT HDF5_VOL_TEST_SERVER)
-  add_test(NAME "h5vl_test"
-    COMMAND $<TARGET_FILE:h5vl_test>
-  )
-  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  if(NOT HDF5_VOL_TEST_ENABLE_PARALLEL)
+    add_test(NAME "h5vl_test"
+      COMMAND $<TARGET_FILE:h5vl_test>
+    )
+  else()
+    add_test(NAME "h5vl_test"
+      COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1
+        ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test>
+        ${MPIEXEC_POSTFLAGS}
+    )
     add_test(NAME "h5vl_test_parallel"
       COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
         ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test_parallel>
@@ -218,7 +224,7 @@ if(NOT HDF5_VOL_TEST_SERVER)
     )
   endif()
 else()
-   # Dynamic client/server test
+  # Dynamic client/server test
   add_test(NAME "h5vl_test"
     COMMAND $<TARGET_FILE:h5vl_test_driver>
     --server ${HDF5_VOL_TEST_SERVER}

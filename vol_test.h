@@ -16,6 +16,8 @@
 #include <hdf5.h>
 #include <H5private.h>
 
+#include "vol_test_util.h"
+
 /* Moved from h5test */
 
 /*
