@@ -36,11 +36,20 @@ int vol_datatype_test(void);
 
 #define DATATYPE_CREATE_ANONYMOUS_INVALID_PARAMS_GROUP_NAME "anonymous_type_creation_invalid_params_test"
 
+#define DATATYPE_CREATE_EMPTY_TYPES_TEST_CMPD_TYPE_NAME "compound_type"
+#define DATATYPE_CREATE_EMPTY_TYPES_TEST_ENUM_TYPE_NAME "enum_type"
+#define DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME "committed_datatype_empty_types_test"
+
+#define RECOMMIT_COMMITTED_TYPE_TEST_GROUP_NAME "recommit_committed_type_test"
+
 #define DATATYPE_OPEN_TEST_GROUP_NAME "datatype_open_test"
 #define DATATYPE_OPEN_TEST_TYPE_NAME  "open_test_datatype"
 
 #define DATATYPE_OPEN_INVALID_PARAMS_TEST_GROUP_NAME "datatype_open_invalid_params_test"
 #define DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME  "open_invalid_params_test_datatype"
+
+#define DATATYPE_REOPEN_TEST_SPACE_RANK 2
+#define DATATYPE_REOPEN_TEST_GROUP_NAME "datatype_reopen_test"
 
 #define DATASET_CREATE_WITH_DATATYPE_TEST_DATASET_DIMS 2
 #define DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME   "dataset_create_with_committed_type_test"
@@ -55,8 +64,16 @@ int vol_datatype_test(void);
 #define DATATYPE_DELETE_TEST_GROUP_NAME "datatype_deletion_test"
 #define DATATYPE_DELETE_TEST_DTYPE_NAME "delete_test_dtype"
 
+#define DATATYPE_RESURRECT_TEST_GROUP_NAME  "datatype_resurrection_test"
+#define DATATYPE_RESURRECT_TEST_DTYPE_NAME  "delete_test_dtype"
+#define DATATYPE_RESURRECT_TEST_DTYPE_NAME2 "resurrected_dtype"
+
 #define DATATYPE_PROPERTY_LIST_TEST_SUBGROUP_NAME  "datatype_property_list_test_group"
 #define DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1 "property_list_test_datatype1"
 #define DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2 "property_list_test_datatype2"
+
+#define PREDEFINED_TYPE_COMMIT_TEST_GROUP_NAME "predefined_type_commit_test"
+
+#define MODIFY_COMMITTED_TYPE_TEST_GROUP_NAME "modify_committed_type_test"
 
 #endif
