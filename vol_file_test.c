@@ -514,6 +514,16 @@ test_file_permission(void)
                 PART_ERROR(H5Gcreate_rdonly_file);
             }
 
+            H5E_BEGIN_TRY {
+                group_id = H5Gcreate_anon(file_id, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (group_id >= 0) {
+                H5_FAILED();
+                HDprintf("    a group was created in a read-only file!\n");
+                PART_ERROR(H5Gcreate_rdonly_file);
+            }
+
             PASSED();
         } PART_END(H5Gcreate_rdonly_file);
 
@@ -523,6 +533,16 @@ test_file_permission(void)
             /* Create a dataset with the read-only file handle (should fail) */
             H5E_BEGIN_TRY {
                 dset_id = H5Dcreate2(file_id, FILE_PERMISSION_TEST_DSET2_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (dset_id >= 0) {
+                H5_FAILED();
+                HDprintf("    a dataset was created in a read-only file!\n");
+                PART_ERROR(H5Dcreate_rdonly_file);
+            }
+
+            H5E_BEGIN_TRY {
+                dset_id = H5Dcreate_anon(file_id, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (dset_id >= 0) {
@@ -563,6 +583,16 @@ test_file_permission(void)
             /* Commit a datatype with the read-only file handle (should fail) */
             H5E_BEGIN_TRY {
                 ret = H5Tcommit2(file_id, FILE_PERMISSION_TEST_NAMED_DTYPE, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (ret >= 0) {
+                H5_FAILED();
+                HDprintf("    a named datatype was committed in a read-only file!\n");
+                PART_ERROR(H5Tcommit_rdonly_file);
+            }
+
+            H5E_BEGIN_TRY {
+                ret = H5Tcommit_anon(file_id, dtype_id, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (ret >= 0) {
