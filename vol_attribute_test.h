@@ -163,8 +163,9 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_GROUP_NAME "attr_deletion_invalid_params_test"
 #define ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_ATTR_NAME  "invalid_params_attr_to_be_deleted"
 
-#define ATTRIBUTE_EXISTS_NAME          "attr_exists"
-#define ATTRIBUTE_EXISTS_SPACE_RANK    1
+#define ATTRIBUTE_EXISTS_TEST_GROUP_NAME "attr_exists_test"
+#define ATTRIBUTE_EXISTS_TEST_SPACE_RANK 1
+#define ATTRIBUTE_EXISTS_TEST_ATTR_NAME  "attr_exists"
 
 #define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK 1
 #define ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_GROUP_NAME "attr_exists_invalid_params_test"
@@ -175,16 +176,18 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_MANY_NUMB          64U
 #define ATTRIBUTE_MANY_SPACE_RANK    1
 
-#define ATTRIBUTE_DUPLICATE_ID_NAME          "attr_duplicated_id"
-#define ATTRIBUTE_DUPLICATE_ID_SPACE_RANK    1
+#define ATTRIBUTE_DUPLICATE_ID_GRP_NAME   "attr_duplicate_open_test"
+#define ATTRIBUTE_DUPLICATE_ID_ATTR_NAME  "attr_duplicated_id"
+#define ATTRIBUTE_DUPLICATE_ID_SPACE_RANK 1
 
-#define ATTRIBUTE_GET_NUM_ATTRS_TEST_ATTRIBUTE_NAME "get_num_attrs_test_attribute"
+#define ATTRIBUTE_GET_NUM_ATTRS_TEST_GRP_NAME "get_num_attrs_test"
+#define ATTRIBUTE_GET_NUM_ATTRS_TEST_ATTR_NAME "get_num_attrs_test_attribute"
 #define ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK     1
 
-#define ATTRIBUTE_SHARED_DTYPE_NAME           "/Datatype"
-#define ATTRIBUTE_SHARED_DTYPE_GROUP_NAME     "shared_dtype_group"
-#define ATTRIBUTE_SHARED_DTYPE_ATTR_NAME      "shared_dtype_attr"
-#define ATTRIBUTE_SHARED_DTYPE_DSET_NAME      "shared_dtype_dset"
-#define ATTRIBUTE_SHARED_DTYPE_SPACE_RANK     1
+#define ATTRIBUTE_SHARED_DTYPE_NAME       "Datatype"
+#define ATTRIBUTE_SHARED_DTYPE_GROUP_NAME "shared_dtype_group"
+#define ATTRIBUTE_SHARED_DTYPE_ATTR_NAME  "shared_dtype_attr"
+#define ATTRIBUTE_SHARED_DTYPE_DSET_NAME  "shared_dtype_dset"
+#define ATTRIBUTE_SHARED_DTYPE_SPACE_RANK 1
 
 #endif

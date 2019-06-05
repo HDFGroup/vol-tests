@@ -16,6 +16,8 @@
 #include <hdf5.h>
 #include <H5private.h>
 
+#include "vol_test_util.h"
+
 /* Moved from h5test */
 
 /*
@@ -105,6 +107,37 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
 #define FAIL_PUTS_ERROR(s) {H5_FAILED(); AT(); puts(s); goto error;}
 
 /*
+ * Macros used for multipart tests
+ */
+#define TESTING_MULTIPART(WHAT)  {printf("Testing %-62s",WHAT); HDputs(""); fflush(stdout);}
+
+/*
+ * Begin and end an entire section of multipart tests. By placing all the
+ * parts of a test between these macros, skipping to the 'error' cleanup
+ * section of a test is deferred until all parts have finished.
+ */
+#define BEGIN_MULTIPART \
+{                       \
+    int nerrors = 0;
+
+#define END_MULTIPART \
+    if (nerrors > 0)  \
+        goto error;   \
+}
+
+/*
+ * Begin, end and handle errors within a single part of a multipart test.
+ * The PART_END macro creates a goto label based on the given "part name".
+ * When a failure occurs in the current part, the PART_ERROR macro uses
+ * this label to skip to the next part of the multipart test. The PART_ERROR
+ * macro also increments the error count so that the END_MULTIPART macro
+ * knows to skip to the test's 'error' label once all test parts have finished.
+ */
+#define PART_BEGIN(part_name) {
+#define PART_END(part_name) } part_##part_name##end:
+#define PART_ERROR(part_name) { nerrors++; goto part_##part_name##end; }
+
+/*
  * Alarm definitions to wait up (terminate) a test that runs too long.
  */
 #define H5_ALARM_SEC  1200  /* default is 20 minutes */
@@ -146,8 +179,5 @@ extern char vol_test_filename[];
  * VOL connector feature support situation is resolved.
  */
 #define GROUP_CREATION_IS_SUPPORTED
-
-hid_t generate_random_datatype(H5T_class_t parent_class);
-hid_t generate_random_dataspace(int rank, const hsize_t *max_dims);
 
 #endif
