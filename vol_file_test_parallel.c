@@ -12,14 +12,114 @@
 
 #include "vol_file_test_parallel.h"
 
+static int test_create_file(void);
+static int test_open_file(void);
 static int test_split_comm_file_access(void);
 
 /*
  * The array of parallel file tests to be performed.
  */
 static int (*par_file_tests[])(void) = {
-    test_split_comm_file_access
+    test_create_file,
+    test_open_file,
+    test_split_comm_file_access,
 };
+
+/*
+ * A test to ensure that a file can be created in parallel.
+ */
+#define FILE_CREATE_TEST_FILENAME "test_file_parallel.h5"
+static int
+test_create_file(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+
+    TESTING("H5Fcreate");
+
+    if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
+        goto error;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to ensure that a file can be opened in parallel.
+ */
+static int
+test_open_file(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+
+    TESTING_MULTIPART("H5Fopen");
+
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Fopen_rdonly) {
+            TESTING_2("H5Fopen in read-only mode")
+
+            if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    unable to open file '%s' in read-only mode\n", vol_test_parallel_filename);
+                PART_ERROR(H5Fopen_rdonly);
+            }
+
+            PASSED();
+        } PART_END(H5Fopen_rdonly);
+
+        if (file_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Fclose(file_id);
+            } H5E_END_TRY;
+            file_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Fopen_rdwrite) {
+            TESTING_2("H5Fopen in read-write mode")
+
+            if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    unable to open file '%s' in read-write mode\n", vol_test_parallel_filename);
+                PART_ERROR(H5Fopen_rdwrite);
+            }
+
+            PASSED();
+        } PART_END(H5Fopen_rdwrite);
+
+        if (file_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Fclose(file_id);
+            } H5E_END_TRY;
+            file_id = H5I_INVALID_HID;
+        }
+
+        /*
+         * XXX: SWMR open flags
+         */
+    } END_MULTIPART;
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
 
 /*
  * Tests file access by a communicator other than MPI_COMM_WORLD.
