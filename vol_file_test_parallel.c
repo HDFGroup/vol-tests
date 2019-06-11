@@ -33,15 +33,21 @@ static int
 test_create_file(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t fapl_id = H5I_INVALID_HID;
 
     TESTING("H5Fcreate");
 
-    if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
         goto error;
     }
 
+    if (H5Pclose(fapl_id) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -51,6 +57,7 @@ test_create_file(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -64,14 +71,22 @@ static int
 test_open_file(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t fapl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Fopen");
+
+    TESTING_2("test setup")
+
+    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+        TEST_ERROR
+
+    PASSED();
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Fopen_rdonly) {
             TESTING_2("H5Fopen in read-only mode")
 
-            if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
+            if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDONLY, fapl_id)) < 0) {
                 H5_FAILED();
                 HDprintf("    unable to open file '%s' in read-only mode\n", vol_test_parallel_filename);
                 PART_ERROR(H5Fopen_rdonly);
@@ -90,7 +105,7 @@ test_open_file(void)
         PART_BEGIN(H5Fopen_rdwrite) {
             TESTING_2("H5Fopen in read-write mode")
 
-            if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+            if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
                 H5_FAILED();
                 HDprintf("    unable to open file '%s' in read-write mode\n", vol_test_parallel_filename);
                 PART_ERROR(H5Fopen_rdwrite);
@@ -111,10 +126,18 @@ test_open_file(void)
          */
     } END_MULTIPART;
 
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
     return 0;
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(fapl_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -234,17 +257,25 @@ vol_file_test_parallel(void)
     size_t i;
     int    nerrors;
 
-    HDprintf("**********************************************\n");
-    HDprintf("*                                            *\n");
-    HDprintf("*          VOL Parallel File Tests           *\n");
-    HDprintf("*                                            *\n");
-    HDprintf("**********************************************\n\n");
+    if (MAINPROCESS) {
+        HDprintf("**********************************************\n");
+        HDprintf("*                                            *\n");
+        HDprintf("*          VOL Parallel File Tests           *\n");
+        HDprintf("*                                            *\n");
+        HDprintf("**********************************************\n\n");
+    }
 
     for (i = 0, nerrors = 0; i < ARRAY_LENGTH(par_file_tests); i++) {
         nerrors += (*par_file_tests[i])() ? 1 : 0;
+
+        if (MPI_SUCCESS != (MPI_Barrier(MPI_COMM_WORLD))) {
+            if (MAINPROCESS)
+                HDprintf("    MPI_Barrier() failed!\n");
+        }
     }
 
-    HDprintf("\n");
+    if (MAINPROCESS)
+        HDprintf("\n");
 
     cleanup_files();
 

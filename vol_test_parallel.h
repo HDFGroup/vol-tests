@@ -32,6 +32,7 @@ extern char vol_test_parallel_filename[];
 #undef STACK_ERROR
 #undef FAIL_STACK_ERROR
 #undef FAIL_PUTS_ERROR
+#undef TESTING_MULTIPART
 
 #define TESTING(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s",WHAT); fflush(stdout); }}
 #define TESTING_2(WHAT)  {if (MAINPROCESS) { printf("  Testing %-60s",WHAT); fflush(stdout); }}
@@ -44,6 +45,7 @@ extern char vol_test_parallel_filename[];
 #define STACK_ERROR     {if (MAINPROCESS) { H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
 #define FAIL_STACK_ERROR {if (MAINPROCESS) { H5_FAILED(); AT(); H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
 #define FAIL_PUTS_ERROR(s) {if (MAINPROCESS) { H5_FAILED(); AT(); puts(s); } goto error;}
+#define TESTING_MULTIPART(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s", WHAT); HDputs(""); fflush(stdout); }}
 
 hid_t
 create_mpio_fapl(MPI_Comm comm, MPI_Info info);
