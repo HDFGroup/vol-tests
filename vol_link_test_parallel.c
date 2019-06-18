@@ -38,7 +38,7 @@ vol_link_test_parallel(void)
     for (i = 0, nerrors = 0; i < ARRAY_LENGTH(par_link_tests); i++) {
         /* nerrors += (*par_link_tests[i])() ? 1 : 0; */
 
-        if (MPI_SUCCESS != (MPI_Barrier(MPI_COMM_WORLD))) {
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
             if (MAINPROCESS)
                 HDprintf("    MPI_Barrier() failed!\n");
         }

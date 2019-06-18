@@ -81,22 +81,15 @@ main(int argc, char **argv)
      * Create the file that will be used for all of the tests,
      * except for those which test file creation.
      */
-    if (MAINPROCESS) {
-        if (create_test_container(vol_test_parallel_filename) < 0)
-            nerrors++;
-    }
-
-    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &nerrors, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD)) {
-        if (MAINPROCESS)
-            HDprintf("failed to collect consensus about whether test container creation failed -- exiting\n");
-        goto done;
-    }
-
-    if (nerrors) {
-        if (MAINPROCESS)
-            HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_parallel_filename);
-        goto done;
-    }
+    BEGIN_INDEPENDENT_OP(create_test_container) {
+        if (MAINPROCESS) {
+            if (create_test_container(vol_test_parallel_filename) < 0) {
+                nerrors++;
+                HDprintf("    failed to create testing container file '%s'\n", vol_test_parallel_filename);
+                INDEPENDENT_OP_ERROR(create_test_container);
+            }
+        }
+    } END_INDEPENDENT_OP(create_test_container);
 
     nerrors += vol_file_test_parallel();
     nerrors += vol_group_test_parallel();
@@ -122,7 +115,7 @@ main(int argc, char **argv)
     if (MAINPROCESS)
         HDprintf("All VOL tests passed with VOL connector '%s'\n\n", vol_connector_name);
 
-done:
+done: error:
     H5close();
 
     MPI_Finalize();
