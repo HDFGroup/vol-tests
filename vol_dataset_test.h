@@ -238,7 +238,12 @@ int vol_dataset_test(void);
 #define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_GROUP_NAME "set_extent_invalid_params_test"
 #define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_DSET_NAME  "set_extent_invalid_params_test_dset"
 
-#define DATASET_UNUSED_APIS_TEST_SPACE_RANK 2
-#define DATASET_UNUSED_APIS_TEST_DSET_NAME  "unused_apis_dset"
+#define DATASET_SINGLE_CHUNK_TEST_SPACE_RANK 2
+#define DATASET_SINGLE_CHUNK_TEST_GROUP_NAME "single_chunk_dataset_test"
+#define DATASET_SINGLE_CHUNK_TEST_DSET_NAME  "single_chunk_dataset"
+
+#define DATASET_MULTI_CHUNK_TEST_SPACE_RANK 2
+#define DATASET_MULTI_CHUNK_TEST_GROUP_NAME "multi_chunk_dataset_test"
+#define DATASET_MULTI_CHUNK_TEST_DSET_NAME  "multi_chunk_dataset"
 
 #endif

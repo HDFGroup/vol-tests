@@ -75,6 +75,8 @@ static int test_flush_dataset(void);
 static int test_flush_dataset_invalid_params(void);
 static int test_refresh_dataset(void);
 static int test_refresh_dataset_invalid_params(void);
+static int test_create_single_chunk_dataset(void);
+static int test_create_multi_chunk_dataset(void);
 
 /*
  * The array of dataset tests to be performed.
@@ -139,6 +141,8 @@ static int (*dataset_tests[])(void) = {
         test_flush_dataset_invalid_params,
         test_refresh_dataset,
         test_refresh_dataset_invalid_params,
+        test_create_single_chunk_dataset,
+        test_create_multi_chunk_dataset,
 };
 
 /*
@@ -6302,6 +6306,333 @@ test_refresh_dataset_invalid_params(void)
     SKIPPED();
 
     return 0;
+}
+
+/*
+ * A test to create a dataset composed of a single chunk.
+ */
+static int
+test_create_single_chunk_dataset(void)
+{
+    hsize_t dims[DATASET_SINGLE_CHUNK_TEST_SPACE_RANK];
+    hsize_t retrieved_chunk_dims[DATASET_SINGLE_CHUNK_TEST_SPACE_RANK];
+    size_t  i;
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dset_dtype = H5I_INVALID_HID;
+    hid_t   dcpl_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID;
+
+    TESTING("creation of dataset with single chunk")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_SINGLE_CHUNK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_SINGLE_CHUNK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = generate_random_dataspace(DATASET_SINGLE_CHUNK_TEST_SPACE_RANK, NULL, dims)) < 0)
+        TEST_ERROR
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_SINGLE_CHUNK_TEST_SPACE_RANK, dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_SINGLE_CHUNK_TEST_DSET_NAME, dset_dtype,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_SINGLE_CHUNK_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_SINGLE_CHUNK_TEST_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_SINGLE_CHUNK_TEST_SPACE_RANK; i++) {
+        if (dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    /*
+     * Now close the dataset and retrieve a copy
+     * of the DCPL after re-opening it.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if (H5Dclose(dset_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close dataset\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dopen2(group_id, DATASET_SINGLE_CHUNK_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to re-open dataset\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_SINGLE_CHUNK_TEST_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_SINGLE_CHUNK_TEST_SPACE_RANK; i++) {
+        if (dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Tclose(dset_dtype) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(dcpl_id);
+        H5Sclose(fspace_id);
+        H5Tclose(dset_dtype);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to create a dataset composed of multiple chunks.
+ */
+static int
+test_create_multi_chunk_dataset(void)
+{
+    hsize_t dims[DATASET_MULTI_CHUNK_TEST_SPACE_RANK] = { 100, 100 };
+    hsize_t chunk_dims[DATASET_MULTI_CHUNK_TEST_SPACE_RANK] = { 10, 10 };
+    hsize_t retrieved_chunk_dims[DATASET_MULTI_CHUNK_TEST_SPACE_RANK];
+    size_t  i;
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dset_dtype = H5I_INVALID_HID;
+    hid_t   dcpl_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID;
+
+    TESTING("creation of dataset with multiple chunks")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_MULTI_CHUNK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_MULTI_CHUNK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_TEST_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_TEST_SPACE_RANK, chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_TEST_DSET_NAME, dset_dtype,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_MULTI_CHUNK_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_TEST_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_TEST_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    /*
+     * Now close the dataset and retrieve a copy
+     * of the DCPL after re-opening it.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if (H5Dclose(dset_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close dataset\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to re-open dataset\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_TEST_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_TEST_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Tclose(dset_dtype) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(dcpl_id);
+        H5Sclose(fspace_id);
+        H5Tclose(dset_dtype);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
 }
 
 int
