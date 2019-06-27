@@ -78,7 +78,10 @@ static int test_refresh_dataset_invalid_params(void);
 static int test_create_single_chunk_dataset(void);
 static int test_write_single_chunk_dataset(void);
 static int test_create_multi_chunk_dataset(void);
-static int test_write_multi_chunk_dataset(void);
+static int test_write_multi_chunk_dataset_same_shape_read(void);
+static int test_write_multi_chunk_dataset_diff_shape_read(void);
+static int test_overwrite_multi_chunk_dataset_same_shape_read(void);
+static int test_overwrite_multi_chunk_dataset_diff_shape_read(void);
 
 /*
  * The array of dataset tests to be performed.
@@ -146,7 +149,10 @@ static int (*dataset_tests[])(void) = {
         test_create_single_chunk_dataset,
         test_write_single_chunk_dataset,
         test_create_multi_chunk_dataset,
-        test_write_multi_chunk_dataset,
+        test_write_multi_chunk_dataset_same_shape_read,
+        test_write_multi_chunk_dataset_diff_shape_read,
+        test_overwrite_multi_chunk_dataset_same_shape_read,
+        test_overwrite_multi_chunk_dataset_diff_shape_read,
 };
 
 /*
@@ -6837,28 +6843,29 @@ error:
 
 /*
  * A test to check that a dataset composed of multiple chunks
- * can be written and read correctly.
+ * can be written and read correctly. When reading back the
+ * chunks of the dataset, the file dataspace and memory dataspace
+ * used are the same shape.
  */
 static int
-test_write_multi_chunk_dataset(void)
+test_write_multi_chunk_dataset_same_shape_read(void)
 {
-    hssize_t  space_npoints;
-    hsize_t   dims[DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK] = { 100, 100 };
-    hsize_t   chunk_dims[DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK] = { 10, 10 };
-    hsize_t   retrieved_chunk_dims[DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK];
-    hsize_t   start[DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK];
-    hsize_t   count[DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK];
-    size_t    i, data_size, chunk_size;
-    hid_t     file_id = H5I_INVALID_HID;
-    hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t     dset_id = H5I_INVALID_HID;
-    hid_t     dcpl_id = H5I_INVALID_HID;
-    hid_t     fspace_id = H5I_INVALID_HID;
-    hid_t     mspace_id = H5I_INVALID_HID;
-    void     *write_buf = NULL;
-    void     *read_buf = NULL;
+    hsize_t  dims[DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK] = { 100, 100 };
+    hsize_t  chunk_dims[DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK] = { 10, 10 };
+    hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  start[DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  count[DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
+    size_t   i, data_size, chunk_size;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    dcpl_id = H5I_INVALID_HID;
+    hid_t    fspace_id = H5I_INVALID_HID;
+    hid_t    mspace_id = H5I_INVALID_HID;
+    void    *write_buf = NULL;
+    int      read_buf[10][10];
 
-    TESTING("write to dataset with multiple chunks")
+    TESTING("write to dataset with multiple chunks using same shaped dataspaces")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -6872,28 +6879,28 @@ test_write_multi_chunk_dataset(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATASET_MULTI_CHUNK_WRITE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_MULTI_CHUNK_WRITE_TEST_GROUP_NAME);
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_GROUP_NAME);
         goto error;
     }
 
-    if ((fspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+    if ((fspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
 
     if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
         TEST_ERROR
 
-    if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
+    if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
         H5_FAILED();
         HDprintf("    failed to set chunking on DCPL\n");
         goto error;
     }
 
-    if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPE,
+    if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_NAME, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_DTYPE,
             fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME);
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_NAME);
         goto error;
     }
 
@@ -6913,13 +6920,13 @@ test_write_multi_chunk_dataset(void)
     }
 
     memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
-    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
+    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
         H5_FAILED();
         HDprintf("    failed to retrieve chunking info\n");
         goto error;
     }
 
-    for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; i++) {
+    for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         if (chunk_dims[i] != retrieved_chunk_dims[i]) {
             H5_FAILED();
             HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
@@ -6927,13 +6934,13 @@ test_write_multi_chunk_dataset(void)
         }
     }
 
-    for (i = 0, chunk_size = 1; i < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; i++)
+    for (i = 0, chunk_size = 1; i < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
         chunk_size *= chunk_dims[i];
-    chunk_size *= DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPESIZE;
+    chunk_size *= DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_DTYPESIZE;
 
-    for (i = 0, data_size = 1; i < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; i++)
+    for (i = 0, data_size = 1; i < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
         data_size *= dims[i];
-    data_size *= DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPESIZE;
+    data_size *= DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_DTYPESIZE;
 
     if (NULL == (write_buf = HDmalloc(data_size)))
         TEST_ERROR
@@ -6954,7 +6961,7 @@ test_write_multi_chunk_dataset(void)
      *
      * and so on.
      */
-    for (i = 0; i < data_size / DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPESIZE; i++) {
+    for (i = 0; i < data_size / DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_DTYPESIZE; i++) {
         size_t j;
         size_t base;
         size_t tot_adjust;
@@ -6963,15 +6970,15 @@ test_write_multi_chunk_dataset(void)
          * Calculate a starting base value by taking the index value mod
          * the size of a chunk in each dimension.
          */
-        for (j = 0, base = i; j < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; j++)
+        for (j = 0, base = i; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
             if (base >= chunk_dims[j])
                 base %= chunk_dims[j];
 
         /*
          * Calculate the adjustment in each dimension.
          */
-        for (j = 0, tot_adjust = 0; j < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; j++) {
-            if (j == (DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK - 1))
+        for (j = 0, tot_adjust = 0; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+            if (j == (DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
                 tot_adjust += (i % dims[j]) / chunk_dims[j];
             else {
                 size_t k;
@@ -6980,7 +6987,7 @@ test_write_multi_chunk_dataset(void)
                 /*
                  * Calculate the number of elements in faster dimensions.
                  */
-                for (k = j + 1, n_faster_elemts = 1; k < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; k++)
+                for (k = j + 1, n_faster_elemts = 1; k < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; k++)
                     n_faster_elemts *= dims[k];
 
                 tot_adjust += (((i / n_faster_elemts) / chunk_dims[j]) * (dims[j + 1] / chunk_dims[j + 1]))
@@ -6994,9 +7001,9 @@ test_write_multi_chunk_dataset(void)
     /*
      * Write every chunk in the dataset.
      */
-    if (H5Dwrite(dset_id, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf) < 0) {
+    if (H5Dwrite(dset_id, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't write to dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME);
+        HDprintf("    couldn't write to dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_NAME);
         goto error;
     }
 
@@ -7018,9 +7025,9 @@ test_write_multi_chunk_dataset(void)
         dset_id = H5I_INVALID_HID;
     }
 
-    if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+    if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME);
+        HDprintf("    couldn't open dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_NAME);
         goto error;
     }
 
@@ -7030,9 +7037,299 @@ test_write_multi_chunk_dataset(void)
         goto error;
     }
 
-    if ((space_npoints = H5Sget_simple_extent_npoints(fspace_id)) < 0) {
+    /*
+     * Create 2-dimensional memory dataspace for read buffer.
+     */
+    {
+        hsize_t mdims[] = { chunk_dims[0], chunk_dims[1] };
+
+        if ((mspace_id = H5Screate_simple(2, mdims, NULL)) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to create memory dataspace\n");
+            goto error;
+        }
+    }
+
+    /*
+     * Read every chunk in the dataset, checking the data for each one.
+     */
+    for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
+        count[i] = chunk_dims[i];
+    }
+
+    HDprintf("\n");
+    for (i = 0; i < data_size / chunk_size; i++) {
+        size_t j, k;
+
+        HDprintf("\r Reading chunk %lld", i);
+
+        for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+            if (dims[j] == chunk_dims[j])
+                start[j] = 0;
+            else if (j == (DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
+                /* Fastest changing dimension */
+                start[j] = (i * chunk_dims[j]) % dims[j];
+            else
+                start[j] = ((i * chunk_dims[j + 1]) / dims[j + 1]) * (chunk_dims[j]);
+        }
+
+        /*
+         * Adjust file dataspace selection for next chunk.
+         */
+        if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to set hyperslab selection\n");
+            goto error;
+        }
+
+        for (j = 0; j < chunk_dims[0]; j++)
+            for (k = 0; k < chunk_dims[1]; k++)
+                read_buf[j][k] = 0;
+
+        if (H5Dread(dset_id, DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_NAME);
+            goto error;
+        }
+
+        for (j = 0; j < chunk_dims[0]; j++) {
+            for (k = 0; k < chunk_dims[1]; k++) {
+                if (read_buf[j][k] != (int) ((j * chunk_dims[0]) + k + i)) {
+                    H5_FAILED();
+                    HDprintf("    data verification failed for chunk %lld\n", (long long) i);
+                    goto error;
+                }
+            }
+        }
+    }
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(mspace_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (write_buf) HDfree(write_buf);
+        H5Pclose(dcpl_id);
+        H5Sclose(mspace_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that a dataset composed of multiple chunks
+ * can be written and read correctly. When reading back the
+ * chunks of the dataset, the file dataspace and memory dataspace
+ * used are differently shaped.
+ */
+static int
+test_write_multi_chunk_dataset_diff_shape_read(void)
+{
+    hsize_t  dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 100, 100 };
+    hsize_t  chunk_dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 10, 10 };
+    hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  start[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  count[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
+    size_t   i, data_size, chunk_size;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    dcpl_id = H5I_INVALID_HID;
+    hid_t    fspace_id = H5I_INVALID_HID;
+    hid_t    mspace_id = H5I_INVALID_HID;
+    void    *write_buf = NULL;
+    void    *read_buf = NULL;
+
+    TESTING("write to dataset with multiple chunks using differently shaped dataspaces")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't get dataspace num points\n");
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    for (i = 0, chunk_size = 1; i < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
+        chunk_size *= chunk_dims[i];
+    chunk_size *= DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE;
+
+    for (i = 0, data_size = 1; i < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
+        data_size *= dims[i];
+    data_size *= DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE;
+
+    if (NULL == (write_buf = HDmalloc(data_size)))
+        TEST_ERROR
+
+    /*
+     * Ensure that each underlying chunk contains the values
+     *
+     * chunk_index .. (chunk_nelemts - 1) + chunk_index.
+     *
+     * That is to say, for a chunk size of 10 x 10, chunk 0
+     * contains the values
+     *
+     * 0 .. 99
+     *
+     * while the next chunk contains the values
+     *
+     * 1 .. 100
+     *
+     * and so on.
+     */
+    for (i = 0; i < data_size / DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE; i++) {
+        size_t j;
+        size_t base;
+        size_t tot_adjust;
+
+        /*
+         * Calculate a starting base value by taking the index value mod
+         * the size of a chunk in each dimension.
+         */
+        for (j = 0, base = i; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
+            if (base >= chunk_dims[j])
+                base %= chunk_dims[j];
+
+        /*
+         * Calculate the adjustment in each dimension.
+         */
+        for (j = 0, tot_adjust = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+            if (j == (DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
+                tot_adjust += (i % dims[j]) / chunk_dims[j];
+            else {
+                size_t k;
+                size_t n_faster_elemts;
+
+                /*
+                 * Calculate the number of elements in faster dimensions.
+                 */
+                for (k = j + 1, n_faster_elemts = 1; k < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; k++)
+                    n_faster_elemts *= dims[k];
+
+                tot_adjust += (((i / n_faster_elemts) / chunk_dims[j]) * (dims[j + 1] / chunk_dims[j + 1]))
+                            + (((i / n_faster_elemts) % chunk_dims[j]) * chunk_dims[j + 1]);
+            }
+        }
+
+        ((int *) write_buf)[i] = (int) (base + tot_adjust);
+    }
+
+    /*
+     * Write every chunk in the dataset.
+     */
+    if (H5Dwrite(dset_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't write to dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+        goto error;
+    }
+
+    if (write_buf) {
+        HDfree(write_buf);
+        write_buf = NULL;
+    }
+
+    if (fspace_id >= 0) {
+        H5E_BEGIN_TRY {
+            H5Sclose(fspace_id);
+        } H5E_END_TRY;
+        fspace_id = H5I_INVALID_HID;
+    }
+    if (dset_id >= 0) {
+        H5E_BEGIN_TRY {
+            H5Dclose(dset_id);
+        } H5E_END_TRY;
+        dset_id = H5I_INVALID_HID;
+    }
+
+    if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Dget_space(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get dataset dataspace\n");
         goto error;
     }
 
@@ -7049,7 +7346,7 @@ test_write_multi_chunk_dataset(void)
      * Create 1-dimensional memory dataspace for read buffer.
      */
     {
-        hsize_t mdims[] = { chunk_size / DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPESIZE };
+        hsize_t mdims[] = { chunk_size / DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE };
 
         if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
             H5_FAILED();
@@ -7061,7 +7358,7 @@ test_write_multi_chunk_dataset(void)
     /*
      * Read every chunk in the dataset, checking the data for each one.
      */
-    for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; i++) {
+    for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         count[i] = chunk_dims[i];
     }
 
@@ -7071,10 +7368,10 @@ test_write_multi_chunk_dataset(void)
 
         HDprintf("\r Reading chunk %lld", i);
 
-        for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK; j++) {
+        for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (dims[j] == chunk_dims[j])
                 start[j] = 0;
-            else if (j == (DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK - 1))
+            else if (j == (DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
                 /* Fastest changing dimension */
                 start[j] = (i * chunk_dims[j]) % dims[j];
             else
@@ -7091,18 +7388,631 @@ test_write_multi_chunk_dataset(void)
         }
 
         memset(read_buf, 0, chunk_size);
-        if (H5Dread(dset_id, DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+        if (H5Dread(dset_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
             H5_FAILED();
-            HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME);
+            HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
             goto error;
         }
 
-        for (j = 0; j < (hsize_t) chunk_size / DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPESIZE; j++)
+        for (j = 0; j < (hsize_t) chunk_size / DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE; j++)
             if (((int *) read_buf)[j] != (int) (j + i)) {
                 H5_FAILED();
                 HDprintf("    data verification failed for chunk %lld\n", (long long) i);
                 goto error;
             }
+    }
+
+    if (read_buf) {
+        HDfree(read_buf);
+        read_buf = NULL;
+    }
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(mspace_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (write_buf) HDfree(write_buf);
+        if (read_buf) HDfree(read_buf);
+        H5Pclose(dcpl_id);
+        H5Sclose(mspace_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that a dataset composed of multiple chunks
+ * can be written and read correctly several times in a row.
+ * When reading back the chunks of the dataset, the file
+ * dataspace and memory dataspace used are the same shape.
+ */
+static int
+test_overwrite_multi_chunk_dataset_same_shape_read(void)
+{
+    hsize_t  dims[DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK] = { 100, 100 };
+    hsize_t  chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK] = { 10, 10 };
+    hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  start[DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  count[DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
+    size_t   i, data_size, chunk_size;
+    size_t   niter;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    dcpl_id = H5I_INVALID_HID;
+    hid_t    fspace_id = H5I_INVALID_HID;
+    hid_t    mspace_id = H5I_INVALID_HID;
+    void    *write_buf = NULL;
+    int      read_buf[10][10];
+
+    TESTING("several overwrites to dataset with multiple chunks using same shaped dataspaces")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPE,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    for (i = 0, chunk_size = 1; i < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
+        chunk_size *= chunk_dims[i];
+    chunk_size *= DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPESIZE;
+
+    for (i = 0, data_size = 1; i < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
+        data_size *= dims[i];
+    data_size *= DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPESIZE;
+
+    if (NULL == (write_buf = HDmalloc(data_size)))
+        TEST_ERROR
+
+    /*
+     * Create 2-dimensional memory dataspace for read buffer.
+     */
+    {
+        hsize_t mdims[] = { chunk_dims[0], chunk_dims[1] };
+
+        if ((mspace_id = H5Screate_simple(2, mdims, NULL)) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to create memory dataspace\n");
+            goto error;
+        }
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
+        count[i] = chunk_dims[i];
+    }
+
+    HDprintf("\n");
+    for (niter = 0; niter < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_NITERS; niter++) {
+        memset(write_buf, 0, data_size);
+
+        /*
+         * Ensure that each underlying chunk contains the values
+         *
+         * chunk_index .. (chunk_nelemts - 1) + chunk_index.
+         *
+         * That is to say, for a chunk size of 10 x 10, chunk 0
+         * contains the values
+         *
+         * 0 .. 99
+         *
+         * while the next chunk contains the values
+         *
+         * 1 .. 100
+         *
+         * and so on. On each iteration, we add 1 to the previous
+         * values.
+         */
+        for (i = 0; i < data_size / DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPESIZE; i++) {
+            size_t j;
+            size_t base;
+            size_t tot_adjust;
+
+            /*
+             * Calculate a starting base value by taking the index value mod
+             * the size of a chunk in each dimension.
+             */
+            for (j = 0, base = i; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
+                if (base >= chunk_dims[j])
+                    base %= chunk_dims[j];
+
+            /*
+             * Calculate the adjustment in each dimension.
+             */
+            for (j = 0, tot_adjust = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+                if (j == (DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
+                    tot_adjust += (i % dims[j]) / chunk_dims[j];
+                else {
+                    size_t k;
+                    size_t n_faster_elemts;
+
+                    /*
+                     * Calculate the number of elements in faster dimensions.
+                     */
+                    for (k = j + 1, n_faster_elemts = 1; k < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; k++)
+                        n_faster_elemts *= dims[k];
+
+                    tot_adjust += (((i / n_faster_elemts) / chunk_dims[j]) * (dims[j + 1] / chunk_dims[j + 1]))
+                                + (((i / n_faster_elemts) % chunk_dims[j]) * chunk_dims[j + 1]);
+                }
+            }
+
+            ((int *) write_buf)[i] = (int) (base + tot_adjust + niter);
+        }
+
+        /*
+         * Write every chunk in the dataset.
+         */
+        if (H5Dwrite(dset_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't write to dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME);
+            goto error;
+        }
+
+        if (fspace_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Sclose(fspace_id);
+            } H5E_END_TRY;
+            fspace_id = H5I_INVALID_HID;
+        }
+        if (dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+            dset_id = H5I_INVALID_HID;
+        }
+
+        if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't open dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME);
+            goto error;
+        }
+
+        if ((fspace_id = H5Dget_space(dset_id)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't get dataset dataspace\n");
+            goto error;
+        }
+
+        /*
+         * Read every chunk in the dataset, checking the data for each one.
+         */
+        for (i = 0; i < data_size / chunk_size; i++) {
+            size_t j, k;
+
+            HDprintf("\r Reading chunk %lld", i);
+
+            for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+                if (dims[j] == chunk_dims[j])
+                    start[j] = 0;
+                else if (j == (DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
+                    /* Fastest changing dimension */
+                    start[j] = (i * chunk_dims[j]) % dims[j];
+                else
+                    start[j] = ((i * chunk_dims[j + 1]) / dims[j + 1]) * (chunk_dims[j]);
+            }
+
+            /*
+             * Adjust file dataspace selection for next chunk.
+             */
+            if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to set hyperslab selection\n");
+                goto error;
+            }
+
+            for (j = 0; j < chunk_dims[0]; j++)
+                for (k = 0; k < chunk_dims[1]; k++)
+                    read_buf[j][k] = 0;
+
+            if (H5Dread(dset_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME);
+                goto error;
+            }
+
+            for (j = 0; j < chunk_dims[0]; j++) {
+                for (k = 0; k < chunk_dims[1]; k++) {
+                    if (read_buf[j][k] != (int) ((j * chunk_dims[0]) + k + i + niter)) {
+                        H5_FAILED();
+                        HDprintf("    data verification failed for chunk %lld\n", (long long) i);
+                        goto error;
+                    }
+                }
+            }
+        }
+    }
+
+    if (write_buf) {
+        HDfree(write_buf);
+        write_buf = NULL;
+    }
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(mspace_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (write_buf) HDfree(write_buf);
+        H5Pclose(dcpl_id);
+        H5Sclose(mspace_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that a dataset composed of multiple chunks
+ * can be written and read correctly several times in a row.
+ * When reading back the chunks of the dataset, the file
+ * dataspace and memory dataspace used are differently shaped.
+ */
+static int
+test_overwrite_multi_chunk_dataset_diff_shape_read(void)
+{
+    hsize_t  dims[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 100, 100 };
+    hsize_t  chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 10, 10 };
+    hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  start[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
+    hsize_t  count[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
+    size_t   i, data_size, chunk_size;
+    size_t   niter;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    dcpl_id = H5I_INVALID_HID;
+    hid_t    fspace_id = H5I_INVALID_HID;
+    hid_t    mspace_id = H5I_INVALID_HID;
+    void    *write_buf = NULL;
+    void    *read_buf = NULL;
+
+    TESTING("several overwrites to dataset with multiple chunks using differently shaped dataspaces")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    for (i = 0, chunk_size = 1; i < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
+        chunk_size *= chunk_dims[i];
+    chunk_size *= DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE;
+
+    for (i = 0, data_size = 1; i < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++)
+        data_size *= dims[i];
+    data_size *= DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE;
+
+    if (NULL == (write_buf = HDmalloc(data_size)))
+        TEST_ERROR
+
+    /*
+     * Allocate single chunk-sized read buffer.
+     */
+    if (NULL == (read_buf = HDmalloc(chunk_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for dataset read\n");
+        goto error;
+    }
+
+    /*
+     * Create 1-dimensional memory dataspace for read buffer.
+     */
+    {
+        hsize_t mdims[] = { chunk_size / DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE };
+
+        if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to create memory dataspace\n");
+            goto error;
+        }
+    }
+
+    for (i = 0; i < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
+        count[i] = chunk_dims[i];
+    }
+
+    HDprintf("\n");
+    for (niter = 0; niter < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_NITERS; niter++) {
+        memset(write_buf, 0, data_size);
+
+        /*
+         * Ensure that each underlying chunk contains the values
+         *
+         * chunk_index .. (chunk_nelemts - 1) + chunk_index.
+         *
+         * That is to say, for a chunk size of 10 x 10, chunk 0
+         * contains the values
+         *
+         * 0 .. 99
+         *
+         * while the next chunk contains the values
+         *
+         * 1 .. 100
+         *
+         * and so on. On each iteration, we add 1 to the previous
+         * values.
+         */
+        for (i = 0; i < data_size / DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE; i++) {
+            size_t j;
+            size_t base;
+            size_t tot_adjust;
+
+            /*
+             * Calculate a starting base value by taking the index value mod
+             * the size of a chunk in each dimension.
+             */
+            for (j = 0, base = i; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
+                if (base >= chunk_dims[j])
+                    base %= chunk_dims[j];
+
+            /*
+             * Calculate the adjustment in each dimension.
+             */
+            for (j = 0, tot_adjust = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+                if (j == (DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
+                    tot_adjust += (i % dims[j]) / chunk_dims[j];
+                else {
+                    size_t k;
+                    size_t n_faster_elemts;
+
+                    /*
+                     * Calculate the number of elements in faster dimensions.
+                     */
+                    for (k = j + 1, n_faster_elemts = 1; k < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; k++)
+                        n_faster_elemts *= dims[k];
+
+                    tot_adjust += (((i / n_faster_elemts) / chunk_dims[j]) * (dims[j + 1] / chunk_dims[j + 1]))
+                                + (((i / n_faster_elemts) % chunk_dims[j]) * chunk_dims[j + 1]);
+                }
+            }
+
+            ((int *) write_buf)[i] = (int) (base + tot_adjust + niter);
+        }
+
+        /*
+         * Write every chunk in the dataset.
+         */
+        if (H5Dwrite(dset_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't write to dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+            goto error;
+        }
+
+        if (fspace_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Sclose(fspace_id);
+            } H5E_END_TRY;
+            fspace_id = H5I_INVALID_HID;
+        }
+        if (dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(dset_id);
+            } H5E_END_TRY;
+            dset_id = H5I_INVALID_HID;
+        }
+
+        if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't open dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+            goto error;
+        }
+
+        if ((fspace_id = H5Dget_space(dset_id)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't get dataset dataspace\n");
+            goto error;
+        }
+
+        /*
+         * Read every chunk in the dataset, checking the data for each one.
+         */
+        for (i = 0; i < data_size / chunk_size; i++) {
+            size_t j;
+
+            HDprintf("\r Reading chunk %lld", i);
+
+            for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
+                if (dims[j] == chunk_dims[j])
+                    start[j] = 0;
+                else if (j == (DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
+                    /* Fastest changing dimension */
+                    start[j] = (i * chunk_dims[j]) % dims[j];
+                else
+                    start[j] = ((i * chunk_dims[j + 1]) / dims[j + 1]) * (chunk_dims[j]);
+            }
+
+            /*
+             * Adjust file dataspace selection for next chunk.
+             */
+            if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to set hyperslab selection\n");
+                goto error;
+            }
+
+            memset(read_buf, 0, chunk_size);
+            if (H5Dread(dset_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
+                goto error;
+            }
+
+            for (j = 0; j < (hsize_t) chunk_size / DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE; j++)
+                if (((int *) read_buf)[j] != (int) (j + i + niter)) {
+                    H5_FAILED();
+                    HDprintf("    data verification failed for chunk %lld\n", (long long) i);
+                    goto error;
+                }
+        }
+    }
+
+    if (write_buf) {
+        HDfree(write_buf);
+        write_buf = NULL;
     }
 
     if (read_buf) {
