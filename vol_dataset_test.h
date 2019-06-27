@@ -242,8 +242,20 @@ int vol_dataset_test(void);
 #define DATASET_SINGLE_CHUNK_TEST_GROUP_NAME "single_chunk_dataset_test"
 #define DATASET_SINGLE_CHUNK_TEST_DSET_NAME  "single_chunk_dataset"
 
+#define DATASET_SINGLE_CHUNK_WRITE_TEST_DSET_SPACE_RANK 2
+#define DATASET_SINGLE_CHUNK_WRITE_TEST_DSET_DTYPESIZE  sizeof(int)
+#define DATASET_SINGLE_CHUNK_WRITE_TEST_DSET_DTYPE      H5T_NATIVE_INT
+#define DATASET_SINGLE_CHUNK_WRITE_TEST_GROUP_NAME      "single_chunk_dataset_write_test"
+#define DATASET_SINGLE_CHUNK_WRITE_TEST_DSET_NAME       "single_chunk_dataset"
+
 #define DATASET_MULTI_CHUNK_TEST_SPACE_RANK 2
 #define DATASET_MULTI_CHUNK_TEST_GROUP_NAME "multi_chunk_dataset_test"
 #define DATASET_MULTI_CHUNK_TEST_DSET_NAME  "multi_chunk_dataset"
+
+#define DATASET_MULTI_CHUNK_WRITE_TEST_DSET_SPACE_RANK 2
+#define DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPESIZE  sizeof(int)
+#define DATASET_MULTI_CHUNK_WRITE_TEST_DSET_DTYPE      H5T_NATIVE_INT
+#define DATASET_MULTI_CHUNK_WRITE_TEST_GROUP_NAME      "multi_chunk_dataset_write_test"
+#define DATASET_MULTI_CHUNK_WRITE_TEST_DSET_NAME       "multi_chunk_dataset"
 
 #endif
