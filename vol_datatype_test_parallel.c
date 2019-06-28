@@ -27,17 +27,25 @@ vol_datatype_test_parallel(void)
     size_t i;
     int    nerrors;
 
-    HDprintf("**********************************************\n");
-    HDprintf("*                                            *\n");
-    HDprintf("*        VOL Parallel Datatype Tests         *\n");
-    HDprintf("*                                            *\n");
-    HDprintf("**********************************************\n\n");
+    if (MAINPROCESS) {
+        HDprintf("**********************************************\n");
+        HDprintf("*                                            *\n");
+        HDprintf("*        VOL Parallel Datatype Tests         *\n");
+        HDprintf("*                                            *\n");
+        HDprintf("**********************************************\n\n");
+    }
 
     for (i = 0, nerrors = 0; i < ARRAY_LENGTH(par_datatype_tests); i++) {
         /* nerrors += (*par_datatype_tests[i])() ? 1 : 0; */
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            if (MAINPROCESS)
+                HDprintf("    MPI_Barrier() failed!\n");
+        }
     }
 
-    HDprintf("\n");
+    if (MAINPROCESS)
+        HDprintf("\n");
 
     return nerrors;
 }

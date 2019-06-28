@@ -32,6 +32,7 @@ extern char vol_test_parallel_filename[];
 #undef STACK_ERROR
 #undef FAIL_STACK_ERROR
 #undef FAIL_PUTS_ERROR
+#undef TESTING_MULTIPART
 
 #define TESTING(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s",WHAT); fflush(stdout); }}
 #define TESTING_2(WHAT)  {if (MAINPROCESS) { printf("  Testing %-60s",WHAT); fflush(stdout); }}
@@ -44,6 +45,41 @@ extern char vol_test_parallel_filename[];
 #define STACK_ERROR     {if (MAINPROCESS) { H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
 #define FAIL_STACK_ERROR {if (MAINPROCESS) { H5_FAILED(); AT(); H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
 #define FAIL_PUTS_ERROR(s) {if (MAINPROCESS) { H5_FAILED(); AT(); puts(s); } goto error;}
+#define TESTING_MULTIPART(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s", WHAT); HDputs(""); fflush(stdout); }}
+
+
+/*
+ * Macros to surround an action that will be performed non-collectively. Once the
+ * operation has completed, a consensus will be formed by all ranks on whether the
+ * operation failed.
+ */
+#define BEGIN_INDEPENDENT_OP(op_name) \
+{                                     \
+    hbool_t op_failed = FALSE;        \
+                                      \
+    {                                 \
+
+#define END_INDEPENDENT_OP(op_name)                                                                                 \
+    }                                                                                                               \
+                                                                                                                    \
+op_##op_name##_end:                                                                                                 \
+    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &op_failed, 1, MPI_C_BOOL, MPI_LOR, MPI_COMM_WORLD)) {           \
+        if (MAINPROCESS)                                                                                            \
+            HDprintf("    failed to collect consensus about whether non-collective operation was successful\n");    \
+        goto error;                                                                                                 \
+    }                                                                                                               \
+                                                                                                                    \
+    if (op_failed) {                                                                                                \
+        if (MAINPROCESS)                                                                                            \
+            HDprintf("    failure detected during non-collective operation - all other ranks will now fail too\n"); \
+        goto error;                                                                                                 \
+    }                                                                                                               \
+}
+
+#define INDEPENDENT_OP_ERROR(op_name) \
+op_failed = TRUE;                     \
+goto op_##op_name##_end;
+
 
 hid_t
 create_mpio_fapl(MPI_Comm comm, MPI_Info info);

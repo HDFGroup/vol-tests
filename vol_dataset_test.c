@@ -23,6 +23,7 @@ static int test_create_anonymous_dataset(void);
 static int test_create_anonymous_dataset_invalid_params(void);
 static int test_create_dataset_null_space(void);
 static int test_create_dataset_scalar_space(void);
+static int test_create_zero_dim_dset(void);
 static int test_create_dataset_random_shapes(void);
 static int test_create_dataset_predefined_types(void);
 static int test_create_dataset_string_types(void);
@@ -86,6 +87,7 @@ static int (*dataset_tests[])(void) = {
         test_create_anonymous_dataset_invalid_params,
         test_create_dataset_null_space,
         test_create_dataset_scalar_space,
+        test_create_zero_dim_dset,
         test_create_dataset_random_shapes,
         test_create_dataset_predefined_types,
         test_create_dataset_string_types,
@@ -856,6 +858,98 @@ test_create_dataset_scalar_space(void)
     if ((dset_id = H5Dopen2(group_id, DATASET_CREATE_SCALAR_DATASPACE_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open dataset '%s'\n", DATASET_CREATE_SCALAR_DATASPACE_TEST_DSET_NAME);
+        goto error;
+    }
+
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Tclose(dset_dtype) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(fspace_id);
+        H5Tclose(dset_dtype);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that creating a dataset with a dataspace
+ * which contains a 0-sized dimension is not problematic.
+ */
+static int
+test_create_zero_dim_dset(void)
+{
+    hsize_t dims[ZERO_DIM_DSET_TEST_SPACE_RANK] = { 0 };
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID;
+    hid_t   group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dset_dtype = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID;
+    int     data[1];
+
+    TESTING("creation of 0-sized dataset")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATATYPE_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, ZERO_DIM_DSET_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", ZERO_DIM_DSET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+        TEST_ERROR
+    if ((fspace_id = H5Screate_simple(1, dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((dset_id = H5Dcreate2(group_id, ZERO_DIM_DSET_TEST_DSET_NAME, dset_dtype, fspace_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to create 0-sized dataset\n");
+        goto error;
+    }
+
+    /* Attempt to write 0 elements to dataset */
+    if (H5Dwrite(dset_id, H5T_NATIVE_INT, fspace_id, fspace_id, H5P_DEFAULT, data) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to write 0 elements to 0-sized dataset\n");
+        goto error;
+    }
+
+    /* Attempt to read 0 elements from dataset */
+    if (H5Dread(dset_id, H5T_NATIVE_INT, fspace_id, fspace_id, H5P_DEFAULT, data) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to read 0 elements from 0-sized dataset\n");
         goto error;
     }
 

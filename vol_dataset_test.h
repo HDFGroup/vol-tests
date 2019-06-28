@@ -48,6 +48,10 @@ int vol_dataset_test(void);
 #define DATASET_CREATE_SCALAR_DATASPACE_TEST_SUBGROUP_NAME "dataset_with_scalar_space_test"
 #define DATASET_CREATE_SCALAR_DATASPACE_TEST_DSET_NAME     "dataset_with_scalar_space"
 
+#define ZERO_DIM_DSET_TEST_GROUP_NAME "zero_dim_dset_test"
+#define ZERO_DIM_DSET_TEST_SPACE_RANK 1
+#define ZERO_DIM_DSET_TEST_DSET_NAME  "zero_dim_dset"
+
 #define DATASET_MANY_CREATE_GROUP_NAME "group_for_many_datasets"
 #define DSET_NAME_BUF_SIZE             64u
 #define DATASET_NUMB                   100u

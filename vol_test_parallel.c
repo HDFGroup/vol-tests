@@ -57,13 +57,15 @@ main(int argc, char **argv)
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
     srand((unsigned) HDtime(NULL));
 
     HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", PARALLEL_TEST_FILE_NAME);
 
     if (NULL == (vol_connector_name = HDgetenv("HDF5_VOL_CONNECTOR"))) {
-        HDprintf("No VOL connector selected; using native VOL connector\n");
+        if (MAINPROCESS)
+            HDprintf("No VOL connector selected; using native VOL connector\n");
         vol_connector_name = "native";
     }
 
@@ -71,6 +73,7 @@ main(int argc, char **argv)
         HDprintf("Running parallel VOL tests with VOL connector '%s'\n\n", vol_connector_name);
         HDprintf("Test parameters:\n");
         HDprintf("  - Test file name: '%s'\n", vol_test_parallel_filename);
+        HDprintf("  - Number of MPI ranks: %d\n", mpi_size);
         HDprintf("\n\n");
     }
 
@@ -78,12 +81,15 @@ main(int argc, char **argv)
      * Create the file that will be used for all of the tests,
      * except for those which test file creation.
      */
-    if (create_test_container(vol_test_parallel_filename) < 0) {
-        if (MAINPROCESS)
-            HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_parallel_filename);
-        nerrors++;
-        goto done;
-    }
+    BEGIN_INDEPENDENT_OP(create_test_container) {
+        if (MAINPROCESS) {
+            if (create_test_container(vol_test_parallel_filename) < 0) {
+                nerrors++;
+                HDprintf("    failed to create testing container file '%s'\n", vol_test_parallel_filename);
+                INDEPENDENT_OP_ERROR(create_test_container);
+            }
+        }
+    } END_INDEPENDENT_OP(create_test_container);
 
     nerrors += vol_file_test_parallel();
     nerrors += vol_group_test_parallel();
@@ -94,6 +100,12 @@ main(int argc, char **argv)
     nerrors += vol_object_test_parallel();
     nerrors += vol_misc_test_parallel();
 
+    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &nerrors, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD)) {
+        if (MAINPROCESS)
+            HDprintf("failed to collect consensus about the number of test errors that occurred -- exiting\n");
+        goto done;
+    }
+
     if (nerrors) {
         if (MAINPROCESS)
             HDprintf("*** %d TEST%s FAILED WITH VOL CONNECTOR '%s' ***\n", nerrors, (!nerrors || nerrors > 1) ? "S" : "", vol_connector_name);
@@ -103,7 +115,7 @@ main(int argc, char **argv)
     if (MAINPROCESS)
         HDprintf("All VOL tests passed with VOL connector '%s'\n\n", vol_connector_name);
 
-done:
+done: error:
     H5close();
 
     MPI_Finalize();
