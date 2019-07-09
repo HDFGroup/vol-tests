@@ -59,6 +59,13 @@ main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
+    /*
+     * Make sure that HDF5 is initialized on all MPI ranks before proceeding.
+     * This is important for certain VOL connectors which may require a
+     * collective initialization.
+     */
+    H5open();
+
     srand((unsigned) HDtime(NULL));
 
     HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", PARALLEL_TEST_FILE_NAME);

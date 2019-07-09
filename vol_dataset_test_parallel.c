@@ -1252,11 +1252,13 @@ test_write_dataset_one_proc_0_selection(void)
         }
     }
 
-    if (H5Dwrite(dset_id, DATASET_WRITE_ONE_PROC_0_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't write to dataset '%s'\n", DATASET_WRITE_ONE_PROC_0_SEL_TEST_DSET_NAME);
-        goto error;
-    }
+    BEGIN_INDEPENDENT_OP(dset_write) {
+        if (H5Dwrite(dset_id, DATASET_WRITE_ONE_PROC_0_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't write to dataset '%s'\n", DATASET_WRITE_ONE_PROC_0_SEL_TEST_DSET_NAME);
+            INDEPENDENT_OP_ERROR(dset_write);
+        }
+    } END_INDEPENDENT_OP(dset_write);
 
     if (write_buf) {
         HDfree(write_buf);
@@ -1534,11 +1536,13 @@ test_write_dataset_one_proc_none_selection(void)
         }
     }
 
-    if (H5Dwrite(dset_id, DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't write to dataset '%s'\n", DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_DSET_NAME);
-        goto error;
-    }
+    BEGIN_INDEPENDENT_OP(dset_write) {
+        if (H5Dwrite(dset_id, DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't write to dataset '%s'\n", DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_DSET_NAME);
+            INDEPENDENT_OP_ERROR(dset_write);
+        }
+    } END_INDEPENDENT_OP(dset_write);
 
     if (write_buf) {
         HDfree(write_buf);
@@ -1799,11 +1803,13 @@ test_write_dataset_one_proc_all_selection(void)
         }
     }
 
-    if (H5Dwrite(dset_id, DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't write to dataset '%s'\n", DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DSET_NAME);
-        goto error;
-    }
+    BEGIN_INDEPENDENT_OP(dset_write) {
+        if (H5Dwrite(dset_id, DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't write to dataset '%s'\n", DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DSET_NAME);
+            INDEPENDENT_OP_ERROR(dset_write);
+        }
+    } END_INDEPENDENT_OP(dset_write);
 
     if (write_buf) {
         HDfree(write_buf);
@@ -3595,11 +3601,13 @@ test_read_dataset_one_proc_0_selection(void)
         goto error;
     }
 
-    if (H5Dread(dset_id, DATASET_READ_ONE_PROC_0_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't read from dataset '%s'\n", DATASET_READ_ONE_PROC_0_SEL_TEST_DSET_NAME);
-        goto error;
-    }
+    BEGIN_INDEPENDENT_OP(dset_read) {
+        if (H5Dread(dset_id, DATASET_READ_ONE_PROC_0_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't read from dataset '%s'\n", DATASET_READ_ONE_PROC_0_SEL_TEST_DSET_NAME);
+            INDEPENDENT_OP_ERROR(dset_read);
+        }
+    } END_INDEPENDENT_OP(dset_read);
 
     BEGIN_INDEPENDENT_OP(data_verify) {
         if (!MAINPROCESS) {
@@ -3912,11 +3920,13 @@ test_read_dataset_one_proc_none_selection(void)
         }
     } END_INDEPENDENT_OP(set_space_sel);
 
-    if (H5Dread(dset_id, DATASET_READ_ONE_PROC_NONE_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't read from dataset '%s'\n", DATASET_READ_ONE_PROC_NONE_SEL_TEST_DSET_NAME);
-        goto error;
-    }
+    BEGIN_INDEPENDENT_OP(dset_read) {
+        if (H5Dread(dset_id, DATASET_READ_ONE_PROC_NONE_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't read from dataset '%s'\n", DATASET_READ_ONE_PROC_NONE_SEL_TEST_DSET_NAME);
+            INDEPENDENT_OP_ERROR(dset_read);
+        }
+    } END_INDEPENDENT_OP(dset_read);
 
     BEGIN_INDEPENDENT_OP(data_verify) {
         if (!MAINPROCESS) {
@@ -4212,11 +4222,13 @@ test_read_dataset_one_proc_all_selection(void)
         }
     } END_INDEPENDENT_OP(set_space_sel);
 
-    if (H5Dread(dset_id, DATASET_READ_ONE_PROC_ALL_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't read from dataset '%s'\n", DATASET_READ_ONE_PROC_ALL_SEL_TEST_DSET_NAME);
-        goto error;
-    }
+    BEGIN_INDEPENDENT_OP(dset_read) {
+        if (H5Dread(dset_id, DATASET_READ_ONE_PROC_ALL_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't read from dataset '%s'\n", DATASET_READ_ONE_PROC_ALL_SEL_TEST_DSET_NAME);
+            INDEPENDENT_OP_ERROR(dset_read);
+        }
+    } END_INDEPENDENT_OP(dset_read);
 
     BEGIN_INDEPENDENT_OP(data_verify) {
         if (MAINPROCESS) {
