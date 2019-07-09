@@ -6037,6 +6037,7 @@ error:
  * with the number of MPI ranks, while the other dimensions are fixed.
  */
 #define DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_FIXED_CHUNK_DIMSIZE 100 /* Should be an even divisor of fixed dimension size */
+#define DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE    (DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_FIXED_CHUNK_DIMSIZE / 10)
 #define DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_FIXED_DIMSIZE       1000
 #define DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK     2
 #define DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE      sizeof(int)
@@ -6060,7 +6061,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     hid_t    fspace_id = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID;
     void    *write_buf = NULL;
-    int     *read_buf = NULL;
+    int      read_buf[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE][DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE];
 
     TESTING("write to dataset with multiple chunks using differently shaped dataspaces")
 
@@ -6320,21 +6321,12 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     }
 
     /*
-     * Allocate single chunk-sized read buffer.
-     */
-    if (NULL == (read_buf = HDmalloc(chunk_size))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset read\n");
-        goto error;
-    }
-
-    /*
-     * Create 1-dimensional memory dataspace for read buffer.
+     * Create memory dataspace for read buffer.
      */
     {
-        hsize_t mdims[] = { chunk_size / DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE };
+        hsize_t mdims[] = { DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE };
 
-        if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
+        if ((mspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, mdims, NULL)) < 0) {
             H5_FAILED();
             HDprintf("    failed to create memory dataspace\n");
             goto error;
@@ -6350,7 +6342,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
      */
     if (MAINPROCESS) HDprintf("\n");
     for (i = 0, n_chunks_per_rank = (data_size / (size_t) mpi_size) / chunk_size; i < n_chunks_per_rank; i++) {
-        size_t j;
+        size_t j, k;
 
         if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
             H5_FAILED();
@@ -6379,19 +6371,28 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
             goto error;
         }
 
-        memset(read_buf, 0, chunk_size);
+        for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; j++)
+            for (k = 0; k < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; k++)
+                read_buf[j][k] = 0;
+
         if (H5Dread(dset_id, DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
             H5_FAILED();
             HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
             goto error;
         }
 
-        for (j = 0; j < (hsize_t) chunk_size / DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE; j++)
-            if (((int *) read_buf)[j] != (int) ((j + i) + (mpi_rank * n_chunks_per_rank))) {
-                H5_FAILED();
-                HDprintf("    data verification failed for chunk %lld\n", (long long) i);
-                goto error;
+        for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; j++) {
+            for (k = 0; k < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; k++) {
+                size_t val = ((j * DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE) + k + i)
+                           + (mpi_rank * n_chunks_per_rank);
+
+                if (read_buf[j][k] != (int) val) {
+                    H5_FAILED();
+                    HDprintf("    data verification failed for chunk %lld\n", (long long) i);
+                    goto error;
+                }
             }
+        }
     }
 
     if (chunk_dims) {
@@ -6402,11 +6403,6 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     if (dims) {
         HDfree(dims);
         dims = NULL;
-    }
-
-    if (read_buf) {
-        HDfree(read_buf);
-        read_buf = NULL;
     }
 
     if (H5Sclose(mspace_id) < 0)
@@ -6431,7 +6427,6 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
 error:
     H5E_BEGIN_TRY {
         if (write_buf) HDfree(write_buf);
-        if (read_buf) HDfree(read_buf);
         if (chunk_dims) HDfree(chunk_dims);
         if (dims) HDfree(dims);
         H5Pclose(dcpl_id);
@@ -6905,6 +6900,7 @@ error:
  * ranks, while the other dimensions are fixed.
  */
 #define DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_FIXED_CHUNK_DIMSIZE 100 /* Should be an even divisor of fixed dimension size */
+#define DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE    (DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_FIXED_CHUNK_DIMSIZE / 10)
 #define DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_FIXED_DIMSIZE       1000
 #define DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK     2
 #define DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE      sizeof(int)
@@ -6930,7 +6926,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     hid_t    fspace_id = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID;
     void    *write_buf = NULL;
-    int     *read_buf = NULL;
+    int      read_buf[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE][DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE];
 
     TESTING("several overwrites to dataset with multiple chunks using differently shaped dataspaces")
 
@@ -7111,21 +7107,12 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     }
 
     /*
-     * Allocate single chunk-sized read buffer.
-     */
-    if (NULL == (read_buf = HDmalloc(chunk_size))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset read\n");
-        goto error;
-    }
-
-    /*
-     * Create 1-dimensional memory dataspace for read buffer.
+     * Create memory dataspace for read buffer.
      */
     {
-        hsize_t mdims[] = { chunk_size / DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE };
+        hsize_t mdims[] = { DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE };
 
-        if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
+        if ((mspace_id = H5Screate_simple(DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, mdims, NULL)) < 0) {
             H5_FAILED();
             HDprintf("    failed to create memory dataspace\n");
             goto error;
@@ -7239,7 +7226,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
          * Each rank reads their respective chunks in the dataset, checking the data for each one.
          */
         for (i = 0, n_chunks_per_rank = (data_size / (size_t) mpi_size) / chunk_size; i < n_chunks_per_rank; i++) {
-            size_t j;
+            size_t j, k;
 
             if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
                 H5_FAILED();
@@ -7268,19 +7255,29 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
                 goto error;
             }
 
-            memset(read_buf, 0, chunk_size);
+            for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; j++)
+                for (k = 0; k < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; k++)
+                    read_buf[j][k] = 0;
+
             if (H5Dread(dset_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't read from dataset '%s'\n", DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME);
                 goto error;
             }
 
-            for (j = 0; j < chunk_size / DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_DTYPESIZE; j++)
-                if (((int *) read_buf)[j] != (int) ((j + i) + (mpi_rank * n_chunks_per_rank) + niter)) {
-                    H5_FAILED();
-                    HDprintf("    data verification failed for chunk %lld\n", (long long) i);
-                    goto error;
+            for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; j++) {
+                for (k = 0; k < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; k++) {
+                    size_t val = ((j * DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE) + k + i)
+                               + (mpi_rank * n_chunks_per_rank)
+                               + niter;
+
+                    if (read_buf[j][k] != (int) val) {
+                        H5_FAILED();
+                        HDprintf("    data verification failed for chunk %lld\n", (long long) i);
+                        goto error;
+                    }
                 }
+            }
         }
 
         if (fspace_id >= 0) {
@@ -7307,11 +7304,6 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
         dims = NULL;
     }
 
-    if (read_buf) {
-        HDfree(read_buf);
-        read_buf = NULL;
-    }
-
     if (write_buf) {
         HDfree(write_buf);
         write_buf = NULL;
@@ -7334,7 +7326,6 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
 
 error:
     H5E_BEGIN_TRY {
-        if (read_buf) HDfree(read_buf);
         if (write_buf) HDfree(write_buf);
         if (chunk_dims) HDfree(chunk_dims);
         if (dims) HDfree(dims);
