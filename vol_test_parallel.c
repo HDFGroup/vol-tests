@@ -27,7 +27,7 @@ char vol_test_parallel_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 int mpi_size, mpi_rank;
 
 hid_t
-create_mpio_fapl(MPI_Comm comm, MPI_Info info)
+create_mpi_fapl(MPI_Comm comm, MPI_Info info)
 {
     hid_t ret_pl = H5I_INVALID_HID;
 
@@ -47,7 +47,7 @@ create_mpio_fapl(MPI_Comm comm, MPI_Info info)
 
 error:
     return H5I_INVALID_HID;
-} /* end create_mpio_fapl() */
+} /* end create_mpi_fapl() */
 
 int
 generate_random_parallel_dimensions(int space_rank, hsize_t **dims_out)

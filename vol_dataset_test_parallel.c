@@ -113,7 +113,7 @@ test_write_dataset_data_verification(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -841,7 +841,7 @@ test_write_dataset_independent(void)
 
     TESTING("independent writing to different datasets by different ranks")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -1150,7 +1150,7 @@ test_write_dataset_one_proc_0_selection(void)
 
     TESTING("write to dataset with one rank selecting 0 rows")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -1417,7 +1417,7 @@ test_write_dataset_one_proc_none_selection(void)
 
     TESTING("write to dataset with one rank using 'none' selection")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -1692,7 +1692,7 @@ test_write_dataset_one_proc_all_selection(void)
 
     TESTING("write to dataset with one rank using all selection; others none selection")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -1958,7 +1958,7 @@ test_write_dataset_hyper_file_all_mem(void)
     TESTING("write to dataset with hyperslab sel. for file space; all sel. for memory")
 
 #ifdef BROKEN
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -2198,7 +2198,7 @@ test_write_dataset_all_file_hyper_mem(void)
 
     TESTING("write to dataset with all sel. for file space; hyperslab sel. for memory")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -2474,7 +2474,7 @@ test_write_dataset_all_file_point_mem(void)
 
     TESTING("write to dataset with all sel. for file space; point sel. for memory")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -2753,7 +2753,7 @@ test_write_dataset_hyper_file_point_mem(void)
 
     TESTING("write to dataset with hyperslab sel. for file space; point sel. for memory")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -3041,7 +3041,7 @@ test_write_dataset_point_file_hyper_mem(void)
 
     TESTING("write to dataset with point sel. for file space; hyperslab sel. for memory")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -3452,7 +3452,7 @@ test_read_dataset_one_proc_0_selection(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -3750,7 +3750,7 @@ test_read_dataset_one_proc_none_selection(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -4056,7 +4056,7 @@ test_read_dataset_one_proc_all_selection(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -4370,7 +4370,7 @@ test_read_dataset_all_file_hyper_mem(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -4683,7 +4683,7 @@ test_read_dataset_all_file_point_mem(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -4999,7 +4999,7 @@ test_read_dataset_hyper_file_point_mem(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -5319,7 +5319,7 @@ test_read_dataset_point_file_hyper_mem(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -5748,7 +5748,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -6160,7 +6160,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -6508,7 +6508,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -6958,7 +6958,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     /*
      * Re-open file on all ranks.
      */
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
