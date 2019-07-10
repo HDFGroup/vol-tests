@@ -69,6 +69,8 @@ static int test_dataset_iterate_empty_selection(void);
 static int test_dataset_iterate_invalid_params(void);
 static int test_dataset_set_extent_chunked_unlimited(void);
 static int test_dataset_set_extent_chunked_fixed(void);
+static int test_dataset_set_extent_data(void);
+static int test_dataset_set_extent_double_handles(void);
 static int test_dataset_set_extent_invalid_params(void);
 static int test_flush_dataset(void);
 static int test_flush_dataset_invalid_params(void);
@@ -132,6 +134,8 @@ static int (*dataset_tests[])(void) = {
         test_dataset_iterate_invalid_params,
         test_dataset_set_extent_chunked_unlimited,
         test_dataset_set_extent_chunked_fixed,
+        test_dataset_set_extent_data,
+        test_dataset_set_extent_double_handles,
         test_dataset_set_extent_invalid_params,
         test_flush_dataset,
         test_flush_dataset_invalid_params,
@@ -6014,6 +6018,428 @@ error:
 }
 
 /*
+ * A test to check the data is correct after expanding
+ * and shrinking the dataset with H5Dset_extent
+ */
+static int
+test_dataset_set_extent_data(void)
+{
+    hsize_t dims_origin[DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM, DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM};
+    hsize_t dims_expand[DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM*2-1, DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM*2-1};
+    hsize_t dims_shrink[DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM/2+1, DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM/2+1};
+    hsize_t dims_chunk[DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM, DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM};
+    hsize_t dims_max[DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK] = {H5S_UNLIMITED,H5S_UNLIMITED};
+    hsize_t dims_out[DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK];
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dcpl_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID, dset_space_id = H5I_INVALID_HID;
+    int     buf_origin[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM];
+    int     buf_expand2[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM];
+    int     buf_expand[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM*2-1][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM*2-1];
+    int     buf_shrink[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM/2+1][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM/2+1];
+    int     i, j;
+
+    TESTING_MULTIPART("H5Dset_extent on data correctness");
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_SET_EXTENT_DATA_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_SET_EXTENT_DATA_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK, dims_origin, dims_max)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK, dims_chunk) < 0) {
+        H5_FAILED();
+        HDprintf("    unable to set dataset chunk dimensionality\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_SET_EXTENT_DATA_TEST_DSET_NAME, H5T_NATIVE_INT,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_SET_EXTENT_DATA_TEST_DSET_NAME);
+        goto error;
+    }
+
+    for(i = 0; i < DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM; i++)
+        for(j = 0; j < DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM; j++)
+            buf_origin[i][j] = i + j;
+
+    /* Write the original data
+     * X X X X X X X X
+     * X X X X X X X X
+     * X X X X X X X X
+     * X X X X X X X X
+     * X X X X X X X X
+     * X X X X X X X X
+     * X X X X X X X X
+     * X X X X X X X X
+     */
+    if (H5Dwrite(dset_id, H5T_NATIVE_INT, fspace_id, H5S_ALL, H5P_DEFAULT, buf_origin) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Dset_extent_data_expand) {
+            TESTING_2("H5Dset_extent for data expansion")
+
+	    /* Expand the dataset.  The extended space should be initialized with the
+	     * the default value (0)
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * X X X X X X X X 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	     */
+	    if (H5Dset_extent(dset_id , dims_expand) < 0)
+		TEST_ERROR
+
+	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand) < 0)
+		TEST_ERROR
+
+	    /* compare the expanded data */
+	    for (i = 0; i < (int)dims_expand[0]; i++ ) {
+		for (j = 0; j < (int)dims_expand[1]; j++ ) {
+		    if ( i >= dims_origin[0] || j >= dims_origin[1] ) {
+			if(buf_expand[i][j] != 0) {
+			    H5_FAILED();
+			    HDprintf("buf_expand[%d][%d] = %d. It should be 0\n", i, j, buf_expand[i][j]);
+                            PART_ERROR(H5Dset_extent_data_expand);
+			}
+		    } else {
+			if(buf_expand[i][j] != buf_origin[i][j]) {
+			    H5_FAILED();
+			    HDprintf("buf_expand[%d][%d] = %d. It should be %d\n", i, j, buf_expand[i][j], buf_origin[i][j]);
+                            PART_ERROR(H5Dset_extent_data_expand);
+			}
+		    }
+		}
+	    }
+
+            PASSED();
+        } PART_END(H5Dset_extent_data_expand);
+
+        PART_BEGIN(H5Dset_extent_data_shrink) {
+            TESTING_2("H5Dset_extent for data shrinking")
+
+	    /* Shrink the dataset.
+	     * X X X X X
+	     * X X X X X
+	     * X X X X X
+	     * X X X X X
+	     * X X X X X
+	     */
+	    if (H5Dset_extent(dset_id , dims_shrink) < 0)
+		TEST_ERROR
+
+	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_shrink) < 0)
+		TEST_ERROR
+
+	    /* compare the shrinked data */
+	    for (i = 0; i < (int)dims_shrink[0]; i++ ) {
+		for (j = 0; j < (int)dims_shrink[1]; j++ ) {
+		    if(buf_shrink[i][j] != buf_origin[i][j]) {
+			H5_FAILED();
+			HDprintf("buf_shrink[%d][%d] = %d. It should be %d\n", i, j, buf_shrink[i][j], buf_origin[i][j]);
+                        PART_ERROR(H5Dset_extent_data_shrink);
+		    }
+		}
+	    }
+
+            PASSED();
+        } PART_END(H5Dset_extent_data_shrink);
+
+        PART_BEGIN(H5Dset_extent_data_expand_to_origin) {
+            TESTING_2("H5Dset_extent for data back to the original size")
+
+	    /* Expand the dataset back to the original size. The data should look like this:
+	     * X X X X X 0 0 0
+	     * X X X X X 0 0 0
+	     * X X X X X 0 0 0
+	     * X X X X X 0 0 0
+	     * X X X X X 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     */
+	    if (H5Dset_extent(dset_id , dims_origin) < 0)
+		TEST_ERROR
+
+	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand2) < 0)
+		TEST_ERROR
+
+	    /* compare the expanded data */
+	    for (i = 0; i < (int)dims_origin[0]; i++ ) {
+		for (j = 0; j < (int)dims_origin[1]; j++ ) {
+		    if ( i >= dims_shrink[0] || j >= dims_shrink[1] ) {
+			if(buf_expand2[i][j] != 0) {
+			    H5_FAILED();
+			    HDprintf("buf_expand2[%d][%d] = %d. It should be 0\n", i, j, buf_expand2[i][j]);
+                            PART_ERROR(H5Dset_extent_data_expand_to_origin);
+			}
+		    } else {
+			if(buf_expand2[i][j] != buf_origin[i][j]) {
+			    H5_FAILED();
+			    HDprintf("buf_expand2[%d][%d] = %d. It should be %d.\n", i, j, buf_expand2[i][j], buf_origin[i][j]);
+                            PART_ERROR(H5Dset_extent_data_expand_to_origin);
+			}
+		    }
+		}
+	    }
+
+            PASSED();
+        } PART_END(H5Dset_extent_data_expand_to_origin);
+
+        PART_BEGIN(H5Dset_extent_data_shrink_to_zero) {
+            TESTING_2("H5Dset_extent for data shrink to zero size")
+
+	    /* Shrink the dimensions to 0 and verify it
+	     *
+	     */
+	    dims_shrink[0] = dims_shrink[1] = 0;
+
+	    if (H5Dset_extent(dset_id , dims_shrink) < 0)
+		TEST_ERROR
+
+	    /* get the space */
+	    if ((dset_space_id = H5Dget_space(dset_id)) < 0)
+		TEST_ERROR
+
+	    /* get dimensions */
+	    if (H5Sget_simple_extent_dims(dset_space_id, dims_out, NULL) < 0)
+		TEST_ERROR
+
+	    if (H5Sclose(dset_space_id) < 0)
+		TEST_ERROR
+
+	    /* Verify the dimensions are 0 */
+	    for (i = 0; i < DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK; i++ )
+		if (dims_out[i] != 0) {
+		    H5_FAILED();
+		    HDprintf("dims_out[%d] = %d.  It should be 0.\n", i, dims_out[i]);
+                    PART_ERROR(H5Dset_extent_data_shrink_to_zero);
+		}
+
+            PASSED();
+        } PART_END(H5Dset_extent_data_shrink_to_zero);
+
+        PART_BEGIN(H5Dset_extent_data_expand_to_origin_again) {
+            TESTING_2("H5Dset_extent for data expansion back to the original again")
+
+	    /* Expand the dataset back to the original size. The data should look like this:
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     * 0 0 0 0 0 0 0 0
+	     */
+	    if (H5Dset_extent(dset_id , dims_origin) < 0)
+		TEST_ERROR
+
+	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand2) < 0)
+		TEST_ERROR
+
+	    /* The data should be all zeros */
+	    for (i = 0; i < (int)dims_origin[0]; i++ ) {
+		for (j = 0; j < (int)dims_origin[1]; j++ ) {
+		    if(buf_expand2[i][j] != 0) {
+			H5_FAILED();
+			HDprintf("buf_expand2[%d][%d] = %d. It should be 0.\n", i, j, buf_expand2[i][j]);
+                        PART_ERROR(H5Dset_extent_data_expand_to_origin_again);
+		    }
+		}
+	    }
+
+            PASSED();
+        } PART_END(H5Dset_extent_data_expand_to_origin_again);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(dcpl_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* test_dataset_set_extent_data */
+
+/*
+ * If a dataset is opened twice and one of the handles is
+ * used to extend the dataset, then the other handle should
+ * return the new size when queried.
+ */
+static int
+test_dataset_set_extent_double_handles(void)
+{
+    hsize_t dims_origin[DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM};
+    hsize_t dims_expand[DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM*2, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM*2};
+    hsize_t dims_chunk[DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK] = {DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM/2, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM/2};
+    hsize_t dims_max[DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK] = {H5S_UNLIMITED,H5S_UNLIMITED};
+    hsize_t dims_out[DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK];
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID;
+    hid_t   dcpl_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID, dset_space_id = H5I_INVALID_HID;
+    int     i, j;
+
+    TESTING("H5Dset_extent on double dataset handles")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_SET_EXTENT_DATA_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK, dims_origin, dims_max)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK, dims_chunk) < 0) {
+        H5_FAILED();
+        HDprintf("    unable to set dataset chunk dimensionality\n");
+        goto error;
+    }
+
+    /* Create the dataset */
+    if ((dset_id = H5Dcreate2(group_id, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_DSET_NAME, H5T_NATIVE_INT,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /* Open the same dataset again */
+    if((dset_id2 = H5Dopen2(group_id, DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open dataset '%s'\n", DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /* Expand the dataset's dimensions with the first dataset handle */
+    if (H5Dset_extent(dset_id , dims_expand) < 0)
+	TEST_ERROR
+
+    /* Get the data space with the second dataset handle */
+    if ((dset_space_id = H5Dget_space(dset_id2)) < 0)
+	TEST_ERROR
+
+    /* Get the dimensions with the second dataset handle */
+    if (H5Sget_simple_extent_dims(dset_space_id, dims_out, NULL) < 0)
+	TEST_ERROR
+
+    if (H5Sclose(dset_space_id) < 0)
+	TEST_ERROR
+
+    for (i = 0; i < DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK; i++ )
+	if (dims_out[i] != dims_expand[i]) {
+	    H5_FAILED();
+	    HDprintf("dims_out[%d] = %d.  It should be %d.\n", i, dims_out[i], dims_expand[i]);
+            goto error;
+	}
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(dcpl_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* test_dataset_set_extent_double_handles */
+
+/*
  * A test to check that a dataset's extent can't be
  * changed when H5Dset_extent is passed invalid parameters.
  */
@@ -6023,14 +6449,15 @@ test_dataset_set_extent_invalid_params(void)
     hsize_t dims[DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK];
     hsize_t chunk_dims[DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK];
     hsize_t new_dims[DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK];
+    hsize_t compact_dims[DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK] = {3, 3};
     size_t  i;
     herr_t  err_ret = -1;
     hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   chunked_dset_id = H5I_INVALID_HID, compact_dset_id = H5I_INVALID_HID, contiguous_dset_id = H5I_INVALID_HID;
     hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dcpl_id = H5I_INVALID_HID;
-    hid_t   fspace_id = H5I_INVALID_HID;
+    hid_t   chunked_dcpl_id = H5I_INVALID_HID, compact_dcpl_id = H5I_INVALID_HID, contiguous_dcpl_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID, compact_fspace_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Dset_extent with invalid parameters");
 
@@ -6069,17 +6496,50 @@ test_dataset_set_extent_invalid_params(void)
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
         TEST_ERROR
 
-    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+    /* Create a compact dataset */
+    if ((compact_dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
         TEST_ERROR
 
-    if (H5Pset_chunk(dcpl_id, DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK, chunk_dims) < 0) {
+    if (H5Pset_layout(compact_dcpl_id, H5D_COMPACT) < 0)
+        TEST_ERROR
+
+    /* Keep the data space small because the storage size of compact dataset is limited to 64K */
+    if ((compact_fspace_id = H5Screate_simple(DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK, compact_dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((compact_dset_id = H5Dcreate2(group_id, DATASET_SET_EXTENT_INVALID_LAYOUT_TEST_COMPACT_DSET_NAME, H5T_NATIVE_INT,
+            compact_fspace_id, H5P_DEFAULT, compact_dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_SET_EXTENT_INVALID_LAYOUT_TEST_COMPACT_DSET_NAME);
+        goto error;
+    }
+
+    /* Create a contiguous dataset */
+    if ((contiguous_dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_layout(contiguous_dcpl_id, H5D_CONTIGUOUS) < 0)
+        TEST_ERROR
+
+    if ((contiguous_dset_id = H5Dcreate2(group_id, DATASET_SET_EXTENT_INVALID_LAYOUT_TEST_CONTIGUOUS_DSET_NAME, dset_dtype,
+            fspace_id, H5P_DEFAULT, contiguous_dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_SET_EXTENT_INVALID_LAYOUT_TEST_CONTIGUOUS_DSET_NAME);
+        goto error;
+    }
+
+    /* Create a chunked dataset */
+    if ((chunked_dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(chunked_dcpl_id, DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK, chunk_dims) < 0) {
         H5_FAILED();
         HDprintf("    unable to set dataset chunk dimensionality\n");
         goto error;
     }
 
-    if ((dset_id = H5Dcreate2(group_id, DATASET_SET_EXTENT_INVALID_PARAMS_TEST_DSET_NAME, dset_dtype,
-            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+    if ((chunked_dset_id = H5Dcreate2(group_id, DATASET_SET_EXTENT_INVALID_PARAMS_TEST_DSET_NAME, dset_dtype,
+            fspace_id, H5P_DEFAULT, chunked_dcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create dataset '%s'\n", DATASET_SET_EXTENT_INVALID_PARAMS_TEST_DSET_NAME);
         goto error;
@@ -6088,6 +6548,38 @@ test_dataset_set_extent_invalid_params(void)
     PASSED();
 
     BEGIN_MULTIPART {
+        PART_BEGIN(H5Dset_extent_invalid_layout_compact) {
+            TESTING_2("H5Dset_extent with an invalid dataset layout (compact)")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Dset_extent(compact_dset_id, new_dims);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    setting dataset extent succeeded with an invalid layout (compact)\n");
+                PART_ERROR(H5Dset_extent_invalid_layout_compact);
+            }
+
+            PASSED();
+        } PART_END(H5Dset_extent_invalid_layout_compact);
+
+        PART_BEGIN(H5Dset_extent_invalid_layout_contiguous) {
+            TESTING_2("H5Dset_extent with an invalid dataset layout (continguous)")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Dset_extent(contiguous_dset_id, new_dims);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    setting dataset extent succeeded with an invalid layout (contiguous)\n");
+                PART_ERROR(H5Dset_extent_invalid_layout_contiguous);
+            }
+
+            PASSED();
+        } PART_END(H5Dset_extent_invalid_layout_contiguous);
+
         PART_BEGIN(H5Dset_extent_invalid_dset_id) {
             TESTING_2("H5Dset_extent with an invalid dataset ID")
 
@@ -6108,7 +6600,7 @@ test_dataset_set_extent_invalid_params(void)
             TESTING_2("H5Dset_extent with NULL dimension pointer")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Dset_extent(dset_id, NULL);
+                err_ret = H5Dset_extent(chunked_dset_id, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6123,13 +6615,23 @@ test_dataset_set_extent_invalid_params(void)
 
     TESTING_2("test cleanup")
 
-    if (H5Pclose(dcpl_id) < 0)
+    if (H5Pclose(chunked_dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Pclose(compact_dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Pclose(contiguous_dcpl_id) < 0)
         TEST_ERROR
     if (H5Sclose(fspace_id) < 0)
         TEST_ERROR
+    if (H5Sclose(compact_fspace_id) < 0)
+        TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
         TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
+    if (H5Dclose(chunked_dset_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(compact_dset_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(contiguous_dset_id) < 0)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -6144,10 +6646,11 @@ test_dataset_set_extent_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Pclose(dcpl_id);
+        H5Pclose(chunked_dcpl_id);
         H5Sclose(fspace_id);
+        H5Sclose(compact_fspace_id);
         H5Tclose(dset_dtype);
-        H5Dclose(dset_id);
+        H5Dclose(chunked_dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);

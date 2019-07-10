@@ -230,9 +230,21 @@ int vol_dataset_test(void);
 #define DATASET_SET_EXTENT_CHUNKED_FIXED_TEST_DSET_NAME  "set_extent_chunked_fixed_test_dset"
 #define DATASET_SET_EXTENT_CHUNKED_FIXED_TEST_DSET_NAME2 "set_extent_chunked_fixed_test_dset2"
 
-#define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK 2
-#define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_GROUP_NAME "set_extent_invalid_params_test"
-#define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_DSET_NAME  "set_extent_invalid_params_test_dset"
+#define DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK 2
+#define DATASET_SET_EXTENT_DATA_TEST_GROUP_NAME "set_extent_chunked_data_test"
+#define DATASET_SET_EXTENT_DATA_TEST_DSET_NAME  "set_extent_chunked_data_test_dset"
+#define DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM 8
+
+#define DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK 2
+#define DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_GROUP_NAME "set_extent_chunked_double_handles_test"
+#define DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_DSET_NAME  "set_extent_chunked_double_handles_test_dset"
+#define DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_DIM 8
+
+#define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_SPACE_RANK           2
+#define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_GROUP_NAME           "set_extent_invalid_params_test"
+#define DATASET_SET_EXTENT_INVALID_PARAMS_TEST_DSET_NAME            "set_extent_invalid_params_test_dset"
+#define DATASET_SET_EXTENT_INVALID_LAYOUT_TEST_COMPACT_DSET_NAME    "set_extent_invalid_layout_test_compact_dset"
+#define DATASET_SET_EXTENT_INVALID_LAYOUT_TEST_CONTIGUOUS_DSET_NAME "set_extent_invalid_layout_test_contiguous_dset"
 
 #define DATASET_UNUSED_APIS_TEST_SPACE_RANK 2
 #define DATASET_UNUSED_APIS_TEST_DSET_NAME  "unused_apis_dset"
