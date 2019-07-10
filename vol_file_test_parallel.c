@@ -37,7 +37,7 @@ test_create_file(void)
 
     TESTING("H5Fcreate");
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
@@ -77,7 +77,7 @@ test_open_file(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpio_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
         TEST_ERROR
 
     PASSED();
@@ -191,7 +191,7 @@ test_split_comm_file_access(void)
         MPI_Comm_rank(comm, &sub_mpi_rank);
 
         /* setup file access template */
-        if ((fapl_id = create_mpio_fapl(comm, info)) < 0)
+        if ((fapl_id = create_mpi_fapl(comm, info)) < 0)
             TEST_ERROR
 
         /* create the file collectively */

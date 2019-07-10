@@ -27,7 +27,7 @@ char vol_test_parallel_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 int mpi_size, mpi_rank;
 
 hid_t
-create_mpio_fapl(MPI_Comm comm, MPI_Info info)
+create_mpi_fapl(MPI_Comm comm, MPI_Info info)
 {
     hid_t ret_pl = H5I_INVALID_HID;
 
@@ -47,7 +47,44 @@ create_mpio_fapl(MPI_Comm comm, MPI_Info info)
 
 error:
     return H5I_INVALID_HID;
-} /* end create_mpio_fapl() */
+} /* end create_mpi_fapl() */
+
+int
+generate_random_parallel_dimensions(int space_rank, hsize_t **dims_out)
+{
+    hsize_t *dims = NULL;
+    size_t   i;
+
+    if (space_rank <= 0)
+        goto error;
+
+    if (NULL == (dims = HDmalloc(space_rank * sizeof(hsize_t))))
+        goto error;
+    if (MAINPROCESS) {
+        for (i = 0; i < (size_t) space_rank; i++) {
+            if (i == 0)
+                dims[i] = mpi_size;
+            else
+                dims[i] = (rand() % MAX_DIM_SIZE) + 1;
+        }
+    }
+
+    /*
+     * Ensure that the dataset dimensions are uniform across ranks.
+     */
+    if (MPI_SUCCESS != MPI_Bcast(dims, space_rank, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD))
+        goto error;
+
+    *dims_out = dims;
+
+    return 0;
+
+error:
+    if (dims)
+        HDfree(dims);
+
+    return -1;
+}
 
 int
 main(int argc, char **argv)
@@ -58,6 +95,13 @@ main(int argc, char **argv)
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+
+    /*
+     * Make sure that HDF5 is initialized on all MPI ranks before proceeding.
+     * This is important for certain VOL connectors which may require a
+     * collective initialization.
+     */
+    H5open();
 
     srand((unsigned) HDtime(NULL));
 

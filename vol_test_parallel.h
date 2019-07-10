@@ -81,8 +81,8 @@ op_failed = TRUE;                     \
 goto op_##op_name##_end;
 
 
-hid_t
-create_mpio_fapl(MPI_Comm comm, MPI_Info info);
+hid_t create_mpi_fapl(MPI_Comm comm, MPI_Info info);
+int generate_random_parallel_dimensions(int space_rank, hsize_t **dims_out);
 
 extern int mpi_size, mpi_rank;
 
