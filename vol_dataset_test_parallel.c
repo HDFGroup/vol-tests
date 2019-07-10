@@ -134,14 +134,8 @@ test_write_dataset_data_verification(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -872,14 +866,8 @@ test_write_dataset_independent(void)
      * Setup dimensions of overall datasets and slabs local
      * to the MPI rank.
      */
-    if (NULL == (dims = HDmalloc(DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -1183,14 +1171,8 @@ test_write_dataset_one_proc_0_selection(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -1456,14 +1438,8 @@ test_write_dataset_one_proc_none_selection(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -1737,14 +1713,8 @@ test_write_dataset_one_proc_all_selection(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -2009,14 +1979,8 @@ test_write_dataset_hyper_file_all_mem(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -2255,14 +2219,8 @@ test_write_dataset_all_file_hyper_mem(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -2537,14 +2495,8 @@ test_write_dataset_all_file_point_mem(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -2822,14 +2774,8 @@ test_write_dataset_hyper_file_point_mem(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -3116,14 +3062,8 @@ test_write_dataset_point_file_hyper_mem(void)
         goto error;
     }
 
-    if (NULL == (dims = HDmalloc(DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK * sizeof(hsize_t))))
+    if (generate_random_parallel_dimensions(DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
         TEST_ERROR
-    for (i = 0; i < DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
         TEST_ERROR
@@ -3389,18 +3329,8 @@ test_read_dataset_one_proc_0_selection(void)
 
     TESTING("read from dataset with one rank selecting 0 rows")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -3697,18 +3627,8 @@ test_read_dataset_one_proc_none_selection(void)
 
     TESTING("read from dataset with one rank using 'none' selection")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4013,18 +3933,8 @@ test_read_dataset_one_proc_all_selection(void)
 
     TESTING("read from dataset with one rank using all selection; others none selection")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_ONE_PROC_ALL_SEL_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_ONE_PROC_ALL_SEL_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_ONE_PROC_ALL_SEL_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4337,18 +4247,8 @@ test_read_dataset_all_file_hyper_mem(void)
 
     TESTING("read from dataset with all sel. for file space; hyperslab sel. for memory")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4660,18 +4560,8 @@ test_read_dataset_all_file_point_mem(void)
 
     TESTING("read from dataset with all sel. for file space; point sel. for memory")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_ALL_FILE_POINT_MEM_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_ALL_FILE_POINT_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_ALL_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4986,18 +4876,8 @@ test_read_dataset_hyper_file_point_mem(void)
 
     TESTING("read from dataset with hyperslab sel. for file space; point sel. for memory")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -5316,18 +5196,8 @@ test_read_dataset_point_file_hyper_mem(void)
 
     TESTING("read from dataset with point sel. for file space; hyperslab sel. for memory")
 
-    if (NULL == (dims = HDmalloc(DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK * sizeof(hsize_t)))) {
-        H5_FAILED();
-        HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
-        goto error;
-    }
-
-    for (i = 0; i < DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK; i++) {
-        if (i == 0)
-            dims[i] = mpi_size;
-        else
-            dims[i] = (rand() % MAX_DIM_SIZE) + 1;
-    }
+    if (generate_random_parallel_dimensions(DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
