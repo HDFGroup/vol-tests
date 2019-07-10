@@ -6311,6 +6311,7 @@ error:
     H5E_BEGIN_TRY {
         H5Pclose(dcpl_id);
         H5Sclose(fspace_id);
+        H5Sclose(dset_space_id);
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
@@ -6415,6 +6416,8 @@ test_dataset_set_extent_double_handles(void)
         TEST_ERROR
     if (H5Dclose(dset_id) < 0)
         TEST_ERROR
+    if (H5Dclose(dset_id2) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -6430,7 +6433,9 @@ error:
     H5E_BEGIN_TRY {
         H5Pclose(dcpl_id);
         H5Sclose(fspace_id);
+        H5Sclose(dset_space_id);
         H5Dclose(dset_id);
+        H5Dclose(dset_id2);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -6647,17 +6652,21 @@ test_dataset_set_extent_invalid_params(void)
 error:
     H5E_BEGIN_TRY {
         H5Pclose(chunked_dcpl_id);
+        H5Pclose(compact_dcpl_id);
+        H5Pclose(contiguous_dcpl_id);
         H5Sclose(fspace_id);
         H5Sclose(compact_fspace_id);
         H5Tclose(dset_dtype);
         H5Dclose(chunked_dset_id);
+        H5Dclose(compact_dset_id);
+        H5Dclose(contiguous_dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
     return 1;
-}
+} /* test_dataset_set_extent_invalid_params */
 
 /*
  * A test for H5Dflush.
