@@ -75,6 +75,10 @@ static int test_flush_dataset(void);
 static int test_flush_dataset_invalid_params(void);
 static int test_refresh_dataset(void);
 static int test_refresh_dataset_invalid_params(void);
+
+/*
+ * Chunking tests
+ */
 static int test_create_single_chunk_dataset(void);
 static int test_write_single_chunk_dataset(void);
 static int test_create_multi_chunk_dataset(void);
@@ -6971,7 +6975,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
          * the size of a chunk in each dimension.
          */
         for (j = 0, base = i; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
-            if (base >= chunk_dims[j])
+            if (chunk_dims[j] > 1 && base >= chunk_dims[j])
                 base %= chunk_dims[j];
 
         /*
@@ -7050,13 +7054,13 @@ test_write_multi_chunk_dataset_same_shape_read(void)
         }
     }
 
-    /*
-     * Read every chunk in the dataset, checking the data for each one.
-     */
     for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         count[i] = chunk_dims[i];
     }
 
+    /*
+     * Read every chunk in the dataset, checking the data for each one.
+     */
     HDprintf("\n");
     for (i = 0; i < data_size / chunk_size; i++) {
         size_t j, k;
@@ -7267,7 +7271,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
          * the size of a chunk in each dimension.
          */
         for (j = 0, base = i; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
-            if (base >= chunk_dims[j])
+            if (chunk_dims[j] > 1 && base >= chunk_dims[j])
                 base %= chunk_dims[j];
 
         /*
@@ -7355,13 +7359,13 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
         }
     }
 
-    /*
-     * Read every chunk in the dataset, checking the data for each one.
-     */
     for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         count[i] = chunk_dims[i];
     }
 
+    /*
+     * Read every chunk in the dataset, checking the data for each one.
+     */
     HDprintf("\n");
     for (i = 0; i < data_size / chunk_size; i++) {
         size_t j;
@@ -7595,7 +7599,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
              * the size of a chunk in each dimension.
              */
             for (j = 0, base = i; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
-                if (base >= chunk_dims[j])
+                if (chunk_dims[j] > 1 && base >= chunk_dims[j])
                     base %= chunk_dims[j];
 
             /*
@@ -7906,7 +7910,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
              * the size of a chunk in each dimension.
              */
             for (j = 0, base = i; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++)
-                if (base >= chunk_dims[j])
+                if (chunk_dims[j] > 1 && base >= chunk_dims[j])
                     base %= chunk_dims[j];
 
             /*
