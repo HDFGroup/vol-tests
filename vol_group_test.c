@@ -29,7 +29,7 @@ static int test_flush_group(void);
 static int test_flush_group_invalid_params(void);
 static int test_refresh_group(void);
 static int test_refresh_group_invalid_params(void);
-static int create_group_recursive(hid_t parent_gid, int counter);
+static int create_group_recursive(hid_t parent_gid, unsigned counter);
 
 /*
  * The array of group tests to be performed.
@@ -289,7 +289,7 @@ error:
  * Recursive function to create groups of the depth GROUP_DEPTH.
  */
 static int
-create_group_recursive(hid_t parent_gid, int counter)
+create_group_recursive(hid_t parent_gid, unsigned counter)
 {
     hid_t child_gid = H5I_INVALID_HID;
     char  gname[NAME_BUF_SIZE];
@@ -1039,6 +1039,7 @@ test_get_group_info(void)
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
     hid_t      parent_group_id = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      gcpl_id = H5I_INVALID_HID;
     char       group_name[NAME_BUF_SIZE];
 
     TESTING_MULTIPART("retrieval of group info");
@@ -1057,7 +1058,19 @@ test_get_group_info(void)
         goto error;
     }
 
-    if ((parent_group_id = H5Gcreate2(container_group, GROUP_FOR_INFO, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((parent_group_id = H5Gcreate2(container_group, GROUP_FOR_INFO, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", GROUP_FOR_INFO);
         goto error;
@@ -1121,7 +1134,7 @@ test_get_group_info(void)
             TESTING_2("retrieval of group info with H5Gget_info_by_idx")
 
             /* Retrieve information about the first group under the parent group */
-            if (H5Gget_info_by_idx(container_group, GROUP_FOR_INFO, H5_INDEX_NAME, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
+            if (H5Gget_info_by_idx(container_group, GROUP_FOR_INFO, H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get group info by index\n");
                 PART_ERROR(H5Gget_info_by_idx);
@@ -1139,6 +1152,8 @@ test_get_group_info(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
     if (H5Gclose(parent_group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -1152,6 +1167,7 @@ test_get_group_info(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
         H5Gclose(parent_group_id);
         H5Gclose(group_id);
         H5Gclose(container_group);

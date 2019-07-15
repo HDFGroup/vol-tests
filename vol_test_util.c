@@ -26,6 +26,13 @@
  */
 #define GENERATED_DATATYPE_MAX_SIZE 65536
 
+/*
+ * The maximum size of a datatype for compact objects that
+ * must fit within the size of a native HDF5 object header message.
+ * This is typically used for attributes and compact datasets.
+ */
+#define COMPACT_DATATYPE_MAX_SIZE 1024
+
 /* The maximum level of recursion that the generate_random_datatype()
  * function should go down to, before being forced to choose a base type
  * in order to not cause a stack overflow.
@@ -56,6 +63,13 @@
 #define STRING_TYPE_MAX_SIZE 1024
 
 /*
+ * The maximum dimensionality and dimension size of a dataspace
+ * generated for an attribute or compact dataset.
+ */
+#define COMPACT_SPACE_MAX_DIM_SIZE 4
+#define COMPACT_SPACE_MAX_DIMS     3
+
+/*
  * Helper function to generate a random HDF5 datatype in order to thoroughly
  * test the VOL connector's support for datatypes. The parent_class parameter
  * is to support recursive generation of datatypes. In most cases, this
@@ -65,7 +79,7 @@
  * XXX: limit size of datatype generated
  */
 hid_t
-generate_random_datatype(H5T_class_t parent_class)
+generate_random_datatype(H5T_class_t parent_class, hbool_t is_compact)
 {
     static int  depth = 0;
     hsize_t    *array_dims = NULL;
@@ -315,6 +329,12 @@ generate_random_datatype(H5T_class_t parent_class)
                 }
             }
             else {
+                /*
+                 * Currently, all VL datatypes are disabled.
+                 */
+                goto reroll;
+
+#if 0
                 if ((datatype = H5Tcreate(H5T_STRING, H5T_VARIABLE)) < 0) {
                     H5_FAILED();
                     HDprintf("    couldn't create variable-length string datatype\n");
@@ -326,6 +346,7 @@ generate_random_datatype(H5T_class_t parent_class)
                     HDprintf("    couldn't set H5T_STR_NULLTERM for variable-length string type\n");
                     goto done;
                 }
+#endif
             }
 
             if (H5Tset_cset(datatype, H5T_CSET_ASCII) < 0) {
@@ -380,7 +401,7 @@ generate_random_datatype(H5T_class_t parent_class)
 
                 HDsnprintf(member_name, 256, "compound_member%zu", i);
 
-                if ((compound_members[i] = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+                if ((compound_members[i] = generate_random_datatype(H5T_NO_CLASS, is_compact)) < 0) {
                     H5_FAILED();
                     HDprintf("    couldn't create compound datatype member %zu\n", i);
                     goto done;
@@ -498,7 +519,7 @@ generate_random_datatype(H5T_class_t parent_class)
             for (i = 0; i < ndims; i++)
                 array_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
 
-            if ((base_datatype = generate_random_datatype(H5T_ARRAY)) < 0) {
+            if ((base_datatype = generate_random_datatype(H5T_ARRAY, is_compact)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create array base datatype\n");
                 goto done;
@@ -520,7 +541,7 @@ generate_random_datatype(H5T_class_t parent_class)
     } /* end if */
 
 done:
-    depth--;
+    if (depth > 0) depth--;
 
     if (datatype < 0) {
         for (i = 0; i < COMPOUND_TYPE_MAX_MEMBERS; i++) {
@@ -531,12 +552,40 @@ done:
         }
     }
 
-    if (array_dims)
+    if (array_dims) {
         HDfree(array_dims);
+        array_dims = NULL;
+    }
+
+    if (is_compact && (depth == 0)) {
+        size_t type_size;
+
+        /*
+         * Check to make sure that the generated datatype does
+         * not exceed the maximum compact datatype size if a
+         * compact datatype was requested.
+         */
+        if (0 == (type_size = H5Tget_size(datatype))) {
+            H5_FAILED();
+            HDprintf("    failed to retrieve datatype's size\n");
+            H5Tclose(datatype); datatype = H5I_INVALID_HID;
+        }
+        else {
+            if (type_size > COMPACT_DATATYPE_MAX_SIZE) {
+                /*
+                 * Generate a new datatype.
+                 */
+                H5Tclose(datatype); datatype = H5I_INVALID_HID;
+                goto reroll;
+            }
+        }
+    }
 
     return datatype;
 
 reroll:
+    if (depth > 0) depth--;
+
     /*
      * The datatype generation resulted in a datatype that is currently invalid
      * for these tests, try again.
@@ -567,7 +616,7 @@ reroll:
  * test the VOL connector's support for dataspaces.
  */
 hid_t
-generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out)
+generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out, hbool_t is_compact)
 {
     hsize_t dataspace_dims[H5S_MAX_RANK];
     size_t  i;
@@ -575,13 +624,22 @@ generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out)
 
     if (rank < 0)
         TEST_ERROR
+    if (is_compact && (rank > COMPACT_SPACE_MAX_DIMS)) {
+        HDprintf("    current rank of compact dataspace (%lld) exceeds maximum dimensionality (%lld)\n",
+                (long long) rank, (long long) COMPACT_SPACE_MAX_DIMS);
+        TEST_ERROR
+    }
 
     /*
      * XXX: if max_dims is specified, make sure that the dimensions generated
      * are not larger than this.
      */
     for (i = 0; i < (size_t) rank; i++) {
-        dataspace_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
+        if (is_compact)
+            dataspace_dims[i] = (hsize_t) (rand() % COMPACT_SPACE_MAX_DIM_SIZE + 1);
+        else
+            dataspace_dims[i] = (hsize_t) (rand() % MAX_DIM_SIZE + 1);
+
         if (dims_out)
             dims_out[i] = dataspace_dims[i];
     }
