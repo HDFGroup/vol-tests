@@ -88,6 +88,9 @@ static int test_write_multi_chunk_dataset_same_shape_read(void);
 static int test_write_multi_chunk_dataset_diff_shape_read(void);
 static int test_overwrite_multi_chunk_dataset_same_shape_read(void);
 static int test_overwrite_multi_chunk_dataset_diff_shape_read(void);
+static int test_read_partial_chunk_all_selection(void);
+static int test_read_partial_chunk_hyperslab_selection(void);
+static int test_read_partial_chunk_point_selection(void);
 
 /*
  * The array of dataset tests to be performed.
@@ -161,6 +164,9 @@ static int (*dataset_tests[])(void) = {
         test_write_multi_chunk_dataset_diff_shape_read,
         test_overwrite_multi_chunk_dataset_same_shape_read,
         test_overwrite_multi_chunk_dataset_diff_shape_read,
+        test_read_partial_chunk_all_selection,
+        test_read_partial_chunk_hyperslab_selection,
+        test_read_partial_chunk_point_selection,
 };
 
 /*
@@ -8598,6 +8604,459 @@ error:
 
     return 1;
 }
+
+/*
+ * A test to ensure that a partial chunk can be written and
+ * then read correctly when the selection used in a chunked
+ * dataset's file dataspace is H5S_ALL.
+ */
+#define FIXED_DIMSIZE 25
+#define FIXED_CHUNK_DIMSIZE 10
+static int
+test_read_partial_chunk_all_selection(void)
+{
+    DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_CTYPE write_buf[FIXED_DIMSIZE][FIXED_DIMSIZE];
+    DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_CTYPE read_buf[FIXED_DIMSIZE][FIXED_DIMSIZE];
+    hsize_t dims[DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK] = { FIXED_DIMSIZE, FIXED_DIMSIZE };
+    hsize_t chunk_dims[DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK] = { FIXED_CHUNK_DIMSIZE, FIXED_CHUNK_DIMSIZE };
+    hsize_t retrieved_chunk_dims[DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK];
+    size_t  i, j;
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dcpl_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID;
+
+    TESTING("reading a partial chunk using H5S_ALL for file dataspace")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_NAME, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_DTYPE,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    for (i = 0; i < FIXED_DIMSIZE; i++)
+        for (j = 0; j < FIXED_DIMSIZE; j++)
+            write_buf[i][j] = (i * FIXED_DIMSIZE) + j;
+
+    for (i = 0; i < FIXED_DIMSIZE; i++)
+        for (j = 0; j < FIXED_DIMSIZE; j++)
+            read_buf[i][j] = -1;
+
+    if (H5Dwrite(dset_id, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to write to dataset\n");
+        goto error;
+    }
+
+    /*
+     * Close and re-open the dataset to ensure that the data is written.
+     */
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if ((dset_id = H5Dopen2(group_id, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to re-open dataset\n");
+        goto error;
+    }
+
+    if (H5Dread(dset_id, DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_DTYPE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_buf) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to read from dataset\n");
+        goto error;
+    }
+
+    for (i = 0; i < FIXED_DIMSIZE; i++)
+        for (j = 0; j < FIXED_DIMSIZE; j++)
+            if (read_buf[i][j] != (int) ((i * FIXED_DIMSIZE) + j)) {
+                H5_FAILED();
+                HDprintf("    data verification failed for read buffer element %lld: expected %lld but was %lld\n",
+                        (long long) ((i * FIXED_DIMSIZE) + j), (long long) ((i * FIXED_DIMSIZE) + j), read_buf[i][j]);
+                goto error;
+            }
+
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(dcpl_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+#undef FIXED_DIMSIZE
+#undef FIXED_CHUNK_DIMSIZE
+
+/*
+ * A test to ensure that a partial chunk can be written and
+ * then read correctly when the selection used in a chunked
+ * dataset's file dataspace is a hyperslab selection.
+ */
+#define FIXED_DIMSIZE 25
+#define FIXED_CHUNK_DIMSIZE 10
+#define FIXED_NCHUNKS 9 /* For convenience - make sure to adjust this as necessary */
+static int
+test_read_partial_chunk_hyperslab_selection(void)
+{
+    DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_CTYPE write_buf[FIXED_CHUNK_DIMSIZE][FIXED_CHUNK_DIMSIZE];
+    DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_CTYPE read_buf[FIXED_CHUNK_DIMSIZE][FIXED_CHUNK_DIMSIZE];
+    hsize_t dims[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK] = { FIXED_DIMSIZE, FIXED_DIMSIZE };
+    hsize_t chunk_dims[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK] = { FIXED_CHUNK_DIMSIZE, FIXED_CHUNK_DIMSIZE };
+    hsize_t retrieved_chunk_dims[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK];
+    size_t  i, j, k;
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dcpl_id = H5I_INVALID_HID;
+    hid_t   mspace_id = H5I_INVALID_HID;
+    hid_t   fspace_id = H5I_INVALID_HID;
+
+    TESTING("reading a partial chunk using a hyperslab selection in file dataspace")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((fspace_id = H5Screate_simple(DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    if (H5Pset_chunk(dcpl_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to set chunking on DCPL\n");
+        goto error;
+    }
+
+    if ((dset_id = H5Dcreate2(group_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_NAME, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_DTYPE,
+            fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_NAME);
+        goto error;
+    }
+
+    /*
+     * See if a copy of the DCPL reports the correct chunking.
+     */
+    if (H5Pclose(dcpl_id) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to close DCPL\n");
+        goto error;
+    }
+
+    if ((dcpl_id = H5Dget_create_plist(dset_id)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve copy of DCPL\n");
+        goto error;
+    }
+
+    memset(retrieved_chunk_dims, 0, sizeof(retrieved_chunk_dims));
+    if (H5Pget_chunk(dcpl_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK, retrieved_chunk_dims) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve chunking info\n");
+        goto error;
+    }
+
+    for (i = 0; i < DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK; i++) {
+        if (chunk_dims[i] != retrieved_chunk_dims[i]) {
+            H5_FAILED();
+            HDprintf("    chunk dimensionality retrieved from DCPL didn't match originally specified dimensionality\n");
+            goto error;
+        }
+    }
+
+    for (i = 0; i < FIXED_CHUNK_DIMSIZE; i++)
+        for (j = 0; j < FIXED_CHUNK_DIMSIZE; j++)
+            write_buf[i][j] = (i * FIXED_CHUNK_DIMSIZE) + j;
+
+    for (i = 0; i < FIXED_CHUNK_DIMSIZE; i++)
+        for (j = 0; j < FIXED_CHUNK_DIMSIZE; j++)
+            read_buf[i][j] = -1;
+
+    /*
+     * Create chunk-sized memory dataspace for read buffer.
+     */
+    {
+        hsize_t mdims[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK] = { FIXED_CHUNK_DIMSIZE, FIXED_CHUNK_DIMSIZE };
+
+        if ((mspace_id = H5Screate_simple(DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK, mdims, NULL)) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to create memory dataspace\n");
+            goto error;
+        }
+    }
+
+    /*
+     * Write and read each chunk in the dataset.
+     */
+    for (i = 0; i < FIXED_NCHUNKS; i++) {
+        hsize_t start[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK];
+        hsize_t count[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK];
+        hbool_t on_partial_edge_chunk = FALSE;
+        size_t  n_chunks_per_dim = (dims[1] / chunk_dims[1]) + (((dims[1] % chunk_dims[1]) > 0) ? 1 : 0);
+
+        on_partial_edge_chunk = (i > 0)
+                             && (
+                                    ((i + 1) % n_chunks_per_dim == 0)
+                                  ||
+                                    (i / n_chunks_per_dim == n_chunks_per_dim - 1)
+                                );
+
+        for (j = 0; j < DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK; j++) {
+            if (j == 0)
+                start[j] = (i / n_chunks_per_dim) * chunk_dims[j];
+            else
+                start[j] = (i % n_chunks_per_dim) * chunk_dims[j];
+
+            if (on_partial_edge_chunk) {
+                /*
+                 * Partial edge chunk
+                 */
+                if (j == 0) {
+                    if (i / n_chunks_per_dim == n_chunks_per_dim - 1)
+                        /* This partial edge chunk spans the remainder of the first dimension */
+                        count[j] = dims[j] - ((i / n_chunks_per_dim) * chunk_dims[j]);
+                    else
+                        /* This partial edge chunk spans the whole first dimension */
+                        count[j] = chunk_dims[j];
+                }
+                else {
+                    if (i % n_chunks_per_dim == n_chunks_per_dim - 1)
+                        /* This partial edge chunk spans the remainder of the second dimension */
+                        count[j] = dims[j] - ((i % n_chunks_per_dim) * chunk_dims[j]);
+                    else
+                        /* This partial edge chunk spans the whole second dimension */
+                        count[j] = chunk_dims[j];
+                }
+            }
+            else
+                count[j] = chunk_dims[j];
+        }
+
+        if (on_partial_edge_chunk) {
+            hsize_t m_start[DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_SPACE_RANK] = { 0, 0 };
+
+            if (H5Sselect_hyperslab(mspace_id, H5S_SELECT_SET, m_start, NULL, count, NULL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to select hyperslab in memory dataspace\n");
+                goto error;
+            }
+        }
+        else {
+            if (H5Sselect_all(mspace_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to select entire memory dataspace\n");
+                goto error;
+            }
+        }
+
+        if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to select hyperslab\n");
+            goto error;
+        }
+
+        HDprintf("\r Writing chunk %lld", i);
+
+        if (H5Dwrite(dset_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to write to dataset\n");
+            goto error;
+        }
+
+        /*
+         * Close and re-open the dataset to ensure the data gets written.
+         */
+        if (H5Sclose(fspace_id) < 0)
+            TEST_ERROR
+        if (H5Dclose(dset_id) < 0)
+            TEST_ERROR
+        if ((dset_id = H5Dopen2(group_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to re-open dataset\n");
+            goto error;
+        }
+
+        if ((fspace_id = H5Dget_space(dset_id)) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to retrieve dataspace from dataset\n");
+            goto error;
+        }
+
+        if (H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to select hyperslab\n");
+            goto error;
+        }
+
+        HDprintf("\r Reading chunk %lld", i);
+
+        if (H5Dread(dset_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to read from dataset\n");
+            goto error;
+        }
+
+        for (j = 0; j < FIXED_CHUNK_DIMSIZE; j++)
+            for (k = 0; k < FIXED_CHUNK_DIMSIZE; k++)
+                if (read_buf[j][k] != (int) ((j * FIXED_CHUNK_DIMSIZE) + k)) {
+                    H5_FAILED();
+                    HDprintf("    data verification failed for read buffer element %lld: expected %lld but was %lld\n",
+                            (long long) ((j * FIXED_CHUNK_DIMSIZE) + k), (long long) ((j * FIXED_CHUNK_DIMSIZE) + k), read_buf[j][k]);
+                    goto error;
+                }
+    }
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(mspace_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(dcpl_id);
+        H5Sclose(mspace_id);
+        H5Sclose(fspace_id);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+#undef FIXED_DIMSIZE
+#undef FIXED_CHUNK_DIMSIZE
+#undef FIXED_NCHUNKS
+
+/*
+ * A test to ensure that a partial chunk can be written and
+ * then read correctly when the selection used in a chunked
+ * dataset's file dataspace is a point selection.
+ */
+#define FIXED_DIMSIZE 25
+#define FIXED_CHUNK_DIMSIZE 10
+static int
+test_read_partial_chunk_point_selection(void)
+{
+    TESTING("reading a partial chunk using a point selection in file dataspace")
+    SKIPPED();
+
+    return 1;
+}
+#undef FIXED_DIMSIZE
+#undef FIXED_CHUNK_DIMSIZE
 
 int
 vol_dataset_test(void)
