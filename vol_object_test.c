@@ -167,11 +167,11 @@ test_open_object(void)
                 PART_ERROR(H5Oopen_group);
             }
 
-	    if (H5Iget_type(group_id2) != H5I_GROUP) {
-		H5_FAILED();
-		HDprintf("    ID is not a group\n");
+            if (H5Iget_type(group_id2) != H5I_GROUP) {
+	        H5_FAILED();
+	        HDprintf("    ID is not a group\n");
                 PART_ERROR(H5Oopen_group);
-	    }
+            }
 
             if (H5Gclose(group_id2) < 0) {
                 H5_FAILED();
@@ -202,11 +202,11 @@ test_open_object(void)
                 PART_ERROR(H5Oopen_dset);
             }
 
-	    if (H5Iget_type(dset_id) != H5I_DATASET) {
-		H5_FAILED();
-		HDprintf("    ID is not a dataset\n");
+            if (H5Iget_type(dset_id) != H5I_DATASET) {
+	        H5_FAILED();
+	        HDprintf("    ID is not a dataset\n");
                 PART_ERROR(H5Oopen_dset);
-	    }
+            }
 
             if (H5Dclose(dset_id) < 0) {
                 H5_FAILED();
@@ -243,11 +243,11 @@ test_open_object(void)
                 PART_ERROR(H5Oopen_dtype);
             }
 
-	    if (H5Iget_type(type_id) != H5I_DATATYPE) {
-		H5_FAILED();
-		HDprintf("    ID is not a dataset\n");
+            if (H5Iget_type(type_id) != H5I_DATATYPE) {
+	        H5_FAILED();
+	        HDprintf("    ID is not a dataset\n");
                 PART_ERROR(H5Oopen_dtype);
-	    }
+            }
 
             if (H5Tclose(type_id) < 0) {
                 H5_FAILED();
@@ -2872,7 +2872,6 @@ test_close_invalid_objects(void)
             PASSED();
         } PART_END(H5Oclose_attribute);
     } END_MULTIPART;
-
 
     TESTING_2("test cleanup")
 
