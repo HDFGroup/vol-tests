@@ -72,6 +72,14 @@ if(NOT CMAKE_C_FLAGS AND CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_C_FLAGS "-Wall -Wextra -Winline -Wcast-qual -std=gnu99 -Wshadow" CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 
+#-----------------------------------------------------------------------------
+# Testing
+#-----------------------------------------------------------------------------
+if(NOT HDF5_VOL_TEST_EXTERNALLY_CONFIGURED)
+  enable_testing()
+  include(CTest)
+endif()
+
 #------------------------------------------------------------------------------
 # Include source and build directories
 #------------------------------------------------------------------------------
@@ -113,6 +121,7 @@ else()
   endif()
 endif()
 
+# Parallel HDF5 tests
 option(HDF5_VOL_TEST_ENABLE_PARALLEL
   "Enable testing in parallel (requires MPI)." OFF)
 if(HDF5_VOL_TEST_ENABLE_PARALLEL)
@@ -206,17 +215,12 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
     ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
   )
 endif()
+
 if(NOT HDF5_VOL_TEST_SERVER)
-  if(NOT HDF5_VOL_TEST_ENABLE_PARALLEL)
-    add_test(NAME "h5vl_test"
-      COMMAND $<TARGET_FILE:h5vl_test>
-    )
-  else()
-    add_test(NAME "h5vl_test"
-      COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 1
-        ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test>
-        ${MPIEXEC_POSTFLAGS}
-    )
+  add_test(NAME "h5vl_test"
+    COMMAND $<TARGET_FILE:h5vl_test>
+  )
+  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
     add_test(NAME "h5vl_test_parallel"
       COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
         ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test_parallel>
@@ -229,10 +233,13 @@ else()
     COMMAND $<TARGET_FILE:h5vl_test_driver>
     --server ${HDF5_VOL_TEST_SERVER}
     --client $<TARGET_FILE:h5vl_test>
+    --serial
   )
-  add_test(NAME "h5vl_test_parallel"
-    COMMAND $<TARGET_FILE:h5vl_test_driver>
-    --server ${HDF5_VOL_TEST_SERVER}
-    --client $<TARGET_FILE:h5vl_test_parallel>
-  )
+  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+    add_test(NAME "h5vl_test_parallel"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:h5vl_test_parallel>
+    )
+  endif()
 endif()

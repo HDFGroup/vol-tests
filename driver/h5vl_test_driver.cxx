@@ -31,18 +31,13 @@ H5VLTestDriver::H5VLTestDriver()
 {
     this->ClientArgStart = 0;
     this->ClientArgCount = 0;
-//    this->PreClientArgStart = 0;
-//    this->PreClientArgCount = 0;
-//    this->PostClientArgStart = 0;
-//    this->PostClientArgCount = 0;
     this->ServerArgStart = 0;
     this->ServerArgCount = 0;
-    this->AllowErrorInOutput = 0;
+    this->AllowErrorInOutput = false;
     this->TimeOut = 300;
     this->ServerExitTimeOut = 60;
-//    this->PreClient = 0;
-//    this->PostClient = 0;
-    this->TestServer = 0;
+    this->TestServer = false;
+    this->TestSerial = false;
 }
 
 //----------------------------------------------------------------------------
@@ -91,7 +86,8 @@ H5VLTestDriver::CollectConfiguredOptions()
     int maxNumProc = 1;
 
 # ifdef MPIEXEC_MAX_NUMPROCS
-    maxNumProc = MPIEXEC_MAX_NUMPROCS;
+    if (!this->TestSerial)
+        maxNumProc = MPIEXEC_MAX_NUMPROCS;
 # endif
 # ifdef MPIEXEC_NUMPROC_FLAG
     this->MPINumProcessFlag = MPIEXEC_NUMPROC_FLAG;
@@ -154,27 +150,9 @@ H5VLTestDriver::ProcessCommandLine(int argc, char *argv[])
             ArgCountP = &this->ClientArgCount;
             continue;
         }
-//        if (strcmp(argv[i], "--pre") == 0) {
-//            this->PreClient = 1;
-//            this->PreClientExecutable = ::FixExecutablePath(argv[i + 1]);
-//            ++i; /* Skip executable */
-//            this->PreClientArgStart = i + 1;
-//            this->PreClientArgCount = this->PreClientArgStart;
-//            ArgCountP = &this->PreClientArgCount;
-//            continue;
-//        }
-//        if (strcmp(argv[i], "--post") == 0) {
-//            this->PostClient = 1;
-//            this->PostClientExecutable = ::FixExecutablePath(argv[i + 1]);
-//            ++i; /* Skip executable */
-//            this->PostClientArgStart = i + 1;
-//            this->PostClientArgCount = this->PostClientArgStart;
-//            ArgCountP = &this->PostClientArgCount;
-//            continue;
-//        }
         if (strcmp(argv[i], "--server") == 0) {
-            fprintf(stderr, "Test Server.\n");
-            this->TestServer = 1;
+            std::cerr << "Test Server" << std::endl;
+            this->TestServer = true;
             this->ServerExecutable = ::FixExecutablePath(argv[i + 1]);
             ++i; /* Skip executable */
             this->ServerArgStart = i + 1;
@@ -184,14 +162,19 @@ H5VLTestDriver::ProcessCommandLine(int argc, char *argv[])
         }
         if (strcmp(argv[i], "--timeout") == 0) {
             this->TimeOut = atoi(argv[i + 1]);
-            fprintf(stderr, "The timeout was set to %f.\n", this->TimeOut);
+            std::cerr << "The timeout was set to " << this->TimeOut << std::endl;
             ArgCountP = NULL;
             continue;
         }
         if (strncmp(argv[i], "--allow-errors", strlen("--allow-errors")) == 0) {
-            this->AllowErrorInOutput = 1;
-            fprintf(stderr, "The allow errors in output flag was set to %d.\n",
-                this->AllowErrorInOutput);
+            this->AllowErrorInOutput = true;
+            std::cerr << "The allow errors in output flag was set to " <<
+                this->AllowErrorInOutput << std::endl;
+            ArgCountP = NULL;
+            continue;
+        }
+        if (strcmp(argv[i], "--serial") == 0) {
+            this->TestSerial = true;
             ArgCountP = NULL;
             continue;
         }
@@ -320,11 +303,7 @@ H5VLTestDriver::OutputStringHasError(const char *pname, string &output)
 
     const char* nonErrors[] = {
         "Memcheck, a memory error detector",  //valgrind
-        "error in locking authority file",  //Ice-T
-        "WARNING: Far depth failed sanity check, resetting.", //Ice-T
-        // these are all caused (we think) by the dodgy SMPD shutdown bug in mpich2 on windows mpich2 1.4.1p1
-        "Error posting writev,", "sock error: Error = 10058",
-        "state machine failed.", 0};
+        0};
 
     if (this->AllowErrorInOutput)
         return 0;
@@ -393,8 +372,6 @@ H5VLTestDriver::Main(int argc, char* argv[])
     // Allocate process managers.
     h5vl_test_sysProcess *server = 0;
     h5vl_test_sysProcess *client = 0;
-//    h5vl_test_sysProcess *preClient = 0;
-//    h5vl_test_sysProcess *postClient = 0;
     if (this->TestServer) {
         server = h5vl_test_sysProcess_New();
         if (!server) {
@@ -411,24 +388,6 @@ H5VLTestDriver::Main(int argc, char* argv[])
             "run the client.\n";
         return 1;
     }
-//    if (this->PreClient) {
-//        preClient = h5vl_test_sysProcess_New();
-//        if (!preClient) {
-//            H5VL_CLEAN_PROCESSES;
-//            cerr << "H5VLTestDriver: Cannot allocate h5vl_test_sysProcess to "
-//                "run the pre-client.\n";
-//            return 1;
-//        }
-//    }
-//    if (this->PostClient) {
-//        postClient = h5vl_test_sysProcess_New();
-//        if (!postClient) {
-//            H5VL_CLEAN_PROCESSES;
-//            cerr << "H5VLTestDriver: Cannot allocate h5vl_test_sysProcess to "
-//                "run the post-client.\n";
-//            return 1;
-//        }
-//    }
 
     vector<char> ClientStdOut;
     vector<char> ClientStdErr;
@@ -459,44 +418,13 @@ H5VLTestDriver::Main(int argc, char* argv[])
     h5vl_test_sysProcess_SetWorkingDirectory(client,
         this->GetDirectory(clientExe).c_str());
 
-//    // Construct the pre-client process command line.
-//    vector<const char *> preClientCommand;
-//    if (preClient) {
-//        const char *preClientExe = this->PreClientExecutable.c_str();
-//        this->CreateCommandLine(preClientCommand, preClientExe, 0,
-//            this->MPIClientNumProcessFlag.c_str(), this->PreClientArgStart,
-//            this->PreClientArgCount, argv);
-//        this->ReportCommand(&preClientCommand[0], "pre-client");
-//        h5vl_test_sysProcess_SetCommand(preClient, &preClientCommand[0]);
-//        h5vl_test_sysProcess_SetWorkingDirectory(preClient,
-//            this->GetDirectory(preClientExe).c_str());
-//    }
-//
-//    // Construct the post-client process command line.
-//    vector<const char *> postClientCommand;
-//    if (postClient) {
-//        const char *postClientExe = this->PostClientExecutable.c_str();
-//        this->CreateCommandLine(postClientCommand, postClientExe, 0,
-//            this->MPIClientNumProcessFlag.c_str(), this->PostClientArgStart,
-//            this->PostClientArgCount, argv);
-//        this->ReportCommand(&postClientCommand[0], "post-client");
-//        h5vl_test_sysProcess_SetCommand(postClient, &postClientCommand[0]);
-//        h5vl_test_sysProcess_SetWorkingDirectory(postClient,
-//            this->GetDirectory(postClientExe).c_str());
-//    }
-
     // Start the server if there is one
     if (!this->StartServer(server, "server", ServerStdOut, ServerStdErr)) {
         cerr << "H5VLTestDriver: Server never started.\n";
         H5VL_CLEAN_PROCESSES;
         return -1;
     }
-//    // Now run the pre-client
-//    if (!this->StartClient(preClient, "pre-client")) {
-//        this->Stop(server, "server");
-//        H5VL_CLEAN_PROCESSES;
-//        return -1;
-//    }
+
     // Now run the client
     if (!this->StartClient(client, "client")) {
         this->Stop(server, "server");
