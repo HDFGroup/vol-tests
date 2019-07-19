@@ -3,6 +3,7 @@
 #include "h5vl_test_config.h"
 
 #include <cstdio>
+#include <sstream>
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
@@ -34,7 +35,8 @@ H5VLTestDriver::H5VLTestDriver()
     this->ServerArgStart = 0;
     this->ServerArgCount = 0;
     this->AllowErrorInOutput = false;
-    this->TimeOut = 300;
+    // try to make sure that this times out before dart so it can kill all the processes
+    this->TimeOut = DART_TESTING_TIMEOUT - 10.0;
     this->ServerExitTimeOut = 60;
     this->TestServer = false;
     this->TestSerial = false;
@@ -68,8 +70,6 @@ H5VLTestDriver::SeparateArguments(const char *str, vector<string> &flags)
 void
 H5VLTestDriver::CollectConfiguredOptions()
 {
-    // try to make sure that this times out before dart so it can kill all the processes
-    this->TimeOut = DART_TESTING_TIMEOUT - 10.0;
     if (this->TimeOut < 0)
         this->TimeOut = 1500;
 
@@ -108,10 +108,10 @@ H5VLTestDriver::CollectConfiguredOptions()
 #else
     this->MPIServerPostFlags = this->MPIClientPostFlags;
 # endif
-    char buf[32];
-    sprintf(buf, "%d", maxNumProc);
+    std::stringstream ss;
+    ss << maxNumProc;
     this->MPIServerNumProcessFlag = "1";
-    this->MPIClientNumProcessFlag = buf;
+    this->MPIClientNumProcessFlag = ss.str();
 }
 
 //----------------------------------------------------------------------------
@@ -175,6 +175,7 @@ H5VLTestDriver::ProcessCommandLine(int argc, char *argv[])
         }
         if (strcmp(argv[i], "--serial") == 0) {
             this->TestSerial = true;
+            std::cerr << "This is a serial test" << std::endl;
             ArgCountP = NULL;
             continue;
         }
@@ -364,9 +365,9 @@ H5VLTestDriver::Main(int argc, char* argv[])
     }
 #endif
 
-    this->CollectConfiguredOptions();
     if (!this->ProcessCommandLine(argc, argv))
         return 1;
+    this->CollectConfiguredOptions();
 
     // mpi code
     // Allocate process managers.
