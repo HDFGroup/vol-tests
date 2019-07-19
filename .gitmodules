@@ -1,3 +1,0 @@
-[submodule "driver/kwsys"]
-	path = driver/kwsys
-	url = https://gitlab.kitware.com/utils/kwsys.git
