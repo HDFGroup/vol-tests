@@ -39,11 +39,9 @@ protected:
     std::string GetDirectory(std::string location);
 
 private:
-    std::string ClientExecutable;  // fullpath to client executable
-//    std::string PreClientExecutable;  // fullpath to pre-client executable
-//    std::string PostClientExecutable;  // fullpath to post-client executable
-    std::string ServerExecutable;  // fullpath to server executable
-    std::string MPIRun;  // fullpath to mpirun executable
+    std::string ClientExecutable;       // fullpath to client executable
+    std::string ServerExecutable;       // fullpath to server executable
+    std::string MPIRun;                 // fullpath to mpirun executable
 
     // This specify the preflags and post flags that can be set using:
     // VTK_MPI_PRENUMPROC_FLAGS VTK_MPI_PREFLAGS / VTK_MPI_POSTFLAGS at config time
@@ -64,20 +62,15 @@ private:
     std::string CurrentPrintLineName;
 
     double TimeOut;
-    double ServerExitTimeOut; // time to wait for servers to finish.
-//    int PreClient;
-//    int PostClient;
-    int TestServer;
+    double ServerExitTimeOut;   // time to wait for servers to finish.
+    bool TestServer;
 
     int ClientArgStart;
     int ClientArgCount;
-//    int PreClientArgStart;
-//    int PreClientArgCount;
-//    int PostClientArgStart;
-//    int PostClientArgCount;
     int ServerArgStart;
     int ServerArgCount;
-    int AllowErrorInOutput;
+    bool AllowErrorInOutput;
+    bool TestSerial;
 };
 
 #endif //H5VL_TEST_DRIVER_H
