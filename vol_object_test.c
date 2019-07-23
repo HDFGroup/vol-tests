@@ -1119,10 +1119,10 @@ test_link_object(void)
         goto error;
     }
 
-    if ((fspace_id = generate_random_dataspace(OBJECT_LINK_TEST_SPACE_RANK, NULL, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_LINK_TEST_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
     PASSED();
@@ -1414,10 +1414,10 @@ test_incr_decr_object_refcount(void)
         goto error;
     }
 
-    if ((fspace_id = generate_random_dataspace(OBJECT_REF_COUNT_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(OBJECT_REF_COUNT_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
     PASSED();
@@ -2836,10 +2836,10 @@ test_close_invalid_objects(void)
         goto error;
     }
 
-    if ((attr_space_id = generate_random_dataspace(OBJECT_CLOSE_INVALID_TEST_SPACE_RANK, NULL, NULL)) < 0)
+    if ((attr_space_id = generate_random_dataspace(OBJECT_CLOSE_INVALID_TEST_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
     if ((attr_id = H5Acreate2(group_id, OBJECT_CLOSE_INVALID_TEST_ATTRIBUTE_NAME, attr_dtype, attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0)
