@@ -248,7 +248,8 @@ error:
 static void
 cleanup_files(void)
 {
-
+    H5Fdelete(FILE_CREATE_TEST_FILENAME, H5P_DEFAULT);
+    H5Fdelete(SPLIT_FILE_COMM_TEST_FILE_NAME, H5P_DEFAULT);
 }
 
 int
