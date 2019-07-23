@@ -55,10 +55,10 @@ test_open_link_without_leading_slash(void)
         goto error;
     }
 
-    if ((space_id = generate_random_dataspace(OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((space_id = generate_random_dataspace(OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(container_group, OPEN_LINK_WITHOUT_SLASH_DSET_NAME, dset_dtype, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -94,11 +94,6 @@ test_open_link_without_leading_slash(void)
         goto error;
     }
 
-    if ((space_id = H5Dget_space(dset_id)) < 0)
-        TEST_ERROR
-
-    if (H5Sclose(space_id) < 0)
-        TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
         TEST_ERROR
     if (H5Dclose(dset_id) < 0)
@@ -204,13 +199,13 @@ test_object_creation_by_absolute_path(void)
             TESTING_2("creation of dataset using absolute pathname")
 
             /* Try to create a dataset nested at the end of this group chain by using an absolute pathname */
-            if ((fspace_id = generate_random_dataspace(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0) {
+            if ((fspace_id = generate_random_dataspace(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to generate dataspace\n");
                 PART_ERROR(H5Dcreate_using_absolute_path);
             }
 
-            if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+            if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to generate datatype\n");
                 PART_ERROR(H5Dcreate_using_absolute_path);
@@ -242,7 +237,7 @@ test_object_creation_by_absolute_path(void)
             TESTING_2("creation of committed datatype using absolute pathname")
 
             /* Try to create a committed datatype in the same fashion as the preceding dataset */
-            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS)) < 0) {
+            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create datatype\n");
                 PART_ERROR(H5Tcommit_using_absolute_path);
@@ -343,20 +338,20 @@ test_absolute_vs_relative_path(void)
         goto error;
     }
 
-    if ((fspace_id = generate_random_dataspace(ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dtype1 = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype1 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
-    if ((dset_dtype2 = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype2 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
-    if ((dset_dtype3 = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype3 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
-    if ((dset_dtype4 = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype4 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
-    if ((dset_dtype5 = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype5 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
-    if ((dset_dtype6 = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype6 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
     PASSED();
@@ -796,7 +791,7 @@ test_symbols_in_compound_field_name(void)
     }
 
     for (i = 0, total_type_size = 0; i < COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES; i++) {
-        type_pool[i] = generate_random_datatype(H5T_NO_CLASS);
+        type_pool[i] = generate_random_datatype(H5T_NO_CLASS, FALSE);
         total_type_size += H5Tget_size(type_pool[i]);
     }
 
@@ -829,7 +824,7 @@ test_symbols_in_compound_field_name(void)
     if (H5Tpack(compound_type) < 0)
         TEST_ERROR
 
-    if ((fspace_id = generate_random_dataspace(COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK, NULL, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_NAME, compound_type,

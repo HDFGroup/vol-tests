@@ -3321,6 +3321,12 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_soft);
             }
 
+            if (H5Lget_info(group_id, GET_LINK_VAL_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve soft link's info\n");
+                PART_ERROR(H5Lget_val_soft);
+            }
+
             link_val_buf_size = link_info.u.val_size;
             if (NULL == (link_val_buf = (char *) HDmalloc(link_val_buf_size))) {
                 H5_FAILED();
@@ -3333,8 +3339,6 @@ test_get_link_val(void)
                 HDprintf("    couldn't get soft link value\n");
                 PART_ERROR(H5Lget_val_soft);
             }
-
-            HDprintf("    soft link val: %s\n", link_val_buf);
 
             if (HDstrcmp(link_val_buf, "/" LINK_TEST_GROUP_NAME "/" GET_LINK_VAL_TEST_SUBGROUP_NAME)) {
                 H5_FAILED();
@@ -3365,6 +3369,12 @@ test_get_link_val(void)
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lget_val_external);
+            }
+
+            if (H5Lget_info(group_id, GET_LINK_VAL_TEST_EXT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve external link's info\n");
                 PART_ERROR(H5Lget_val_external);
             }
 
@@ -3414,6 +3424,12 @@ test_get_link_val(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
+            if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve soft link's info using H5Lget_info_by_idx\n");
+                PART_ERROR(H5Lget_val_by_idx_soft);
+            }
+
             while (link_info.u.val_size > link_val_buf_size) {
                 char *tmp_realloc;
 
@@ -3447,6 +3463,12 @@ test_get_link_val(void)
             TESTING_2("H5Lget_val_by_idx on external link")
 
             HDmemset(&link_info, 0, sizeof(link_info));
+
+            if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve external link's info using H5Lget_info_by_idx\n");
+                PART_ERROR(H5Lget_val_by_idx_external);
+            }
 
             while (link_info.u.val_size > link_val_buf_size) {
                 char *tmp_realloc;
@@ -3540,6 +3562,7 @@ test_get_link_val_invalid_params(void)
     char       *link_val_buf = NULL;
     hid_t       file_id = H5I_INVALID_HID;
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t       gcpl_id = H5I_INVALID_HID;
     char        ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link value retrieval with invalid parameters");
@@ -3569,7 +3592,19 @@ test_get_link_val_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, GET_LINK_VAL_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, GET_LINK_VAL_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container subgroup '%s'\n", GET_LINK_VAL_INVALID_PARAMS_TEST_GROUP_NAME);
         goto error;
@@ -3799,6 +3834,8 @@ test_get_link_val_invalid_params(void)
         link_val_buf = NULL;
     }
 
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -3813,6 +3850,7 @@ test_get_link_val_invalid_params(void)
 error:
     H5E_BEGIN_TRY {
         if (link_val_buf) HDfree(link_val_buf);
+        H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -4099,6 +4137,7 @@ test_get_link_info_invalid_params(void)
     htri_t     link_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      gcpl_id = H5I_INVALID_HID;
     char       ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link info retrieval with invalid parameters");
@@ -4128,7 +4167,19 @@ test_get_link_info_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, GET_LINK_INFO_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, GET_LINK_INFO_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container subgroup '%s'\n", GET_LINK_INFO_INVALID_PARAMS_TEST_GROUP_NAME);
         goto error;
@@ -4331,6 +4382,8 @@ test_get_link_info_invalid_params(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -4344,6 +4397,7 @@ test_get_link_info_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -4730,10 +4784,10 @@ test_link_iterate(void)
         goto error;
     }
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dspace = generate_random_dataspace(LINK_ITER_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((dset_dspace = generate_random_dataspace(LINK_ITER_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, LINK_ITER_TEST_HARD_LINK_NAME, dset_dtype, dset_dspace,
@@ -5060,10 +5114,10 @@ test_link_iterate_invalid_params(void)
         goto error;
     }
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dspace = generate_random_dataspace(LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((dset_dspace = generate_random_dataspace(LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, LINK_ITER_INVALID_PARAMS_TEST_HARD_LINK_NAME, dset_dtype, dset_dspace,
@@ -5539,6 +5593,7 @@ test_link_visit(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
     hid_t  dset_id = H5I_INVALID_HID;
     hid_t  dset_dtype = H5I_INVALID_HID;
     hid_t  fspace_id = H5I_INVALID_HID;
@@ -5562,31 +5617,43 @@ test_link_visit(void)
         goto error;
     }
 
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
     if ((group_id = H5Gcreate2(container_group, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME);
         goto error;
     }
 
     if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2);
         goto error;
     }
 
     if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3);
         goto error;
     }
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
-    if ((fspace_id = generate_random_dataspace(LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(subgroup1, LINK_VISIT_TEST_NO_CYCLE_DSET_NAME, dset_dtype, fspace_id,
@@ -5805,6 +5872,8 @@ test_link_visit(void)
         TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
         TEST_ERROR
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
     if (H5Gclose(subgroup1) < 0)
         TEST_ERROR
     if (H5Gclose(subgroup2) < 0)
@@ -5825,6 +5894,7 @@ error:
         H5Sclose(fspace_id);
         H5Tclose(dset_dtype);
         H5Dclose(dset_id);
+        H5Pclose(gcpl_id);
         H5Gclose(subgroup1);
         H5Gclose(subgroup2);
         H5Gclose(group_id);
@@ -5850,6 +5920,7 @@ test_link_visit_cycles(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link visiting with cycles");
@@ -5870,22 +5941,34 @@ test_link_visit_cycles(void)
         goto error;
     }
 
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
     if ((group_id = H5Gcreate2(container_group, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME);
         goto error;
     }
 
     if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2);
         goto error;
     }
 
     if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3);
         goto error;
@@ -6086,6 +6169,8 @@ test_link_visit_cycles(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
     if (H5Gclose(subgroup1) < 0)
         TEST_ERROR
     if (H5Gclose(subgroup2) < 0)
@@ -6103,6 +6188,7 @@ test_link_visit_cycles(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
         H5Gclose(subgroup1);
         H5Gclose(subgroup2);
         H5Gclose(group_id);
@@ -6162,10 +6248,10 @@ test_link_visit_invalid_params(void)
         goto error;
     }
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS)) < 0)
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
-    if ((fspace_id = generate_random_dataspace(LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK, NULL, NULL)) < 0)
+    if ((fspace_id = generate_random_dataspace(LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(subgroup1, LINK_VISIT_INVALID_PARAMS_TEST_DSET_NAME, dset_dtype, fspace_id,
@@ -6495,6 +6581,7 @@ test_link_visit_0_links(void)
 {
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link visiting on group with subgroups containing 0 links");
 
@@ -6512,8 +6599,20 @@ test_link_visit_0_links(void)
         goto error;
     }
 
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
     if ((group_id = H5Gcreate2(container_group, LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME);
         goto error;
@@ -6625,6 +6724,8 @@ test_link_visit_0_links(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -6638,6 +6739,7 @@ test_link_visit_0_links(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -6959,8 +7061,8 @@ link_visit_callback3(hid_t group_id, const char *name, const H5L_info_t *info, v
 static void
 cleanup_files(void)
 {
-    HDremove(EXTERNAL_LINK_TEST_FILE_NAME);
-    HDremove(EXTERNAL_LINK_INVALID_PARAMS_TEST_FILE_NAME);
+    H5Fdelete(EXTERNAL_LINK_TEST_FILE_NAME, H5P_DEFAULT);
+    H5Fdelete(EXTERNAL_LINK_INVALID_PARAMS_TEST_FILE_NAME, H5P_DEFAULT);
 }
 
 int
