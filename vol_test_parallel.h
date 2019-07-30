@@ -34,17 +34,17 @@ extern char vol_test_parallel_filename[];
 #undef FAIL_PUTS_ERROR
 #undef TESTING_MULTIPART
 
-#define TESTING(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s",WHAT); fflush(stdout); }}
-#define TESTING_2(WHAT)  {if (MAINPROCESS) { printf("  Testing %-60s",WHAT); fflush(stdout); }}
-#define PASSED()  {if (MAINPROCESS) { puts(" PASSED");fflush(stdout); }}
-#define H5_FAILED()  {if (MAINPROCESS) { puts("*FAILED*");fflush(stdout); }}
+#define TESTING(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s",WHAT); fflush(stdout); } n_tests_run_g++;}
+#define TESTING_2(WHAT)  {if (MAINPROCESS) { printf("  Testing %-60s",WHAT); fflush(stdout); } n_tests_run_g++;}
+#define PASSED()  {if (MAINPROCESS) { puts(" PASSED");fflush(stdout); } n_tests_passed_g++;}
+#define H5_FAILED()  {if (MAINPROCESS) { puts("*FAILED*");fflush(stdout); } n_tests_failed_g++;}
 #define H5_WARNING()  {if (MAINPROCESS) { puts("*WARNING*");fflush(stdout); }}
-#define SKIPPED()  {if (MAINPROCESS) { puts(" -SKIP-");fflush(stdout); }}
+#define SKIPPED()  {if (MAINPROCESS) { puts(" -SKIP-");fflush(stdout); } n_tests_skipped_g++;}
 #define PUTS_ERROR(s)   {if (MAINPROCESS) { puts(s); AT(); } goto error;}
-#define TEST_ERROR      {if (MAINPROCESS) { H5_FAILED(); AT(); } goto error;}
+#define TEST_ERROR      {H5_FAILED(); if (MAINPROCESS) { AT(); } goto error;}
 #define STACK_ERROR     {if (MAINPROCESS) { H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
-#define FAIL_STACK_ERROR {if (MAINPROCESS) { H5_FAILED(); AT(); H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
-#define FAIL_PUTS_ERROR(s) {if (MAINPROCESS) { H5_FAILED(); AT(); puts(s); } goto error;}
+#define FAIL_STACK_ERROR {H5_FAILED(); if (MAINPROCESS) { AT(); H5Eprint2(H5E_DEFAULT, stdout); } goto error;}
+#define FAIL_PUTS_ERROR(s) {H5_FAILED(); if (MAINPROCESS) { AT(); puts(s); } goto error;}
 #define TESTING_MULTIPART(WHAT)  {if (MAINPROCESS) { printf("Testing %-62s", WHAT); HDputs(""); fflush(stdout); }}
 
 

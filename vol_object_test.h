@@ -36,11 +36,13 @@ int vol_object_test(void);
 #define OBJECT_CLOSE_INVALID_TEST_ATTRIBUTE_NAME "object_close_invalid_test_attribute"
 #define OBJECT_CLOSE_INVALID_TEST_SPACE_RANK 2
 
-#define OBJECT_EXISTS_TEST_DSET_SPACE_RANK 2
-#define OBJECT_EXISTS_TEST_SUBGROUP_NAME   "object_exists_test"
-#define OBJECT_EXISTS_TEST_GRP_NAME        "object_exists_test_group"
-#define OBJECT_EXISTS_TEST_TYPE_NAME       "object_exists_test_type"
-#define OBJECT_EXISTS_TEST_DSET_NAME       "object_exists_test_dset"
+#define OBJECT_EXISTS_TEST_DSET_SPACE_RANK    2
+#define OBJECT_EXISTS_TEST_SUBGROUP_NAME      "object_exists_test"
+#define OBJECT_EXISTS_TEST_DANGLING_LINK_NAME "object_exists_test_dangling_soft_link"
+#define OBJECT_EXISTS_TEST_SOFT_LINK_NAME     "object_exists_test_soft_link"
+#define OBJECT_EXISTS_TEST_GRP_NAME           "object_exists_test_group"
+#define OBJECT_EXISTS_TEST_TYPE_NAME          "object_exists_test_type"
+#define OBJECT_EXISTS_TEST_DSET_NAME          "object_exists_test_dset"
 
 #define OBJECT_EXISTS_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_exists_invalid_params_test"
 #define OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME      "object_exists_invalid_params_test_group"

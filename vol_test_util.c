@@ -706,8 +706,10 @@ create_test_container(char *filename)
     }
 #endif
 
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+    if (H5Fclose(file_id) < 0) {
+        HDprintf("    failed to close testing container\n");
+        goto error;
+    }
 
     return 0;
 

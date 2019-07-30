@@ -889,6 +889,56 @@ test_object_exists(void)
 
             PASSED();
         } PART_END(H5Oexists_by_name_dtype);
+
+        PART_BEGIN(H5Oexists_by_name_soft_link) {
+            TESTING_2("H5Oexists_by_name for a soft link")
+
+            if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_EXISTS_TEST_SUBGROUP_NAME, group_id,
+                    OBJECT_EXISTS_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", OBJECT_EXISTS_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Oexists_by_name_soft_link);
+            }
+
+            if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if object '%s' exists\n", OBJECT_EXISTS_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Oexists_by_name_soft_link);
+            }
+
+            if (!object_exists) {
+                H5_FAILED();
+                HDprintf("    object '%s' didn't exist!\n", OBJECT_EXISTS_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Oexists_by_name_soft_link);
+            }
+
+            PASSED();
+        } PART_END(H5Oexists_by_name_soft_link);
+
+        PART_BEGIN(H5Oexists_by_name_dangling_soft_link) {
+            TESTING_2("H5Oexists_by_name for a dangling soft link")
+
+            if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_EXISTS_TEST_SUBGROUP_NAME "/non_existent_object",
+                    group_id, OBJECT_EXISTS_TEST_DANGLING_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", OBJECT_EXISTS_TEST_DANGLING_LINK_NAME);
+                PART_ERROR(H5Oexists_by_name_dangling_soft_link);
+            }
+
+            if ((object_exists = H5Oexists_by_name(group_id, OBJECT_EXISTS_TEST_DANGLING_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if object '%s' exists\n", "/" OBJECT_TEST_GROUP_NAME "/" OBJECT_EXISTS_TEST_SUBGROUP_NAME "/non_existent_object");
+                PART_ERROR(H5Oexists_by_name_dangling_soft_link);
+            }
+
+            if (object_exists) {
+                H5_FAILED();
+                HDprintf("    object pointed to by dangling soft link should not have existed!\n");
+                PART_ERROR(H5Oexists_by_name_dangling_soft_link);
+            }
+
+            PASSED();
+        } PART_END(H5Oexists_by_name_dangling_soft_link);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -1274,7 +1324,7 @@ test_link_object_invalid_params(void)
             if (status >= 0) {
                 H5_FAILED();
                 HDprintf("    H5Olink linked to a invalid object ID\n");
-                PART_ERROR(H5Olink_invalid_location);
+                PART_ERROR(H5Olink_invalid_object_id);
             }
 
             PASSED();
@@ -1382,14 +1432,13 @@ error:
 static int
 test_incr_decr_object_refcount(void)
 {
-    htri_t object_exists;
-    hid_t  file_id = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  group_id2 = H5I_INVALID_HID;
-    hid_t  dset_id = H5I_INVALID_HID;
-    hid_t  fspace_id = H5I_INVALID_HID;
-    hid_t  dset_dtype = H5I_INVALID_HID;
-    H5O_info_t  oinfo;                      /* Object info struct */
+    H5O_info_t oinfo;                      /* Object info struct */
+    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      group_id2 = H5I_INVALID_HID;
+    hid_t      dset_id = H5I_INVALID_HID;
+    hid_t      fspace_id = H5I_INVALID_HID;
+    hid_t      dset_dtype = H5I_INVALID_HID;
 
     TESTING_MULTIPART("increment/decrement the reference count of object");
 
@@ -1502,14 +1551,14 @@ test_incr_decr_object_refcount(void)
             /* Verify that reference count is 2 now */
             if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get reference count for the group '%s' \n", OBJECT_REF_COUNT_TEST_GRP_NAME);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    couldn't get reference count for the dataset '%s' \n", OBJECT_REF_COUNT_TEST_DSET_NAME);
+                PART_ERROR(H5Oincr_decr_refcount_dset);
             }
 
             if (oinfo.rc != 2) {
                 H5_FAILED();
-                HDprintf("    the reference count for the group '%s' isn't 2: %d\n", OBJECT_REF_COUNT_TEST_DSET_NAME, oinfo.rc);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    the reference count for the dataset '%s' isn't 2: %d\n", OBJECT_REF_COUNT_TEST_DSET_NAME, oinfo.rc);
+                PART_ERROR(H5Oincr_decr_refcount_dset);
             }
 
             /* Decrement the reference count */
@@ -1522,14 +1571,14 @@ test_incr_decr_object_refcount(void)
             /* Verify that reference count is 1 now */
             if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get reference count for the group '%s' \n", OBJECT_REF_COUNT_TEST_DSET_NAME);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    couldn't get reference count for the dataset '%s' \n", OBJECT_REF_COUNT_TEST_DSET_NAME);
+                PART_ERROR(H5Oincr_decr_refcount_dset);
             }
 
             if (oinfo.rc != 1) {
                 H5_FAILED();
-                HDprintf("    the reference count for the group '%s' isn't 1: %d\n", OBJECT_REF_COUNT_TEST_DSET_NAME, oinfo.rc);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    the reference count for the dataset '%s' isn't 1: %d\n", OBJECT_REF_COUNT_TEST_DSET_NAME, oinfo.rc);
+                PART_ERROR(H5Oincr_decr_refcount_dset);
             }
 
             if (H5Dclose(dset_id) < 0) {
@@ -1555,40 +1604,40 @@ test_incr_decr_object_refcount(void)
             if (H5Oincr_refcount(dset_dtype) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't increment reference count for the datatype '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
-                PART_ERROR(H5Oincr_decr_refcount_dset);
+                PART_ERROR(H5Oincr_decr_refcount_dtype);
             }
 
             /* Verify that reference count is 2 now */
             if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get reference count for the group '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    couldn't get reference count for the datatype '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
+                PART_ERROR(H5Oincr_decr_refcount_dtype);
             }
 
             if (oinfo.rc != 2) {
                 H5_FAILED();
-                HDprintf("    the reference count for the group '%s' isn't 2: %d\n", OBJECT_REF_COUNT_TEST_TYPE_NAME, oinfo.rc);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    the reference count for the datatype '%s' isn't 2: %d\n", OBJECT_REF_COUNT_TEST_TYPE_NAME, oinfo.rc);
+                PART_ERROR(H5Oincr_decr_refcount_dtype);
             }
 
             /* Decrement the reference count */
             if (H5Odecr_refcount(dset_dtype) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't decrement reference count for the datatype '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
-                PART_ERROR(H5Oincr_decr_refcount_dset);
+                PART_ERROR(H5Oincr_decr_refcount_dtype);
             }
 
             /* Verify that reference count is 1 now */
             if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get reference count for the group '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    couldn't get reference count for the datatype '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
+                PART_ERROR(H5Oincr_decr_refcount_dtype);
             }
 
             if (oinfo.rc != 1) {
                 H5_FAILED();
-                HDprintf("    the reference count for the group '%s' isn't 1: %d\n", OBJECT_REF_COUNT_TEST_TYPE_NAME, oinfo.rc);
-                PART_ERROR(H5Oincr_decr_refcount_group);
+                HDprintf("    the reference count for the datatype '%s' isn't 1: %d\n", OBJECT_REF_COUNT_TEST_TYPE_NAME, oinfo.rc);
+                PART_ERROR(H5Oincr_decr_refcount_dtype);
             }
 
             if (H5Tclose(dset_dtype) < 0) {

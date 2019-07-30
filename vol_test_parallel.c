@@ -24,6 +24,11 @@
 
 char vol_test_parallel_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
+size_t n_tests_run_g;
+size_t n_tests_passed_g;
+size_t n_tests_failed_g;
+size_t n_tests_skipped_g;
+
 int mpi_size, mpi_rank;
 
 hid_t
@@ -103,6 +108,11 @@ main(int argc, char **argv)
      */
     H5open();
 
+    n_tests_run_g = 0;
+    n_tests_passed_g = 0;
+    n_tests_failed_g = 0;
+    n_tests_skipped_g = 0;
+
     srand((unsigned) HDtime(NULL));
 
     HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", PARALLEL_TEST_FILE_NAME);
@@ -128,7 +138,6 @@ main(int argc, char **argv)
     BEGIN_INDEPENDENT_OP(create_test_container) {
         if (MAINPROCESS) {
             if (create_test_container(vol_test_parallel_filename) < 0) {
-                nerrors++;
                 HDprintf("    failed to create testing container file '%s'\n", vol_test_parallel_filename);
                 INDEPENDENT_OP_ERROR(create_test_container);
             }
@@ -144,20 +153,32 @@ main(int argc, char **argv)
     nerrors += vol_object_test_parallel();
     nerrors += vol_misc_test_parallel();
 
-    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &nerrors, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD)) {
-        if (MAINPROCESS)
-            HDprintf("failed to collect consensus about the number of test errors that occurred -- exiting\n");
-        goto done;
-    }
+    if (MAINPROCESS)
+        HDprintf("The below statistics are minimum values due to the possibility of some ranks failing a test while others pass:\n");
 
-    if (nerrors) {
+    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &n_tests_passed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN, MPI_COMM_WORLD)) {
         if (MAINPROCESS)
-            HDprintf("*** %d TEST%s FAILED WITH VOL CONNECTOR '%s' ***\n", nerrors, (!nerrors || nerrors > 1) ? "S" : "", vol_connector_name);
-        goto done;
+            HDprintf("    failed to collect consensus about the minimum number of tests that passed -- reporting rank 0's (possibly inaccurate) value\n");
     }
 
     if (MAINPROCESS)
-        HDprintf("All VOL tests passed with VOL connector '%s'\n\n", vol_connector_name);
+        HDprintf("%s%ld/%ld (%.2f%%) VOL tests passed across all ranks with VOL connector '%s'\n",
+                n_tests_passed_g > 0 ? "At least " : "",
+                (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / n_tests_run_g * 100.0), vol_connector_name);
+
+    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &n_tests_failed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN, MPI_COMM_WORLD)) {
+        if (MAINPROCESS)
+            HDprintf("    failed to collect consensus about the minimum number of tests that failed -- reporting rank 0's (possibly inaccurate) value\n");
+    }
+
+    if (MAINPROCESS) {
+        HDprintf("%s%ld/%ld (%.2f%%) VOL tests failed across all ranks with VOL connector '%s'\n",
+                n_tests_failed_g > 0 ? "At least " : "",
+                (long) n_tests_failed_g, (long) n_tests_run_g, ((float) n_tests_failed_g / n_tests_run_g * 100.0), vol_connector_name);
+
+        HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n",
+                (long) n_tests_skipped_g, (long) n_tests_run_g, ((float) n_tests_skipped_g / n_tests_run_g * 100.0), vol_connector_name);
+    }
 
 done: error:
     H5close();

@@ -1300,7 +1300,7 @@ test_open_attribute(void)
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
-                PART_ERROR(H5Aopen);
+                PART_ERROR(H5Aopen_by_name);
             }
 
             PASSED();
@@ -1319,7 +1319,7 @@ test_open_attribute(void)
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
-                PART_ERROR(H5Aopen);
+                PART_ERROR(H5Aopen_by_idx);
             }
 
             PASSED();
@@ -2579,8 +2579,8 @@ test_get_attribute_space_and_type(void)
     PASSED();
 
     BEGIN_MULTIPART {
+        /* Retrieve the attribute's datatype and dataspace and verify them */
         PART_BEGIN(H5Aget_type) {
-            /* Retrieve the attribute's datatype and dataspace and verify them */
             TESTING_2("H5Aget_type")
 
             if ((tmp_type_id = H5Aget_type(attr_id)) < 0) {
@@ -2849,8 +2849,8 @@ test_get_attribute_space_and_type_invalid_params(void)
     PASSED();
 
     BEGIN_MULTIPART {
+        /* Retrieve the attribute's datatype and dataspace and verify them */
         PART_BEGIN(H5Aget_type_invalid_attr_id) {
-            /* Retrieve the attribute's datatype and dataspace and verify them */
             TESTING_2("H5Aget_type with an invalid attr_id")
 
             H5E_BEGIN_TRY {
