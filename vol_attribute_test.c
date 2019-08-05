@@ -4865,6 +4865,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate2_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate2_name_decreasing) {
             TESTING_2("H5Aiterate by attribute name in decreasing order")
 
@@ -4877,6 +4880,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate2_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate2_creation_increasing) {
             TESTING_2("H5Aiterate by creation order in increasing order")
 
@@ -4888,6 +4894,9 @@ test_attribute_iterate(void)
 
             PASSED();
         } PART_END(H5Aiterate2_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate2_creation_decreasing) {
             TESTING_2("H5Aiterate by creation order in decreasing order")
@@ -4919,6 +4928,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate_by_name_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
 
@@ -4932,6 +4944,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate_by_name_creation_increasing) {
             TESTING_2("H5Aiterate_by_name by creation order in increasing order")
 
@@ -4944,6 +4959,9 @@ test_attribute_iterate(void)
 
             PASSED();
         } PART_END(H5Aiterate_by_name_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing) {
             TESTING_2("H5Aiterate_by_name by creation order in decreasing order")

@@ -151,6 +151,7 @@ int vol_link_test(void);
 #define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2      "soft_link1"
 #define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3      "ext_link1"
 #define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4      "hard_link2"
+#define LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS       8
 
 #define LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME  "link_visit_test_cycles"
 #define LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2 "link_visit_subgroup1"
@@ -159,6 +160,7 @@ int vol_link_test(void);
 #define LINK_VISIT_TEST_CYCLE_LINK_NAME2     "soft_link1"
 #define LINK_VISIT_TEST_CYCLE_LINK_NAME3     "ext_link1"
 #define LINK_VISIT_TEST_CYCLE_LINK_NAME4     "hard_link2"
+#define LINK_VISIT_TEST_CYCLE_NUM_LINKS      6
 
 #define LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK 2
 #define LINK_VISIT_INVALID_PARAMS_TEST_DSET_NAME       "dset"

@@ -143,6 +143,7 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_ITERATE_TEST_ATTR_NAME2      "iter_attr2"
 #define ATTRIBUTE_ITERATE_TEST_ATTR_NAME3      "iter_attr3"
 #define ATTRIBUTE_ITERATE_TEST_ATTR_NAME4      "iter_attr4"
+#define ATTRIBUTE_ITERATE_TEST_NUM_ATTRS       4
 
 #define ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK 2
 #define ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_SUBGROUP_NAME   "attribute_iterate_test_0_attributes"

@@ -4871,6 +4871,9 @@ test_link_iterate(void)
             PASSED();
         } PART_END(H5Literate_link_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_TEST_NUM_LINKS;
+
         PART_BEGIN(H5Literate_link_name_decreasing) {
             TESTING_2("H5Literate by link name in decreasing order")
 
@@ -4883,6 +4886,9 @@ test_link_iterate(void)
             PASSED();
         } PART_END(H5Literate_link_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_TEST_NUM_LINKS;
+
         PART_BEGIN(H5Literate_link_creation_increasing) {
             TESTING_2("H5Literate by creation order in increasing order")
 
@@ -4894,6 +4900,9 @@ test_link_iterate(void)
 
             PASSED();
         } PART_END(H5Literate_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_link_creation_decreasing) {
             TESTING_2("H5Literate by creation order in decreasing order")
@@ -4925,6 +4934,9 @@ test_link_iterate(void)
             PASSED();
         } PART_END(H5Literate_by_name_link_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_TEST_NUM_LINKS;
+
         PART_BEGIN(H5Literate_by_name_link_name_decreasing) {
             TESTING_2("H5Literate_by_name by link name in decreasing order")
 
@@ -4938,6 +4950,9 @@ test_link_iterate(void)
             PASSED();
         } PART_END(H5Literate_by_name_link_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_TEST_NUM_LINKS;
+
         PART_BEGIN(H5Literate_by_name_creation_increasing) {
             TESTING_2("H5Literate_by_name by creation order in increasing order")
 
@@ -4950,6 +4965,9 @@ test_link_iterate(void)
 
             PASSED();
         } PART_END(H5Literate_by_name_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_by_name_creation_decreasing) {
             TESTING_2("H5Literate_by_name by creation order in decreasing order")
@@ -5772,6 +5790,9 @@ test_link_visit(void)
             PASSED();
         } PART_END(H5Lvisit_no_cycles_link_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_no_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit by link name in decreasing order")
 
@@ -5784,6 +5805,9 @@ test_link_visit(void)
             PASSED();
         } PART_END(H5Lvisit_no_cycles_link_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_no_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit by creation order in increasing order")
 
@@ -5795,6 +5819,9 @@ test_link_visit(void)
 
             PASSED();
         } PART_END(H5Lvisit_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_no_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit by creation order in decreasing order")
@@ -5826,6 +5853,9 @@ test_link_visit(void)
             PASSED();
         } PART_END(H5Lvisit_by_name_no_cycles_link_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit_by_name by link name in decreasing order")
 
@@ -5839,6 +5869,9 @@ test_link_visit(void)
             PASSED();
         } PART_END(H5Lvisit_by_name_no_cycles_link_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit_by_name by creation order in increasing order")
 
@@ -5851,6 +5884,9 @@ test_link_visit(void)
 
             PASSED();
         } PART_END(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
@@ -6073,6 +6109,9 @@ test_link_visit_cycles(void)
             PASSED();
         } PART_END(H5Lvisit_cycles_link_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit by link name in decreasing order")
 
@@ -6085,6 +6124,9 @@ test_link_visit_cycles(void)
             PASSED();
         } PART_END(H5Lvisit_cycles_link_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit by creation order in increasing order")
 
@@ -6096,6 +6138,9 @@ test_link_visit_cycles(void)
 
             PASSED();
         } PART_END(H5Lvisit_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit by creation order in decreasing order")
@@ -6127,6 +6172,9 @@ test_link_visit_cycles(void)
             PASSED();
         } PART_END(H5Lvisit_by_name_cycles_link_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_by_name_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit_by_name by link name in decreasing order")
 
@@ -6140,6 +6188,9 @@ test_link_visit_cycles(void)
             PASSED();
         } PART_END(H5Lvisit_by_name_cycles_link_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+
         PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit_by_name by creation order in increasing order")
 
@@ -6152,6 +6203,9 @@ test_link_visit_cycles(void)
 
             PASSED();
         } PART_END(H5Lvisit_by_name_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit_by_name by creation order in decreasing order")

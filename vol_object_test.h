@@ -65,6 +65,7 @@ int vol_object_test(void);
 #define OBJECT_VISIT_TEST_GROUP_NAME    "object_visit_test_group"
 #define OBJECT_VISIT_TEST_DSET_NAME     "object_visit_test_dset"
 #define OBJECT_VISIT_TEST_TYPE_NAME     "object_visit_test_type"
+#define OBJECT_VISIT_TEST_NUM_OBJS      4 /* Should be one more than the number of objects */
 
 #define OBJECT_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_visit_invalid_params_test"
 #define OBJECT_VISIT_INVALID_PARAMS_TEST_GROUP_NAME    "object_visit_invalid_params_group"
