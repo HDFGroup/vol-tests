@@ -2333,7 +2333,17 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_by_name_obj_name_increasing) {
             TESTING_2("H5Ovisit_by_name by object name in increasing order")
 
+            /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
+            }
+
+            /* Reset the special counter and repeat the test using an indirect object name. */
+            i = 0;
+
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
@@ -2348,7 +2358,17 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
             TESTING_2("H5Ovisit_by_name by object name in decreasing order")
 
+            /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
+            }
+
+            /* Reset the special counter and repeat the test using an indirect object name. */
+            i = OBJECT_VISIT_TEST_NUM_OBJS;
+
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
@@ -2363,7 +2383,17 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_by_name_create_order_increasing) {
             TESTING_2("H5Ovisit_by_name by creation order in increasing order")
 
+            /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_increasing);
+            }
+
+            /* Reset the special counter and repeat the test using an indirect object name. */
+            i = 2 * OBJECT_VISIT_TEST_NUM_OBJS;
+
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_increasing);
@@ -2378,7 +2408,17 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_by_name_create_order_decreasing) {
             TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
 
+            /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
+            }
+
+            /* Reset the special counter and repeat the test using an indirect object name. */
+            i = 3 * OBJECT_VISIT_TEST_NUM_OBJS;
+
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
