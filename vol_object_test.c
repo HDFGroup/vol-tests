@@ -22,11 +22,6 @@
  */
 #define NO_OPEN_BY_ADDR
 
-/*
- * XXX: Difficult to implement right now.
- */
-#define NO_REF_TESTS
-
 static int test_open_object(void);
 static int test_open_object_invalid_params(void);
 static int test_object_exists(void);
@@ -42,6 +37,7 @@ static int test_copy_object_invalid_params(void);
 static int test_object_comments(void);
 static int test_object_comments_invalid_params(void);
 static int test_object_visit(void);
+static int test_object_visit_dangling_soft_link(void);
 static int test_object_visit_invalid_params(void);
 static int test_close_object(void);
 static int test_close_object_invalid_params(void);
@@ -51,20 +47,10 @@ static int test_flush_object_invalid_params(void);
 static int test_refresh_object(void);
 static int test_refresh_object_invalid_params(void);
 
-#ifndef NO_REF_TESTS
-static int test_create_obj_ref(void);
-static int test_dereference_reference(void);
-static int test_get_ref_type(void);
-static int test_get_ref_name(void);
-static int test_get_region(void);
-static int test_write_dataset_w_obj_refs(void);
-static int test_read_dataset_w_obj_refs(void);
-static int test_write_dataset_w_obj_refs_empty_data(void);
-#endif
-
 static herr_t object_visit_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
 static herr_t object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
 static herr_t object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+static herr_t object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
 static herr_t object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
 
 /*
@@ -86,6 +72,7 @@ static int (*object_tests[])(void) = {
         test_object_comments,
         test_object_comments_invalid_params,
         test_object_visit,
+        test_object_visit_dangling_soft_link,
         test_object_visit_invalid_params,
         test_close_object,
         test_close_object_invalid_params,
@@ -94,16 +81,6 @@ static int (*object_tests[])(void) = {
         test_flush_object_invalid_params,
         test_refresh_object,
         test_refresh_object_invalid_params,
-#ifndef NO_REF_TESTS
-        test_create_obj_ref,
-        test_dereference_reference,
-        test_get_ref_type,
-        test_get_ref_name,
-        test_get_region,
-        test_write_dataset_w_obj_refs,
-        test_read_dataset_w_obj_refs,
-        test_write_dataset_w_obj_refs_empty_data,
-#endif
 };
 
 /*
@@ -1733,23 +1710,42 @@ error:
 }
 
 /*
- * A test for H5Ocopy.
+ * Basic tests for H5Ocopy.
  */
 static int
 test_copy_object(void)
 {
-    htri_t object_link_exists;
-    hid_t  file_id = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  group_id2 = H5I_INVALID_HID;
-    hid_t  dset_id = H5I_INVALID_HID;
-    hid_t  dset_dtype = H5I_INVALID_HID;
-    hid_t  dtype_id = H5I_INVALID_HID;
-    hid_t  space_id = H5I_INVALID_HID;
+    H5O_info_t object_info;
+    H5G_info_t group_info;
+    htri_t     object_link_exists;
+    size_t     i;
+    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      file_id2 = H5I_INVALID_HID;
+    hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      group_id2 = H5I_INVALID_HID;
+    hid_t      tmp_group_id = H5I_INVALID_HID;
+    hid_t      dset_id = H5I_INVALID_HID;
+    hid_t      tmp_dset_id = H5I_INVALID_HID;
+    hid_t      dset_dtype = H5I_INVALID_HID;
+    hid_t      dtype_id = H5I_INVALID_HID;
+    hid_t      tmp_dtype_id = H5I_INVALID_HID;
+    hid_t      attr_id = H5I_INVALID_HID;
+    hid_t      attr_space_id = H5I_INVALID_HID;
+    hid_t      space_id = H5I_INVALID_HID;
+    hid_t      ocpypl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("object copying");
 
     TESTING_2("test setup")
+
+    /*
+     * Create the second file for the between file copying tests.
+     */
+    if ((file_id2 = H5Fcreate(OBJECT_COPY_TEST_FILE_NAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", vol_test_filename);
+        goto error;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1772,118 +1768,1142 @@ test_copy_object(void)
 
     if ((space_id = generate_random_dataspace(OBJECT_COPY_TEST_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
+    if ((attr_space_id = generate_random_dataspace(OBJECT_COPY_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
+        TEST_ERROR
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
+    /* Create the test group object, along with its nested members and the attributes attached to it. */
+    if ((group_id2 = H5Gcreate2(group_id, OBJECT_COPY_TEST_GROUP_NAME,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < (size_t) OBJECT_COPY_TEST_NUM_NESTED_OBJS; i++) {
+        char grp_name[128];
+
+        snprintf(grp_name, 128, "grp%d", (int) i);
+
+        if ((tmp_group_id = H5Gcreate2(group_id2, grp_name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create group '%s' under group '%s'\n", grp_name, OBJECT_COPY_TEST_GROUP_NAME);
+            goto error;
+        }
+
+        if (H5Gclose(tmp_group_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close group '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    for (i = 0; i < (size_t) OBJECT_COPY_TEST_NUM_ATTRS; i++) {
+        char attr_name[128];
+
+        snprintf(attr_name, 128, "attr%d", (int) i);
+
+        if ((attr_id = H5Acreate2(group_id2, attr_name, H5T_NATIVE_INT, attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create attribute '%s' on group '%s'\n", attr_name, OBJECT_COPY_TEST_GROUP_NAME);
+            goto error;
+        }
+
+        if (H5Aclose(attr_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close attribute '%s'\n", attr_name);
+            goto error;
+        }
+    }
+
+    /* Create the test dataset object, along with the attributes attached to it. */
+    if ((dset_id = H5Dcreate2(group_id, OBJECT_COPY_TEST_DSET_NAME, dset_dtype, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < (size_t) OBJECT_COPY_TEST_NUM_ATTRS; i++) {
+        char attr_name[128];
+
+        snprintf(attr_name, 128, "attr%d", (int) i);
+
+        if ((attr_id = H5Acreate2(dset_id, attr_name, H5T_NATIVE_INT, attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create attribute '%s' on dataset '%s'\n", attr_name, OBJECT_COPY_TEST_DSET_NAME);
+            goto error;
+        }
+
+        if (H5Aclose(attr_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close attribute '%s'\n", attr_name);
+            goto error;
+        }
+    }
+
+    /* Create the test committed datatype object, along with the attributes attached to it. */
+    if ((dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
+        goto error;
+    }
+
+    if (H5Tcommit2(group_id, OBJECT_COPY_TEST_TYPE_NAME, dtype_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't commit datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < (size_t) OBJECT_COPY_TEST_NUM_ATTRS; i++) {
+        char attr_name[128];
+
+        snprintf(attr_name, 128, "attr%d", (int) i);
+
+        if ((attr_id = H5Acreate2(dtype_id, attr_name, H5T_NATIVE_INT, attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create attribute '%s' on committed datatype '%s'\n", attr_name, OBJECT_COPY_TEST_TYPE_NAME);
+            goto error;
+        }
+
+        if (H5Aclose(attr_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close attribute '%s'\n", attr_name);
+            goto error;
+        }
+    }
+
     PASSED();
 
     BEGIN_MULTIPART {
-        PART_BEGIN(H5Ocopy_group) {
-            TESTING_2("H5Ocopy on a group")
+        PART_BEGIN(H5Ocopy_group_shallow_no_attributes) {
+            TESTING_2("H5Ocopy on a group (shallow copy and without attributes)")
 
-            if ((group_id2 = H5Gcreate2(group_id, OBJECT_COPY_TEST_GROUP_NAME,
-                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((ocpypl_id = H5Pcreate(H5P_OBJECT_COPY)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create group '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
-                PART_ERROR(H5Ocopy_group);
+                HDprintf("    couldn't create OCopyPL\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
             }
 
-            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_GROUP_NAME2,
-                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Pset_copy_object(ocpypl_id, H5O_COPY_SHALLOW_HIERARCHY_FLAG | H5O_COPY_WITHOUT_ATTR_FLAG) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_GROUP_NAME);
-                PART_ERROR(H5Ocopy_group);
+                HDprintf("    couldn't set object copying options\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
             }
 
-            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_GROUP_NAME2, H5P_DEFAULT)) < 0) {
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME,
+                    ocpypl_id, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_GROUP_NAME2);
-                PART_ERROR(H5Ocopy_group);
+                HDprintf("    failed to copy group '%s' to '%s'\n", OBJECT_COPY_TEST_GROUP_NAME, OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
             }
 
-            if (!object_link_exists) {
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_GROUP_NAME2);
-                PART_ERROR(H5Ocopy_group);
-            }
-
-            PASSED();
-        } PART_END(H5Ocopy_group);
-
-        PART_BEGIN(H5Ocopy_dset) {
-            TESTING_2("H5Ocopy on a dataset")
-
-            if ((dset_id = H5Dcreate2(group_id, OBJECT_COPY_TEST_DSET_NAME, dset_dtype, space_id,
-                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't create dataset '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
-                PART_ERROR(H5Ocopy_dset);
-            }
-
-            if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_NAME2,
-                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_DSET_NAME);
-                PART_ERROR(H5Ocopy_dset);
-            }
-
-            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't determine if link '%s' to copied dataset exists\n", OBJECT_COPY_TEST_DSET_NAME2);
-                PART_ERROR(H5Ocopy_dset);
+                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
             }
 
             if (!object_link_exists) {
                 H5_FAILED();
-                HDprintf("    link '%s' to copied dataset didn't exist!\n", OBJECT_COPY_TEST_DSET_NAME2);
-                PART_ERROR(H5Ocopy_dset);
+                HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            /*
+             * Ensure that the new group doesn't have any attributes and only the
+             * immediate members of the copied group.
+             */
+            if ((tmp_group_id = H5Gopen2(group_id, OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open group copy '%s'\n", OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            memset(&group_info, 0, sizeof(group_info));
+
+            /*
+             * Set link count to non-zero in case the connector doesn't support
+             * retrieval of group info.
+             */
+            group_info.nlinks = 1;
+
+            if (H5Gget_info(tmp_group_id, &group_info) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve group info\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            if (group_info.nlinks != 0) {
+                H5_FAILED();
+                HDprintf("    copied group contained members after a shallow copy!\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to non-zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 1;
+
+            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            if (object_info.num_attrs != 0) {
+                H5_FAILED();
+                HDprintf("    copied group contained attributes after a non-attribute copy!\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            if (H5Pclose(ocpypl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close OCopyPL\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
+            }
+
+            if (H5Gclose(tmp_group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group copy\n");
+                PART_ERROR(H5Ocopy_group_shallow_no_attributes);
             }
 
             PASSED();
-        } PART_END(H5Ocopy_dset);
+        } PART_END(H5Ocopy_group_shallow_no_attributes);
 
-        PART_BEGIN(H5Ocopy_dtype) {
-            TESTING_2("H5Ocopy on a committed datatype")
+        if (ocpypl_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(ocpypl_id);
+            } H5E_END_TRY;
+            ocpypl_id = H5I_INVALID_HID;
+        }
+        if (tmp_group_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(tmp_group_id);
+            } H5E_END_TRY;
+            tmp_group_id = H5I_INVALID_HID;
+        }
 
-            if ((dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
+        PART_BEGIN(H5Ocopy_group_shallow_attributes) {
+            TESTING_2("H5Ocopy on a group (shallow copy and with attributes)")
+
+            if ((ocpypl_id = H5Pcreate(H5P_OBJECT_COPY)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
-                PART_ERROR(H5Ocopy_dtype);
+                HDprintf("    couldn't create OCopyPL\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
             }
 
-            if (H5Tcommit2(group_id, OBJECT_COPY_TEST_TYPE_NAME, dtype_id,
-                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Pset_copy_object(ocpypl_id, H5O_COPY_SHALLOW_HIERARCHY_FLAG) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't commit datatype '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
-                PART_ERROR(H5Ocopy_dtype);
+                HDprintf("    couldn't set object copying options\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
             }
 
-            if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_NAME2,
-                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME,
+                    ocpypl_id, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to copy object '%s'\n", OBJECT_COPY_TEST_TYPE_NAME);
-                PART_ERROR(H5Ocopy_dtype);
+                HDprintf("    failed to copy group '%s' to '%s'\n", OBJECT_COPY_TEST_GROUP_NAME, OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
             }
 
-            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_TYPE_NAME2, H5P_DEFAULT)) < 0) {
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if link '%s' to copied datatype exists\n", OBJECT_COPY_TEST_TYPE_NAME2);
-                PART_ERROR(H5Ocopy_dtype);
+                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
             }
 
             if (!object_link_exists) {
                 H5_FAILED();
-                HDprintf("    link '%s' to copied datatype didn't exist!\n", OBJECT_COPY_TEST_TYPE_NAME2);
-                PART_ERROR(H5Ocopy_dtype);
+                HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            /*
+             * Ensure that the new group has all of the attributes of the copied group
+             * and only the immediate members of the copied group.
+             */
+            if ((tmp_group_id = H5Gopen2(group_id, OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open group copy '%s'\n", OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            memset(&group_info, 0, sizeof(group_info));
+
+            /*
+             * Set link count to non-zero in case the connector doesn't support
+             * retrieval of group info.
+             */
+            group_info.nlinks = 1;
+
+            if (H5Gget_info(tmp_group_id, &group_info) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve group info\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            if (group_info.nlinks != 0) {
+                H5_FAILED();
+                HDprintf("    copied group contained members after a shallow copy!\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied group didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            if (H5Pclose(ocpypl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close OCopyPL\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
+            }
+
+            if (H5Gclose(tmp_group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group copy\n");
+                PART_ERROR(H5Ocopy_group_shallow_attributes);
             }
 
             PASSED();
-        } PART_END(H5Ocopy_dtype);
+        } PART_END(H5Ocopy_group_shallow_attributes);
+
+        if (ocpypl_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(ocpypl_id);
+            } H5E_END_TRY;
+            ocpypl_id = H5I_INVALID_HID;
+        }
+        if (tmp_group_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(tmp_group_id);
+            } H5E_END_TRY;
+            tmp_group_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_group_deep_no_attributes) {
+            TESTING_2("H5Ocopy on a group (deep copy and without attributes)")
+
+            if ((ocpypl_id = H5Pcreate(H5P_OBJECT_COPY)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create OCopyPL\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (H5Pset_copy_object(ocpypl_id, H5O_COPY_WITHOUT_ATTR_FLAG) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set object copying options\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME,
+                    ocpypl_id, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy group '%s' to '%s'\n", OBJECT_COPY_TEST_GROUP_NAME, OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            /* Ensure that the new group has all the members of the copied group, but no attributes */
+            if ((tmp_group_id = H5Gopen2(group_id, OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open group copy '%s'\n", OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            memset(&group_info, 0, sizeof(group_info));
+
+            /*
+             * Set link count to zero in case the connector doesn't support
+             * retrieval of group info.
+             */
+            group_info.nlinks = 0;
+
+            if (H5Gget_info(tmp_group_id, &group_info) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve group info\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (group_info.nlinks == 0) {
+                H5_FAILED();
+                HDprintf("    copied group didn't contain any members after a deep copy!\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to non-zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 1;
+
+            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (object_info.num_attrs != 0) {
+                H5_FAILED();
+                HDprintf("    copied group contained attributes after a non-attribute copy!\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (H5Pclose(ocpypl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close OCopyPL\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            if (H5Gclose(tmp_group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group copy\n");
+                PART_ERROR(H5Ocopy_group_deep_no_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_group_deep_no_attributes);
+
+        if (ocpypl_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(ocpypl_id);
+            } H5E_END_TRY;
+            ocpypl_id = H5I_INVALID_HID;
+        }
+        if (tmp_group_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(tmp_group_id);
+            } H5E_END_TRY;
+            tmp_group_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_group_deep_attributes) {
+            TESTING_2("H5Ocopy on a group (deep copy and with attributes)")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy group '%s' to '%s'\n", OBJECT_COPY_TEST_GROUP_NAME, OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied group didn't exist!\n", OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            /* Ensure that the new group has all the members of the copied group, and all its attributes */
+            if ((tmp_group_id = H5Gopen2(group_id, OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open group copy '%s'\n", OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            memset(&group_info, 0, sizeof(group_info));
+
+            /*
+             * Set link count to zero in case the connector doesn't support
+             * retrieval of group info.
+             */
+            group_info.nlinks = 0;
+
+            if (H5Gget_info(tmp_group_id, &group_info) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve group info\n");
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            if (group_info.nlinks == 0) {
+                H5_FAILED();
+                HDprintf("    copied group didn't contain any members after a deep copy!\n");
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied group didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            if (H5Gclose(tmp_group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group copy\n");
+                PART_ERROR(H5Ocopy_group_deep_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_group_deep_attributes);
+
+        if (tmp_group_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(tmp_group_id);
+            } H5E_END_TRY;
+            tmp_group_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_dset_no_attributes) {
+            TESTING_2("H5Ocopy on a dataset (without attributes)")
+
+            if ((ocpypl_id = H5Pcreate(H5P_OBJECT_COPY)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create OCopyPL\n");
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if (H5Pset_copy_object(ocpypl_id, H5O_COPY_WITHOUT_ATTR_FLAG) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set object copying options\n");
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME,
+                    ocpypl_id, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy dataset '%s' to '%s'\n", OBJECT_COPY_TEST_DSET_NAME, OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied dataset exists\n", OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied dataset didn't exist!\n", OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            /* Ensure that the new dataset doesn't have any attributes */
+            if ((tmp_dset_id = H5Dopen2(group_id, OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset copy '%s'\n", OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to non-zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 1;
+
+            if (H5Oget_info2(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if (object_info.num_attrs != 0) {
+                H5_FAILED();
+                HDprintf("    copied dataset contained attributes after a non-attribute copy!\n");
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if (H5Pclose(ocpypl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close OCopyPL\n");
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            if (H5Dclose(tmp_dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close dataset copy\n");
+                PART_ERROR(H5Ocopy_dset_no_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dset_no_attributes);
+
+        if (ocpypl_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(ocpypl_id);
+            } H5E_END_TRY;
+            ocpypl_id = H5I_INVALID_HID;
+        }
+        if (tmp_dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(tmp_dset_id);
+            } H5E_END_TRY;
+            tmp_dset_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_dset_attributes) {
+            TESTING_2("H5Ocopy on a dataset (with attributes)")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_ATTRS_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy dataset '%s' to '%s'\n", OBJECT_COPY_TEST_DSET_NAME, OBJECT_COPY_TEST_DSET_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_DSET_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied dataset exists\n", OBJECT_COPY_TEST_DSET_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied dataset didn't exist!\n", OBJECT_COPY_TEST_DSET_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            /* Ensure that the new dataset has all of the attributes of the copied dataset */
+            if ((tmp_dset_id = H5Dopen2(group_id, OBJECT_COPY_TEST_DSET_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset copy '%s'\n", OBJECT_COPY_TEST_DSET_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied dataset didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            if (H5Dclose(tmp_dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close dataset copy\n");
+                PART_ERROR(H5Ocopy_dset_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dset_attributes);
+
+        if (tmp_dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(tmp_dset_id);
+            } H5E_END_TRY;
+            tmp_dset_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_dtype_no_attributes) {
+            TESTING_2("H5Ocopy on a committed datatype (without attributes)")
+
+            if ((ocpypl_id = H5Pcreate(H5P_OBJECT_COPY)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create OCopyPL\n");
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if (H5Pset_copy_object(ocpypl_id, H5O_COPY_WITHOUT_ATTR_FLAG) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't set object copying options\n");
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME,
+                    ocpypl_id, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy datatype '%s' to '%s'\n", OBJECT_COPY_TEST_TYPE_NAME, OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied datatype exists\n", OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied datatype didn't exist!\n", OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            /* Ensure that the new committed datatype doesn't have any attributes */
+            if ((tmp_dtype_id = H5Topen2(group_id, OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset copy '%s'\n", OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to non-zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 1;
+
+            if (H5Oget_info2(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if (object_info.num_attrs != 0) {
+                H5_FAILED();
+                HDprintf("    copied committed datatype contained attributes after a non-attribute copy!\n");
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if (H5Pclose(ocpypl_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close OCopyPL\n");
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            if (H5Tclose(tmp_dtype_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close datatype copy\n");
+                PART_ERROR(H5Ocopy_dtype_no_attributes);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dtype_no_attributes);
+
+        if (ocpypl_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Pclose(ocpypl_id);
+            } H5E_END_TRY;
+            ocpypl_id = H5I_INVALID_HID;
+        }
+        if (tmp_dtype_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(tmp_dtype_id);
+            } H5E_END_TRY;
+            tmp_dtype_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_dtype_attributes) {
+            TESTING_2("H5Ocopy on a committed datatype (with attributes)")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_ATTRS_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy datatype '%s' to '%s'\n", OBJECT_COPY_TEST_TYPE_NAME, OBJECT_COPY_TEST_TYPE_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            if ((object_link_exists = H5Lexists(group_id, OBJECT_COPY_TEST_TYPE_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied datatype exists\n", OBJECT_COPY_TEST_TYPE_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied datatype didn't exist!\n", OBJECT_COPY_TEST_TYPE_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            /* Ensure that the new committed datatype has all the attributes of the copied datatype */
+            if ((tmp_dtype_id = H5Topen2(group_id, OBJECT_COPY_TEST_TYPE_ATTRS_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset copy '%s'\n", OBJECT_COPY_TEST_TYPE_ATTRS_NAME);
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied committed datatype didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            if (H5Tclose(tmp_dtype_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close datatype copy\n");
+                PART_ERROR(H5Ocopy_dtype_attributes);
+            }
+
+            SKIPPED();
+        } PART_END(H5Ocopy_dtype_attributes);
+
+        if (tmp_dtype_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(tmp_dtype_id);
+            } H5E_END_TRY;
+            tmp_dtype_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_already_existing_group) {
+            herr_t err_ret;
+
+            TESTING_2("H5Ocopy group to location where group already exists")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, group_id, OBJECT_COPY_TEST_GROUP_NAME,
+                        H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    group copy succeeded in location where group already exists!\n");
+                PART_ERROR(H5Ocopy_already_existing_group);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_already_existing_group);
+
+        PART_BEGIN(H5Ocopy_already_existing_dset) {
+            herr_t err_ret;
+
+            TESTING_2("H5Ocopy dataset to location where dataset already exists")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, group_id, OBJECT_COPY_TEST_DSET_NAME,
+                        H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    dataset copy succeeded in location where dataset already exists!\n");
+                PART_ERROR(H5Ocopy_already_existing_dset);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_already_existing_dset);
+
+        PART_BEGIN(H5Ocopy_already_existing_dtype) {
+            herr_t err_ret;
+
+            TESTING_2("H5Ocopy committed datatype to location where committed datatype already exists")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, group_id, OBJECT_COPY_TEST_TYPE_NAME,
+                        H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    committed datatype copy succeeded in location where committed datatype already exists!\n");
+                PART_ERROR(H5Ocopy_already_existing_dtype);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_already_existing_dtype);
+
+        PART_BEGIN(H5Ocopy_through_soft_link) {
+            TESTING_2("H5Ocopy through use of a soft link")
+
+            /*
+             * XXX:
+             */
+
+            SKIPPED();
+        } PART_END(H5Ocopy_through_soft_link);
+
+        PART_BEGIN(H5Ocopy_through_dangling_soft_link) {
+            herr_t err_ret;
+
+            TESTING_2("H5Ocopy through use of a dangling soft link")
+
+            if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_COPY_TEST_SUBGROUP_NAME "/nonexistent_object",
+                    group_id, OBJECT_COPY_TEST_DANGLING_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to create dangling soft link '%s'\n", OBJECT_COPY_TEST_DANGLING_LINK_NAME);
+                PART_ERROR(H5Ocopy_through_dangling_soft_link);
+            }
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Ocopy(group_id, OBJECT_COPY_TEST_DANGLING_LINK_NAME, group_id, OBJECT_COPY_TEST_DANGLING_LINK_NAME"2",
+                        H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    copied non-existent object through use of a dangling soft link!\n");
+                PART_ERROR(H5Ocopy_through_dangling_soft_link);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_through_dangling_soft_link);
+
+        PART_BEGIN(H5Ocopy_group_between_files) {
+            TESTING_2("H5Ocopy on group between different files")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_GROUP_NAME, file_id2, OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy group '%s' to second file '%s'\n", OBJECT_COPY_TEST_GROUP_NAME, OBJECT_COPY_TEST_FILE_NAME);
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            if ((object_link_exists = H5Lexists(file_id2, OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied group exists\n", OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME);
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied group in second file '%s' didn't exist!\n", OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME, OBJECT_COPY_TEST_FILE_NAME);
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            /* Ensure that the new group has all the members of the copied group, and all its attributes */
+            if ((tmp_group_id = H5Gopen2(file_id2, OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open group copy '%s'\n", OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME);
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            /*
+             * XXX: check for group members
+             */
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied group didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            if (H5Gclose(tmp_group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group copy\n");
+                PART_ERROR(H5Ocopy_group_between_files);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_group_between_files);
+
+        if (tmp_group_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Gclose(tmp_group_id);
+            } H5E_END_TRY;
+            tmp_group_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_dset_between_files) {
+            TESTING_2("H5Ocopy on dataset between different files")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_DSET_NAME, file_id2, OBJECT_COPY_TEST_FILE_COPY_DSET_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy dataset '%s' to second file '%s'\n", OBJECT_COPY_TEST_DSET_NAME, OBJECT_COPY_TEST_FILE_NAME);
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            if ((object_link_exists = H5Lexists(file_id2, OBJECT_COPY_TEST_FILE_COPY_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied dataset exists\n", OBJECT_COPY_TEST_FILE_COPY_DSET_NAME);
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied dataset in second file '%s' didn't exist!\n", OBJECT_COPY_TEST_FILE_COPY_DSET_NAME, OBJECT_COPY_TEST_FILE_NAME);
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            /* Ensure that the new dataset has all the attributes of the copied dataset */
+            if ((tmp_dset_id = H5Dopen2(file_id2, OBJECT_COPY_TEST_FILE_COPY_DSET_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open dataset copy '%s'\n", OBJECT_COPY_TEST_FILE_COPY_DSET_NAME);
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied dataset didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            if (H5Dclose(tmp_dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close dataset copy\n");
+                PART_ERROR(H5Ocopy_dset_between_files);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dset_between_files);
+
+        if (tmp_dset_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Dclose(tmp_dset_id);
+            } H5E_END_TRY;
+            tmp_dset_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Ocopy_dtype_between_files) {
+            TESTING_2("H5Ocopy on committed datatype between different files")
+
+            if (H5Ocopy(group_id, OBJECT_COPY_TEST_TYPE_NAME, file_id2, OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy committed datatype '%s' to second file '%s'\n", OBJECT_COPY_TEST_TYPE_NAME, OBJECT_COPY_TEST_FILE_NAME);
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            if ((object_link_exists = H5Lexists(file_id2, OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' to copied committed datatype exists\n", OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME);
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            if (!object_link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' to copied committed datatype in second file '%s' didn't exist!\n", OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME, OBJECT_COPY_TEST_FILE_NAME);
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            /* Ensure that the new committed datatype has all the attributes of the copied committed datatype */
+            if ((tmp_dtype_id = H5Topen2(file_id2, OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to open committed datatype copy '%s'\n", OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME);
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            memset(&object_info, 0, sizeof(object_info));
+
+            /*
+             * Set attribute count to zero in case the connector doesn't
+             * support retrieval of object info.
+             */
+            object_info.num_attrs = 0;
+
+            if (H5Oget_info2(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve object info\n");
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            if (object_info.num_attrs == 0) {
+                H5_FAILED();
+                HDprintf("    copied committed datatype didn't contain any attributes after copy operation!\n");
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            if (H5Tclose(tmp_dtype_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close committed datatype copy\n");
+                PART_ERROR(H5Ocopy_dtype_between_files);
+            }
+
+            PASSED();
+        } PART_END(H5Ocopy_dtype_between_files);
+
+        if (tmp_dtype_id >= 0) {
+            H5E_BEGIN_TRY {
+                H5Tclose(tmp_dtype_id);
+            } H5E_END_TRY;
+            tmp_dtype_id = H5I_INVALID_HID;
+        }
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
 
+    if (H5Pclose(ocpypl_id) < 0)
+        TEST_ERROR
+    if (H5Sclose(attr_space_id) < 0)
+        TEST_ERROR
     if (H5Sclose(space_id) < 0)
         TEST_ERROR
     if (H5Tclose(dset_dtype) < 0)
@@ -1898,6 +2918,8 @@ test_copy_object(void)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
         TEST_ERROR
+    if (H5Fclose(file_id2) < 0)
+        TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
@@ -1907,13 +2929,20 @@ test_copy_object(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Pclose(ocpypl_id);
+        H5Sclose(attr_space_id);
         H5Sclose(space_id);
+        H5Aclose(attr_id);
         H5Tclose(dset_dtype);
+        H5Tclose(tmp_dtype_id);
         H5Tclose(dtype_id);
+        H5Dclose(tmp_dset_id);
         H5Dclose(dset_id);
+        H5Gclose(tmp_group_id);
         H5Gclose(group_id2);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(file_id2);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2296,9 +3325,13 @@ test_object_visit(void)
         } PART_END(H5Ovisit_create_order_decreasing);
 
         PART_BEGIN(H5Ovisit_file) {
+            TESTING_2("H5Ovisit on a file ID")
+
             /*
              * XXX:
              */
+
+            SKIPPED();
         } PART_END(H5Ovisit_file);
 
         PART_BEGIN(H5Ovisit_dset) {
@@ -2428,9 +3461,13 @@ test_object_visit(void)
         } PART_END(H5Ovisit_by_name_create_order_decreasing);
 
         PART_BEGIN(H5Ovisit_by_name_file) {
+            TESTING_2("H5Ovisit_by_name on a file ID")
+
             /*
              * XXX:
              */
+
+            SKIPPED();
         } PART_END(H5Ovisit_by_name_file);
 
         PART_BEGIN(H5Ovisit_by_name_dset) {
@@ -2491,6 +3528,231 @@ error:
         H5Dclose(dset_id);
         H5Pclose(gcpl_id);
         H5Gclose(group_id2);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+static int
+test_object_visit_dangling_soft_link(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t gcpl_id = H5I_INVALID_HID;
+
+    TESTING_MULTIPART("object visiting with dangling soft links");
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", OBJECT_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "/" "nonexistent_object",
+            group_id, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1);
+        goto error;
+    }
+
+    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "/" "nonexistent_object",
+            group_id, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2);
+        goto error;
+    }
+
+    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "/" "nonexistent_object",
+            group_id, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3);
+        goto error;
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Ovisit_obj_name_increasing) {
+            TESTING_2("H5Ovisit by object name in increasing order")
+
+            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by object name in increasing order failed\n");
+                PART_ERROR(H5Ovisit_obj_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_obj_name_increasing);
+
+        PART_BEGIN(H5Ovisit_obj_name_decreasing) {
+            TESTING_2("H5Ovisit by object name in decreasing order")
+
+            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by object name in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_obj_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_obj_name_decreasing);
+
+        PART_BEGIN(H5Ovisit_create_order_increasing) {
+            TESTING_2("H5Ovisit by creation order in increasing order")
+
+            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by creation order in increasing order failed\n");
+                PART_ERROR(H5Ovisit_create_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_create_order_increasing);
+
+        PART_BEGIN(H5Ovisit_create_order_decreasing) {
+            TESTING_2("H5Ovisit by creation order in decreasing order")
+
+            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_create_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_create_order_decreasing);
+
+        PART_BEGIN(H5Ovisit_by_name_obj_name_increasing) {
+            TESTING_2("H5Ovisit_by_name by object name in increasing order")
+
+            /* First, test visiting using "." for the object name */
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
+            }
+
+            /* Repeat the test using an indirect object name */
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC,
+                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_obj_name_increasing);
+
+        PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
+            TESTING_2("H5Ovisit_by_name by object name in decreasing order")
+
+            /* First, test visiting using "." for the object name */
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
+            }
+
+            /* Repeat the test using an indirect object name */
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC,
+                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_obj_name_decreasing);
+
+        PART_BEGIN(H5Ovisit_by_name_create_order_increasing) {
+            TESTING_2("H5Ovisit_by_name by creation order in increasing order")
+
+            /* First, test visiting using "." for the object name */
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_increasing);
+            }
+
+            /* Repeat the test using an indirect object name */
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_create_order_increasing);
+
+        PART_BEGIN(H5Ovisit_by_name_create_order_decreasing) {
+            TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
+
+            /* First, test visiting using "." for the object name */
+            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
+            }
+
+            /* Repeat the test using an indirect object name */
+            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
+                PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ovisit_by_name_create_order_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -3171,766 +4433,6 @@ test_refresh_object_invalid_params(void)
     return 0;
 }
 
-#ifndef NO_REF_TESTS
-static int
-test_create_obj_ref(void)
-{
-    vol_test_obj_ref_t ref;
-    hid_t              file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-
-    TESTING("create an object reference")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file\n");
-        goto error;
-    }
-
-    if (H5Rcreate((void *) &ref, file_id, "/", H5R_OBJECT, H5I_INVALID_HID) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create obj. ref\n");
-        goto error;
-    }
-
-    if (H5R_OBJECT != ref.ref_type) TEST_ERROR
-    if (H5I_GROUP != ref.ref_obj_type) TEST_ERROR
-
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-static int
-test_dereference_reference(void)
-{
-    TESTING("dereference a reference")
-
-    /* H5Rdereference2 */
-
-    SKIPPED();
-
-    return 0;
-}
-
-static int
-test_get_ref_type(void)
-{
-    vol_test_obj_ref_t ref_array[3];
-    H5O_type_t         obj_type;
-    size_t             i;
-    hid_t              file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    hid_t              container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t              ref_dset_id = H5I_INVALID_HID;
-    hid_t              ref_dtype_id = H5I_INVALID_HID;
-    hid_t              ref_dset_dtype = H5I_INVALID_HID;
-    hid_t              space_id = H5I_INVALID_HID;
-
-    TESTING("retrieve type of object reference by an object/region reference")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file\n");
-        goto error;
-    }
-
-    if ((container_group = H5Gopen2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open container group\n");
-        goto error;
-    }
-
-    if ((group_id = H5Gcreate2(container_group, OBJ_REF_GET_TYPE_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create container sub-group\n");
-        goto error;
-    }
-
-    if ((space_id = generate_random_dataspace(OBJ_REF_GET_TYPE_TEST_SPACE_RANK, NULL, FALSE)) < 0)
-        TEST_ERROR
-
-    if ((ref_dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
-
-    /* Create the dataset and datatype which will be referenced */
-    if ((ref_dset_id = H5Dcreate2(group_id, OBJ_REF_GET_TYPE_TEST_DSET_NAME, ref_dset_dtype,
-            space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset for referencing\n");
-        goto error;
-    }
-
-    if ((ref_dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype\n");
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJ_REF_GET_TYPE_TEST_TYPE_NAME, ref_dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype for referencing\n");
-        goto error;
-    }
-
-    {
-        /* TODO: Temporary workaround for datatypes */
-        if (H5Tclose(ref_dtype_id) < 0)
-            TEST_ERROR
-
-        if ((ref_dtype_id = H5Topen2(group_id, OBJ_REF_GET_TYPE_TEST_TYPE_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open datatype for referencing\n");
-            goto error;
-        }
-    }
-
-
-    /* Create and check the group reference */
-    if (H5Rcreate(&ref_array[0], file_id, "/", H5R_OBJECT, H5I_INVALID_HID) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group object reference\n");
-        goto error;
-    }
-
-    if (H5Rget_obj_type2(file_id, H5R_OBJECT, &ref_array[0], &obj_type) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get object reference's object type\n");
-        goto error;
-    }
-
-    if (H5O_TYPE_GROUP != obj_type) {
-        H5_FAILED();
-        HDprintf("    referenced object was not a group\n");
-        goto error;
-    }
-
-    /* Create and check the datatype reference */
-    if (H5Rcreate(&ref_array[1], group_id, OBJ_REF_GET_TYPE_TEST_TYPE_NAME, H5R_OBJECT, H5I_INVALID_HID) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype object reference\n");
-        goto error;
-    }
-
-    if (H5Rget_obj_type2(file_id, H5R_OBJECT, &ref_array[1], &obj_type) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get object reference's object type\n");
-        goto error;
-    }
-
-    if (H5O_TYPE_NAMED_DATATYPE != obj_type) {
-        H5_FAILED();
-        HDprintf("    referenced object was not a datatype\n");
-        goto error;
-    }
-
-    /* Create and check the dataset reference */
-    if (H5Rcreate(&ref_array[2], group_id, OBJ_REF_GET_TYPE_TEST_DSET_NAME, H5R_OBJECT, H5I_INVALID_HID) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset object reference\n");
-        goto error;
-    }
-
-    if (H5Rget_obj_type2(file_id, H5R_OBJECT, &ref_array[2], &obj_type) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get object reference's object type\n");
-        goto error;
-    }
-
-    if (H5O_TYPE_DATASET != obj_type) {
-        H5_FAILED();
-        HDprintf("    referenced object was not a dataset\n");
-        goto error;
-    }
-
-    /* TODO: Support for region references in this test */
-
-
-    if (H5Sclose(space_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(ref_dset_dtype) < 0)
-        TEST_ERROR
-    if (H5Tclose(ref_dtype_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(ref_dset_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(container_group) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Sclose(space_id);
-        H5Tclose(ref_dset_dtype);
-        H5Tclose(ref_dtype_id);
-        H5Dclose(ref_dset_id);
-        H5Gclose(group_id);
-        H5Gclose(container_group);
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-static int
-test_get_ref_name(void)
-{
-    TESTING("get ref. name")
-
-    /* H5Rget_name */
-
-    SKIPPED();
-
-    return 0;
-}
-
-static int
-test_get_region(void)
-{
-    TESTING("get region for region reference")
-
-    /* H5Rget_region */
-
-    SKIPPED();
-
-    return 0;
-}
-
-static int
-test_write_dataset_w_obj_refs(void)
-{
-    vol_test_obj_ref_t *ref_array = NULL;
-    size_t              i, ref_array_size = 0;
-    hid_t               file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    hid_t               container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t               dset_id = H5I_INVALID_HID, ref_dset_id = H5I_INVALID_HID;
-    hid_t               ref_dtype_id = H5I_INVALID_HID;
-    hid_t               ref_dset_dtype = H5I_INVALID_HID;
-    hid_t               space_id = H5I_INVALID_HID;
-
-    TESTING("write to a dataset w/ object reference type")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file\n");
-        goto error;
-    }
-
-    if ((container_group = H5Gopen2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open container group\n");
-        goto error;
-    }
-
-    if ((group_id = H5Gcreate2(container_group, OBJ_REF_DATASET_WRITE_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create container sub-group\n");
-        goto error;
-    }
-
-    if ((space_id = generate_random_dataspace(OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK, NULL, FALSE)) < 0)
-        TEST_ERROR
-
-    if ((ref_dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
-
-    /* Create the dataset and datatype which will be referenced */
-    if ((ref_dset_id = H5Dcreate2(group_id, OBJ_REF_DATASET_WRITE_TEST_REF_DSET_NAME, ref_dset_dtype,
-            space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset for referencing\n");
-        goto error;
-    }
-
-    if ((ref_dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype\n");
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJ_REF_DATASET_WRITE_TEST_REF_TYPE_NAME, ref_dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype for referencing\n");
-        goto error;
-    }
-
-    {
-        /* TODO: Temporary workaround for datatypes */
-        if (H5Tclose(ref_dtype_id) < 0)
-            TEST_ERROR
-
-        if ((ref_dtype_id = H5Topen2(group_id, OBJ_REF_DATASET_WRITE_TEST_REF_TYPE_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open datatype for referencing\n");
-            goto error;
-        }
-    }
-
-
-    if ((dset_id = H5Dcreate2(group_id, OBJ_REF_DATASET_WRITE_TEST_DSET_NAME, H5T_STD_REF_OBJ,
-            space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset\n");
-        goto error;
-    }
-
-    for (i = 0, ref_array_size = 1; i < OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK; i++)
-        ref_array_size *= dims[i];
-
-    if (NULL == (ref_array = (vol_test_obj_ref_t *) HDmalloc(ref_array_size * sizeof(*ref_array))))
-        TEST_ERROR
-
-    for (i = 0; i < dims[0]; i++) {
-        /* Create a reference to either a group, datatype or dataset */
-        switch (rand() % 3) {
-            case 0:
-                if (H5Rcreate(&ref_array[i], file_id, "/", H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            case 1:
-                if (H5Rcreate(&ref_array[i], group_id, OBJ_REF_DATASET_WRITE_TEST_REF_TYPE_NAME, H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            case 2:
-                if (H5Rcreate(&ref_array[i], group_id, OBJ_REF_DATASET_WRITE_TEST_REF_DSET_NAME, H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            default:
-                TEST_ERROR
-        }
-    }
-
-    if (H5Dwrite(dset_id, H5T_STD_REF_OBJ, H5S_ALL, H5S_ALL, H5P_DEFAULT, ref_array) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't write to dataset\n");
-        goto error;
-    }
-
-    if (ref_array) {
-        HDfree(ref_array);
-        ref_array = NULL;
-    }
-
-    if (H5Sclose(space_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(ref_dset_dtype) < 0)
-        TEST_ERROR
-    if (H5Tclose(ref_dtype_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(ref_dset_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(container_group) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        if (ref_array) HDfree(ref_array);
-        H5Sclose(space_id);
-        H5Tclose(ref_dset_dtype);
-        H5Tclose(ref_dtype_id);
-        H5Dclose(ref_dset_id);
-        H5Dclose(dset_id);
-        H5Gclose(group_id);
-        H5Gclose(container_group);
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-static int
-test_read_dataset_w_obj_refs(void)
-{
-    vol_test_obj_ref_t *ref_array = NULL;
-    size_t              i, ref_array_size = 0;
-    hid_t               file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    hid_t               container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t               dset_id = H5I_INVALID_HID, ref_dset_id = H5I_INVALID_HID;
-    hid_t               ref_dtype_id = H5I_INVALID_HID;
-    hid_t               ref_dset_dtype = H5I_INVALID_HID;
-    hid_t               space_id = H5I_INVALID_HID;
-
-    TESTING("read from a dataset w/ object reference type")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file\n");
-        goto error;
-    }
-
-    if ((container_group = H5Gopen2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open container group\n");
-        goto error;
-    }
-
-    if ((group_id = H5Gcreate2(container_group, OBJ_REF_DATASET_READ_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create container sub-group\n");
-        goto error;
-    }
-
-    if ((space_id = generate_random_dataspace(OBJ_REF_DATASET_READ_TEST_SPACE_RANK, NULL, FALSE)) < 0)
-        TEST_ERROR
-
-    if ((ref_dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
-
-    /* Create the dataset and datatype which will be referenced */
-    if ((ref_dset_id = H5Dcreate2(group_id, OBJ_REF_DATASET_READ_TEST_REF_DSET_NAME, ref_dset_dtype,
-            space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset for referencing\n");
-        goto error;
-    }
-
-    if ((ref_dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype\n");
-        goto error;
-    }
-
-    if (H5Tcommit2(group_id, OBJ_REF_DATASET_READ_TEST_REF_TYPE_NAME, ref_dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create datatype for referencing\n");
-        goto error;
-    }
-
-    {
-        /* TODO: Temporary workaround for datatypes */
-        if (H5Tclose(ref_dtype_id) < 0)
-            TEST_ERROR
-
-        if ((ref_dtype_id = H5Topen2(group_id, OBJ_REF_DATASET_READ_TEST_REF_TYPE_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open datatype for referencing\n");
-            goto error;
-        }
-    }
-
-
-    if ((dset_id = H5Dcreate2(group_id, OBJ_REF_DATASET_READ_TEST_DSET_NAME, H5T_STD_REF_OBJ,
-            space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset\n");
-        goto error;
-    }
-
-    for (i = 0, ref_array_size = 1; i < OBJ_REF_DATASET_READ_TEST_SPACE_RANK; i++)
-        ref_array_size *= dims[i];
-
-    if (NULL == (ref_array = (vol_test_obj_ref_t *) HDmalloc(ref_array_size * sizeof(*ref_array))))
-        TEST_ERROR
-
-    for (i = 0; i < dims[0]; i++) {
-        /* Create a reference to either a group, datatype or dataset */
-        switch (rand() % 3) {
-            case 0:
-                if (H5Rcreate(&ref_array[i], file_id, "/", H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            case 1:
-                if (H5Rcreate(&ref_array[i], group_id, OBJ_REF_DATASET_READ_TEST_REF_TYPE_NAME, H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            case 2:
-                if (H5Rcreate(&ref_array[i], group_id, OBJ_REF_DATASET_READ_TEST_REF_DSET_NAME, H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            default:
-                TEST_ERROR
-        }
-    }
-
-    if (H5Dwrite(dset_id, H5T_STD_REF_OBJ, H5S_ALL, H5S_ALL, H5P_DEFAULT, ref_array) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't write to dataset\n");
-        goto error;
-    }
-
-    /* Now read from the dataset */
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-
-    if ((dset_id = H5Dopen2(group_id, OBJ_REF_DATASET_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open dataset\n");
-        goto error;
-    }
-
-    HDmemset(ref_array, 0, ref_array_size * sizeof(*ref_array));
-
-    if (H5Dread(dset_id, H5T_STD_REF_OBJ, H5S_ALL, H5S_ALL, H5P_DEFAULT, ref_array) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't read from dataset\n");
-        goto error;
-    }
-
-    for (i = 0; i < dims[0]; i++) {
-        /* Check the reference type */
-        if (H5R_OBJECT != ref_array[i].ref_type) {
-            H5_FAILED();
-            HDprintf("    ref type was not H5R_OBJECT\n");
-            goto error;
-        }
-
-        /* Check the object type referenced */
-        if (   H5I_FILE != ref_array[i].ref_obj_type
-            && H5I_GROUP != ref_array[i].ref_obj_type
-            && H5I_DATATYPE != ref_array[i].ref_obj_type
-            && H5I_DATASET != ref_array[i].ref_obj_type
-           ) {
-            H5_FAILED();
-            HDprintf("    ref object type mismatch\n");
-            goto error;
-        }
-
-        /* Check the URI of the referenced object according to
-         * the server spec where each URI is prefixed as
-         * 'X-', where X is a character denoting the type
-         * of object */
-        if (   (ref_array[i].ref_obj_URI[1] != '-')
-            || (ref_array[i].ref_obj_URI[0] != 'g'
-            &&  ref_array[i].ref_obj_URI[0] != 't'
-            &&  ref_array[i].ref_obj_URI[0] != 'd')
-           ) {
-            H5_FAILED();
-            HDprintf("    ref URI mismatch\n");
-            goto error;
-        }
-    }
-
-    if (ref_array) {
-        HDfree(ref_array);
-        ref_array = NULL;
-    }
-
-    if (H5Sclose(space_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(ref_dset_dtype) < 0)
-        TEST_ERROR
-    if (H5Tclose(ref_dtype_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(ref_dset_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(container_group) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        if (ref_array) HDfree(ref_array);
-        H5Sclose(space_id);
-        H5Tclose(ref_dset_dtype);
-        H5Tclose(ref_dtype_id);
-        H5Dclose(ref_dset_id);
-        H5Dclose(dset_id);
-        H5Gclose(group_id);
-        H5Gclose(container_group);
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-static int
-test_write_dataset_w_obj_refs_empty_data(void)
-{
-    vol_test_obj_ref_t *ref_array = NULL;
-    size_t              i, ref_array_size = 0;
-    hid_t               file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    hid_t               container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t               dset_id = H5I_INVALID_HID;
-    hid_t               space_id = H5I_INVALID_HID;
-
-    TESTING("write to a dataset w/ object reference type and some empty data")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file\n");
-        goto error;
-    }
-
-    if ((container_group = H5Gopen2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open container group\n");
-        goto error;
-    }
-
-    if ((group_id = H5Gcreate2(container_group, OBJ_REF_DATASET_EMPTY_WRITE_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create container sub-group");
-        goto error;
-    }
-
-    if ((space_id = generate_random_dataspace(OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK, NULL, FALSE)) < 0)
-        TEST_ERROR
-
-    if ((dset_id = H5Dcreate2(group_id, OBJ_REF_DATASET_EMPTY_WRITE_TEST_DSET_NAME, H5T_STD_REF_OBJ,
-            space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset\n");
-        goto error;
-    }
-
-    for (i = 0, ref_array_size = 1; i < OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK; i++)
-        ref_array_size *= dims[i];
-
-    if (NULL == (ref_array = (vol_test_obj_ref_t *) HDcalloc(1, ref_array_size * sizeof(*ref_array))))
-        TEST_ERROR
-
-    for (i = 0; i < dims[0]; i++) {
-        switch (rand() % 2) {
-            case 0:
-                if (H5Rcreate(&ref_array[i], file_id, "/", H5R_OBJECT, H5I_INVALID_HID) < 0) {
-                    H5_FAILED();
-                    HDprintf("    couldn't create reference\n");
-                    goto error;
-                }
-
-                break;
-
-            case 1:
-                break;
-
-            default:
-                TEST_ERROR
-        }
-    }
-
-    if (H5Dwrite(dset_id, H5T_STD_REF_OBJ, H5S_ALL, H5S_ALL, H5P_DEFAULT, ref_array) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't write to dataset\n");
-        goto error;
-    }
-
-    if (ref_array) {
-        HDfree(ref_array);
-        ref_array = NULL;
-    }
-
-    if (H5Sclose(space_id) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(container_group) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Sclose(space_id);
-        H5Dclose(dset_id);
-        H5Gclose(group_id);
-        H5Gclose(container_group);
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-#endif
-
 /*
  * H5Ovisit callback to simply iterate recursively through all of the objects in a
  * group and check to make sure their names match what is expected.
@@ -3951,7 +4453,7 @@ object_visit_callback(hid_t o_id, const char *name, const H5O_info_t *object_inf
         else
             HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
     }
-    if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME) &&
+    else if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME) &&
             (counter_val == 2 || counter_val == 6 || counter_val == 9 || counter_val == 15)) {
         if (H5O_TYPE_GROUP == object_info->type)
             goto done;
@@ -4026,6 +4528,28 @@ object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *obje
     if (H5O_TYPE_NAMED_DATATYPE != object_info->type) {
         HDprintf("    object type was not H5O_TYPE_NAMED_DATATYPE\n");
         return -1;
+    }
+
+    return ret_val;
+}
+
+/*
+ * H5Ovisit callback for testing visiting of dangling soft links.
+ */
+static herr_t
+object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data)
+{
+    herr_t ret_val = 0;
+
+    UNUSED(o_id);
+    UNUSED(object_info);
+    UNUSED(op_data);
+
+    if (   !HDstrcmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1)
+        || !HDstrcmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2)
+        || !HDstrcmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3)) {
+        HDprintf("    object visit callback should not have been called on a dangling soft link!\n");
+        ret_val = -1;
     }
 
     return ret_val;

@@ -47,14 +47,26 @@ int vol_object_test(void);
 #define OBJECT_EXISTS_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_exists_invalid_params_test"
 #define OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME      "object_exists_invalid_params_test_group"
 
-#define OBJECT_COPY_TEST_SUBGROUP_NAME "object_copy_test"
-#define OBJECT_COPY_TEST_SPACE_RANK    2
-#define OBJECT_COPY_TEST_GROUP_NAME    "object_copy_test_group"
-#define OBJECT_COPY_TEST_GROUP_NAME2   "object_copy_test_group_copy"
-#define OBJECT_COPY_TEST_DSET_NAME     "object_copy_test_dset"
-#define OBJECT_COPY_TEST_DSET_NAME2    "object_copy_test_dset_copy"
-#define OBJECT_COPY_TEST_TYPE_NAME     "object_copy_test_type"
-#define OBJECT_COPY_TEST_TYPE_NAME2    "object_copy_test_type_copy"
+#define OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME "object_copy_test_shallow_group_no_attrs"
+#define OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME    "object_copy_test_shallow_group_with_attrs"
+#define OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME    "object_copy_test_deep_group_no_attrs"
+#define OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME       "object_copy_test_deep_group_with_attrs"
+#define OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME        "object_copy_test_group_from_other_file"
+#define OBJECT_COPY_TEST_FILE_COPY_DSET_NAME         "object_copy_test_dset_from_other_file"
+#define OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME         "object_copy_test_type_from_other_file"
+#define OBJECT_COPY_TEST_DANGLING_LINK_NAME          "object_copy_test_dangling_link"
+#define OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME          "object_copy_test_dset_no_attrs"
+#define OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME          "object_copy_test_type_no_attrs"
+#define OBJECT_COPY_TEST_DSET_ATTRS_NAME             "object_copy_test_dset_attrs"
+#define OBJECT_COPY_TEST_TYPE_ATTRS_NAME             "object_copy_test_type_attrs"
+#define OBJECT_COPY_TEST_NUM_NESTED_OBJS             3
+#define OBJECT_COPY_TEST_SUBGROUP_NAME               "object_copy_test"
+#define OBJECT_COPY_TEST_SPACE_RANK                  2
+#define OBJECT_COPY_TEST_GROUP_NAME                  "object_copy_test_group"
+#define OBJECT_COPY_TEST_DSET_NAME                   "object_copy_test_dset"
+#define OBJECT_COPY_TEST_TYPE_NAME                   "object_copy_test_type"
+#define OBJECT_COPY_TEST_FILE_NAME                   "object_copy_test_file.h5"
+#define OBJECT_COPY_TEST_NUM_ATTRS                   3
 
 #define OBJECT_COPY_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_copy_invalid_params_test"
 #define OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME    "object_copy_invalid_params_group"
@@ -66,6 +78,11 @@ int vol_object_test(void);
 #define OBJECT_VISIT_TEST_DSET_NAME     "object_visit_test_dset"
 #define OBJECT_VISIT_TEST_TYPE_NAME     "object_visit_test_type"
 #define OBJECT_VISIT_TEST_NUM_OBJS      4 /* Should be one more than the number of objects */
+
+#define OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "object_visit_dangling_link_test"
+#define OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1    "dangling_link1"
+#define OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2    "dangling_link2"
+#define OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3    "dangling_link3"
 
 #define OBJECT_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_visit_invalid_params_test"
 #define OBJECT_VISIT_INVALID_PARAMS_TEST_GROUP_NAME    "object_visit_invalid_params_group"
