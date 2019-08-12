@@ -51,6 +51,7 @@ int vol_object_test(void);
 #define OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME    "object_copy_test_shallow_group_with_attrs"
 #define OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME    "object_copy_test_deep_group_no_attrs"
 #define OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME       "object_copy_test_deep_group_with_attrs"
+#define OBJECT_COPY_TEST_DEEP_NESTED_GROUP_NAME      "object_copy_test_deep_nested_group"
 #define OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME        "object_copy_test_group_from_other_file"
 #define OBJECT_COPY_TEST_FILE_COPY_DSET_NAME         "object_copy_test_dset_from_other_file"
 #define OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME         "object_copy_test_type_from_other_file"
