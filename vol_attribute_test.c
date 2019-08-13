@@ -427,19 +427,6 @@ test_create_attribute_on_datatype(void)
         goto error;
     }
 
-    {
-        /* Temporary workaround for now since H5Tcommit2 doesn't return something public useable
-         * for a VOL object */
-        if (H5Tclose(type_id) < 0)
-            TEST_ERROR
-
-        if ((type_id = H5Topen2(group_id, ATTRIBUTE_CREATE_ON_DATATYPE_DTYPE_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open committed datatype\n");
-            goto error;
-        }
-    }
-
     if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK, NULL, NULL, TRUE)) < 0)
         TEST_ERROR
 
