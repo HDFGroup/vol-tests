@@ -47,27 +47,75 @@ int vol_object_test(void);
 #define OBJECT_EXISTS_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_exists_invalid_params_test"
 #define OBJECT_EXISTS_INVALID_PARAMS_TEST_GRP_NAME      "object_exists_invalid_params_test_group"
 
-#define OBJECT_COPY_TEST_SHALLOW_GROUP_NO_ATTRS_NAME "object_copy_test_shallow_group_no_attrs"
-#define OBJECT_COPY_TEST_SHALLOW_GROUP_ATTRS_NAME    "object_copy_test_shallow_group_with_attrs"
-#define OBJECT_COPY_TEST_DEEP_GROUP_NO_ATTRS_NAME    "object_copy_test_deep_group_no_attrs"
-#define OBJECT_COPY_TEST_DEEP_GROUP_ATTRS_NAME       "object_copy_test_deep_group_with_attrs"
-#define OBJECT_COPY_TEST_DEEP_NESTED_GROUP_NAME      "object_copy_test_deep_nested_group"
-#define OBJECT_COPY_TEST_FILE_COPY_GROUP_NAME        "object_copy_test_group_from_other_file"
-#define OBJECT_COPY_TEST_FILE_COPY_DSET_NAME         "object_copy_test_dset_from_other_file"
-#define OBJECT_COPY_TEST_FILE_COPY_TYPE_NAME         "object_copy_test_type_from_other_file"
-#define OBJECT_COPY_TEST_DANGLING_LINK_NAME          "object_copy_test_dangling_link"
-#define OBJECT_COPY_TEST_DSET_NO_ATTRS_NAME          "object_copy_test_dset_no_attrs"
-#define OBJECT_COPY_TEST_TYPE_NO_ATTRS_NAME          "object_copy_test_type_no_attrs"
-#define OBJECT_COPY_TEST_DSET_ATTRS_NAME             "object_copy_test_dset_attrs"
-#define OBJECT_COPY_TEST_TYPE_ATTRS_NAME             "object_copy_test_type_attrs"
-#define OBJECT_COPY_TEST_NUM_NESTED_OBJS             3
-#define OBJECT_COPY_TEST_SUBGROUP_NAME               "object_copy_test"
-#define OBJECT_COPY_TEST_SPACE_RANK                  2
-#define OBJECT_COPY_TEST_GROUP_NAME                  "object_copy_test_group"
-#define OBJECT_COPY_TEST_DSET_NAME                   "object_copy_test_dset"
-#define OBJECT_COPY_TEST_TYPE_NAME                   "object_copy_test_type"
-#define OBJECT_COPY_TEST_FILE_NAME                   "object_copy_test_file.h5"
-#define OBJECT_COPY_TEST_NUM_ATTRS                   3
+#define OBJECT_COPY_BASIC_TEST_DEEP_NESTED_GROUP_NAME "deep_nested_group"
+#define OBJECT_COPY_BASIC_TEST_NUM_NESTED_OBJS        3
+#define OBJECT_COPY_BASIC_TEST_NEW_GROUP_NAME         "copied_group"
+#define OBJECT_COPY_BASIC_TEST_NEW_DSET_NAME          "copied_dset"
+#define OBJECT_COPY_BASIC_TEST_NEW_DTYPE_NAME         "copied_dtype"
+#define OBJECT_COPY_BASIC_TEST_SUBGROUP_NAME          "object_copy_basic_test"
+#define OBJECT_COPY_BASIC_TEST_GROUP_NAME             "group_to_copy"
+#define OBJECT_COPY_BASIC_TEST_DSET_NAME              "dset_to_copy"
+#define OBJECT_COPY_BASIC_TEST_DTYPE_NAME             "dtype_to_copy"
+#define OBJECT_COPY_BASIC_TEST_SPACE_RANK             2
+#define OBJECT_COPY_BASIC_TEST_NUM_ATTRS              3
+#define OBJECT_COPY_BASIC_TEST_BUF_SIZE               256
+
+#define OBJECT_COPY_ALREADY_EXISTING_TEST_SUBGROUP_NAME "object_copy_existing_objects_test"
+#define OBJECT_COPY_ALREADY_EXISTING_TEST_GROUP_NAME    "group_to_copy"
+#define OBJECT_COPY_ALREADY_EXISTING_TEST_DSET_NAME     "dset_to_copy"
+#define OBJECT_COPY_ALREADY_EXISTING_TEST_DTYPE_NAME    "dtype_to_copy"
+#define OBJECT_COPY_ALREADY_EXISTING_TEST_SPACE_RANK    2
+
+#define OBJECT_COPY_SHALLOW_TEST_DEEP_NESTED_GROUP_NAME "deep_nested_group"
+#define OBJECT_COPY_SHALLOW_TEST_NUM_NESTED_OBJS        3
+#define OBJECT_COPY_SHALLOW_TEST_SUBGROUP_NAME          "object_copy_shallow_group_copy_test"
+#define OBJECT_COPY_SHALLOW_TEST_NEW_GROUP_NAME         "copied_group"
+#define OBJECT_COPY_SHALLOW_TEST_GROUP_NAME             "group_to_copy"
+#define OBJECT_COPY_SHALLOW_TEST_BUF_SIZE               256
+
+#define OBJECT_COPY_NO_ATTRS_TEST_SUBGROUP_NAME  "object_copy_no_attributes_test"
+#define OBJECT_COPY_NO_ATTRS_TEST_NEW_GROUP_NAME "copied_group"
+#define OBJECT_COPY_NO_ATTRS_TEST_NEW_DSET_NAME  "copied_dset"
+#define OBJECT_COPY_NO_ATTRS_TEST_NEW_DTYPE_NAME "copied_dtype"
+#define OBJECT_COPY_NO_ATTRS_TEST_GROUP_NAME     "group_to_copy"
+#define OBJECT_COPY_NO_ATTRS_TEST_DSET_NAME      "dset_to_copy"
+#define OBJECT_COPY_NO_ATTRS_TEST_DTYPE_NAME     "dtype_to_copy"
+#define OBJECT_COPY_NO_ATTRS_TEST_SPACE_RANK     2
+#define OBJECT_COPY_NO_ATTRS_TEST_NUM_ATTRS      3
+#define OBJECT_COPY_NO_ATTRS_TEST_BUF_SIZE       256
+
+#define OBJECT_COPY_SOFT_LINK_TEST_DEEP_NESTED_GROUP_NAME "deep_nested_group"
+#define OBJECT_COPY_SOFT_LINK_TEST_DANGLING_LINK_NAME     "dangling_link"
+#define OBJECT_COPY_SOFT_LINK_TEST_NUM_NESTED_OBJS        3
+#define OBJECT_COPY_SOFT_LINK_TEST_SUBGROUP_NAME          "object_copy_soft_link_test"
+#define OBJECT_COPY_SOFT_LINK_TEST_SOFT_LINK_NAME         "soft_link_to_group_to_copy"
+#define OBJECT_COPY_SOFT_LINK_TEST_NEW_GROUP_NAME         "copied_group"
+#define OBJECT_COPY_SOFT_LINK_TEST_GROUP_NAME             "group_to_copy"
+#define OBJECT_COPY_SOFT_LINK_TEST_SPACE_RANK             2
+#define OBJECT_COPY_SOFT_LINK_TEST_NUM_ATTRS              3
+#define OBJECT_COPY_SOFT_LINK_TEST_BUF_SIZE               256
+
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_EXPAND_DANGLING_GROUP_NAME "expanded_dangling_soft_links_group"
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_NON_EXPAND_GROUP_NAME      "non_expanded_soft_links_group"
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_EXPAND_GROUP_NAME          "expanded_soft_links_group"
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_NUM_NESTED_OBJS            3
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_SUBGROUP_NAME              "object_copy_group_with_soft_links_test"
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_GROUP_NAME                 "group_to_copy"
+#define OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_BUF_SIZE                   256
+
+#define OBJECT_COPY_BETWEEN_FILES_TEST_DEEP_NESTED_GROUP_NAME "deep_nested_group"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_NUM_NESTED_OBJS        3
+#define OBJECT_COPY_BETWEEN_FILES_TEST_SUBGROUP_NAME          "object_copy_between_files_test"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_NEW_GROUP_NAME         "copied_group"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_NEW_DSET_NAME          "copied_dset"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_NEW_DTYPE_NAME         "copied_dtype"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_FILE_NAME              "object_copy_test_file.h5"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_GROUP_NAME             "group_to_copy"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_DSET_NAME              "dset_to_copy"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_DTYPE_NAME             "dtype_to_copy"
+#define OBJECT_COPY_BETWEEN_FILES_TEST_SPACE_RANK             2
+#define OBJECT_COPY_BETWEEN_FILES_TEST_NUM_ATTRS              3
+#define OBJECT_COPY_BETWEEN_FILES_TEST_BUF_SIZE               256
 
 #define OBJECT_COPY_INVALID_PARAMS_TEST_SUBGROUP_NAME "object_copy_invalid_params_test"
 #define OBJECT_COPY_INVALID_PARAMS_TEST_GROUP_NAME    "object_copy_invalid_params_group"
