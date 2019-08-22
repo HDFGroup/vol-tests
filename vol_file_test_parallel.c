@@ -278,6 +278,7 @@ vol_file_test_parallel(void)
     if (MAINPROCESS)
         HDprintf("\n");
 
+    HDprintf("Cleaning up testing files\n");
     cleanup_files();
 
     return nerrors;

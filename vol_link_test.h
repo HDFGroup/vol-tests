@@ -126,12 +126,12 @@ int vol_link_test(void);
 #define GET_LINK_NAME_INVALID_PARAMS_TEST_HARD_LINK_NAME "test_link1"
 #define GET_LINK_NAME_INVALID_PARAMS_TEST_GROUP_NAME     "get_link_name_invalid_params_test"
 
-#define LINK_ITER_TEST_DSET_SPACE_RANK 2
-#define LINK_ITER_TEST_HARD_LINK_NAME  "hard_link1"
-#define LINK_ITER_TEST_SOFT_LINK_NAME  "soft_link1"
-#define LINK_ITER_TEST_EXT_LINK_NAME   "ext_link1"
-#define LINK_ITER_TEST_SUBGROUP_NAME   "link_iter_test"
-#define LINK_ITER_TEST_NUM_LINKS       3
+#define LINK_ITER_MIXED_LINKS_TEST_DSET_SPACE_RANK 2
+#define LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME  "hard_link1"
+#define LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME  "soft_link1"
+#define LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME   "ext_link1"
+#define LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME   "link_iter_mixed_links_test"
+#define LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS       3
 
 #define LINK_ITER_INVALID_PARAMS_TEST_DSET_SPACE_RANK 2
 #define LINK_ITER_INVALID_PARAMS_TEST_HARD_LINK_NAME  "hard_link1"
@@ -139,28 +139,28 @@ int vol_link_test(void);
 #define LINK_ITER_INVALID_PARAMS_TEST_EXT_LINK_NAME   "ext_link1"
 #define LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME   "link_iter_invalid_params_test"
 
-#define LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME "link_iter_test_0_links"
+#define LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME "link_iter_0_links_test"
 
-#define LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK 2
-#define LINK_VISIT_TEST_NO_CYCLE_DSET_NAME       "dset"
-#define LINK_VISIT_TEST_NO_CYCLE_DSET_NAME2      "dset2"
-#define LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME   "link_visit_test_no_cycles"
-#define LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2  "link_visit_subgroup1"
-#define LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3  "link_visit_subgroup2"
-#define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1      "hard_link1"
-#define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2      "soft_link1"
-#define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3      "ext_link1"
-#define LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4      "hard_link2"
-#define LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS       8
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_SPACE_RANK 2
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME       "dset"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2      "dset2"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME   "link_visit_mixed_links_no_cycle_test"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2  "link_visit_subgroup1"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3  "link_visit_subgroup2"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1      "hard_link1"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2      "soft_link1"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3      "ext_link1"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4      "hard_link2"
+#define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS       8
 
-#define LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME  "link_visit_test_cycles"
-#define LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2 "link_visit_subgroup1"
-#define LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3 "link_visit_subgroup2"
-#define LINK_VISIT_TEST_CYCLE_LINK_NAME1     "hard_link1"
-#define LINK_VISIT_TEST_CYCLE_LINK_NAME2     "soft_link1"
-#define LINK_VISIT_TEST_CYCLE_LINK_NAME3     "ext_link1"
-#define LINK_VISIT_TEST_CYCLE_LINK_NAME4     "hard_link2"
-#define LINK_VISIT_TEST_CYCLE_NUM_LINKS      6
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME  "link_visit_mixed_links_cycle_test"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "link_visit_subgroup1"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "link_visit_subgroup2"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1     "hard_link1"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2     "soft_link1"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3     "ext_link1"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4     "hard_link2"
+#define LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS      6
 
 #define LINK_VISIT_INVALID_PARAMS_TEST_DSET_SPACE_RANK 2
 #define LINK_VISIT_INVALID_PARAMS_TEST_DSET_NAME       "dset"
@@ -172,8 +172,8 @@ int vol_link_test(void);
 #define LINK_VISIT_INVALID_PARAMS_TEST_LINK_NAME3      "ext_link1"
 #define LINK_VISIT_INVALID_PARAMS_TEST_LINK_NAME4      "hard_link2"
 
-#define LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME   "link_visit_test_0_links"
-#define LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME2  "link_visit_test_0_links_subgroup1"
-#define LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME3  "link_visit_test_0_links_subgroup2"
+#define LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME   "link_visit_0_links_test"
+#define LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME2  "link_visit_0_links_test_subgroup1"
+#define LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME3  "link_visit_0_links_test_subgroup2"
 
 #endif
