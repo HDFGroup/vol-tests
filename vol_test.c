@@ -38,6 +38,11 @@
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
+size_t n_tests_run_g;
+size_t n_tests_passed_g;
+size_t n_tests_failed_g;
+size_t n_tests_skipped_g;
+
 /******************************************************************************/
 
 int main(int argc, char **argv)
@@ -55,6 +60,11 @@ int main(int argc, char **argv)
 #endif
 
     /* h5_reset(); */
+
+    n_tests_run_g = 0;
+    n_tests_passed_g = 0;
+    n_tests_failed_g = 0;
+    n_tests_skipped_g = 0;
 
     srand((unsigned) HDtime(NULL));
 
@@ -76,7 +86,6 @@ int main(int argc, char **argv)
      */
     if (create_test_container(vol_test_filename) < 0) {
         HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
-        nerrors++;
         goto done;
     }
 
@@ -89,12 +98,12 @@ int main(int argc, char **argv)
     nerrors += vol_object_test();
     nerrors += vol_misc_test();
 
-    if (nerrors) {
-        HDprintf("*** %d TEST%s FAILED WITH VOL CONNECTOR '%s' ***\n", nerrors, (!nerrors || nerrors > 1) ? "S" : "", vol_connector_name);
-        goto done;
-    }
-
-    HDprintf("All VOL tests passed with VOL connector '%s'\n\n", vol_connector_name);
+    HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n",
+            (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / n_tests_run_g * 100.0), vol_connector_name);
+    HDprintf("%ld/%ld (%.2f%%) VOL tests failed with VOL connector '%s'\n",
+            (long) n_tests_failed_g, (long) n_tests_run_g, ((float) n_tests_failed_g / n_tests_run_g * 100.0), vol_connector_name);
+    HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n",
+            (long) n_tests_skipped_g, (long) n_tests_run_g, ((float) n_tests_skipped_g / n_tests_run_g * 100.0), vol_connector_name);
 
 done:
     H5close();

@@ -12,11 +12,18 @@
 
 #include "vol_datatype_test.h"
 
+/*
+ * Disable tests that currently compromise internal HDF5 integrity.
+ */
+#define PROBLEMATIC_TESTS
+
 static int test_create_committed_datatype(void);
 static int test_create_committed_datatype_invalid_params(void);
 static int test_create_anonymous_committed_datatype(void);
 static int test_create_anonymous_committed_datatype_invalid_params(void);
+#ifndef PROBLEMATIC_TESTS
 static int test_create_committed_datatype_empty_types(void);
+#endif
 static int test_recommit_committed_type(void);
 static int test_open_committed_datatype(void);
 static int test_open_committed_datatype_invalid_params(void);
@@ -31,7 +38,9 @@ static int test_flush_committed_datatype(void);
 static int test_flush_committed_datatype_invalid_params(void);
 static int test_refresh_committed_datatype(void);
 static int test_refresh_committed_datatype_invalid_params(void);
+#ifndef PROBLEMATIC_TESTS
 static int test_cant_commit_predefined(void);
+#endif
 static int test_cant_modify_committed_type(void);
 
 /*
@@ -42,7 +51,9 @@ static int (*datatype_tests[])(void) = {
         test_create_committed_datatype_invalid_params,
         test_create_anonymous_committed_datatype,
         test_create_anonymous_committed_datatype_invalid_params,
+#ifndef PROBLEMATIC_TESTS
         test_create_committed_datatype_empty_types,
+#endif
         test_recommit_committed_type,
         test_open_committed_datatype,
         test_open_committed_datatype_invalid_params,
@@ -57,7 +68,9 @@ static int (*datatype_tests[])(void) = {
         test_flush_committed_datatype_invalid_params,
         test_refresh_committed_datatype,
         test_refresh_committed_datatype_invalid_params,
+#ifndef PROBLEMATIC_TESTS
         test_cant_commit_predefined,
+#endif
         test_cant_modify_committed_type,
 };
 
@@ -513,6 +526,7 @@ error:
  * A test to check that committing a datatype fails with empty
  * compound and enum datatypes.
  */
+#ifndef PROBLEMATIC_TESTS
 static int
 test_create_committed_datatype_empty_types(void)
 {
@@ -652,6 +666,7 @@ error:
 
     return 1;
 }
+#endif
 
 /*
  * A test to check that a committed datatype can't be re-committed.
@@ -2121,6 +2136,7 @@ test_refresh_committed_datatype_invalid_params(void)
  * An application should first copy the type with H5Tcopy and then commit the
  * copied datatype.
  */
+#ifndef PROBLEMATIC_TESTS
 static int
 test_cant_commit_predefined(void)
 {
@@ -2179,6 +2195,7 @@ error:
 
     return 1;
 }
+#endif
 
 /*
  * A test to check that a datatype cannot be modified once it has been committed.

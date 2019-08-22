@@ -1740,7 +1740,7 @@ test_get_file_name(void)
             if (H5Fget_name(group_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
-                PART_ERROR(H5Fget_name_file_id);
+                PART_ERROR(H5Fget_name_grp_id);
             }
 
             if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t) file_name_buf_len)) {

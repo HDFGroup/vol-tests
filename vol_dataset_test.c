@@ -6250,48 +6250,48 @@ test_dataset_set_extent_data(void)
         PART_BEGIN(H5Dset_extent_data_expand) {
             TESTING_2("H5Dset_extent for data expansion")
 
-	    /* Expand the dataset.  The extended space should be initialized with the
-	     * the default value (0)
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * X X X X X X X X 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	     */
-	    if (H5Dset_extent(dset_id , dims_expand) < 0)
-		TEST_ERROR
+            /* Expand the dataset.  The extended space should be initialized with the
+             * the default value (0)
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * X X X X X X X X 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             */
+            if (H5Dset_extent(dset_id , dims_expand) < 0)
+                PART_ERROR(H5Dset_extent_data_expand);
 
-	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand) < 0)
-		TEST_ERROR
+            if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand) < 0)
+                PART_ERROR(H5Dset_extent_data_expand);
 
-	    /* compare the expanded data */
-	    for (i = 0; i < (int)dims_expand[0]; i++ ) {
-		for (j = 0; j < (int)dims_expand[1]; j++ ) {
-		    if ( i >= dims_origin[0] || j >= dims_origin[1] ) {
-			if(buf_expand[i][j] != 0) {
-			    H5_FAILED();
-			    HDprintf("buf_expand[%d][%d] = %d. It should be 0\n", i, j, buf_expand[i][j]);
-                            PART_ERROR(H5Dset_extent_data_expand);
-			}
-		    } else {
-			if(buf_expand[i][j] != buf_origin[i][j]) {
-			    H5_FAILED();
-			    HDprintf("buf_expand[%d][%d] = %d. It should be %d\n", i, j, buf_expand[i][j], buf_origin[i][j]);
-                            PART_ERROR(H5Dset_extent_data_expand);
-			}
-		    }
-		}
-	    }
+            /* compare the expanded data */
+	        for (i = 0; i < (int)dims_expand[0]; i++ ) {
+	            for (j = 0; j < (int)dims_expand[1]; j++ ) {
+	                if (i >= (int)dims_origin[0] || j >= (int)dims_origin[1]) {
+	                    if(buf_expand[i][j] != 0) {
+	                        H5_FAILED();
+	                        HDprintf("buf_expand[%d][%d] = %d. It should be 0\n", i, j, buf_expand[i][j]);
+	                        PART_ERROR(H5Dset_extent_data_expand);
+	                    }
+	                } else {
+	                    if(buf_expand[i][j] != buf_origin[i][j]) {
+	                        H5_FAILED();
+	                        HDprintf("buf_expand[%d][%d] = %d. It should be %d\n", i, j, buf_expand[i][j], buf_origin[i][j]);
+	                        PART_ERROR(H5Dset_extent_data_expand);
+	                    }
+	                }
+	            }
+	        }
 
             PASSED();
         } PART_END(H5Dset_extent_data_expand);
@@ -6299,29 +6299,29 @@ test_dataset_set_extent_data(void)
         PART_BEGIN(H5Dset_extent_data_shrink) {
             TESTING_2("H5Dset_extent for data shrinking")
 
-	    /* Shrink the dataset.
-	     * X X X X X
-	     * X X X X X
-	     * X X X X X
-	     * X X X X X
-	     * X X X X X
-	     */
-	    if (H5Dset_extent(dset_id , dims_shrink) < 0)
-		TEST_ERROR
+	        /* Shrink the dataset.
+	         * X X X X X
+	         * X X X X X
+	         * X X X X X
+	         * X X X X X
+	         * X X X X X
+	         */
+	        if (H5Dset_extent(dset_id, dims_shrink) < 0)
+	            PART_ERROR(H5Dset_extent_data_shrink);
 
-	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_shrink) < 0)
-		TEST_ERROR
+	        if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_shrink) < 0)
+	            PART_ERROR(H5Dset_extent_data_shrink);
 
-	    /* compare the shrinked data */
-	    for (i = 0; i < (int)dims_shrink[0]; i++ ) {
-		for (j = 0; j < (int)dims_shrink[1]; j++ ) {
-		    if(buf_shrink[i][j] != buf_origin[i][j]) {
-			H5_FAILED();
-			HDprintf("buf_shrink[%d][%d] = %d. It should be %d\n", i, j, buf_shrink[i][j], buf_origin[i][j]);
-                        PART_ERROR(H5Dset_extent_data_shrink);
-		    }
-		}
-	    }
+	        /* compare the shrinked data */
+	        for (i = 0; i < (int)dims_shrink[0]; i++ ) {
+	            for (j = 0; j < (int)dims_shrink[1]; j++ ) {
+	                if(buf_shrink[i][j] != buf_origin[i][j]) {
+	                    H5_FAILED();
+	                    HDprintf("buf_shrink[%d][%d] = %d. It should be %d\n", i, j, buf_shrink[i][j], buf_origin[i][j]);
+	                    PART_ERROR(H5Dset_extent_data_shrink);
+	                }
+	            }
+	        }
 
             PASSED();
         } PART_END(H5Dset_extent_data_shrink);
@@ -6329,40 +6329,40 @@ test_dataset_set_extent_data(void)
         PART_BEGIN(H5Dset_extent_data_expand_to_origin) {
             TESTING_2("H5Dset_extent for data back to the original size")
 
-	    /* Expand the dataset back to the original size. The data should look like this:
-	     * X X X X X 0 0 0
-	     * X X X X X 0 0 0
-	     * X X X X X 0 0 0
-	     * X X X X X 0 0 0
-	     * X X X X X 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     */
-	    if (H5Dset_extent(dset_id , dims_origin) < 0)
-		TEST_ERROR
+	        /* Expand the dataset back to the original size. The data should look like this:
+	         * X X X X X 0 0 0
+	         * X X X X X 0 0 0
+	         * X X X X X 0 0 0
+	         * X X X X X 0 0 0
+	         * X X X X X 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         */
+	        if (H5Dset_extent(dset_id , dims_origin) < 0)
+	            PART_ERROR(H5Dset_extent_data_expand_to_origin);
 
-	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand2) < 0)
-		TEST_ERROR
+	        if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand2) < 0)
+	            PART_ERROR(H5Dset_extent_data_expand_to_origin);
 
-	    /* compare the expanded data */
-	    for (i = 0; i < (int)dims_origin[0]; i++ ) {
-		for (j = 0; j < (int)dims_origin[1]; j++ ) {
-		    if ( i >= dims_shrink[0] || j >= dims_shrink[1] ) {
-			if(buf_expand2[i][j] != 0) {
-			    H5_FAILED();
-			    HDprintf("buf_expand2[%d][%d] = %d. It should be 0\n", i, j, buf_expand2[i][j]);
-                            PART_ERROR(H5Dset_extent_data_expand_to_origin);
-			}
-		    } else {
-			if(buf_expand2[i][j] != buf_origin[i][j]) {
-			    H5_FAILED();
-			    HDprintf("buf_expand2[%d][%d] = %d. It should be %d.\n", i, j, buf_expand2[i][j], buf_origin[i][j]);
-                            PART_ERROR(H5Dset_extent_data_expand_to_origin);
-			}
-		    }
-		}
-	    }
+	        /* compare the expanded data */
+	        for (i = 0; i < (int)dims_origin[0]; i++ ) {
+	            for (j = 0; j < (int)dims_origin[1]; j++ ) {
+	                if ( i >= (int)dims_shrink[0] || j >= (int)dims_shrink[1] ) {
+	                    if(buf_expand2[i][j] != 0) {
+	                        H5_FAILED();
+	                        HDprintf("buf_expand2[%d][%d] = %d. It should be 0\n", i, j, buf_expand2[i][j]);
+	                        PART_ERROR(H5Dset_extent_data_expand_to_origin);
+	                    }
+	                } else {
+	                    if(buf_expand2[i][j] != buf_origin[i][j]) {
+	                        H5_FAILED();
+	                        HDprintf("buf_expand2[%d][%d] = %d. It should be %d.\n", i, j, buf_expand2[i][j], buf_origin[i][j]);
+	                        PART_ERROR(H5Dset_extent_data_expand_to_origin);
+	                    }
+	                }
+	            }
+	        }
 
             PASSED();
         } PART_END(H5Dset_extent_data_expand_to_origin);
@@ -6370,32 +6370,30 @@ test_dataset_set_extent_data(void)
         PART_BEGIN(H5Dset_extent_data_shrink_to_zero) {
             TESTING_2("H5Dset_extent for data shrink to zero size")
 
-	    /* Shrink the dimensions to 0 and verify it
-	     *
-	     */
-	    dims_shrink[0] = dims_shrink[1] = 0;
+	        /* Shrink the dimensions to 0 and verify it */
+	        dims_shrink[0] = dims_shrink[1] = 0;
 
-	    if (H5Dset_extent(dset_id , dims_shrink) < 0)
-		TEST_ERROR
+            if (H5Dset_extent(dset_id , dims_shrink) < 0)
+                PART_ERROR(H5Dset_extent_data_shrink_to_zero);
 
-	    /* get the space */
-	    if ((dset_space_id = H5Dget_space(dset_id)) < 0)
-		TEST_ERROR
+            /* get the space */
+            if ((dset_space_id = H5Dget_space(dset_id)) < 0)
+                PART_ERROR(H5Dset_extent_data_shrink_to_zero);
 
-	    /* get dimensions */
-	    if (H5Sget_simple_extent_dims(dset_space_id, dims_out, NULL) < 0)
-		TEST_ERROR
+            /* get dimensions */
+            if (H5Sget_simple_extent_dims(dset_space_id, dims_out, NULL) < 0)
+                PART_ERROR(H5Dset_extent_data_shrink_to_zero);
 
-	    if (H5Sclose(dset_space_id) < 0)
-		TEST_ERROR
+            if (H5Sclose(dset_space_id) < 0)
+                PART_ERROR(H5Dset_extent_data_shrink_to_zero);
 
-	    /* Verify the dimensions are 0 */
-	    for (i = 0; i < DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK; i++ )
-		if (dims_out[i] != 0) {
-		    H5_FAILED();
-		    HDprintf("dims_out[%d] = %d.  It should be 0.\n", i, dims_out[i]);
+            /* Verify the dimensions are 0 */
+            for (i = 0; i < DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK; i++)
+                if (dims_out[i] != 0) {
+                    H5_FAILED();
+                    HDprintf("dims_out[%d] = %d.  It should be 0.\n", i, dims_out[i]);
                     PART_ERROR(H5Dset_extent_data_shrink_to_zero);
-		}
+                }
 
             PASSED();
         } PART_END(H5Dset_extent_data_shrink_to_zero);
@@ -6403,32 +6401,32 @@ test_dataset_set_extent_data(void)
         PART_BEGIN(H5Dset_extent_data_expand_to_origin_again) {
             TESTING_2("H5Dset_extent for data expansion back to the original again")
 
-	    /* Expand the dataset back to the original size. The data should look like this:
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     * 0 0 0 0 0 0 0 0
-	     */
-	    if (H5Dset_extent(dset_id , dims_origin) < 0)
-		TEST_ERROR
+	        /* Expand the dataset back to the original size. The data should look like this:
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         * 0 0 0 0 0 0 0 0
+	         */
+	        if (H5Dset_extent(dset_id , dims_origin) < 0)
+	            PART_ERROR(H5Dset_extent_data_expand_to_origin_again);
 
-	    if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand2) < 0)
-		TEST_ERROR
+	        if (H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_expand2) < 0)
+	            PART_ERROR(H5Dset_extent_data_expand_to_origin_again);
 
-	    /* The data should be all zeros */
-	    for (i = 0; i < (int)dims_origin[0]; i++ ) {
-		for (j = 0; j < (int)dims_origin[1]; j++ ) {
-		    if(buf_expand2[i][j] != 0) {
-			H5_FAILED();
-			HDprintf("buf_expand2[%d][%d] = %d. It should be 0.\n", i, j, buf_expand2[i][j]);
-                        PART_ERROR(H5Dset_extent_data_expand_to_origin_again);
-		    }
-		}
-	    }
+	        /* The data should be all zeros */
+	        for (i = 0; i < (int)dims_origin[0]; i++ ) {
+	            for (j = 0; j < (int)dims_origin[1]; j++ ) {
+	                if(buf_expand2[i][j] != 0) {
+	                    H5_FAILED();
+	                    HDprintf("buf_expand2[%d][%d] = %d. It should be 0.\n", i, j, buf_expand2[i][j]);
+	                    PART_ERROR(H5Dset_extent_data_expand_to_origin_again);
+	                }
+	            }
+	        }
 
             PASSED();
         } PART_END(H5Dset_extent_data_expand_to_origin_again);
@@ -6485,7 +6483,7 @@ test_dataset_set_extent_double_handles(void)
     hid_t   dset_id = H5I_INVALID_HID, dset_id2 = H5I_INVALID_HID;
     hid_t   dcpl_id = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID, dset_space_id = H5I_INVALID_HID;
-    int     i, j;
+    int     i;
 
     TESTING("H5Dset_extent on double dataset handles")
 
@@ -6536,25 +6534,25 @@ test_dataset_set_extent_double_handles(void)
 
     /* Expand the dataset's dimensions with the first dataset handle */
     if (H5Dset_extent(dset_id , dims_expand) < 0)
-	TEST_ERROR
+        TEST_ERROR
 
     /* Get the data space with the second dataset handle */
     if ((dset_space_id = H5Dget_space(dset_id2)) < 0)
-	TEST_ERROR
+        TEST_ERROR
 
     /* Get the dimensions with the second dataset handle */
     if (H5Sget_simple_extent_dims(dset_space_id, dims_out, NULL) < 0)
-	TEST_ERROR
+        TEST_ERROR
 
     if (H5Sclose(dset_space_id) < 0)
-	TEST_ERROR
+        TEST_ERROR
 
-    for (i = 0; i < DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK; i++ )
-	if (dims_out[i] != dims_expand[i]) {
-	    H5_FAILED();
-	    HDprintf("dims_out[%d] = %d.  It should be %d.\n", i, dims_out[i], dims_expand[i]);
+    for (i = 0; i < DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK; i++)
+        if (dims_out[i] != dims_expand[i]) {
+            H5_FAILED();
+            HDprintf("dims_out[%d] = %d.  It should be %d.\n", i, dims_out[i], dims_expand[i]);
             goto error;
-	}
+        }
 
     if (H5Pclose(dcpl_id) < 0)
         TEST_ERROR

@@ -427,19 +427,6 @@ test_create_attribute_on_datatype(void)
         goto error;
     }
 
-    {
-        /* Temporary workaround for now since H5Tcommit2 doesn't return something public useable
-         * for a VOL object */
-        if (H5Tclose(type_id) < 0)
-            TEST_ERROR
-
-        if ((type_id = H5Topen2(group_id, ATTRIBUTE_CREATE_ON_DATATYPE_DTYPE_NAME, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't open committed datatype\n");
-            goto error;
-        }
-    }
-
     if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK, NULL, NULL, TRUE)) < 0)
         TEST_ERROR
 
@@ -1300,7 +1287,7 @@ test_open_attribute(void)
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
-                PART_ERROR(H5Aopen);
+                PART_ERROR(H5Aopen_by_name);
             }
 
             PASSED();
@@ -1319,7 +1306,7 @@ test_open_attribute(void)
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
-                PART_ERROR(H5Aopen);
+                PART_ERROR(H5Aopen_by_idx);
             }
 
             PASSED();
@@ -2579,8 +2566,8 @@ test_get_attribute_space_and_type(void)
     PASSED();
 
     BEGIN_MULTIPART {
+        /* Retrieve the attribute's datatype and dataspace and verify them */
         PART_BEGIN(H5Aget_type) {
-            /* Retrieve the attribute's datatype and dataspace and verify them */
             TESTING_2("H5Aget_type")
 
             if ((tmp_type_id = H5Aget_type(attr_id)) < 0) {
@@ -2849,8 +2836,8 @@ test_get_attribute_space_and_type_invalid_params(void)
     PASSED();
 
     BEGIN_MULTIPART {
+        /* Retrieve the attribute's datatype and dataspace and verify them */
         PART_BEGIN(H5Aget_type_invalid_attr_id) {
-            /* Retrieve the attribute's datatype and dataspace and verify them */
             TESTING_2("H5Aget_type with an invalid attr_id")
 
             H5E_BEGIN_TRY {
@@ -4865,6 +4852,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate2_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate2_name_decreasing) {
             TESTING_2("H5Aiterate by attribute name in decreasing order")
 
@@ -4877,6 +4867,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate2_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate2_creation_increasing) {
             TESTING_2("H5Aiterate by creation order in increasing order")
 
@@ -4888,6 +4881,9 @@ test_attribute_iterate(void)
 
             PASSED();
         } PART_END(H5Aiterate2_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate2_creation_decreasing) {
             TESTING_2("H5Aiterate by creation order in decreasing order")
@@ -4919,6 +4915,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate_by_name_name_increasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
 
@@ -4932,6 +4931,9 @@ test_attribute_iterate(void)
             PASSED();
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+
         PART_BEGIN(H5Aiterate_by_name_creation_increasing) {
             TESTING_2("H5Aiterate_by_name by creation order in increasing order")
 
@@ -4944,6 +4946,9 @@ test_attribute_iterate(void)
 
             PASSED();
         } PART_END(H5Aiterate_by_name_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing) {
             TESTING_2("H5Aiterate_by_name by creation order in decreasing order")

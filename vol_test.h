@@ -93,12 +93,12 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
  * spaces.  If the h5_errors() is used for automatic error handling then
  * the H5_FAILED() macro is invoked automatically when an API function fails.
  */
-#define TESTING(WHAT)  {printf("Testing %-62s",WHAT); fflush(stdout);}
-#define TESTING_2(WHAT)  {printf("  Testing %-60s",WHAT); fflush(stdout);}
-#define PASSED()  {puts(" PASSED");fflush(stdout);}
-#define H5_FAILED()  {puts("*FAILED*");fflush(stdout);}
+#define TESTING(WHAT)  {printf("Testing %-62s",WHAT); n_tests_run_g++; fflush(stdout);}
+#define TESTING_2(WHAT)  {printf("  Testing %-60s",WHAT); n_tests_run_g++; fflush(stdout);}
+#define PASSED()  {puts(" PASSED"); n_tests_passed_g++; fflush(stdout);}
+#define H5_FAILED()  {puts("*FAILED*");n_tests_failed_g++;fflush(stdout);}
 #define H5_WARNING()  {puts("*WARNING*");fflush(stdout);}
-#define SKIPPED()  {puts(" -SKIP-");fflush(stdout);}
+#define SKIPPED()  {puts(" -SKIP-");n_tests_skipped_g++;fflush(stdout);}
 #define PUTS_ERROR(s)   {puts(s); AT(); goto error;}
 #define TEST_ERROR      {H5_FAILED(); AT(); goto error;}
 #define STACK_ERROR     {H5Eprint2(H5E_DEFAULT, stdout); goto error;}
@@ -179,5 +179,14 @@ extern char vol_test_filename[];
  * VOL connector feature support situation is resolved.
  */
 #define GROUP_CREATION_IS_SUPPORTED
+
+/*
+ * Global variables to keep track of statistics on the
+ * number of tests skipped, failed and run total.
+ */
+extern size_t n_tests_run_g;
+extern size_t n_tests_passed_g;
+extern size_t n_tests_failed_g;
+extern size_t n_tests_skipped_g;
 
 #endif
