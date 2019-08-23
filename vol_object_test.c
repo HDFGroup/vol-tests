@@ -4351,6 +4351,8 @@ test_object_comments_invalid_params(void)
 
 /*
  * A test for H5Ovisit(_by_name).
+ *
+ * XXX: Should have test for checking nested object's names/paths.
  */
 static int
 test_object_visit(void)

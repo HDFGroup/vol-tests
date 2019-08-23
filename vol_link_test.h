@@ -85,25 +85,33 @@ int vol_link_test(void);
 #define LINK_DELETE_INVALID_PARAMS_TEST_GROUP_NAME     "link_deletion_invalid_params_test"
 
 #define COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME "external_link_copy"
-#define COPY_LINK_TEST_SOFT_LINK_TARGET_PATH   "/" LINK_TEST_GROUP_NAME "/" COPY_LINK_TEST_GROUP_NAME
+#define COPY_LINK_TEST_SOFT_LINK_TARGET_PATH   "/" LINK_TEST_GROUP_NAME "/" COPY_LINK_TEST_SUBGROUP_NAME
 #define COPY_LINK_TEST_HARD_LINK_COPY_NAME     "hard_link_copy"
 #define COPY_LINK_TEST_SOFT_LINK_COPY_NAME     "soft_link_copy"
 #define COPY_LINK_TEST_EXTERNAL_LINK_NAME      "external_link"
 #define COPY_LINK_TEST_HARD_LINK_NAME          "hard_link"
 #define COPY_LINK_TEST_SOFT_LINK_NAME          "soft_link"
-#define COPY_LINK_TEST_GROUP_NAME              "link_copy_test"
+#define COPY_LINK_TEST_SRC_GROUP_NAME          "src_group"
+#define COPY_LINK_TEST_DST_GROUP_NAME          "dst_group"
+#define COPY_LINK_TEST_SUBGROUP_NAME           "link_copy_test"
 
 #define COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME "hard_link_copy"
 #define COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME      "hard_link"
-#define COPY_LINK_INVALID_PARAMS_TEST_GROUP_NAME          "link_copy_invalid_params_test"
+#define COPY_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME      "src_group"
+#define COPY_LINK_INVALID_PARAMS_TEST_DST_GROUP_NAME      "dst_group"
+#define COPY_LINK_INVALID_PARAMS_TEST_SUBGROUP_NAME       "link_copy_invalid_params_test"
 
-#define MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH "/" LINK_TEST_GROUP_NAME "/" MOVE_LINK_TEST_GROUP_NAME
+#define MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH "/" LINK_TEST_GROUP_NAME "/" MOVE_LINK_TEST_SUBGROUP_NAME
 #define MOVE_LINK_TEST_HARD_LINK_NAME        "hard_link"
 #define MOVE_LINK_TEST_SOFT_LINK_NAME        "soft_link"
-#define MOVE_LINK_TEST_GROUP_NAME            "link_move_test"
+#define MOVE_LINK_TEST_SRC_GROUP_NAME        "src_group"
+#define MOVE_LINK_TEST_DST_GROUP_NAME        "dst_group"
+#define MOVE_LINK_TEST_SUBGROUP_NAME         "link_move_test"
 
 #define MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME "hard_link"
-#define MOVE_LINK_INVALID_PARAMS_TEST_GROUP_NAME     "link_move_invalid_params_test"
+#define MOVE_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME "src_grp"
+#define MOVE_LINK_INVALID_PARAMS_TEST_DST_GROUP_NAME "dst_grp"
+#define MOVE_LINK_INVALID_PARAMS_TEST_SUBGROUP_NAME  "link_move_invalid_params_test"
 
 #define GET_LINK_VAL_TEST_SUBGROUP_NAME  "get_link_val_test"
 #define GET_LINK_VAL_TEST_SOFT_LINK_NAME "soft_link"
