@@ -120,11 +120,26 @@ int vol_link_test(void);
 #define GET_LINK_INFO_INVALID_PARAMS_TEST_HARD_LINK_NAME "hard_link"
 #define GET_LINK_INFO_INVALID_PARAMS_TEST_GROUP_NAME     "get_link_info_invalid_params_test"
 
-#define GET_LINK_NAME_TEST_HARD_LINK_NAME "test_link1"
-#define GET_LINK_NAME_TEST_GROUP_NAME     "get_link_name_test"
+#define GET_LINK_NAME_TEST_EXTERNAL_SUBGROUP_NAME "get_external_link_name_test"
+#define GET_LINK_NAME_TEST_HARD_SUBGROUP_NAME     "get_hard_link_name_test"
+#define GET_LINK_NAME_TEST_SOFT_SUBGROUP_NAME     "get_soft_link_name_test"
+#define GET_LINK_NAME_TEST_UD_SUBGROUP_NAME       "get_ud_link_name_test"
+#define GET_LINK_NAME_TEST_HARD_LINK_NAME         "test_link1"
+#define GET_LINK_NAME_TEST_GROUP_NAME             "get_link_name_test"
 
 #define GET_LINK_NAME_INVALID_PARAMS_TEST_HARD_LINK_NAME "test_link1"
 #define GET_LINK_NAME_INVALID_PARAMS_TEST_GROUP_NAME     "get_link_name_invalid_params_test"
+
+#define LINK_ITER_HARD_LINKS_TEST_DSET_SPACE_RANK 2
+#define LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME   "link_iter_hard_links_test"
+#define LINK_ITER_HARD_LINKS_TEST_LINK_NAME       "hard_link"
+#define LINK_ITER_HARD_LINKS_TEST_NUM_LINKS       10
+#define LINK_ITER_HARD_LINKS_TEST_BUF_SIZE        64
+
+#define LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME "link_iter_soft_links_test"
+#define LINK_ITER_SOFT_LINKS_TEST_LINK_NAME     "soft_link"
+#define LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS     10
+#define LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE      64
 
 #define LINK_ITER_MIXED_LINKS_TEST_DSET_SPACE_RANK 2
 #define LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME  "hard_link1"
@@ -140,6 +155,31 @@ int vol_link_test(void);
 #define LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME   "link_iter_invalid_params_test"
 
 #define LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME "link_iter_0_links_test"
+
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST                                                    \
+(                                                                                                                 \
+    (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP * LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS) \
+  + LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS                                                             \
+)
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP 10
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_DSET_SPACE_RANK     2
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS       5
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME     "subgroup"
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME       "link_visit_hard_links_no_cycle_test"
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_LINK_NAME           "hard_link"
+#define LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE            256
+
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST                                                    \
+(                                                                                                                 \
+    (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP * LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS) \
+  + LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS                                                             \
+)
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP 10
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS       5
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME     "subgroup"
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME       "link_visit_soft_links_no_cycle_test"
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_LINK_NAME           "soft_link"
+#define LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE            256
 
 #define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_SPACE_RANK 2
 #define LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME       "dset"
