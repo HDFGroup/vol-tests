@@ -576,9 +576,6 @@ test_create_soft_link_existing_relative(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_EXISTING_RELATIVE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open object '%s' through the soft link\n", SOFT_LINK_EXISTING_RELATIVE_TEST_OBJECT_NAME);
@@ -742,9 +739,6 @@ test_create_soft_link_dangling_relative(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     H5E_BEGIN_TRY {
         object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_RELATIVE_TEST_LINK_NAME, H5P_DEFAULT);
     } H5E_END_TRY;
@@ -766,9 +760,6 @@ test_create_soft_link_dangling_relative(void)
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_RELATIVE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_DANGLING_RELATIVE_TEST_LINK_NAME);
@@ -852,9 +843,6 @@ test_create_soft_link_dangling_absolute(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     H5E_BEGIN_TRY {
         object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME, H5P_DEFAULT);
     } H5E_END_TRY;
@@ -876,9 +864,6 @@ test_create_soft_link_dangling_absolute(void)
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME);
@@ -1246,9 +1231,6 @@ test_create_external_link_dangling(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     H5E_BEGIN_TRY {
         object_id = H5Gopen2(group_id, EXTERNAL_LINK_TEST_DANGLING_LINK_NAME, H5P_DEFAULT);
     } H5E_END_TRY;
@@ -1270,9 +1252,6 @@ test_create_external_link_dangling(void)
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, EXTERNAL_LINK_TEST_DANGLING_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by external link '%s'\n", EXTERNAL_LINK_TEST_DANGLING_LINK_NAME);
@@ -1801,8 +1780,6 @@ error:
 /*
  * A test to check that a link can be deleted
  * using H5Ldelete and H5Ldelete_by_idx.
- *
- * TODO: user-defined links
  */
 static int
 test_delete_link(void)
@@ -2000,6 +1977,8 @@ test_delete_link(void)
         PART_BEGIN(H5Ldelete_ud) {
             TESTING_2("H5Ldelete on user-defined link")
 
+            /* TODO */
+
             SKIPPED();
         } PART_END(H5Ldelete_ud);
 
@@ -2150,7 +2129,11 @@ test_delete_link(void)
         } H5E_END_TRY;
 
         PART_BEGIN(H5Ldelete_by_idx_ud) {
+            TESTING_2("H5Ldelete_by_idx on user-defined link")
 
+            /* TODO */
+
+            SKIPPED();
         } PART_END(H5Ldelete_by_idx_ud);
     } END_MULTIPART;
 
@@ -2446,8 +2429,6 @@ error:
 
 /*
  * A test to check that a link can be copied using H5Lcopy.
- *
- * TODO user-defined links
  */
 static int
 test_copy_link(void)
@@ -2692,6 +2673,8 @@ test_copy_link(void)
 
         PART_BEGIN(H5Lcopy_ud) {
             TESTING_2("H5Lcopy on user-defined link")
+
+            /* TODO */
 
             SKIPPED();
         } PART_END(H5Lcopy_ud);
@@ -2952,8 +2935,6 @@ error:
 
 /*
  * A test to check that a link can be moved with H5Lmove.
- *
- * XXX: external and user-defined links
  */
 static int
 test_move_link(void)
@@ -3147,11 +3128,17 @@ test_move_link(void)
         PART_BEGIN(H5Lmove_external) {
             TESTING_2("H5Lmove on external link")
 
+            /* TODO */
+
             SKIPPED();
         } PART_END(H5Lmove_external);
 
         PART_BEGIN(H5Lmove_ud) {
+            TESTING_2("H5Lmove on user-defined link")
 
+            /* TODO */
+
+            SKIPPED();
         } PART_END(H5Lmove_ud);
     } END_MULTIPART;
 
