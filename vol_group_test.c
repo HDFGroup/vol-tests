@@ -1070,14 +1070,15 @@ test_get_group_info(void)
         goto error;
     }
 
-    if ((parent_group_id = H5Gcreate2(container_group, GROUP_FOR_INFO, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    if ((parent_group_id = H5Gcreate2(container_group, GROUP_GET_INFO_TEST_GROUP_NAME, H5P_DEFAULT,
+            gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", GROUP_FOR_INFO);
+        HDprintf("    couldn't create group '%s'\n", GROUP_GET_INFO_TEST_GROUP_NAME);
         goto error;
     }
 
     /* Create multiple groups under the parent group */
-    for(i = 0; i < GROUP_NUMB; i++) {
+    for (i = 0; i < GROUP_GET_INFO_TEST_GROUP_NUMB; i++) {
         sprintf(group_name, "group %02u", i);
         if ((group_id = H5Gcreate2(parent_group_id, group_name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
             H5_FAILED();
@@ -1095,6 +1096,8 @@ test_get_group_info(void)
         PART_BEGIN(H5Gget_info) {
             TESTING_2("retrieval of group info with H5Gget_info")
 
+            memset(&group_info, 0, sizeof(group_info));
+
             /* Retrieve information about the parent group */
             if (H5Gget_info(parent_group_id, &group_info) < 0) {
                 H5_FAILED();
@@ -1102,9 +1105,37 @@ test_get_group_info(void)
                 PART_ERROR(H5Gget_info);
             }
 
-            if (group_info.nlinks != GROUP_NUMB) {
+            if (group_info.nlinks != GROUP_GET_INFO_TEST_GROUP_NUMB) {
                 H5_FAILED();
-                HDprintf("    the number of groups %llu is different from the expected number %u\n", group_info.nlinks, (unsigned int)GROUP_NUMB);
+                HDprintf("    group's number of links '%lld' doesn't match expected value '%lld'\n",
+                        group_info.nlinks, (unsigned int)GROUP_GET_INFO_TEST_GROUP_NUMB);
+                PART_ERROR(H5Gget_info);
+            }
+
+            /*
+             * For the purpose of this test, the max creation order should match
+             * the number of links in the group.
+             */
+            if (group_info.max_corder != GROUP_GET_INFO_TEST_GROUP_NUMB) {
+                H5_FAILED();
+                HDprintf("    group's max creation order '%lld' doesn't match expected value '%lld'\n",
+                        (long long) group_info.max_corder, (long long) GROUP_GET_INFO_TEST_GROUP_NUMB);
+                PART_ERROR(H5Gget_info);
+            }
+
+            /* Ensure that the storage_type field is at least set to a meaningful value */
+            if (group_info.storage_type != H5G_STORAGE_TYPE_SYMBOL_TABLE &&
+                group_info.storage_type != H5G_STORAGE_TYPE_COMPACT      &&
+                group_info.storage_type != H5G_STORAGE_TYPE_DENSE) {
+                H5_FAILED();
+                HDprintf("    group info's 'storage_type' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Gget_info);
+            }
+
+            /* Assume that mounted should be FALSE in this case */
+            if (group_info.mounted != FALSE) {
+                H5_FAILED();
+                HDprintf("    group info's 'mounted' field was TRUE when it should have been FALSE\n");
                 PART_ERROR(H5Gget_info);
             }
 
@@ -1114,16 +1145,46 @@ test_get_group_info(void)
         PART_BEGIN(H5Gget_info_by_name) {
             TESTING_2("retrieval of group info with H5Gget_info_by_name")
 
+            memset(&group_info, 0, sizeof(group_info));
+
             /* Retrieve information about the parent group */
-            if (H5Gget_info_by_name(container_group, GROUP_FOR_INFO, &group_info, H5P_DEFAULT) < 0) {
+            if (H5Gget_info_by_name(container_group, GROUP_GET_INFO_TEST_GROUP_NAME, &group_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get group info by name\n");
                 PART_ERROR(H5Gget_info_by_name);
             }
 
-            if (group_info.nlinks != GROUP_NUMB) {
+            if (group_info.nlinks != GROUP_GET_INFO_TEST_GROUP_NUMB) {
                 H5_FAILED();
-                HDprintf("    the number of groups %llu is different from the expected number %u\n", group_info.nlinks, (unsigned int)GROUP_NUMB);
+                HDprintf("    group's number of links '%lld' doesn't match expected value '%lld'\n",
+                        group_info.nlinks, (unsigned int)GROUP_GET_INFO_TEST_GROUP_NUMB);
+                PART_ERROR(H5Gget_info_by_name);
+            }
+
+            /*
+             * For the purpose of this test, the max creation order should match
+             * the number of links in the group.
+             */
+            if (group_info.max_corder != GROUP_GET_INFO_TEST_GROUP_NUMB) {
+                H5_FAILED();
+                HDprintf("    group's max creation order '%lld' doesn't match expected value '%lld'\n",
+                        (long long) group_info.max_corder, (long long) GROUP_GET_INFO_TEST_GROUP_NUMB);
+                PART_ERROR(H5Gget_info_by_name);
+            }
+
+            /* Ensure that the storage_type field is at least set to a meaningful value */
+            if (group_info.storage_type != H5G_STORAGE_TYPE_SYMBOL_TABLE &&
+                group_info.storage_type != H5G_STORAGE_TYPE_COMPACT      &&
+                group_info.storage_type != H5G_STORAGE_TYPE_DENSE) {
+                H5_FAILED();
+                HDprintf("    group info's 'storage_type' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Gget_info_by_name);
+            }
+
+            /* Assume that mounted should be FALSE in this case */
+            if (group_info.mounted != FALSE) {
+                H5_FAILED();
+                HDprintf("    group info's 'mounted' field was TRUE when it should have been FALSE\n");
                 PART_ERROR(H5Gget_info_by_name);
             }
 
@@ -1133,17 +1194,50 @@ test_get_group_info(void)
         PART_BEGIN(H5Gget_info_by_idx) {
             TESTING_2("retrieval of group info with H5Gget_info_by_idx")
 
-            /* Retrieve information about the first group under the parent group */
-            if (H5Gget_info_by_idx(container_group, GROUP_FOR_INFO, H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, &group_info, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't get group info by index\n");
-                PART_ERROR(H5Gget_info_by_idx);
-            }
+            for (i = 0; i < GROUP_GET_INFO_TEST_GROUP_NUMB; i++) {
+                memset(&group_info, 0, sizeof(group_info));
 
-            if (group_info.nlinks != 0) {
-                H5_FAILED();
-                HDprintf("    the number of groups %llu is different from the expected number 0\n", group_info.nlinks);
-                PART_ERROR(H5Gget_info_by_idx);
+                /* Retrieve information about each group under the parent group */
+                if (H5Gget_info_by_idx(container_group, GROUP_GET_INFO_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                        (hsize_t) i, &group_info, H5P_DEFAULT) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't get group info by index\n");
+                    PART_ERROR(H5Gget_info_by_idx);
+                }
+
+                if (group_info.nlinks != 0) {
+                    H5_FAILED();
+                    HDprintf("    group's number of links '%lld' doesn't match expected value '%lld'\n",
+                            group_info.nlinks, 0);
+                    PART_ERROR(H5Gget_info_by_idx);
+                }
+
+                /*
+                 * For the purpose of this test, the max creation order should match
+                 * the number of links in the group.
+                 */
+                if (group_info.max_corder != 0) {
+                    H5_FAILED();
+                    HDprintf("    group's max creation order '%lld' doesn't match expected value '%lld'\n",
+                            (long long) group_info.max_corder, (long long) GROUP_GET_INFO_TEST_GROUP_NUMB);
+                    PART_ERROR(H5Gget_info_by_idx);
+                }
+
+                /* Ensure that the storage_type field is at least set to a meaningful value */
+                if (group_info.storage_type != H5G_STORAGE_TYPE_SYMBOL_TABLE &&
+                    group_info.storage_type != H5G_STORAGE_TYPE_COMPACT      &&
+                    group_info.storage_type != H5G_STORAGE_TYPE_DENSE) {
+                    H5_FAILED();
+                    HDprintf("    group info's 'storage_type' field wasn't set to a meaningful value\n");
+                    PART_ERROR(H5Gget_info_by_idx);
+                }
+
+                /* Assume that mounted should be FALSE in this case */
+                if (group_info.mounted != FALSE) {
+                    H5_FAILED();
+                    HDprintf("    group info's 'mounted' field was TRUE when it should have been FALSE\n");
+                    PART_ERROR(H5Gget_info_by_idx);
+                }
             }
 
             PASSED();

@@ -1982,90 +1982,1585 @@ test_delete_link(void)
             SKIPPED();
         } PART_END(H5Ldelete_ud);
 
-        PART_BEGIN(H5Ldelete_by_idx_hard) {
-            TESTING_2("H5Ldelete_by_idx on hard link")
+        PART_BEGIN(H5Ldelete_by_idx_hard_crt_order_increasing) {
+            TESTING_2("H5Ldelete_by_idx on hard link by creation order in increasing order")
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
 
             if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create second hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_hard);
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
             }
 
-            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if second hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_hard);
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
             }
 
             if (!link_exists) {
                 H5_FAILED();
-                HDprintf("    second hard link did not exist\n");
-                PART_ERROR(H5Ldelete_by_idx_hard);
-            }
-
-            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_hard);
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
             }
 
             if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if second hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_hard);
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by creation order in increasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
             }
 
             if (link_exists) {
                 H5_FAILED();
-                HDprintf("    second hard link exists!\n");
-                PART_ERROR(H5Ldelete_by_idx_hard);
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by creation order in increasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by creation order in increasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_increasing);
             }
 
             PASSED();
-        } PART_END(H5Ldelete_by_idx_hard);
+        } PART_END(H5Ldelete_by_idx_hard_crt_order_increasing);
 
-        PART_BEGIN(H5Ldelete_by_idx_soft) {
-            TESTING_2("H5Ldelete_by_idx on soft link")
+        PART_BEGIN(H5Ldelete_by_idx_hard_crt_order_decreasing) {
+            TESTING_2("H5Ldelete_by_idx on hard link by creation order in decreasing order")
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 2, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by creation order in decreasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 1, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by creation order in decreasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by creation order in decreasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_crt_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_by_idx_hard_crt_order_decreasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_hard_name_order_increasing) {
+            TESTING_2("H5Ldelete_by_idx on hard link by alphabetical order in increasing order")
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by alphabetical order in increasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by alphabetical order in increasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by alphabetical order in increasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_by_idx_hard_name_order_increasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_hard_name_order_decreasing) {
+            TESTING_2("H5Ldelete_by_idx on hard link by alphabetical order in decreasing order")
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(group_id, ".", group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 2, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by alphabetical order in decreasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 1, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by alphabetical order in decreasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete hard link '%s' using H5Ldelete_by_idx by alphabetical order in decreasing order\n",
+                        LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' exists after deletion!\n", LINK_DELETE_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_hard_name_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_by_idx_hard_name_order_decreasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_soft_crt_order_increasing) {
+            TESTING_2("H5Ldelete_by_idx on soft link by creation order in increasing order")
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
 
             if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
                     group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create second soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_soft);
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
             }
 
-            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if second soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_soft);
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
             }
 
             if (!link_exists) {
                 H5_FAILED();
-                HDprintf("    second soft link did not exist\n");
-                PART_ERROR(H5Ldelete_by_idx_soft);
-            }
-
-            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_soft);
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
             }
 
             if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if second soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
-                PART_ERROR(H5Ldelete_by_idx_soft);
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by creation order in increasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
             }
 
             if (link_exists) {
                 H5_FAILED();
-                HDprintf("    second soft link exists!\n");
-                PART_ERROR(H5Ldelete_by_idx_soft);
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by creation order in increasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by creation order in increasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_increasing);
             }
 
             PASSED();
-        } PART_END(H5Ldelete_by_idx_soft);
+        } PART_END(H5Ldelete_by_idx_soft_crt_order_increasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_soft_crt_order_decreasing) {
+            TESTING_2("H5Ldelete_by_idx on soft link by creation order in decreasing order")
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 2, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by creation order in decreasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 1, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by creation order in decreasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by creation order in decreasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_crt_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_by_idx_soft_crt_order_decreasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_soft_name_order_increasing) {
+            TESTING_2("H5Ldelete_by_idx on soft link by alphabetical order in increasing order")
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by alphabetical order in increasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by alphabetical order in increasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by alphabetical order in increasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_by_idx_soft_name_order_increasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_soft_name_order_decreasing) {
+            TESTING_2("H5Ldelete_by_idx on soft link by alphabetical order in decreasing order")
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_DELETE_TEST_SUBGROUP_NAME,
+                    group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Delete a link */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 2, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by alphabetical order in decreasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Ensure that the link is gone and others remain */
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Repeat until all links have been deleted */
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 1, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by alphabetical order in decreasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist after deletion of a different link!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 0, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't delete soft link '%s' using H5Ldelete_by_idx by alphabetical order in decreasing order\n",
+                        LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(group_id, LINK_DELETE_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' exists after deletion!\n", LINK_DELETE_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Ldelete_by_idx_soft_name_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_by_idx_soft_name_order_decreasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_ext_crt_order_increasing) {
+
+        } PART_END(H5Ldelete_by_idx_ext_crt_order_increasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_ext_crt_order_decreasing) {
+
+        } PART_END(H5Ldelete_by_idx_ext_crt_order_decreasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_ext_name_order_increasing) {
+
+        } PART_END(H5Ldelete_by_idx_ext_name_order_increasing);
+
+        PART_BEGIN(H5Ldelete_by_idx_ext_name_order_decreasing) {
+
+        } PART_END(H5Ldelete_by_idx_ext_name_order_decreasing);
 
         PART_BEGIN(H5Ldelete_by_idx_external) {
             TESTING_2("H5Ldelete_by_idx on external link")
