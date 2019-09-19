@@ -1030,6 +1030,8 @@ error:
 
 /*
  * A test for the functionality of H5Gget_info.
+ *
+ * TODO: update get_info_by_idx tests
  */
 static int
 test_get_group_info(void)

@@ -41,7 +41,7 @@ int vol_misc_test(void);
 #define ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME           "absolute_vs_relative_test_dset6"
 #define ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK      3
 
-#define DOT_AS_NAME                             "."
+#define DOT_AS_OBJECT_NAME_TEST_SUBGROUP_NAME "dot_as_object_name_test"
 
 #define COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_SUBGROUP_NAME "compound_type_with_symbols_in_member_names_test"
 #define COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES  9

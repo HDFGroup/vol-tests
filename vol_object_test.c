@@ -104,6 +104,8 @@ static int (*object_tests[])(void) = {
  *
  * XXX: create separate objects for each test part.
  *
+ * XXX: Add more open by idx tests
+ *
  * XXX: test opening through dangling and resolving soft links.
  */
 static int
@@ -4417,7 +4419,7 @@ test_object_visit(void)
     }
 
     if ((group_id2 = H5Gcreate2(group_id, OBJECT_VISIT_TEST_GROUP_NAME,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME);
         goto error;

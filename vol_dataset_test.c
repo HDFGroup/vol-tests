@@ -65,9 +65,6 @@ static int test_write_dataset_large_point_selection(void);
 #endif
 static int test_write_dataset_data_verification(void);
 static int test_write_dataset_invalid_params(void);
-static int test_dataset_iterate(void);
-static int test_dataset_iterate_empty_selection(void);
-static int test_dataset_iterate_invalid_params(void);
 static int test_dataset_set_extent_chunked_unlimited(void);
 static int test_dataset_set_extent_chunked_fixed(void);
 static int test_dataset_set_extent_data(void);
@@ -145,9 +142,6 @@ static int (*dataset_tests[])(void) = {
 #endif
         test_write_dataset_data_verification,
         test_write_dataset_invalid_params,
-        test_dataset_iterate,
-        test_dataset_iterate_empty_selection,
-        test_dataset_iterate_invalid_params,
         test_dataset_set_extent_chunked_unlimited,
         test_dataset_set_extent_chunked_fixed,
         test_dataset_set_extent_data,
@@ -5638,47 +5632,6 @@ error:
 }
 
 /*
- * A test for H5Diterate.
- */
-static int
-test_dataset_iterate(void)
-{
-    TESTING("H5Diterate")
-
-    SKIPPED();
-
-    return 0;
-}
-
-/*
- * A test to check that H5Diterate doesn't fail when the
- * selection in the dataset's dataspace is empty.
- */
-static int
-test_dataset_iterate_empty_selection(void)
-{
-    TESTING("H5Diterate with an empty selection")
-
-    SKIPPED();
-
-    return 0;
-}
-
-/*
- * A test to check that a dataset's dataspace can't be
- * iterated over when H5Diterate is passed invalid parameters.
- */
-static int
-test_dataset_iterate_invalid_params(void)
-{
-    TESTING("H5Diterate with invalid parameters")
-
-    SKIPPED();
-
-    return 0;
-}
-
-/*
  * A test to check that a chunked dataset's extent can be
  * changed by using H5Dset_extent. This test uses unlimited
  * dimensions for the dataset, so the dimensionality of the
@@ -6280,13 +6233,13 @@ test_dataset_set_extent_data(void)
 	                if (i >= (int)dims_origin[0] || j >= (int)dims_origin[1]) {
 	                    if(buf_expand[i][j] != 0) {
 	                        H5_FAILED();
-	                        HDprintf("buf_expand[%d][%d] = %d. It should be 0\n", i, j, buf_expand[i][j]);
+	                        HDprintf("    buf_expand[%d][%d] = %d. It should be 0\n", i, j, buf_expand[i][j]);
 	                        PART_ERROR(H5Dset_extent_data_expand);
 	                    }
 	                } else {
 	                    if(buf_expand[i][j] != buf_origin[i][j]) {
 	                        H5_FAILED();
-	                        HDprintf("buf_expand[%d][%d] = %d. It should be %d\n", i, j, buf_expand[i][j], buf_origin[i][j]);
+	                        HDprintf("    buf_expand[%d][%d] = %d. It should be %d\n", i, j, buf_expand[i][j], buf_origin[i][j]);
 	                        PART_ERROR(H5Dset_extent_data_expand);
 	                    }
 	                }
@@ -6317,7 +6270,7 @@ test_dataset_set_extent_data(void)
 	            for (j = 0; j < (int)dims_shrink[1]; j++ ) {
 	                if(buf_shrink[i][j] != buf_origin[i][j]) {
 	                    H5_FAILED();
-	                    HDprintf("buf_shrink[%d][%d] = %d. It should be %d\n", i, j, buf_shrink[i][j], buf_origin[i][j]);
+	                    HDprintf("    buf_shrink[%d][%d] = %d. It should be %d\n", i, j, buf_shrink[i][j], buf_origin[i][j]);
 	                    PART_ERROR(H5Dset_extent_data_shrink);
 	                }
 	            }
@@ -6351,13 +6304,13 @@ test_dataset_set_extent_data(void)
 	                if ( i >= (int)dims_shrink[0] || j >= (int)dims_shrink[1] ) {
 	                    if(buf_expand2[i][j] != 0) {
 	                        H5_FAILED();
-	                        HDprintf("buf_expand2[%d][%d] = %d. It should be 0\n", i, j, buf_expand2[i][j]);
+	                        HDprintf("    buf_expand2[%d][%d] = %d. It should be 0\n", i, j, buf_expand2[i][j]);
 	                        PART_ERROR(H5Dset_extent_data_expand_to_origin);
 	                    }
 	                } else {
 	                    if(buf_expand2[i][j] != buf_origin[i][j]) {
 	                        H5_FAILED();
-	                        HDprintf("buf_expand2[%d][%d] = %d. It should be %d.\n", i, j, buf_expand2[i][j], buf_origin[i][j]);
+	                        HDprintf("    buf_expand2[%d][%d] = %d. It should be %d.\n", i, j, buf_expand2[i][j], buf_origin[i][j]);
 	                        PART_ERROR(H5Dset_extent_data_expand_to_origin);
 	                    }
 	                }
@@ -6391,7 +6344,7 @@ test_dataset_set_extent_data(void)
             for (i = 0; i < DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK; i++)
                 if (dims_out[i] != 0) {
                     H5_FAILED();
-                    HDprintf("dims_out[%d] = %d.  It should be 0.\n", i, dims_out[i]);
+                    HDprintf("    dims_out[%d] = %d.  It should be 0.\n", i, dims_out[i]);
                     PART_ERROR(H5Dset_extent_data_shrink_to_zero);
                 }
 
@@ -6422,7 +6375,7 @@ test_dataset_set_extent_data(void)
 	            for (j = 0; j < (int)dims_origin[1]; j++ ) {
 	                if(buf_expand2[i][j] != 0) {
 	                    H5_FAILED();
-	                    HDprintf("buf_expand2[%d][%d] = %d. It should be 0.\n", i, j, buf_expand2[i][j]);
+	                    HDprintf("    buf_expand2[%d][%d] = %d. It should be 0.\n", i, j, buf_expand2[i][j]);
 	                    PART_ERROR(H5Dset_extent_data_expand_to_origin_again);
 	                }
 	            }
@@ -6550,7 +6503,7 @@ test_dataset_set_extent_double_handles(void)
     for (i = 0; i < DATASET_SET_EXTENT_DOUBLE_HANDLES_TEST_SPACE_RANK; i++)
         if (dims_out[i] != dims_expand[i]) {
             H5_FAILED();
-            HDprintf("dims_out[%d] = %d.  It should be %d.\n", i, dims_out[i], dims_expand[i]);
+            HDprintf("    dims_out[%d] = %d.  It should be %d.\n", i, dims_out[i], dims_expand[i]);
             goto error;
         }
 
