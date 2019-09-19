@@ -1126,7 +1126,8 @@ test_get_group_info(void)
             /* Ensure that the storage_type field is at least set to a meaningful value */
             if (group_info.storage_type != H5G_STORAGE_TYPE_SYMBOL_TABLE &&
                 group_info.storage_type != H5G_STORAGE_TYPE_COMPACT      &&
-                group_info.storage_type != H5G_STORAGE_TYPE_DENSE) {
+                group_info.storage_type != H5G_STORAGE_TYPE_DENSE        &&
+                group_info.storage_type != H5G_STORAGE_TYPE_UNKNOWN) {
                 H5_FAILED();
                 HDprintf("    group info's 'storage_type' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Gget_info);
@@ -1175,7 +1176,8 @@ test_get_group_info(void)
             /* Ensure that the storage_type field is at least set to a meaningful value */
             if (group_info.storage_type != H5G_STORAGE_TYPE_SYMBOL_TABLE &&
                 group_info.storage_type != H5G_STORAGE_TYPE_COMPACT      &&
-                group_info.storage_type != H5G_STORAGE_TYPE_DENSE) {
+                group_info.storage_type != H5G_STORAGE_TYPE_DENSE        &&
+                group_info.storage_type != H5G_STORAGE_TYPE_UNKNOWN) {
                 H5_FAILED();
                 HDprintf("    group info's 'storage_type' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Gget_info_by_name);
@@ -1226,7 +1228,8 @@ test_get_group_info(void)
                 /* Ensure that the storage_type field is at least set to a meaningful value */
                 if (group_info.storage_type != H5G_STORAGE_TYPE_SYMBOL_TABLE &&
                     group_info.storage_type != H5G_STORAGE_TYPE_COMPACT      &&
-                    group_info.storage_type != H5G_STORAGE_TYPE_DENSE) {
+                    group_info.storage_type != H5G_STORAGE_TYPE_DENSE        &&
+                    group_info.storage_type != H5G_STORAGE_TYPE_UNKNOWN) {
                     H5_FAILED();
                     HDprintf("    group info's 'storage_type' field wasn't set to a meaningful value\n");
                     PART_ERROR(H5Gget_info_by_idx);
