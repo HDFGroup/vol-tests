@@ -4722,6 +4722,7 @@ test_delete_link(void)
 error:
     H5E_BEGIN_TRY {
         H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(ext_file_id);
@@ -6648,18 +6649,19 @@ error:
 /*
  * A test to check the functionality of H5Lget_info and
  * H5Lget_info_by_idx.
- *
- * XXX: create different links for _by_idx part of test
  */
 static int
 test_get_link_info(void)
 {
-    H5L_info_t link_info;
-    htri_t     link_exists;
-    hid_t      file_id = H5I_INVALID_HID, ext_file_id = H5I_INVALID_HID;
-    hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t      gcpl_id = H5I_INVALID_HID;
-    char       ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    H5L_info_t  link_info;
+    htri_t      link_exists;
+    size_t      link_val_size;
+    hid_t       file_id = H5I_INVALID_HID, ext_file_id = H5I_INVALID_HID;
+    hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t       subgroup_id = H5I_INVALID_HID;
+    hid_t       gcpl_id = H5I_INVALID_HID;
+    char       *ext_objname;
+    char        ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link info retrieval");
 
@@ -6703,13 +6705,20 @@ test_get_link_info(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
-            if (H5Lcreate_hard(group_id, ".", group_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP1_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP1_NAME);
+                PART_ERROR(H5Lget_info_hard);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lget_info_hard);
             }
 
-            if ((link_exists = H5Lexists(group_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lget_info_hard);
@@ -6721,7 +6730,7 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_hard);
             }
 
-            if (H5Lget_info(group_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
+            if (H5Lget_info(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get hard link info\n");
                 PART_ERROR(H5Lget_info_hard);
@@ -6733,22 +6742,46 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_hard);
             }
 
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_hard);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP1_NAME);
+                PART_ERROR(H5Lget_info_hard);
+            }
+
             PASSED();
         } PART_END(H5Lget_info_hard);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Lget_info_soft) {
             TESTING_2("H5Lget_info on soft link")
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
-            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME,
-                    group_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP2_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP2_NAME);
+                PART_ERROR(H5Lget_info_soft);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP2_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lget_info_soft);
             }
 
-            if ((link_exists = H5Lexists(group_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lget_info_soft);
@@ -6760,7 +6793,7 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_soft);
             }
 
-            if (H5Lget_info(group_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
+            if (H5Lget_info(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get soft link info\n");
                 PART_ERROR(H5Lget_info_soft);
@@ -6772,8 +6805,33 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_soft);
             }
 
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP2_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_soft);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_soft);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP2_NAME);
+                PART_ERROR(H5Lget_info_soft);
+            }
+
             PASSED();
         } PART_END(H5Lget_info_soft);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Lget_info_external) {
             TESTING_2("H5Lget_info on external link")
@@ -6794,13 +6852,21 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_external);
             }
 
-            if (H5Lcreate_external(ext_link_filename, "/", group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP3_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP3_NAME);
+                PART_ERROR(H5Lget_info_external);
+            }
+
+            ext_objname = "/";
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
                 PART_ERROR(H5Lget_info_external);
             }
 
-            if ((link_exists = H5Lexists(group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
                 PART_ERROR(H5Lget_info_external);
@@ -6812,7 +6878,7 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_external);
             }
 
-            if (H5Lget_info(group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
+            if (H5Lget_info(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get external link info\n");
                 PART_ERROR(H5Lget_info_external);
@@ -6824,89 +6890,2067 @@ test_get_link_info(void)
                 PART_ERROR(H5Lget_info_external);
             }
 
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_external);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_external);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP3_NAME);
+                PART_ERROR(H5Lget_info_external);
+            }
+
             PASSED();
         } PART_END(H5Lget_info_external);
 
         H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
             H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
         } H5E_END_TRY;
 
-        PART_BEGIN(H5Lget_info_by_idx_hard) {
-            TESTING_2("H5Lget_info_by_idx on hard link")
+        PART_BEGIN(H5Lget_info_ud) {
+            TESTING_2("H5Lget_info on user-defined link")
 
-            HDmemset(&link_info, 0, sizeof(link_info));
+            SKIPPED();
+        } PART_END(H5Lget_info_ud);
 
-            if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, &link_info, H5P_DEFAULT) < 0) {
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_hard_crt_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on hard link by creation order in increasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP5_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to retrieve hard link info\n");
-                PART_ERROR(H5Lget_info_by_idx_hard);
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP5_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
             }
 
             if (link_info.type != H5L_TYPE_HARD) {
                 H5_FAILED();
                 HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_info_by_idx_hard);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP5_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_increasing);
             }
 
             PASSED();
-        } PART_END(H5Lget_info_by_idx_hard);
+        } PART_END(H5Lget_info_by_idx_hard_crt_order_increasing);
 
-        PART_BEGIN(H5Lget_info_by_idx_soft) {
-            TESTING_2("H5Lget_info_by_idx on soft link")
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_hard_crt_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on hard link by creation order in decreasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP6_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP6_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
 
             HDmemset(&link_info, 0, sizeof(link_info));
-
-            if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 1, &link_info, H5P_DEFAULT) < 0) {
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to retrieve soft link info\n");
-                PART_ERROR(H5Lget_info_by_idx_soft);
+                HDprintf("    couldn't get hard link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP6_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_crt_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_hard_crt_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_hard_name_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on hard link by alphabetical order in increasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP7_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP7_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP7_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_hard_name_order_increasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_hard_name_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on hard link by alphabetical order in decreasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP8_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP8_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Create several hard links */
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get hard link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_HARD) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP8_NAME);
+                PART_ERROR(H5Lget_info_by_idx_hard_name_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_hard_name_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_soft_crt_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on soft link by creation order in increasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP9_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP9_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP9_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP9_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP9_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
             }
 
             if (link_info.type != H5L_TYPE_SOFT) {
                 H5_FAILED();
                 HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_info_by_idx_soft);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP9_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP9_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP9_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP9_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_increasing);
             }
 
             PASSED();
-        } PART_END(H5Lget_info_by_idx_soft);
+        } PART_END(H5Lget_info_by_idx_soft_crt_order_increasing);
 
-        PART_BEGIN(H5Lget_info_by_idx_external) {
-            TESTING_2("H5Lget_info_by_idx on external link")
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_soft_crt_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on soft link by creation order in decreasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP10_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP10_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP10_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP10_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP10_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP10_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
 
             HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP10_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP10_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP10_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_crt_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_soft_crt_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_soft_name_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on soft link by alphabetical order in increasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP11_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP11_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP11_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP11_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP11_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP11_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP11_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP11_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP11_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_soft_name_order_increasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_soft_name_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on soft link by alphabetical order in decreasing order")
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP12_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP12_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Create several soft links */
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP12_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP12_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP12_NAME,
+                    subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP12_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP12_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get soft link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_SOFT) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            link_val_size = strlen("/" LINK_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_GROUP_NAME "/" GET_LINK_INFO_TEST_SUBGROUP12_NAME) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP12_NAME);
+                PART_ERROR(H5Lget_info_by_idx_soft_name_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_soft_name_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_external_crt_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on external link by creation order in increasing order")
 
             HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
             if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-                PART_ERROR(H5Lget_info_by_idx_external);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
             }
 
             if (H5Fclose(ext_file_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close file '%s'\n", ext_link_filename);
-                PART_ERROR(H5Lget_info_by_idx_external);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
             }
 
-            if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 2, &link_info, H5P_DEFAULT) < 0) {
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP13_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to retrieve external link info\n");
-                PART_ERROR(H5Lget_info_by_idx_external);
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP13_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            /* Create several external links */
+            ext_objname = "/";
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
             }
 
             if (link_info.type != H5L_TYPE_EXTERNAL) {
                 H5_FAILED();
                 HDprintf("    incorrect link type returned\n");
-                PART_ERROR(H5Lget_info_by_idx_external);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP13_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_increasing);
             }
 
             PASSED();
-        } PART_END(H5Lget_info_by_idx_external);
+        } PART_END(H5Lget_info_by_idx_external_crt_order_increasing);
 
         H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
             H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_external_crt_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on external link by creation order in decreasing order")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP14_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP14_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            /* Create several external links */
+            ext_objname = "/";
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP14_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_crt_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_external_crt_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_external_name_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on external link by alphabetical order in increasing order")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP15_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP15_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            /* Create several external links */
+            ext_objname = "/";
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP15_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_external_name_order_increasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_external_name_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on external link by alphabetical order in decreasing order")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_INFO_TEST_SUBGROUP16_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", GET_LINK_INFO_TEST_SUBGROUP16_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            /* Create several external links */
+            ext_objname = "/";
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (H5Lcreate_external(ext_link_filename, ext_objname, subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            /* Verify the links have been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_INFO_TEST_EXT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link '%s' did not exist before deletion\n", GET_LINK_INFO_TEST_EXT_LINK_NAME3);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            /* Retrieve info of links in turn */
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    2, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 0);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    1, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 1);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 1);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            HDmemset(&link_info, 0, sizeof(link_info));
+            if (H5Lget_info_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
+                    0, &link_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get external link info for index %lld\n", 0);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (link_info.type != H5L_TYPE_EXTERNAL) {
+                H5_FAILED();
+                HDprintf("    incorrect link type returned\n");
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            link_val_size = 1 + strlen(ext_link_filename) + 1 + strlen(ext_objname) + 1;
+            if (link_info.u.val_size != link_val_size) {
+                H5_FAILED();
+                HDprintf("    link's value size '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.u.val_size, link_val_size);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (link_info.corder_valid && (link_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    link's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) link_info.corder, (long long) 2);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            if (H5Gclose(subgroup_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close group '%s'\n", GET_LINK_INFO_TEST_SUBGROUP16_NAME);
+                PART_ERROR(H5Lget_info_by_idx_external_name_order_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lget_info_by_idx_external_name_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_ud_crt_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on user-defined link by creation order in increasing order")
+
+            SKIPPED();
+        } PART_END(H5Lget_info_by_idx_ud_crt_order_increasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_ud_crt_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on user-defined link by creation order in decreasing order")
+
+            SKIPPED();
+        } PART_END(H5Lget_info_by_idx_ud_crt_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_ud_name_order_increasing) {
+            TESTING_2("H5Lget_info_by_idx on user-defined link by alphabetical order in increasing order")
+
+            SKIPPED();
+        } PART_END(H5Lget_info_by_idx_ud_name_order_increasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lget_info_by_idx_ud_name_order_decreasing) {
+            TESTING_2("H5Lget_info_by_idx on user-defined link by alphabetical order in decreasing order")
+
+            SKIPPED();
+        } PART_END(H5Lget_info_by_idx_ud_name_order_decreasing);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
         } H5E_END_TRY;
     } END_MULTIPART;
 
@@ -6928,6 +8972,7 @@ test_get_link_info(void)
 error:
     H5E_BEGIN_TRY {
         H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(ext_file_id);
