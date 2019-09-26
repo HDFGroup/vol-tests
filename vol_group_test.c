@@ -1082,7 +1082,7 @@ test_get_group_info(void)
     /* Create multiple groups under the parent group */
     for (i = 0; i < GROUP_GET_INFO_TEST_GROUP_NUMB; i++) {
         sprintf(group_name, "group %02u", i);
-        if ((group_id = H5Gcreate2(parent_group_id, group_name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        if ((group_id = H5Gcreate2(parent_group_id, group_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
             H5_FAILED();
             HDprintf("    couldn't create group '%s'\n", group_name);
             goto error;
@@ -1223,7 +1223,7 @@ test_get_group_info(void)
                 if (group_info.max_corder != 0) {
                     H5_FAILED();
                     HDprintf("    group's max creation order '%lld' doesn't match expected value '%lld'\n",
-                            (long long) group_info.max_corder, (long long) GROUP_GET_INFO_TEST_GROUP_NUMB);
+                            (long long) group_info.max_corder, 0);
                     PART_ERROR(H5Gget_info_by_idx);
                 }
 
