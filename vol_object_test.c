@@ -103,6 +103,8 @@ static int (*object_tests[])(void) = {
  * can be opened by using H5Oopen, H5Oopen_by_idx and H5Oopen_by_addr.
  *
  * XXX: create separate objects for each test part.
+ *
+ * XXX: test opening through dangling and resolving soft links.
  */
 static int
 test_open_object(void)
@@ -4351,6 +4353,8 @@ test_object_comments_invalid_params(void)
 
 /*
  * A test for H5Ovisit(_by_name).
+ *
+ * XXX: Should have test for checking nested object's names/paths.
  */
 static int
 test_object_visit(void)

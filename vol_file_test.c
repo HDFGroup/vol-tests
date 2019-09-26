@@ -2757,6 +2757,7 @@ vol_file_test(void)
 
     HDprintf("\n");
 
+    HDprintf("Cleaning up testing files\n");
     cleanup_files();
 
     return nerrors;

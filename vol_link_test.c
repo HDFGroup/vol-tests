@@ -12,6 +12,10 @@
 
 #include "vol_link_test.h"
 
+/*
+ * TODO: add link tests for short-circuit success in operator callback
+ */
+
 static int test_create_hard_link(void);
 static int test_create_hard_link_same_loc(void);
 static int test_create_hard_link_invalid_params(void);
@@ -37,21 +41,47 @@ static int test_get_link_info(void);
 static int test_get_link_info_invalid_params(void);
 static int test_get_link_name(void);
 static int test_get_link_name_invalid_params(void);
-static int test_link_iterate(void);
+static int test_link_iterate_hard_links(void);
+static int test_link_iterate_soft_links(void);
+static int test_link_iterate_external_links(void);
+static int test_link_iterate_ud_links(void);
+static int test_link_iterate_mixed_links(void);
 static int test_link_iterate_invalid_params(void);
 static int test_link_iterate_0_links(void);
-static int test_link_visit(void);
-static int test_link_visit_cycles(void);
+static int test_link_visit_hard_links_no_cycles(void);
+static int test_link_visit_soft_links_no_cycles(void);
+static int test_link_visit_external_links_no_cycles(void);
+static int test_link_visit_ud_links_no_cycles(void);
+static int test_link_visit_mixed_links_no_cycles(void);
+static int test_link_visit_hard_links_cycles(void);
+static int test_link_visit_soft_links_cycles(void);
+static int test_link_visit_external_links_cycles(void);
+static int test_link_visit_ud_links_cycles(void);
+static int test_link_visit_mixed_links_cycles(void);
 static int test_link_visit_invalid_params(void);
 static int test_link_visit_0_links(void);
 
-static herr_t link_iter_callback1(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
-static herr_t link_iter_callback2(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
-static herr_t link_iter_callback3(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_hard_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_soft_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_external_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_ud_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_invalid_params_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_0_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_iter_idx_saving_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
 
-static herr_t link_visit_callback1(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
-static herr_t link_visit_callback2(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
-static herr_t link_visit_callback3(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_hard_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_soft_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_external_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_ud_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_hard_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_soft_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_external_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_ud_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_invalid_params_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t link_visit_0_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
 
 /*
  * The array of link tests to be performed.
@@ -82,11 +112,23 @@ static int (*link_tests[])(void) = {
         test_get_link_info_invalid_params,
         test_get_link_name,
         test_get_link_name_invalid_params,
-        test_link_iterate,
+        test_link_iterate_hard_links,
+        test_link_iterate_soft_links,
+        test_link_iterate_external_links,
+        test_link_iterate_ud_links,
+        test_link_iterate_mixed_links,
         test_link_iterate_invalid_params,
         test_link_iterate_0_links,
-        test_link_visit,
-        test_link_visit_cycles,
+        test_link_visit_hard_links_no_cycles,
+        test_link_visit_soft_links_no_cycles,
+        test_link_visit_external_links_no_cycles,
+        test_link_visit_ud_links_no_cycles,
+        test_link_visit_mixed_links_no_cycles,
+        test_link_visit_hard_links_cycles,
+        test_link_visit_soft_links_cycles,
+        test_link_visit_external_links_cycles,
+        test_link_visit_ud_links_cycles,
+        test_link_visit_mixed_links_cycles,
         test_link_visit_invalid_params,
         test_link_visit_0_links,
 };
@@ -429,7 +471,7 @@ test_create_hard_link_invalid_params(void)
         } PART_END(H5Lcreate_hard_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_hard_invalid_existence) {
-            TESTING_2("invalid link existence")
+            TESTING_2("invalid link existence after expected H5Lcreate_hard failures")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -534,9 +576,6 @@ test_create_soft_link_existing_relative(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_EXISTING_RELATIVE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open object '%s' through the soft link\n", SOFT_LINK_EXISTING_RELATIVE_TEST_OBJECT_NAME);
@@ -700,9 +739,6 @@ test_create_soft_link_dangling_relative(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     H5E_BEGIN_TRY {
         object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_RELATIVE_TEST_LINK_NAME, H5P_DEFAULT);
     } H5E_END_TRY;
@@ -724,9 +760,6 @@ test_create_soft_link_dangling_relative(void)
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_RELATIVE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_DANGLING_RELATIVE_TEST_LINK_NAME);
@@ -810,9 +843,6 @@ test_create_soft_link_dangling_absolute(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     H5E_BEGIN_TRY {
         object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME, H5P_DEFAULT);
     } H5E_END_TRY;
@@ -834,9 +864,6 @@ test_create_soft_link_dangling_absolute(void)
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME);
@@ -1005,7 +1032,7 @@ test_create_soft_link_invalid_params(void)
         } PART_END(H5Lcreate_soft_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_soft_invalid_existence) {
-            TESTING_2("invalid link existence")
+            TESTING_2("invalid link existence after expected H5Lcreate_soft failures")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, SOFT_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -1204,9 +1231,6 @@ test_create_external_link_dangling(void)
         goto error;
     }
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     H5E_BEGIN_TRY {
         object_id = H5Gopen2(group_id, EXTERNAL_LINK_TEST_DANGLING_LINK_NAME, H5P_DEFAULT);
     } H5E_END_TRY;
@@ -1228,9 +1252,6 @@ test_create_external_link_dangling(void)
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
 
-    /*
-     * XXX: If H5Oopen is available, use that.
-     */
     if ((object_id = H5Gopen2(group_id, EXTERNAL_LINK_TEST_DANGLING_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by external link '%s'\n", EXTERNAL_LINK_TEST_DANGLING_LINK_NAME);
@@ -1440,7 +1461,7 @@ test_create_external_link_invalid_params(void)
         } PART_END(H5Lcreate_external_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_external_invalid_existence) {
-            TESTING_2("invalid link existence")
+            TESTING_2("invalid link existence after expected H5Lcreate_external failures")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, EXTERNAL_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -1488,21 +1509,14 @@ error:
 static int
 test_create_user_defined_link(void)
 {
-#ifdef BROKEN /* XXX */
     ssize_t udata_size;
     htri_t  link_exists;
     hid_t   file_id = H5I_INVALID_HID;
     hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char    udata[UD_LINK_TEST_UDATA_MAX_SIZE];
-#endif
 
     TESTING("user-defined link creation")
 
-    SKIPPED();
-
-    return 0;
-
-#ifdef BROKEN
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -1563,9 +1577,12 @@ error:
     } H5E_END_TRY;
 
     return 1;
-#endif
 }
 
+/*
+ * A test to check that H5Lcreate_ud fails when
+ * it is given invalid parameters.
+ */
 static int
 test_create_user_defined_link_invalid_params(void)
 {
@@ -1718,7 +1735,7 @@ test_create_user_defined_link_invalid_params(void)
         } PART_END(H5Lcreate_ud_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_ud_invalid_existence) {
-            TESTING_2("invalid link existence")
+            TESTING_2("invalid link existence after expected H5Lcreate_ud failures")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, UD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -1768,7 +1785,7 @@ static int
 test_delete_link(void)
 {
     htri_t link_exists;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID, ext_file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  gcpl_id = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
@@ -1776,17 +1793,6 @@ test_delete_link(void)
     TESTING_MULTIPART("link deletion");
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
-
-    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1910,6 +1916,20 @@ test_delete_link(void)
         PART_BEGIN(H5Ldelete_external) {
             TESTING_2("H5Ldelete on external link")
 
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Ldelete_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Ldelete_external);
+            }
+
             if (H5Lcreate_external(ext_link_filename, "/", group_id, LINK_DELETE_TEST_EXTERNAL_LINK_NAME,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -1949,6 +1969,18 @@ test_delete_link(void)
 
             PASSED();
         } PART_END(H5Ldelete_external);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Ldelete_ud) {
+            TESTING_2("H5Ldelete on user-defined link")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Ldelete_ud);
 
         PART_BEGIN(H5Ldelete_by_idx_hard) {
             TESTING_2("H5Ldelete_by_idx on hard link")
@@ -2038,6 +2070,20 @@ test_delete_link(void)
         PART_BEGIN(H5Ldelete_by_idx_external) {
             TESTING_2("H5Ldelete_by_idx on external link")
 
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Ldelete_by_idx_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Ldelete_by_idx_external);
+            }
+
             if (H5Lcreate_external(ext_link_filename, "/", group_id, LINK_DELETE_TEST_EXTERNAL_LINK_NAME2,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -2077,6 +2123,18 @@ test_delete_link(void)
 
             PASSED();
         } PART_END(H5Ldelete_by_idx_external);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Ldelete_by_idx_ud) {
+            TESTING_2("H5Ldelete_by_idx on user-defined link")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Ldelete_by_idx_ud);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -2099,6 +2157,7 @@ error:
         H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2112,22 +2171,10 @@ test_delete_link_invalid_params(void)
     herr_t err_ret = -1;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("H5Ldelete with invalid parameters");
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
-
-    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2338,7 +2385,7 @@ test_delete_link_invalid_params(void)
         } PART_END(H5Ldelete_by_idx_invalid_lapl);
 
         PART_BEGIN(H5Ldelete_by_idx_link_existence) {
-            TESTING_2("link existence")
+            TESTING_2("valid link existence after expected H5Ldelete(_by_idx) failures")
 
             /* Verify that the link hasn't been deleted */
             if ((link_exists = H5Lexists(group_id, LINK_DELETE_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -2387,15 +2434,14 @@ static int
 test_copy_link(void)
 {
     htri_t link_exists;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id = H5I_INVALID_HID, ext_file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link copying")
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2409,9 +2455,21 @@ test_copy_link(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, COPY_LINK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, COPY_LINK_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", COPY_LINK_TEST_GROUP_NAME);
+        HDprintf("    couldn't create group '%s'\n", COPY_LINK_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((src_grp_id = H5Gcreate2(group_id, COPY_LINK_TEST_SRC_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", COPY_LINK_TEST_SRC_GROUP_NAME);
+        goto error;
+    }
+
+    if ((dst_grp_id = H5Gcreate2(group_id, COPY_LINK_TEST_DST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", COPY_LINK_TEST_DST_GROUP_NAME);
         goto error;
     }
 
@@ -2422,14 +2480,14 @@ test_copy_link(void)
             TESTING_2("H5Lcopy on hard link")
 
             /* Try to copy a hard link */
-            if (H5Lcreate_hard(group_id, ".", group_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lcopy_hard);
             }
 
             /* Verify the link has been created */
-            if ((link_exists = H5Lexists(group_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lcopy_hard);
@@ -2441,15 +2499,28 @@ test_copy_link(void)
                 PART_ERROR(H5Lcopy_hard);
             }
 
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lcopy_hard);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_hard);
+            }
+
             /* Copy the link */
-            if (H5Lcopy(group_id, COPY_LINK_TEST_HARD_LINK_NAME, group_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to copy hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lcopy_hard);
             }
 
             /* Verify the link has been copied */
-            if ((link_exists = H5Lexists(group_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link copy '%s' exists\n", COPY_LINK_TEST_HARD_LINK_COPY_NAME);
                 PART_ERROR(H5Lcopy_hard);
@@ -2468,14 +2539,14 @@ test_copy_link(void)
             TESTING_2("H5Lcopy on soft link")
 
             /* Try to copy a soft link */
-            if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, group_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lcopy_soft);
             }
 
             /* Verify the link has been created */
-            if ((link_exists = H5Lexists(group_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lcopy_soft);
@@ -2487,15 +2558,28 @@ test_copy_link(void)
                 PART_ERROR(H5Lcopy_soft);
             }
 
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lcopy_soft);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_soft);
+            }
+
             /* Copy the link */
-            if (H5Lcopy(group_id, COPY_LINK_TEST_SOFT_LINK_NAME, group_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to copy soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lcopy_soft);
             }
 
             /* Verify the link has been copied */
-            if ((link_exists = H5Lexists(group_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME);
                 PART_ERROR(H5Lcopy_soft);
@@ -2513,15 +2597,29 @@ test_copy_link(void)
         PART_BEGIN(H5Lcopy_external) {
             TESTING_2("H5Lcopy on external link")
 
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_external);
+            }
+
             /* Try to copy an external link */
-            if (H5Lcreate_external(ext_link_filename, "/", group_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
                 PART_ERROR(H5Lcopy_external);
             }
 
             /* Verify the link has been created */
-            if ((link_exists = H5Lexists(group_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
                 PART_ERROR(H5Lcopy_external);
@@ -2533,15 +2631,28 @@ test_copy_link(void)
                 PART_ERROR(H5Lcopy_external);
             }
 
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
+                PART_ERROR(H5Lcopy_external);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_external);
+            }
+
             /* Copy the link */
-            if (H5Lcopy(group_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, group_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to copy external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
                 PART_ERROR(H5Lcopy_external);
             }
 
             /* Verify the link has been copied */
-            if ((link_exists = H5Lexists(group_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if external link copy '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME);
                 PART_ERROR(H5Lcopy_external);
@@ -2555,10 +2666,26 @@ test_copy_link(void)
 
             PASSED();
         } PART_END(H5Lcopy_external);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lcopy_ud) {
+            TESTING_2("H5Lcopy on user-defined link")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lcopy_ud);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
 
+    if (H5Gclose(dst_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(src_grp_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -2572,8 +2699,11 @@ test_copy_link(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Gclose(dst_grp_id);
+        H5Gclose(src_grp_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2591,6 +2721,7 @@ test_copy_link_invalid_params(void)
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Lcopy with invalid parameters");
 
@@ -2608,20 +2739,32 @@ test_copy_link_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, COPY_LINK_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, COPY_LINK_INVALID_PARAMS_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", COPY_LINK_INVALID_PARAMS_TEST_GROUP_NAME);
+        HDprintf("    couldn't create group '%s'\n", COPY_LINK_INVALID_PARAMS_TEST_SUBGROUP_NAME);
         goto error;
     }
 
-    if (H5Lcreate_hard(group_id, ".", group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if ((src_grp_id = H5Gcreate2(group_id, COPY_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", COPY_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME);
+        goto error;
+    }
+
+    if ((dst_grp_id = H5Gcreate2(group_id, COPY_LINK_INVALID_PARAMS_TEST_DST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", COPY_LINK_INVALID_PARAMS_TEST_DST_GROUP_NAME);
+        goto error;
+    }
+
+    if (H5Lcreate_hard(group_id, ".", src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create hard link '%s'\n", COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
         goto error;
     }
 
     /* Verify the link has been created */
-    if ((link_exists = H5Lexists(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
         goto error;
@@ -2640,7 +2783,7 @@ test_copy_link_invalid_params(void)
             TESTING_2("H5Lcopy with an invalid source location ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(H5I_INVALID_HID, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, group_id,
+                err_ret = H5Lcopy(H5I_INVALID_HID, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2657,7 +2800,7 @@ test_copy_link_invalid_params(void)
             TESTING_2("H5Lcopy with an invalid source name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, NULL, group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME,
+                err_ret = H5Lcopy(src_grp_id, NULL, dst_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME,
                         H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2668,7 +2811,7 @@ test_copy_link_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, "", group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME,
+                err_ret = H5Lcopy(src_grp_id, "", dst_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME,
                         H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2685,7 +2828,7 @@ test_copy_link_invalid_params(void)
             TESTING_2("H5Lcopy with an invalid destination location ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5I_INVALID_HID,
+                err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5I_INVALID_HID,
                         COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2702,7 +2845,7 @@ test_copy_link_invalid_params(void)
             TESTING_2("H5Lcopy with an invalid destination name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, group_id,
+                err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         NULL, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2713,7 +2856,7 @@ test_copy_link_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, group_id,
+                err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         "", H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2730,7 +2873,7 @@ test_copy_link_invalid_params(void)
             TESTING_2("H5Lcopy with an invalid LCPL")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, group_id,
+                err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5I_INVALID_HID, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -2747,7 +2890,7 @@ test_copy_link_invalid_params(void)
             TESTING_2("H5Lcopy with an invalid LAPL")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, group_id,
+                err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5I_INVALID_HID);
             } H5E_END_TRY;
 
@@ -2763,6 +2906,10 @@ test_copy_link_invalid_params(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Gclose(dst_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(src_grp_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -2776,6 +2923,8 @@ test_copy_link_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Gclose(dst_grp_id);
+        H5Gclose(src_grp_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -2786,8 +2935,6 @@ error:
 
 /*
  * A test to check that a link can be moved with H5Lmove.
- *
- * XXX: external links
  */
 static int
 test_move_link(void)
@@ -2795,6 +2942,7 @@ test_move_link(void)
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link moving")
 
@@ -2812,9 +2960,21 @@ test_move_link(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, MOVE_LINK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, MOVE_LINK_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_TEST_GROUP_NAME);
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((src_grp_id = H5Gcreate2(group_id, MOVE_LINK_TEST_SRC_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_TEST_SRC_GROUP_NAME);
+        goto error;
+    }
+
+    if ((dst_grp_id = H5Gcreate2(group_id, MOVE_LINK_TEST_DST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_TEST_DST_GROUP_NAME);
         goto error;
     }
 
@@ -2825,14 +2985,14 @@ test_move_link(void)
             TESTING_2("H5Lmove on hard link")
 
             /* Try to move a hard link */
-            if (H5Lcreate_hard(group_id, ".", file_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create hard link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_hard);
             }
 
             /* Verify the link has been created */
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_hard);
@@ -2845,7 +3005,7 @@ test_move_link(void)
             }
 
             /* Verify the link doesn't currently exist in the target group */
-            if ((link_exists = H5Lexists(group_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_hard);
@@ -2858,14 +3018,14 @@ test_move_link(void)
             }
 
             /* Move the link */
-            if (H5Lmove(file_id, MOVE_LINK_TEST_HARD_LINK_NAME, group_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_hard);
             }
 
             /* Verify the link has been moved */
-            if ((link_exists = H5Lexists(group_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_hard);
@@ -2878,7 +3038,7 @@ test_move_link(void)
             }
 
             /* Verify the old link is gone */
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_hard);
@@ -2897,14 +3057,14 @@ test_move_link(void)
             TESTING_2("H5Lmove on soft link")
 
             /* Try to move a soft link */
-            if (H5Lcreate_soft(MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH, file_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcreate_soft(MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lmove_soft);
             }
 
             /* Verify the link has been created */
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lmove_soft);
@@ -2917,7 +3077,7 @@ test_move_link(void)
             }
 
             /* Verify the link doesn't currently exist in the target group */
-            if ((link_exists = H5Lexists(group_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lmove_soft);
@@ -2930,14 +3090,14 @@ test_move_link(void)
             }
 
             /* Move the link */
-            if (H5Lmove(file_id, MOVE_LINK_TEST_SOFT_LINK_NAME, group_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lmove_soft);
             }
 
             /* Verify the link has been moved */
-            if ((link_exists = H5Lexists(group_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lmove_soft);
@@ -2950,7 +3110,7 @@ test_move_link(void)
             }
 
             /* Verify the old link is gone */
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
                 PART_ERROR(H5Lmove_soft);
@@ -2964,10 +3124,30 @@ test_move_link(void)
 
             PASSED();
         } PART_END(H5Lmove_soft);
+
+        PART_BEGIN(H5Lmove_external) {
+            TESTING_2("H5Lmove on external link")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lmove_external);
+
+        PART_BEGIN(H5Lmove_ud) {
+            TESTING_2("H5Lmove on user-defined link")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lmove_ud);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
 
+    if (H5Gclose(dst_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(src_grp_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -2981,6 +3161,8 @@ test_move_link(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Gclose(dst_grp_id);
+        H5Gclose(src_grp_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -2989,6 +3171,10 @@ error:
     return 1;
 }
 
+/*
+ * A test to check that H5Lmove fails when it is given
+ * invalid parameters.
+ */
 static int
 test_move_link_invalid_params(void)
 {
@@ -2996,6 +3182,7 @@ test_move_link_invalid_params(void)
     herr_t err_ret = -1;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Lmove with invalid parameters");
 
@@ -3013,20 +3200,32 @@ test_move_link_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, MOVE_LINK_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, MOVE_LINK_INVALID_PARAMS_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INVALID_PARAMS_TEST_GROUP_NAME);
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INVALID_PARAMS_TEST_SUBGROUP_NAME);
         goto error;
     }
 
-    if (H5Lcreate_hard(group_id, ".", group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if ((src_grp_id = H5Gcreate2(group_id, MOVE_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME);
+        goto error;
+    }
+
+    if ((dst_grp_id = H5Gcreate2(group_id, MOVE_LINK_INVALID_PARAMS_TEST_DST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INVALID_PARAMS_TEST_DST_GROUP_NAME);
+        goto error;
+    }
+
+    if (H5Lcreate_hard(group_id, ".", src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create hard link '%s'\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
         goto error;
     }
 
     /* Verify the link has been created */
-    if ((link_exists = H5Lexists(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
         goto error;
@@ -3039,7 +3238,7 @@ test_move_link_invalid_params(void)
     }
 
     /* Verify the link doesn't currently exist in the target group */
-    if ((link_exists = H5Lexists(file_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
         goto error;
@@ -3058,7 +3257,7 @@ test_move_link_invalid_params(void)
             TESTING_2("H5Lmove with an invalid source location ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(H5I_INVALID_HID, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, file_id,
+                err_ret = H5Lmove(H5I_INVALID_HID, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -3075,7 +3274,7 @@ test_move_link_invalid_params(void)
             TESTING_2("H5Lmove with an invalid source name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, NULL, file_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+                err_ret = H5Lmove(src_grp_id, NULL, dst_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -3085,7 +3284,7 @@ test_move_link_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, "", file_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+                err_ret = H5Lmove(src_grp_id, "", dst_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -3101,7 +3300,7 @@ test_move_link_invalid_params(void)
             TESTING_2("H5Lmove with an invalid destination location ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5I_INVALID_HID,
+                err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5I_INVALID_HID,
                         MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -3118,7 +3317,7 @@ test_move_link_invalid_params(void)
             TESTING_2("H5Lmove with an invalid destination name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, file_id, NULL, H5P_DEFAULT, H5P_DEFAULT);
+                err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id, NULL, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -3128,7 +3327,7 @@ test_move_link_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, file_id, "", H5P_DEFAULT, H5P_DEFAULT);
+                err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id, "", H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -3144,7 +3343,7 @@ test_move_link_invalid_params(void)
             TESTING_2("H5Lmove with an invalid LCPL")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, file_id,
+                err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5I_INVALID_HID, H5P_DEFAULT);
             } H5E_END_TRY;
 
@@ -3161,7 +3360,7 @@ test_move_link_invalid_params(void)
             TESTING_2("H5Lmove with an invalid LAPL")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, file_id,
+                err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5I_INVALID_HID);
             } H5E_END_TRY;
 
@@ -3175,10 +3374,10 @@ test_move_link_invalid_params(void)
         } PART_END(H5Lmove_invalid_lapl);
 
         PART_BEGIN(H5Lmove_existence) {
-            TESTING_2("link existence")
+            TESTING_2("valid link existence in original group after expected H5Lmove failures")
 
             /* Verify the link hasn't been moved */
-            if ((link_exists = H5Lexists(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_existence);
@@ -3190,7 +3389,7 @@ test_move_link_invalid_params(void)
                 PART_ERROR(H5Lmove_existence);
             }
 
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
                 PART_ERROR(H5Lmove_existence);
@@ -3208,6 +3407,10 @@ test_move_link_invalid_params(void)
 
     TESTING_2("test cleanup")
 
+    if (H5Gclose(dst_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(src_grp_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -3221,6 +3424,8 @@ test_move_link_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
+        H5Gclose(dst_grp_id);
+        H5Gclose(src_grp_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -3243,7 +3448,7 @@ test_get_link_val(void)
     htri_t      link_exists;
     size_t      link_val_buf_size = 0;
     char       *link_val_buf = NULL;
-    hid_t       file_id = H5I_INVALID_HID;
+    hid_t       file_id = H5I_INVALID_HID, ext_file_id = H5I_INVALID_HID;
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t       gcpl_id = H5I_INVALID_HID;
     char        ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
@@ -3251,17 +3456,6 @@ test_get_link_val(void)
     TESTING_MULTIPART("link value retrieval");
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
-
-    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3354,6 +3548,20 @@ test_get_link_val(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_val_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_val_external);
+            }
+
             if (H5Lcreate_external(ext_link_filename, "/", group_id, GET_LINK_VAL_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create external link '%s'\n", GET_LINK_VAL_TEST_EXT_LINK_NAME);
@@ -3419,6 +3627,10 @@ test_get_link_val(void)
             PASSED();
         } PART_END(H5Lget_val_external);
 
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
         PART_BEGIN(H5Lget_val_by_idx_soft) {
             TESTING_2("H5Lget_val_by_idx on soft link")
 
@@ -3463,6 +3675,20 @@ test_get_link_val(void)
             TESTING_2("H5Lget_val_by_idx on external link")
 
             HDmemset(&link_info, 0, sizeof(link_info));
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_val_by_idx_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_val_by_idx_external);
+            }
 
             if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 1, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -3514,6 +3740,10 @@ test_get_link_val(void)
 
             PASSED();
         } PART_END(H5Lget_val_by_idx_external);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -3542,6 +3772,7 @@ error:
         H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -3563,22 +3794,10 @@ test_get_link_val_invalid_params(void)
     hid_t       file_id = H5I_INVALID_HID;
     hid_t       container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t       gcpl_id = H5I_INVALID_HID;
-    char        ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link value retrieval with invalid parameters");
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
-
-    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3870,7 +4089,7 @@ test_get_link_info(void)
 {
     H5L_info_t link_info;
     htri_t     link_exists;
-    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      file_id = H5I_INVALID_HID, ext_file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t      gcpl_id = H5I_INVALID_HID;
     char       ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
@@ -3878,17 +4097,6 @@ test_get_link_info(void)
     TESTING_MULTIPART("link info retrieval");
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
-
-    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4005,6 +4213,20 @@ test_get_link_info(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_external);
+            }
+
             if (H5Lcreate_external(ext_link_filename, "/", group_id, GET_LINK_INFO_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create external link '%s'\n", GET_LINK_INFO_TEST_EXT_LINK_NAME);
@@ -4037,6 +4259,10 @@ test_get_link_info(void)
 
             PASSED();
         } PART_END(H5Lget_info_external);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Lget_info_by_idx_hard) {
             TESTING_2("H5Lget_info_by_idx on hard link")
@@ -4083,6 +4309,20 @@ test_get_link_info(void)
 
             HDmemset(&link_info, 0, sizeof(link_info));
 
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lget_info_by_idx_external);
+            }
+
             if (H5Lget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 2, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve external link info\n");
@@ -4097,6 +4337,10 @@ test_get_link_info(void)
 
             PASSED();
         } PART_END(H5Lget_info_by_idx_external);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -4119,6 +4363,7 @@ error:
         H5Pclose(gcpl_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -4138,22 +4383,10 @@ test_get_link_info_invalid_params(void)
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t      gcpl_id = H5I_INVALID_HID;
-    char       ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link info retrieval with invalid parameters");
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
-
-    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4409,8 +4642,6 @@ error:
 /*
  * A test to check that a link's name can be correctly
  * retrieved by using H5Lget_name_by_idx.
- *
- * XXX: soft and external links
  */
 static int
 test_get_link_name(void)
@@ -4420,9 +4651,12 @@ test_get_link_name(void)
     size_t   link_name_buf_size = 0;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t    subgroup_id = H5I_INVALID_HID;
     char    *link_name_buf = NULL;
 
-    TESTING("link name retrieval")
+    TESTING_MULTIPART("link name retrieval")
+
+    TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4442,51 +4676,94 @@ test_get_link_name(void)
         goto error;
     }
 
-    if (H5Lcreate_hard(group_id, ".", group_id, GET_LINK_NAME_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to create hard link '%s'\n", GET_LINK_NAME_TEST_HARD_LINK_NAME);
-        goto error;
-    }
+    PASSED();
 
-    /* Verify the link has been created */
-    if ((link_exists = H5Lexists(group_id, GET_LINK_NAME_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if link exists\n");
-        goto error;
-    }
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Lget_name_by_idx_hard) {
+            TESTING_2("H5Lget_name_by_idx on hard link")
 
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    link did not exist\n");
-        goto error;
-    }
+            if ((subgroup_id = H5Gcreate2(group_id, GET_LINK_NAME_TEST_HARD_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create container subgroup '%s'\n", GET_LINK_NAME_TEST_HARD_SUBGROUP_NAME);
+                goto error;
+            }
 
-    if ((ret = H5Lget_name_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, NULL, link_name_buf_size, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to retrieve link name size\n");
-        goto error;
-    }
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, GET_LINK_NAME_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to create hard link '%s'\n", GET_LINK_NAME_TEST_HARD_LINK_NAME);
+                goto error;
+            }
 
-    link_name_buf_size = (size_t) ret;
-    if (NULL == (link_name_buf = (char *) HDmalloc(link_name_buf_size + 1)))
-        TEST_ERROR
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, GET_LINK_NAME_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link exists\n");
+                goto error;
+            }
 
-    if (H5Lget_name_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    failed to retrieve link name\n");
-        goto error;
-    }
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link did not exist\n");
+                goto error;
+            }
 
-    if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME)) {
-        H5_FAILED();
-        HDprintf("    link name '%s' did not match expected '%s'\n", link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME);
-        goto error;
-    }
+            if ((ret = H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, NULL, link_name_buf_size, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve link name size\n");
+                goto error;
+            }
 
-    if (link_name_buf) {
-        HDfree(link_name_buf);
-        link_name_buf = NULL;
-    }
+            link_name_buf_size = (size_t) ret;
+            if (NULL == (link_name_buf = (char *) HDmalloc(link_name_buf_size + 1)))
+                TEST_ERROR
+
+            if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve link name\n");
+                goto error;
+            }
+
+            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME)) {
+                H5_FAILED();
+                HDprintf("    link name '%s' did not match expected '%s'\n", link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME);
+                goto error;
+            }
+
+            HDfree(link_name_buf);
+            link_name_buf = NULL;
+
+            SKIPPED();
+        } PART_END(H5Lget_name_by_idx_hard);
+
+        if (link_name_buf) {
+            HDfree(link_name_buf);
+            link_name_buf = NULL;
+        }
+        if (subgroup_id >= 0) {
+            H5Gclose(subgroup_id);
+            subgroup_id = H5I_INVALID_HID;
+        }
+
+        PART_BEGIN(H5Lget_name_by_idx_soft) {
+            TESTING_2("H5Lget_name_by_idx on soft link")
+
+            SKIPPED();
+        } PART_END(H5Lget_name_by_idx_soft);
+
+        PART_BEGIN(H5Lget_name_by_idx_external) {
+            TESTING_2("H5Lget_name_by_idx on external link")
+
+            SKIPPED();
+        } PART_END(H5Lget_name_by_idx_external);
+
+        PART_BEGIN(H5Lget_name_by_idx_ud) {
+            TESTING_2("H5Lget_name_by_idx on user-defined link")
+
+            SKIPPED();
+        } PART_END(H5Lget_name_by_idx_ud);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -4502,6 +4779,7 @@ test_get_link_name(void)
 error:
     H5E_BEGIN_TRY {
         if (link_name_buf) HDfree(link_name_buf);
+        H5Gclose(subgroup_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -4720,26 +4998,526 @@ error:
 
 /*
  * A test to check the functionality of link
- * iteration using H5Literate. Iteration is done
- * in increasing and decreasing order of both
- * link name and link creation order.
+ * iteration using H5Literate(_by_name) with
+ * only hard links. Iteration is done in
+ * increasing and decreasing order of both link
+ * name and link creation order.
  */
 static int
-test_link_iterate(void)
+test_link_iterate_hard_links(void)
 {
-    hsize_t saved_idx;
-    size_t  i;
-    htri_t  link_exists;
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   gcpl_id = H5I_INVALID_HID;
-    hid_t   dset_id = H5I_INVALID_HID;
-    hid_t   dset_dtype = H5I_INVALID_HID;
-    hid_t   dset_dspace = H5I_INVALID_HID;
-    int     halted;
-    char    ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  dset_dspace = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("link iteration");
+    TESTING_MULTIPART("link iteration (only hard links)")
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create GCPL for link creation order tracking\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set link creation order tracking\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
+        TEST_ERROR
+
+    if ((dset_dspace = generate_random_dataspace(LINK_ITER_HARD_LINKS_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
+        TEST_ERROR
+
+    for (i = 0; i < LINK_ITER_HARD_LINKS_TEST_NUM_LINKS; i++) {
+        char dset_name[LINK_ITER_HARD_LINKS_TEST_BUF_SIZE];
+
+        /* Create the datasets with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(dset_name, LINK_ITER_HARD_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_HARD_LINKS_TEST_LINK_NAME"%d", (int) (LINK_ITER_HARD_LINKS_TEST_NUM_LINKS - i - 1));
+
+        if ((dset_id = H5Dcreate2(group_id, dset_name, dset_dtype, dset_dspace,
+                H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create hard link '%s'\n", dset_name);
+            goto error;
+        }
+
+        /* Verify the link has been created */
+        if ((link_exists = H5Lexists(group_id, dset_name, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't determine if link '%s' exists\n", dset_name);
+            goto error;
+        }
+
+        if (!link_exists) {
+            H5_FAILED();
+            HDprintf("    link '%s' did not exist\n", dset_name);
+            goto error;
+        }
+
+        if (H5Dclose(dset_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close dataset '%s'\n", dset_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Literate_link_name_increasing) {
+            TESTING_2("H5Literate by link name in increasing order")
+
+            /* Test basic link iteration capability using both index types and both index orders */
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_hard_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type name in increasing order failed\n");
+                PART_ERROR(H5Literate_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_HARD_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_name_decreasing) {
+            TESTING_2("H5Literate by link name in decreasing order")
+
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_hard_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type name in decreasing order failed\n");
+                PART_ERROR(H5Literate_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_HARD_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_creation_increasing) {
+            TESTING_2("H5Literate by creation order in increasing order")
+
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_hard_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Literate_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_HARD_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_creation_decreasing) {
+            TESTING_2("H5Literate by creation order in decreasing order")
+
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_hard_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Literate_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Literate_by_name_link_name_increasing) {
+            TESTING_2("H5Literate_by_name by link name in increasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_hard_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Literate_by_name_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_HARD_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_link_name_decreasing) {
+            TESTING_2("H5Literate_by_name by link name in decreasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_hard_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Literate_by_name_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_HARD_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_creation_increasing) {
+            TESTING_2("H5Literate_by_name by creation order in increasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_hard_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Literate_by_name_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_HARD_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_creation_decreasing) {
+            TESTING_2("H5Literate_by_name by creation order in decreasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_HARD_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_hard_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Literate_by_name_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Sclose(dset_dspace) < 0)
+        TEST_ERROR
+    if (H5Tclose(dset_dtype) < 0)
+        TEST_ERROR
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(dset_dspace);
+        H5Tclose(dset_dtype);
+        H5Dclose(dset_id);
+        H5Pclose(gcpl_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of link
+ * iteration using H5Literate(_by_name) with
+ * only soft links. Iteration is done in
+ * increasing and decreasing order of both link
+ * name and link creation order.
+ */
+static int
+test_link_iterate_soft_links(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+
+    TESTING_MULTIPART("link iteration (only soft links)")
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create GCPL for link creation order tracking\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set link creation order tracking\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS; i++) {
+        char link_name[LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE];
+        char link_target[LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE];
+
+        /* Create the links with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(link_name, LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_SOFT_LINKS_TEST_LINK_NAME"%d", (int) (LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS - i - 1));
+
+        HDsnprintf(link_target, LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE, "target%d", (int) (LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS - i - 1));
+
+        if (H5Lcreate_soft(link_target, group_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create soft link '%s'\n", link_name);
+            goto error;
+        }
+
+        /* Verify the link has been created */
+        if ((link_exists = H5Lexists(group_id, link_name, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+            goto error;
+        }
+
+        if (!link_exists) {
+            H5_FAILED();
+            HDprintf("    link '%s' did not exist\n", link_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Literate_link_name_increasing) {
+            TESTING_2("H5Literate by link name in increasing order")
+
+            /* Test basic link iteration capability using both index types and both index orders */
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_soft_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type name in increasing order failed\n");
+                PART_ERROR(H5Literate_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_name_decreasing) {
+            TESTING_2("H5Literate by link name in decreasing order")
+
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_soft_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type name in decreasing order failed\n");
+                PART_ERROR(H5Literate_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_creation_increasing) {
+            TESTING_2("H5Literate by creation order in increasing order")
+
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_soft_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Literate_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_creation_decreasing) {
+            TESTING_2("H5Literate by creation order in decreasing order")
+
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_soft_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Literate_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Literate_by_name_link_name_increasing) {
+            TESTING_2("H5Literate_by_name by link name in increasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_soft_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Literate_by_name_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_link_name_decreasing) {
+            TESTING_2("H5Literate_by_name by link name in decreasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_soft_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Literate_by_name_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_creation_increasing) {
+            TESTING_2("H5Literate_by_name by creation order in increasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_soft_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Literate_by_name_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_creation_decreasing) {
+            TESTING_2("H5Literate_by_name by creation order in decreasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_SOFT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_soft_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Literate_by_name_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of link
+ * iteration using H5Literate(_by_name) with
+ * only external links. Iteration is done in
+ * increasing and decreasing order of both link
+ * name and link creation order.
+ */
+static int
+test_link_iterate_external_links(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+
+    TESTING_MULTIPART("link iteration (only external links)")
 
     TESTING_2("test setup")
 
@@ -4778,42 +5556,324 @@ test_link_iterate(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, LINK_ITER_TEST_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, LINK_ITER_EXT_LINKS_TEST_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_TEST_SUBGROUP_NAME);
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_EXT_LINKS_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < LINK_ITER_EXT_LINKS_TEST_NUM_LINKS; i++) {
+        char link_name[LINK_ITER_EXT_LINKS_TEST_BUF_SIZE];
+
+        /* Create the links with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(link_name, LINK_ITER_EXT_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_EXT_LINKS_TEST_LINK_NAME"%d", (int) (LINK_ITER_EXT_LINKS_TEST_NUM_LINKS - i - 1));
+
+        if (H5Lcreate_external(ext_link_filename, "/", group_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create external link '%s'\n", link_name);
+            goto error;
+        }
+
+        /* Verify the link has been created */
+        if ((link_exists = H5Lexists(group_id, link_name, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+            goto error;
+        }
+
+        if (!link_exists) {
+            H5_FAILED();
+            HDprintf("    link '%s' did not exist\n", link_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Literate_link_name_increasing) {
+            TESTING_2("H5Literate by link name in increasing order")
+
+            /* Test basic link iteration capability using both index types and both index orders */
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_external_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type name in increasing order failed\n");
+                PART_ERROR(H5Literate_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_EXT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_name_decreasing) {
+            TESTING_2("H5Literate by link name in decreasing order")
+
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_external_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type name in decreasing order failed\n");
+                PART_ERROR(H5Literate_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_EXT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_creation_increasing) {
+            TESTING_2("H5Literate by creation order in increasing order")
+
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_external_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Literate_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_EXT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_link_creation_decreasing) {
+            TESTING_2("H5Literate by creation order in decreasing order")
+
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_external_links_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Literate_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Literate_by_name_link_name_increasing) {
+            TESTING_2("H5Literate_by_name by link name in increasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_EXT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_external_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Literate_by_name_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_ITER_EXT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_link_name_decreasing) {
+            TESTING_2("H5Literate_by_name by link name in decreasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_EXT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_external_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Literate_by_name_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_ITER_EXT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_creation_increasing) {
+            TESTING_2("H5Literate_by_name by creation order in increasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_EXT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_external_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Literate_by_name_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_ITER_EXT_LINKS_TEST_NUM_LINKS;
+
+        PART_BEGIN(H5Literate_by_name_creation_decreasing) {
+            TESTING_2("H5Literate_by_name by creation order in decreasing order")
+
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_EXT_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_external_links_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Literate_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Literate_by_name_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Literate_by_name_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of link
+ * iteration using H5Literate(_by_name) with
+ * only user-defined links. Iteration is done
+ * in increasing and decreasing order of both
+ * link name and link creation order.
+ *
+ * TODO refactor test so that creation order tests
+ * actually test the order that objects were created in.
+ */
+static int
+test_link_iterate_ud_links(void)
+{
+    TESTING_MULTIPART("link iteration (only user-defined links)")
+    SKIPPED();
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of link
+ * iteration using H5Literate(_by_name) with
+ * mixed link types. Iteration is done in
+ * increasing and decreasing order of both link
+ * name and link creation order.
+ *
+ * TODO refactor test so that creation order tests
+ * actually test the order that objects were created in.
+ *
+ * TODO add UD links
+ *
+ * TODO refactor link saving portion into its own test
+ */
+static int
+test_link_iterate_mixed_links(void)
+{
+    hsize_t saved_idx;
+    size_t  i;
+    htri_t  link_exists;
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t   gcpl_id = H5I_INVALID_HID;
+    hid_t   dset_id = H5I_INVALID_HID;
+    hid_t   dset_dtype = H5I_INVALID_HID;
+    hid_t   dset_dspace = H5I_INVALID_HID;
+    int     halted;
+    char    ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+
+    TESTING_MULTIPART("link iteration (mixed link types)")
+
+    TESTING_2("test setup")
+
+    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+        goto error;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create GCPL for link creation order tracking\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set link creation order tracking\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME);
         goto error;
     }
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_dspace = generate_random_dataspace(LINK_ITER_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
+    if ((dset_dspace = generate_random_dataspace(LINK_ITER_MIXED_LINKS_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_id = H5Dcreate2(group_id, LINK_ITER_TEST_HARD_LINK_NAME, dset_dtype, dset_dspace,
+    if ((dset_id = H5Dcreate2(group_id, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME, dset_dtype, dset_dspace,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create hard link '%s'\n", LINK_ITER_TEST_HARD_LINK_NAME);
+        HDprintf("    couldn't create hard link '%s'\n", LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME);
         goto error;
     }
 
-    if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_SUBGROUP_NAME "/" LINK_ITER_TEST_HARD_LINK_NAME,
-            group_id, LINK_ITER_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME "/" LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME,
+            group_id, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create soft link '%s'\n", LINK_ITER_TEST_SOFT_LINK_NAME);
+        HDprintf("    couldn't create soft link '%s'\n", LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME);
         goto error;
     }
 
-    if (H5Lcreate_external(ext_link_filename, "/", group_id, LINK_ITER_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_external(ext_link_filename, "/", group_id, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create external link '%s'\n", LINK_ITER_TEST_EXT_LINK_NAME);
+        HDprintf("    couldn't create external link '%s'\n", LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME);
         goto error;
     }
 
     /* Verify the links have been created */
-    if ((link_exists = H5Lexists(group_id, LINK_ITER_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(group_id, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_TEST_HARD_LINK_NAME);
+        HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME);
         goto error;
     }
 
@@ -4823,9 +5883,9 @@ test_link_iterate(void)
         goto error;
     }
 
-    if ((link_exists = H5Lexists(group_id, LINK_ITER_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(group_id, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_TEST_SOFT_LINK_NAME);
+        HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME);
         goto error;
     }
 
@@ -4835,9 +5895,9 @@ test_link_iterate(void)
         goto error;
     }
 
-    if ((link_exists = H5Lexists(group_id, LINK_ITER_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(group_id, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_TEST_EXT_LINK_NAME);
+        HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME);
         goto error;
     }
 
@@ -4862,7 +5922,7 @@ test_link_iterate(void)
             TESTING_2("H5Literate by link name in increasing order")
 
             /* Test basic link iteration capability using both index types and both index orders */
-            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback1, &i) < 0) {
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_mixed_links_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type name in increasing order failed\n");
                 PART_ERROR(H5Literate_link_name_increasing);
@@ -4872,12 +5932,12 @@ test_link_iterate(void)
         } PART_END(H5Literate_link_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = LINK_ITER_TEST_NUM_LINKS;
+        i = LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_link_name_decreasing) {
             TESTING_2("H5Literate by link name in decreasing order")
 
-            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_callback1, &i) < 0) {
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_mixed_links_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type name in decreasing order failed\n");
                 PART_ERROR(H5Literate_link_name_decreasing);
@@ -4887,12 +5947,12 @@ test_link_iterate(void)
         } PART_END(H5Literate_link_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * LINK_ITER_TEST_NUM_LINKS;
+        i = 2 * LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_link_creation_increasing) {
             TESTING_2("H5Literate by creation order in increasing order")
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_callback1, &i) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_mixed_links_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Literate_link_creation_increasing);
@@ -4902,12 +5962,12 @@ test_link_iterate(void)
         } PART_END(H5Literate_link_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * LINK_ITER_TEST_NUM_LINKS;
+        i = 3 * LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_link_creation_decreasing) {
             TESTING_2("H5Literate by creation order in decreasing order")
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_callback1, &i) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_mixed_links_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Literate_link_creation_decreasing);
@@ -4924,8 +5984,8 @@ test_link_iterate(void)
         PART_BEGIN(H5Literate_by_name_link_name_increasing) {
             TESTING_2("H5Literate_by_name by link name in increasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_mixed_links_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type name in increasing order failed\n");
                 PART_ERROR(H5Literate_by_name_link_name_increasing);
@@ -4935,13 +5995,13 @@ test_link_iterate(void)
         } PART_END(H5Literate_by_name_link_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = LINK_ITER_TEST_NUM_LINKS;
+        i = LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_by_name_link_name_decreasing) {
             TESTING_2("H5Literate_by_name by link name in decreasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_mixed_links_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type name in decreasing order failed\n");
                 PART_ERROR(H5Literate_by_name_link_name_decreasing);
@@ -4951,13 +6011,13 @@ test_link_iterate(void)
         } PART_END(H5Literate_by_name_link_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * LINK_ITER_TEST_NUM_LINKS;
+        i = 2 * LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_by_name_creation_increasing) {
             TESTING_2("H5Literate_by_name by creation order in increasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_mixed_links_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Literate_by_name_creation_increasing);
@@ -4967,13 +6027,13 @@ test_link_iterate(void)
         } PART_END(H5Literate_by_name_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * LINK_ITER_TEST_NUM_LINKS;
+        i = 3 * LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Literate_by_name_creation_decreasing) {
             TESTING_2("H5Literate_by_name by creation order in decreasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_MIXED_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_mixed_links_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Literate_by_name_creation_decreasing);
@@ -4989,7 +6049,7 @@ test_link_iterate(void)
             saved_idx = 0;
             halted = 0;
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, &saved_idx, link_iter_callback2, &halted) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, &saved_idx, link_iter_idx_saving_cb, &halted) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate index-saving capability test failed\n");
                 PART_ERROR(H5Literate_index_saving_increasing);
@@ -5001,7 +6061,7 @@ test_link_iterate(void)
                 PART_ERROR(H5Literate_index_saving_increasing);
             }
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, &saved_idx, link_iter_callback2, &halted) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, &saved_idx, link_iter_idx_saving_cb, &halted) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't finish iterating when beginning from saved index\n");
                 PART_ERROR(H5Literate_index_saving_increasing);
@@ -5013,10 +6073,10 @@ test_link_iterate(void)
         PART_BEGIN(H5Literate_index_saving_decreasing) {
             TESTING_2("H5Literate index-saving capabilities in decreasing order")
 
-            saved_idx = LINK_ITER_TEST_NUM_LINKS - 1;
+            saved_idx = LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS - 1;
             halted = 0;
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, &saved_idx, link_iter_callback2, &halted) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, &saved_idx, link_iter_idx_saving_cb, &halted) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate index-saving capability test failed\n");
                 PART_ERROR(H5Literate_index_saving_decreasing);
@@ -5028,7 +6088,7 @@ test_link_iterate(void)
                 PART_ERROR(H5Literate_index_saving_decreasing);
             }
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, &saved_idx, link_iter_callback2, &halted) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, &saved_idx, link_iter_idx_saving_cb, &halted) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't finish iterating when beginning from saved index\n");
                 PART_ERROR(H5Literate_index_saving_decreasing);
@@ -5073,6 +6133,10 @@ error:
     return 1;
 }
 
+/*
+ * A test to check that H5Literate(_by_name) fails
+ * when given invalid parameters.
+ */
 static int
 test_link_iterate_invalid_params(void)
 {
@@ -5204,7 +6268,7 @@ test_link_iterate_invalid_params(void)
             TESTING_2("H5Literate with an invalid group ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL);
+                err_ret = H5Literate(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5220,7 +6284,7 @@ test_link_iterate_invalid_params(void)
             TESTING_2("H5Literate with an invalid index type")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, NULL, link_iter_callback3, NULL);
+                err_ret = H5Literate(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5230,7 +6294,7 @@ test_link_iterate_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate(group_id, H5_INDEX_N, H5_ITER_INC, NULL, link_iter_callback3, NULL);
+                err_ret = H5Literate(group_id, H5_INDEX_N, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5246,7 +6310,7 @@ test_link_iterate_invalid_params(void)
             TESTING_2("H5Literate with an invalid iteration ordering")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, NULL, link_iter_callback3, NULL);
+                err_ret = H5Literate(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, NULL, link_iter_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5256,7 +6320,7 @@ test_link_iterate_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate(group_id, H5_INDEX_NAME, H5_ITER_N, NULL, link_iter_callback3, NULL);
+                err_ret = H5Literate(group_id, H5_INDEX_NAME, H5_ITER_N, NULL, link_iter_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5273,7 +6337,7 @@ test_link_iterate_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Literate_by_name(H5I_INVALID_HID, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT);
+                        H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5289,7 +6353,7 @@ test_link_iterate_invalid_params(void)
             TESTING_2("H5Literate_by_name with an invalid group name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate_by_name(file_id, NULL, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT);
+                err_ret = H5Literate_by_name(file_id, NULL, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5299,7 +6363,7 @@ test_link_iterate_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Literate_by_name(file_id, "", H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT);
+                err_ret = H5Literate_by_name(file_id, "", H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5316,7 +6380,7 @@ test_link_iterate_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_UNKNOWN, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT);
+                        H5_INDEX_UNKNOWN, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5327,7 +6391,7 @@ test_link_iterate_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_N, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT);
+                        H5_INDEX_N, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5344,7 +6408,7 @@ test_link_iterate_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_UNKNOWN, NULL, link_iter_callback3, NULL, H5P_DEFAULT);
+                        H5_INDEX_NAME, H5_ITER_UNKNOWN, NULL, link_iter_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5355,7 +6419,7 @@ test_link_iterate_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_N, NULL, link_iter_callback3, &i, H5P_DEFAULT);
+                        H5_INDEX_NAME, H5_ITER_N, NULL, link_iter_invalid_params_cb, &i, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5372,7 +6436,7 @@ test_link_iterate_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5I_INVALID_HID);
+                        H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_invalid_params_cb, NULL, H5I_INVALID_HID);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5459,9 +6523,9 @@ test_link_iterate_0_links(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME);
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME);
         goto error;
     }
 
@@ -5472,7 +6536,7 @@ test_link_iterate_0_links(void)
             TESTING_2("H5Literate by link name in increasing order")
 
             /* Test basic link iteration capability using both index types and both index orders */
-            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL) < 0) {
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type name in increasing order failed\n");
                 PART_ERROR(H5Literate_0_links_name_increasing);
@@ -5484,7 +6548,7 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_0_links_name_decreasing) {
             TESTING_2("H5Literate by link name in decreasing order")
 
-            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_callback3, NULL) < 0) {
+            if (H5Literate(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type name in decreasing order failed\n");
                 PART_ERROR(H5Literate_0_links_name_decreasing);
@@ -5496,7 +6560,7 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_0_links_creation_increasing) {
             TESTING_2("H5Literate by creation order in increasing order")
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_callback3, NULL) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Literate_0_links_creation_increasing);
@@ -5508,7 +6572,7 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_0_links_creation_decreasing) {
             TESTING_2("H5Literate by creation order in decreasing order")
 
-            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_callback3, NULL) < 0) {
+            if (H5Literate(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Literate_0_links_creation_decreasing);
@@ -5520,8 +6584,8 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_by_name_0_links_name_increasing) {
             TESTING_2("H5Literate_by_name by link name in increasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, NULL, link_iter_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type name in increasing order failed\n");
                 PART_ERROR(H5Literate_by_name_0_links_name_increasing);
@@ -5533,8 +6597,8 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_by_name_0_links_name_decreasing) {
             TESTING_2("H5Literate_by_name by link name in decreasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, NULL, link_iter_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type name in decreasing order failed\n");
                 PART_ERROR(H5Literate_by_name_0_links_name_decreasing);
@@ -5546,8 +6610,8 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_by_name_0_links_creation_increasing) {
             TESTING_2("H5Literate_by_name by creation order in increasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, link_iter_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Literate_by_name_0_links_creation_increasing);
@@ -5559,8 +6623,8 @@ test_link_iterate_0_links(void)
         PART_BEGIN(H5Literate_by_name_0_links_creation_decreasing) {
             TESTING_2("H5Literate_by_name by creation order in decreasing order")
 
-            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Literate_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_ITER_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, link_iter_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Literate_by_name by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Literate_by_name_0_links_creation_decreasing);
@@ -5598,30 +6662,28 @@ error:
 
 /*
  * A test to check the functionality of recursive
- * link iteration using H5Lvisit where there are no
- * cyclic links. Iteration is done in increasing and
- * decreasing order of both link name and link creation
- * order.
+ * link iteration using H5Lvisit(_by_name) with
+ * only hard links and where there are no cyclic
+ * links. Iteration is done in increasing and
+ * decreasing order of both link name and link
+ * creation order.
  */
 static int
-test_link_visit(void)
+test_link_visit_hard_links_no_cycles(void)
 {
     size_t i;
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID;
     hid_t  gcpl_id = H5I_INVALID_HID;
     hid_t  dset_id = H5I_INVALID_HID;
     hid_t  dset_dtype = H5I_INVALID_HID;
-    hid_t  fspace_id = H5I_INVALID_HID;
-    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    hid_t  dset_dspace = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("link visiting without cycles");
+    TESTING_MULTIPART("link visiting without cycles (only hard links)")
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5647,81 +6709,951 @@ test_link_visit(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME,
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
             H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME);
-        goto error;
-    }
-
-    if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2,
-            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2);
-        goto error;
-    }
-
-    if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3,
-            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3);
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME);
         goto error;
     }
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
         TEST_ERROR
 
-    if ((fspace_id = generate_random_dataspace(LINK_VISIT_TEST_NO_CYCLE_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
+    if ((dset_dspace = generate_random_dataspace(LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
 
-    if ((dset_id = H5Dcreate2(subgroup1, LINK_VISIT_TEST_NO_CYCLE_DSET_NAME, dset_dtype, fspace_id,
+    for (i = 0; i < LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS; i++) {
+        size_t j;
+        char   grp_name[LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+
+        /* Create the groups with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(grp_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                (int) (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - i - 1));
+
+        if ((subgroup_id = H5Gcreate2(group_id, grp_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create subgroup '%s'\n", grp_name);
+            goto error;
+        }
+
+        for (j = 0; j < LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP; j++) {
+            char dset_name[LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+
+            /* Create the datasets with a reverse-ordering naming scheme to test creation order later */
+            HDsnprintf(dset_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            if ((dset_id = H5Dcreate2(subgroup_id, dset_name, dset_dtype, dset_dspace,
+                    H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", dset_name);
+                goto error;
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, dset_name, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", dset_name);
+                goto error;
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' did not exist\n", dset_name);
+                goto error;
+            }
+
+            if (H5Dclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close dataset '%s'\n", dset_name);
+                goto error;
+            }
+        }
+
+        if (H5Gclose(subgroup_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close subgroup '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit by link name in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_hard_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit by link name in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_hard_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit by creation order in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_hard_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit by creation order in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_hard_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit_by_name by link name in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_hard_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit_by_name by link name in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_hard_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_hard_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_hard_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Sclose(dset_dspace) < 0)
+        TEST_ERROR
+    if (H5Tclose(dset_dtype) < 0)
+        TEST_ERROR
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(dset_dspace);
+        H5Tclose(dset_dtype);
+        H5Dclose(dset_id);
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * only soft links and where there are no cyclic
+ * links. Iteration is done in increasing and
+ * decreasing order of both link name and link
+ * creation order.
+ */
+static int
+test_link_visit_soft_links_no_cycles(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+
+    TESTING_MULTIPART("link visiting without cycles (only soft links)")
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS; i++) {
+        size_t j;
+        char   grp_name[LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+
+        /* Create the groups with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(grp_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                (int) (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - i - 1));
+
+        if ((subgroup_id = H5Gcreate2(group_id, grp_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create subgroup '%s'\n", grp_name);
+            goto error;
+        }
+
+        for (j = 0; j < LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP; j++) {
+            char link_name[LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+            char link_target[LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+
+            /* Create the links with a reverse-ordering naming scheme to test creation order later */
+            HDsnprintf(link_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_LINK_NAME"%d", (int) (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            HDsnprintf(link_target, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE, "target%d", (int) (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            if (H5Lcreate_soft(link_target, subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", link_name);
+                goto error;
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, link_name, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+                goto error;
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' did not exist\n", link_name);
+                goto error;
+            }
+        }
+
+        if (H5Gclose(subgroup_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close subgroup '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit by link name in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_soft_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit by link name in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_soft_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit by creation order in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_soft_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit by creation order in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_soft_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit_by_name by link name in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_soft_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit_by_name by link name in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_soft_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_soft_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_soft_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * only external links and where there are no cyclic
+ * links. Iteration is done in increasing and
+ * decreasing order of both link name and link
+ * creation order.
+ */
+static int
+test_link_visit_external_links_no_cycles(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+
+    TESTING_MULTIPART("link visiting without cycles (only external links)")
+
+    TESTING_2("test setup")
+
+    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+        goto error;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS; i++) {
+        size_t j;
+        char   grp_name[LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+
+        /* Create the groups with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(grp_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                (int) (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - i - 1));
+
+        if ((subgroup_id = H5Gcreate2(group_id, grp_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create subgroup '%s'\n", grp_name);
+            goto error;
+        }
+
+        for (j = 0; j < LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP; j++) {
+            char link_name[LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+
+            /* Create the links with a reverse-ordering naming scheme to test creation order later */
+            HDsnprintf(link_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_LINK_NAME"%d", (int) (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            if (H5Lcreate_external(ext_link_filename, "/", subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", link_name);
+                goto error;
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, link_name, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+                goto error;
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' did not exist\n", link_name);
+                goto error;
+            }
+        }
+
+        if (H5Gclose(subgroup_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close subgroup '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit by link name in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_external_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit by link name in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_external_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit by creation order in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_external_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_no_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit by creation order in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_external_links_no_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_no_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_no_cycles_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit_by_name by link name in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_external_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit_by_name by link name in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_external_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_external_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_external_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * only user-defined links and where there are no
+ * cyclic links. Iteration is done in increasing
+ * and decreasing order of both link name and link
+ * creation order.
+ *
+ * TODO refactor test so that creation order tests
+ * actually test the order that objects were created in.
+ */
+static int
+test_link_visit_ud_links_no_cycles(void)
+{
+    TESTING_MULTIPART("link visiting without cycles (only user-defined links)")
+    SKIPPED();
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * mixed link types and where there are no cyclic
+ * links. Iteration is done in increasing and
+ * decreasing order of both link name and link
+ * creation order.
+ *
+ * TODO refactor test so that creation order tests
+ * actually test the order that objects were created in.
+ *
+ * TODO add UD links
+ *
+ * TODO refactor test to create a macroed number of subgroups
+ */
+static int
+test_link_visit_mixed_links_no_cycles(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  dset_dtype = H5I_INVALID_HID;
+    hid_t  fspace_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+
+    TESTING_MULTIPART("link visiting without cycles (mixed link types)")
+
+    TESTING_2("test setup")
+
+    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+        goto error;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2);
+        goto error;
+    }
+
+    if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3);
+        goto error;
+    }
+
+    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
+        TEST_ERROR
+
+    if ((fspace_id = generate_random_dataspace(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
+        TEST_ERROR
+
+    if ((dset_id = H5Dcreate2(subgroup1, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME, dset_dtype, fspace_id,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create first dataset '%s'\n", LINK_VISIT_TEST_NO_CYCLE_DSET_NAME);
+        HDprintf("    couldn't create first dataset '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME);
     }
 
     if (H5Dclose(dset_id) < 0)
         TEST_ERROR
 
-    if ((dset_id = H5Dcreate2(subgroup2, LINK_VISIT_TEST_NO_CYCLE_DSET_NAME2, dset_dtype, fspace_id,
+    if ((dset_id = H5Dcreate2(subgroup2, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2, dset_dtype, fspace_id,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create second dataset '%s'\n", LINK_VISIT_TEST_NO_CYCLE_DSET_NAME);
+        HDprintf("    couldn't create second dataset '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME);
     }
 
     if (H5Dclose(dset_id) < 0)
         TEST_ERROR
 
-    if (H5Lcreate_hard(subgroup1, LINK_VISIT_TEST_NO_CYCLE_DSET_NAME, subgroup1, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1,
+    if (H5Lcreate_hard(subgroup1, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME, subgroup1, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1,
             H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create first hard link '%s'\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1);
+        HDprintf("    couldn't create first hard link '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1);
         goto error;
     }
 
-    if (H5Lcreate_soft(LINK_VISIT_TEST_NO_CYCLE_DSET_NAME, subgroup1, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_soft(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME, subgroup1, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create soft link '%s'\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2);
+        HDprintf("    couldn't create soft link '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2);
         goto error;
     }
 
-    if (H5Lcreate_external(ext_link_filename, "/", subgroup2, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_external(ext_link_filename, "/", subgroup2, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create external link '%s'\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3);
+        HDprintf("    couldn't create external link '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3);
         goto error;
     }
 
-    if (H5Lcreate_hard(subgroup2, LINK_VISIT_TEST_NO_CYCLE_DSET_NAME2, subgroup2, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4,
+    if (H5Lcreate_hard(subgroup2, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2, subgroup2, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4,
             H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create second hard link '%s'\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4);
+        HDprintf("    couldn't create second hard link '%s'\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4);
         goto error;
     }
 
     /* Verify the links have been created */
-    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if first link '%s' exists\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1);
+        HDprintf("    couldn't determine if first link '%s' exists\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1);
         goto error;
     }
 
@@ -5731,9 +7663,9 @@ test_link_visit(void)
         goto error;
     }
 
-    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if second link '%s' exists\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2);
+        HDprintf("    couldn't determine if second link '%s' exists\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2);
         goto error;
     }
 
@@ -5743,9 +7675,9 @@ test_link_visit(void)
         goto error;
     }
 
-    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if third link '%s' exists\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3);
+        HDprintf("    couldn't determine if third link '%s' exists\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3);
         goto error;
     }
 
@@ -5755,9 +7687,9 @@ test_link_visit(void)
         goto error;
     }
 
-    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if fourth link '%s' exists\n", LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4);
+        HDprintf("    couldn't determine if fourth link '%s' exists\n", LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4);
         goto error;
     }
 
@@ -5781,7 +7713,7 @@ test_link_visit(void)
         PART_BEGIN(H5Lvisit_no_cycles_link_name_increasing) {
             TESTING_2("H5Lvisit by link name in increasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_callback1, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_mixed_links_no_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type name in increasing order failed\n");
                 PART_ERROR(H5Lvisit_no_cycles_link_name_increasing);
@@ -5791,12 +7723,12 @@ test_link_visit(void)
         } PART_END(H5Lvisit_no_cycles_link_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+        i = LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_no_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit by link name in decreasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_callback1, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_mixed_links_no_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_no_cycles_link_name_decreasing);
@@ -5806,12 +7738,12 @@ test_link_visit(void)
         } PART_END(H5Lvisit_no_cycles_link_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+        i = 2 * LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_no_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit by creation order in increasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_callback1, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_mixed_links_no_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Lvisit_no_cycles_link_creation_increasing);
@@ -5821,12 +7753,12 @@ test_link_visit(void)
         } PART_END(H5Lvisit_no_cycles_link_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+        i = 3 * LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_no_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit by creation order in decreasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_callback1, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_mixed_links_no_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_no_cycles_link_creation_decreasing);
@@ -5843,8 +7775,8 @@ test_link_visit(void)
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_increasing) {
             TESTING_2("H5Lvisit_by_name by link name in increasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_INC, link_visit_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_mixed_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_increasing);
@@ -5854,13 +7786,13 @@ test_link_visit(void)
         } PART_END(H5Lvisit_by_name_no_cycles_link_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+        i = LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit_by_name by link name in decreasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_mixed_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_no_cycles_link_name_decreasing);
@@ -5870,13 +7802,13 @@ test_link_visit(void)
         } PART_END(H5Lvisit_by_name_no_cycles_link_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+        i = 2 * LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit_by_name by creation order in increasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_mixed_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_increasing);
@@ -5886,13 +7818,13 @@ test_link_visit(void)
         } PART_END(H5Lvisit_by_name_no_cycles_link_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * LINK_VISIT_TEST_NO_CYCLE_NUM_LINKS;
+        i = 3 * LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_no_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_mixed_links_no_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_no_cycles_link_creation_decreasing);
@@ -5943,27 +7875,24 @@ error:
 
 /*
  * A test to check the functionality of recursive
- * link iteration using H5Lvisit where there are
- * cyclic links. Iteration is done in increasing
- * and decreasing order of both link name and link
- * creation order.
+ * link iteration using H5Lvisit(_by_name) with
+ * only hard links and where there are cyclic links.
+ * Iteration is done in increasing and decreasing
+ * order of both link name and link creation order.
  */
 static int
-test_link_visit_cycles(void)
+test_link_visit_hard_links_cycles(void)
 {
-    htri_t link_exists;
     size_t i;
+    htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID;
     hid_t  gcpl_id = H5I_INVALID_HID;
-    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING_MULTIPART("link visiting with cycles");
+    TESTING_MULTIPART("link visiting with cycles (only hard links)")
 
     TESTING_2("test setup")
-
-    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5989,100 +7918,938 @@ test_link_visit_cycles(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME,
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_HARD_LINKS_CYCLE_TEST_SUBGROUP_NAME,
             H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME);
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_HARD_LINKS_CYCLE_TEST_SUBGROUP_NAME);
         goto error;
     }
 
-    if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2,
-            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    for (i = 0; i < LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_SUBGROUPS; i++) {
+        size_t j;
+        char   grp_name[LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE];
+
+        /* Create the groups with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(grp_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE,
+                LINK_VISIT_HARD_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                (int) (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_SUBGROUPS - i - 1));
+
+        if ((subgroup_id = H5Gcreate2(group_id, grp_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create subgroup '%s'\n", grp_name);
+            goto error;
+        }
+
+        for (j = 0; j < LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP; j++) {
+            char link_name[LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE];
+
+            /* Create the links with a reverse-ordering naming scheme to test creation order later */
+            HDsnprintf(link_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", link_name);
+                goto error;
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, link_name, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+                goto error;
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' did not exist\n", link_name);
+                goto error;
+            }
+        }
+
+        if (H5Gclose(subgroup_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close subgroup '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit by link name in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_hard_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit by link name in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_hard_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit by creation order in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_hard_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit by creation order in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_hard_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit_by_name by link name in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_hard_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit_by_name by link name in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_hard_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_hard_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_HARD_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_hard_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * only soft links and where there are cyclic links.
+ * Iteration is done in increasing and decreasing
+ * order of both link name and link creation order.
+ */
+static int
+test_link_visit_soft_links_cycles(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+
+    TESTING_MULTIPART("link visiting with cycles (only soft links)")
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2);
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
     }
 
-    if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3,
-            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3);
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
         goto error;
     }
 
-    if (H5Lcreate_hard(group_id, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2, subgroup1, LINK_VISIT_TEST_CYCLE_LINK_NAME1,
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_SUBGROUPS; i++) {
+        size_t j;
+        char   grp_name[LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE];
+
+        /* Create the groups with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(grp_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                (int) (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_SUBGROUPS - i - 1));
+
+        if ((subgroup_id = H5Gcreate2(group_id, grp_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create subgroup '%s'\n", grp_name);
+            goto error;
+        }
+
+        for (j = 0; j < LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP; j++) {
+            char link_name[LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE];
+            char link_target[2 * LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE];
+
+            /* Create the links with a reverse-ordering naming scheme to test creation order later */
+            HDsnprintf(link_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            HDsnprintf(link_target, 2 * LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME "/%s", grp_name);
+
+            if (H5Lcreate_soft(link_target, subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", link_name);
+                goto error;
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, link_name, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+                goto error;
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' did not exist\n", link_name);
+                goto error;
+            }
+        }
+
+        if (H5Gclose(subgroup_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close subgroup '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit by link name in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_soft_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit by link name in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_soft_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit by creation order in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_soft_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit by creation order in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_soft_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit_by_name by link name in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_soft_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit_by_name by link name in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_soft_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_soft_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_soft_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * only external links and where there are cyclic
+ * links. Iteration is done in increasing and
+ * decreasing order of both link name and link
+ * creation order.
+ */
+static int
+test_link_visit_external_links_cycles(void)
+{
+    size_t i;
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+
+    TESTING_MULTIPART("link visiting with cycles (only external links)")
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    for (i = 0; i < LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_SUBGROUPS; i++) {
+        size_t j;
+        char   grp_name[LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE];
+
+        /* Create the groups with a reverse-ordering naming scheme to test creation order later */
+        HDsnprintf(grp_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                LINK_VISIT_EXT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                (int) (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_SUBGROUPS - i - 1));
+
+        if ((subgroup_id = H5Gcreate2(group_id, grp_name, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create subgroup '%s'\n", grp_name);
+            goto error;
+        }
+
+        for (j = 0; j < LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP; j++) {
+            char link_name[LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE];
+            char link_target_obj[2 * LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE];
+
+            /* Create the links with a reverse-ordering naming scheme to test creation order later */
+            HDsnprintf(link_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP - j - 1));
+
+            HDsnprintf(link_target_obj, 2 * LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME "/%s",
+                    grp_name);
+
+            if (H5Lcreate_external(vol_test_filename, link_target_obj, subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", link_name);
+                goto error;
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(subgroup_id, link_name, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", link_name);
+                goto error;
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    link '%s' did not exist\n", link_name);
+                goto error;
+            }
+        }
+
+        if (H5Gclose(subgroup_id) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't close subgroup '%s'\n", grp_name);
+            goto error;
+        }
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        /*
+         * NOTE: Pass a counter to the iteration callback to try to match up the
+         * expected links with a given step throughout all of the following
+         * iterations. This is to try and check that the links are indeed being
+         * returned in the correct order.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit by link name in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_external_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit by link name in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_external_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit by creation order in increasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_external_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit by creation order in decreasing order")
+
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_external_links_cycles_cb, &i) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_cycles_link_creation_decreasing);
+
+        /*
+         * Make sure to reset the special counter.
+         */
+        i = 0;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_name_increasing) {
+            TESTING_2("H5Lvisit_by_name by link name in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_external_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_name_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_name_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_name_decreasing) {
+            TESTING_2("H5Lvisit_by_name by link name in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_external_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_name_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_name_decreasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 2 * LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_increasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in increasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_external_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_creation_increasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_creation_increasing);
+
+        /* Reset the counter to the appropriate value for the next test */
+        i = 3 * LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+        PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_decreasing) {
+            TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
+
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_external_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Lvisit_by_name_cycles_link_creation_decreasing);
+            }
+
+            PASSED();
+        } PART_END(H5Lvisit_by_name_cycles_link_creation_decreasing);
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * only user-defined links and where there are
+ * cyclic links. Iteration is done in increasing
+ * and decreasing order of both link name and link
+ * creation order.
+ *
+ * TODO refactor test so that creation order tests
+ * actually test the order that objects were created in.
+ */
+static int
+test_link_visit_ud_links_cycles(void)
+{
+    TESTING_MULTIPART("link visiting with cycles (only user-defined links)")
+    SKIPPED();
+
+    return 1;
+}
+
+/*
+ * A test to check the functionality of recursive
+ * link iteration using H5Lvisit(_by_name) with
+ * mixed link types and where there are cyclic links.
+ * Iteration is done in increasing and decreasing
+ * order of both link name and link creation order.
+ *
+ * TODO refactor test so that creation order tests
+ * actually test the order that objects were created in.
+ */
+static int
+test_link_visit_mixed_links_cycles(void)
+{
+    htri_t link_exists;
+    size_t i;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  subgroup1 = H5I_INVALID_HID, subgroup2 = H5I_INVALID_HID;
+    hid_t  gcpl_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+
+    TESTING_MULTIPART("link visiting with cycles (mixed link types)")
+
+    TESTING_2("test setup")
+
+    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+        goto error;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create a GCPL\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((subgroup1 = H5Gcreate2(group_id, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create first subgroup '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2);
+        goto error;
+    }
+
+    if ((subgroup2 = H5Gcreate2(group_id, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create second subgroup '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3);
+        goto error;
+    }
+
+    if (H5Lcreate_hard(group_id, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2, subgroup1, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1,
             H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create first hard link '%s'\n", LINK_VISIT_TEST_CYCLE_LINK_NAME1);
+        HDprintf("    couldn't create first hard link '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1);
         goto error;
     }
 
-    if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME "/" LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2,
-            subgroup1, LINK_VISIT_TEST_CYCLE_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2,
+            subgroup1, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create soft link '%s'\n", LINK_VISIT_TEST_CYCLE_LINK_NAME2);
+        HDprintf("    couldn't create soft link '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2);
         goto error;
     }
 
-    if (H5Lcreate_external(ext_link_filename, "/", subgroup2, LINK_VISIT_TEST_CYCLE_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_external(ext_link_filename, "/", subgroup2, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create external link '%s'\n", LINK_VISIT_TEST_CYCLE_LINK_NAME3);
+        HDprintf("    couldn't create external link '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3);
         goto error;
     }
 
-    if (H5Lcreate_hard(group_id, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3, subgroup2, LINK_VISIT_TEST_CYCLE_LINK_NAME4,
+    if (H5Lcreate_hard(group_id, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3, subgroup2, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4,
             H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create second hard link '%s'\n", LINK_VISIT_TEST_CYCLE_LINK_NAME4);
+        HDprintf("    couldn't create second hard link '%s'\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4);
         goto error;
     }
 
     /* Verify the links have been created */
-    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_TEST_CYCLE_LINK_NAME1, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if first link '%s' exists\n", LINK_VISIT_TEST_CYCLE_LINK_NAME1);
+        HDprintf("    couldn't determine if first link '%s' exists\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1);
         goto error;
     }
 
     if (!link_exists) {
         H5_FAILED();
-        HDprintf("    first link '%s' did not exist\n", LINK_VISIT_TEST_CYCLE_LINK_NAME1);
+        HDprintf("    first link '%s' did not exist\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1);
         goto error;
     }
 
-    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_TEST_CYCLE_LINK_NAME2, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup1, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if second link '%s' exists\n", LINK_VISIT_TEST_CYCLE_LINK_NAME2);
-        goto error;
-    }
-
-    if (!link_exists) {
-        H5_FAILED();
-        HDprintf("    second link '%s' did not exist\n", LINK_VISIT_TEST_CYCLE_LINK_NAME2);
-        goto error;
-    }
-
-    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_TEST_CYCLE_LINK_NAME3, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if third link '%s' exists\n", LINK_VISIT_TEST_CYCLE_LINK_NAME3);
+        HDprintf("    couldn't determine if second link '%s' exists\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2);
         goto error;
     }
 
     if (!link_exists) {
         H5_FAILED();
-        HDprintf("    third link '%s' did not exist\n", LINK_VISIT_TEST_CYCLE_LINK_NAME3);
+        HDprintf("    second link '%s' did not exist\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2);
         goto error;
     }
 
-    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_TEST_CYCLE_LINK_NAME4, H5P_DEFAULT)) < 0) {
+    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if fourth link '%s' exists\n", LINK_VISIT_TEST_CYCLE_LINK_NAME4);
+        HDprintf("    couldn't determine if third link '%s' exists\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3);
         goto error;
     }
 
     if (!link_exists) {
         H5_FAILED();
-        HDprintf("    fourth link '%s' did not exist\n", LINK_VISIT_TEST_CYCLE_LINK_NAME4);
+        HDprintf("    third link '%s' did not exist\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3);
+        goto error;
+    }
+
+    if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if fourth link '%s' exists\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4);
+        goto error;
+    }
+
+    if (!link_exists) {
+        H5_FAILED();
+        HDprintf("    fourth link '%s' did not exist\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4);
         goto error;
     }
 
@@ -6100,7 +8867,7 @@ test_link_visit_cycles(void)
         PART_BEGIN(H5Lvisit_cycles_link_name_increasing) {
             TESTING_2("H5Lvisit by link name in increasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_callback2, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_mixed_links_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type name in increasing order failed\n");
                 PART_ERROR(H5Lvisit_cycles_link_name_increasing);
@@ -6110,12 +8877,12 @@ test_link_visit_cycles(void)
         } PART_END(H5Lvisit_cycles_link_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+        i = LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit by link name in decreasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_callback2, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_mixed_links_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_cycles_link_name_decreasing);
@@ -6125,12 +8892,12 @@ test_link_visit_cycles(void)
         } PART_END(H5Lvisit_cycles_link_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+        i = 2 * LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit by creation order in increasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_callback2, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_mixed_links_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Lvisit_cycles_link_creation_increasing);
@@ -6140,12 +8907,12 @@ test_link_visit_cycles(void)
         } PART_END(H5Lvisit_cycles_link_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+        i = 3 * LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit by creation order in decreasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_callback2, &i) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_mixed_links_cycles_cb, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_cycles_link_creation_decreasing);
@@ -6162,8 +8929,8 @@ test_link_visit_cycles(void)
         PART_BEGIN(H5Lvisit_by_name_cycles_link_name_increasing) {
             TESTING_2("H5Lvisit_by_name by link name in increasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_INC, link_visit_callback2, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_mixed_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_cycles_link_name_increasing);
@@ -6173,13 +8940,13 @@ test_link_visit_cycles(void)
         } PART_END(H5Lvisit_by_name_cycles_link_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+        i = LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_cycles_link_name_decreasing) {
             TESTING_2("H5Lvisit_by_name by link name in decreasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_callback2, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_mixed_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_cycles_link_name_decreasing);
@@ -6189,13 +8956,13 @@ test_link_visit_cycles(void)
         } PART_END(H5Lvisit_by_name_cycles_link_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+        i = 2 * LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_increasing) {
             TESTING_2("H5Lvisit_by_name by creation order in increasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_callback2, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_mixed_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_cycles_link_creation_increasing);
@@ -6205,13 +8972,13 @@ test_link_visit_cycles(void)
         } PART_END(H5Lvisit_by_name_cycles_link_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * LINK_VISIT_TEST_CYCLE_NUM_LINKS;
+        i = 3 * LINK_VISIT_MIXED_LINKS_CYCLE_TEST_NUM_LINKS;
 
         PART_BEGIN(H5Lvisit_by_name_cycles_link_creation_decreasing) {
             TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_callback2, &i, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_mixed_links_cycles_cb, &i, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_cycles_link_creation_decreasing);
@@ -6253,6 +9020,10 @@ error:
     return 1;
 }
 
+/*
+ * A test to check that H5Lvisit(_by_name) fails when
+ * it is given invalid parameters.
+ */
 static int
 test_link_visit_invalid_params(void)
 {
@@ -6271,6 +9042,15 @@ test_link_visit_invalid_params(void)
     TESTING_2("test setup")
 
     HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+    if ((file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+        goto error;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -6408,7 +9188,7 @@ test_link_visit_invalid_params(void)
             TESTING_2("H5Lvisit with an invalid group ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, link_visit_callback3, NULL);
+                err_ret = H5Lvisit(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, link_visit_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6424,7 +9204,7 @@ test_link_visit_invalid_params(void)
             TESTING_2("H5Lvisit with an invalid index type")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, link_visit_callback3, NULL);
+                err_ret = H5Lvisit(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, link_visit_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6434,7 +9214,7 @@ test_link_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit(group_id, H5_INDEX_N, H5_ITER_INC, link_visit_callback3, NULL);
+                err_ret = H5Lvisit(group_id, H5_INDEX_N, H5_ITER_INC, link_visit_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6450,7 +9230,7 @@ test_link_visit_invalid_params(void)
             TESTING_2("H5Lvisit with an invalid iteration ordering")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, link_visit_callback3, NULL);
+                err_ret = H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, link_visit_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6460,7 +9240,7 @@ test_link_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_N, link_visit_callback3, NULL);
+                err_ret = H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_N, link_visit_invalid_params_cb, NULL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6477,7 +9257,7 @@ test_link_visit_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lvisit_by_name(H5I_INVALID_HID, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_INC, link_visit_callback1, NULL, H5P_DEFAULT);
+                        H5_INDEX_NAME, H5_ITER_INC, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6493,7 +9273,7 @@ test_link_visit_invalid_params(void)
             TESTING_2("H5Lvisit_by_name with an invalid group name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit_by_name(file_id, NULL, H5_INDEX_NAME, H5_ITER_INC, link_visit_callback1, NULL, H5P_DEFAULT);
+                err_ret = H5Lvisit_by_name(file_id, NULL, H5_INDEX_NAME, H5_ITER_INC, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6503,7 +9283,7 @@ test_link_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lvisit_by_name(file_id, "", H5_INDEX_NAME, H5_ITER_INC, link_visit_callback1, NULL, H5P_DEFAULT);
+                err_ret = H5Lvisit_by_name(file_id, "", H5_INDEX_NAME, H5_ITER_INC, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6520,7 +9300,7 @@ test_link_visit_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_UNKNOWN, H5_ITER_INC, link_visit_callback1, NULL, H5P_DEFAULT);
+                        H5_INDEX_UNKNOWN, H5_ITER_INC, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6531,7 +9311,7 @@ test_link_visit_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_N, H5_ITER_INC, link_visit_callback1, NULL, H5P_DEFAULT);
+                        H5_INDEX_N, H5_ITER_INC, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6548,7 +9328,7 @@ test_link_visit_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_UNKNOWN, link_visit_callback1, NULL, H5P_DEFAULT);
+                        H5_INDEX_NAME, H5_ITER_UNKNOWN, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6559,7 +9339,7 @@ test_link_visit_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_N, link_visit_callback1, NULL, H5P_DEFAULT);
+                        H5_INDEX_NAME, H5_ITER_N, link_visit_invalid_params_cb, NULL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6576,7 +9356,7 @@ test_link_visit_invalid_params(void)
 
             H5E_BEGIN_TRY {
                 err_ret = H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_INVALID_PARAMS_TEST_SUBGROUP_NAME,
-                        H5_INDEX_NAME, H5_ITER_INC, link_visit_callback1, NULL, H5I_INVALID_HID);
+                        H5_INDEX_NAME, H5_ITER_INC, link_visit_invalid_params_cb, NULL, H5I_INVALID_HID);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -6665,10 +9445,10 @@ test_link_visit_0_links(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME,
+    if ((group_id = H5Gcreate2(container_group, LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME,
             H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME);
+        HDprintf("    couldn't create container subgroup '%s'\n", LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME);
         goto error;
     }
 
@@ -6678,7 +9458,7 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_0_links_name_increasing) {
             TESTING_2("H5Lvisit by link name in increasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_callback3, NULL) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_INC, link_visit_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type name in increasing order failed\n");
                 PART_ERROR(H5Lvisit_0_links_name_increasing);
@@ -6690,7 +9470,7 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_0_links_name_decreasing) {
             TESTING_2("H5Lvisit by link name in decreasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_callback3, NULL) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_NAME, H5_ITER_DEC, link_visit_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type name in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_0_links_name_decreasing);
@@ -6702,7 +9482,7 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_0_links_creation_increasing) {
             TESTING_2("H5Lvisit by creation order in increasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_callback3, NULL) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Lvisit_0_links_creation_increasing);
@@ -6714,7 +9494,7 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_0_links_creation_decreasing) {
             TESTING_2("H5Lvisit by creation order in decreasing order")
 
-            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_callback3, NULL) < 0) {
+            if (H5Lvisit(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_0_links_cb, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_0_links_creation_decreasing);
@@ -6726,8 +9506,8 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_by_name_0_links_name_increasing) {
             TESTING_2("H5Lvisit_by_name by link name in increasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_INC, link_visit_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, link_visit_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type name in increasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_0_links_name_increasing);
@@ -6739,8 +9519,8 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_by_name_0_links_name_decreasing) {
             TESTING_2("H5Lvisit_by_name by link name in decreasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, link_visit_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type name in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_0_links_name_decreasing);
@@ -6752,8 +9532,8 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_by_name_0_links_creation_increasing) {
             TESTING_2("H5Lvisit_by_name by creation order in increasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, link_visit_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type creation order in increasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_0_links_creation_increasing);
@@ -6765,8 +9545,8 @@ test_link_visit_0_links(void)
         PART_BEGIN(H5Lvisit_by_name_0_links_creation_decreasing) {
             TESTING_2("H5Lvisit_by_name by creation order in decreasing order")
 
-            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_TEST_0_LINKS_SUBGROUP_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_callback3, NULL, H5P_DEFAULT) < 0) {
+            if (H5Lvisit_by_name(file_id, "/" LINK_TEST_GROUP_NAME "/" LINK_VISIT_0_LINKS_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, link_visit_0_links_cb, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Lvisit_by_name by index type creation order in decreasing order failed\n");
                 PART_ERROR(H5Lvisit_by_name_0_links_creation_decreasing);
@@ -6803,21 +9583,197 @@ error:
 }
 
 /*
- * Link iteration callback to simply iterate through all of the links in a
- * group and check to make sure their names and link classes match what is
- * expected.
+ * Link iteration callback for the hard links test which iterates
+ * through all of the links in the test group and checks to make sure
+ * their names and link classes match what is expected.
  */
 static herr_t
-link_iter_callback1(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+link_iter_hard_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    size_t *i = (size_t *) op_data;
+    size_t  counter_val = *((size_t *) op_data);
+    size_t  test_iteration;
+    char    expected_link_name[LINK_ITER_HARD_LINKS_TEST_BUF_SIZE];
+    herr_t  ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (H5L_TYPE_HARD != info->type) {
+        ret_val = H5_ITER_ERROR;
+        HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+        goto done;
+    }
+
+    /*
+     * Four tests are run in the following order per link iteration API call:
+     *
+     *  - iteration by link name in increasing order
+     *  - iteration by link name in decreasing order
+     *  - iteration by link creation order in increasing order
+     *  - iteration by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the dataset names
+     * will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = (counter_val / LINK_ITER_HARD_LINKS_TEST_NUM_LINKS);
+    if (test_iteration == 0 || test_iteration == 3) {
+        HDsnprintf(expected_link_name, LINK_ITER_HARD_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_HARD_LINKS_TEST_LINK_NAME"%d",
+                (int) (counter_val % LINK_ITER_HARD_LINKS_TEST_NUM_LINKS));
+    }
+    else {
+        HDsnprintf(expected_link_name, LINK_ITER_HARD_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_HARD_LINKS_TEST_LINK_NAME"%d",
+                (int) (LINK_ITER_HARD_LINKS_TEST_NUM_LINKS - (counter_val % LINK_ITER_HARD_LINKS_TEST_NUM_LINKS) - 1));
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_ITER_HARD_LINKS_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link iteration callback for the soft links test which iterates
+ * through all of the links in the test group and checks to make sure
+ * their names and link classes match what is expected.
+ */
+static herr_t
+link_iter_soft_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    size_t *i = (size_t *) op_data;
+    size_t  counter_val = *((size_t *) op_data);
+    size_t  test_iteration;
+    char    expected_link_name[LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE];
+    herr_t  ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (H5L_TYPE_SOFT != info->type) {
+        ret_val = H5_ITER_ERROR;
+        HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n", name);
+        goto done;
+    }
+
+    /*
+     * Four tests are run in the following order per link iteration API call:
+     *
+     *  - iteration by link name in increasing order
+     *  - iteration by link name in decreasing order
+     *  - iteration by link creation order in increasing order
+     *  - iteration by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link names
+     * will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = (counter_val / LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS);
+    if (test_iteration == 0 || test_iteration == 3) {
+        HDsnprintf(expected_link_name, LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_SOFT_LINKS_TEST_LINK_NAME"%d",
+                (int) (counter_val % LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS));
+    }
+    else {
+        HDsnprintf(expected_link_name, LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_SOFT_LINKS_TEST_LINK_NAME"%d",
+                (int) (LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS - (counter_val % LINK_ITER_SOFT_LINKS_TEST_NUM_LINKS) - 1));
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_ITER_SOFT_LINKS_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link iteration callback for the external links test which iterates
+ * through all of the links in the test group and checks to make sure
+ * their names and link classes match what is expected.
+ */
+static herr_t
+link_iter_external_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    size_t *i = (size_t *) op_data;
+    size_t  counter_val = *((size_t *) op_data);
+    size_t  test_iteration;
+    char    expected_link_name[LINK_ITER_EXT_LINKS_TEST_BUF_SIZE];
+    herr_t  ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (H5L_TYPE_EXTERNAL != info->type) {
+        ret_val = H5_ITER_ERROR;
+        HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n", name);
+        goto done;
+    }
+
+    /*
+     * Four tests are run in the following order per link iteration API call:
+     *
+     *  - iteration by link name in increasing order
+     *  - iteration by link name in decreasing order
+     *  - iteration by link creation order in increasing order
+     *  - iteration by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link names
+     * will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = (counter_val / LINK_ITER_EXT_LINKS_TEST_NUM_LINKS);
+    if (test_iteration == 0 || test_iteration == 3) {
+        HDsnprintf(expected_link_name, LINK_ITER_EXT_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_EXT_LINKS_TEST_LINK_NAME"%d",
+                (int) (counter_val % LINK_ITER_EXT_LINKS_TEST_NUM_LINKS));
+    }
+    else {
+        HDsnprintf(expected_link_name, LINK_ITER_EXT_LINKS_TEST_BUF_SIZE,
+                LINK_ITER_EXT_LINKS_TEST_LINK_NAME"%d",
+                (int) (LINK_ITER_EXT_LINKS_TEST_NUM_LINKS - (counter_val % LINK_ITER_EXT_LINKS_TEST_NUM_LINKS) - 1));
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_ITER_EXT_LINKS_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+static herr_t link_iter_ud_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+
+/*
+ * Link iteration callback for the mixed link types test which iterates
+ * through all of the links in the test group and checks to make sure
+ * their names and link classes match what is expected.
+ */
+static herr_t
+link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
 {
     size_t *i = (size_t *) op_data;
     size_t  counter_val = *((size_t *) op_data);
     herr_t  ret_val = 0;
 
-    UNUSED(group_id);
-    UNUSED(op_data);
-
-    if (!HDstrcmp(name, LINK_ITER_TEST_HARD_LINK_NAME) &&
+    if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME) &&
             (counter_val == 1 || counter_val == 4 || counter_val == 6 || counter_val == 11)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -6826,7 +9782,7 @@ link_iter_callback1(hid_t group_id, const char *name, const H5L_info_t *info, vo
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_ITER_TEST_SOFT_LINK_NAME) &&
+    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME) &&
             (counter_val == 2 || counter_val == 3 || counter_val == 7 || counter_val == 10)) {
         if (H5L_TYPE_SOFT != info->type) {
             ret_val = -1;
@@ -6835,7 +9791,7 @@ link_iter_callback1(hid_t group_id, const char *name, const H5L_info_t *info, vo
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_ITER_TEST_EXT_LINK_NAME) &&
+    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME) &&
             (counter_val == 0 || counter_val == 5 || counter_val == 8 || counter_val == 9)) {
         if (H5L_TYPE_EXTERNAL != info->type) {
             ret_val = -1;
@@ -6856,35 +9812,65 @@ done:
 }
 
 /*
+ * Link iteration callback for the H5Literate(_by_name) invalid
+ * parameters test which simply does nothing.
+ */
+static herr_t
+link_iter_invalid_params_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    UNUSED(group_id);
+    UNUSED(name);
+    UNUSED(info);
+    UNUSED(op_data);
+
+    return 0;
+}
+
+/*
+ * Link iteration callback for the 0 links iteration test which
+ * simply does nothing.
+ */
+static herr_t
+link_iter_0_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    UNUSED(group_id);
+    UNUSED(name);
+    UNUSED(info);
+    UNUSED(op_data);
+
+    return 0;
+}
+
+/*
  * Link iteration callback to test that the index-saving behavior of H5Literate
  * works correctly.
  */
 static herr_t
-link_iter_callback2(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+link_iter_idx_saving_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
 {
     int *broken = (int *) op_data;
 
     UNUSED(group_id);
 
-    if (broken && !*broken && !HDstrcmp(name, LINK_ITER_TEST_SOFT_LINK_NAME)) {
+    if (broken && !*broken && !HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME)) {
         return (*broken = 1);
     }
 
-    if (!HDstrcmp(name, LINK_ITER_TEST_HARD_LINK_NAME)) {
+    if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME)) {
         if (H5L_TYPE_HARD != info->type) {
             H5_FAILED();
             HDprintf("    link type did not match\n");
             goto error;
         }
     }
-    else if (!HDstrcmp(name, LINK_ITER_TEST_SOFT_LINK_NAME)) {
+    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME)) {
         if (H5L_TYPE_SOFT != info->type) {
             H5_FAILED();
             HDprintf("    link type did not match\n");
             goto error;
         }
     }
-    else if (!HDstrcmp(name, LINK_ITER_TEST_EXT_LINK_NAME)) {
+    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME)) {
         if (H5L_TYPE_EXTERNAL != info->type) {
             H5_FAILED();
             HDprintf("    link type did not match\n");
@@ -6903,8 +9889,822 @@ error:
     return -1;
 }
 
+/*
+ * Link visiting callback for the hard links + no cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
 static herr_t
-link_iter_callback3(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+link_visit_hard_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    hbool_t  is_subgroup_link;
+    size_t  *i = (size_t *) op_data;
+    size_t   counter_val = *((size_t *) op_data);
+    size_t   test_iteration;
+    size_t   subgroup_number;
+    size_t   link_idx_val;
+    char     expected_link_name[LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+    herr_t   ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (H5L_TYPE_HARD != info->type) {
+        ret_val = H5_ITER_ERROR;
+        HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+        goto done;
+    }
+
+    /*
+     * Four tests are run in the following order per link visiting API call:
+     *
+     *  - visitation by link name in increasing order
+     *  - visitation by link name in decreasing order
+     *  - visitation by link creation order in increasing order
+     *  - visitation by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the dataset and group
+     * names will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = counter_val / LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+    /* Determine which subgroup is currently being processed */
+    subgroup_number =
+            /* Take the current counter value modulo the total number of links per test iteration (datasets + subgroups) */
+            (counter_val % LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST)
+            /* and divide it by the number of links per subgroup + 1 to get the subgroup's index number. */
+          / (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1);
+
+    /* Determine whether the current link points to the current subgroup itself */
+    is_subgroup_link = (counter_val % (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) == 0);
+    if (!is_subgroup_link) {
+        /* Determine the index number of this link within its containing subgroup */
+        link_idx_val =
+                /* Take the current counter value modulo the total number of links per test iteration (datasets + subgroups) */
+                (counter_val % LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST)
+                /* and take it modulo the number of links per subgroup + 1, finally subtracting 1 to get the link's index number. */
+              % (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) - 1;
+    }
+
+    if (test_iteration == 0 || test_iteration == 3) {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) subgroup_number);
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) subgroup_number, (int) link_idx_val);
+        }
+    }
+    else {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1));
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1),
+                    (int) (LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - link_idx_val - 1));
+        }
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_VISIT_HARD_LINKS_NO_CYCLE_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link visiting callback for the soft links + no cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_soft_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    hbool_t  is_subgroup_link;
+    size_t  *i = (size_t *) op_data;
+    size_t   counter_val = *((size_t *) op_data);
+    size_t   test_iteration;
+    size_t   subgroup_number;
+    size_t   link_idx_val;
+    char     expected_link_name[LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+    herr_t   ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    /* Determine whether the current link points to the current subgroup itself */
+    is_subgroup_link = (counter_val % (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) == 0);
+
+    if (is_subgroup_link) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+            goto done;
+        }
+    }
+    else {
+        if (H5L_TYPE_SOFT != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n", name);
+            goto done;
+        }
+    }
+
+    /*
+     * Four tests are run in the following order per link visiting API call:
+     *
+     *  - visitation by link name in increasing order
+     *  - visitation by link name in decreasing order
+     *  - visitation by link creation order in increasing order
+     *  - visitation by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link names will
+     * run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = counter_val / LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+    /* Determine which subgroup is currently being processed */
+    subgroup_number =
+            /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+            (counter_val % LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST)
+            /* and divide it by the number of links per subgroup + 1 to get the subgroup's index number. */
+          / (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1);
+
+    if (!is_subgroup_link) {
+        /* Determine the index number of this link within its containing subgroup */
+        link_idx_val =
+                /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+                (counter_val % LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST)
+                /* and take it modulo the number of links per subgroup + 1, finally subtracting 1 to get the link's index number. */
+              % (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) - 1;
+    }
+
+    if (test_iteration == 0 || test_iteration == 3) {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) subgroup_number);
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) subgroup_number, (int) link_idx_val);
+        }
+    }
+    else {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1));
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1),
+                    (int) (LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - link_idx_val - 1));
+        }
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_VISIT_SOFT_LINKS_NO_CYCLE_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link visiting callback for the external links + no cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_external_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    hbool_t  is_subgroup_link;
+    size_t  *i = (size_t *) op_data;
+    size_t   counter_val = *((size_t *) op_data);
+    size_t   test_iteration;
+    size_t   subgroup_number;
+    size_t   link_idx_val;
+    char     expected_link_name[LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE];
+    herr_t   ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    /* Determine whether the current link points to the current subgroup itself */
+    is_subgroup_link = (counter_val % (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) == 0);
+
+    if (is_subgroup_link) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+            goto done;
+        }
+    }
+    else {
+        if (H5L_TYPE_EXTERNAL != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n", name);
+            goto done;
+        }
+    }
+
+    /*
+     * Four tests are run in the following order per link visiting API call:
+     *
+     *  - visitation by link name in increasing order
+     *  - visitation by link name in decreasing order
+     *  - visitation by link creation order in increasing order
+     *  - visitation by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link names will
+     * run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = counter_val / LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+    /* Determine which subgroup is currently being processed */
+    subgroup_number =
+            /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+            (counter_val % LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST)
+            /* and divide it by the number of links per subgroup + 1 to get the subgroup's index number. */
+          / (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1);
+
+    if (!is_subgroup_link) {
+        /* Determine the index number of this link within its containing subgroup */
+        link_idx_val =
+                /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+                (counter_val % LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_TEST)
+                /* and take it modulo the number of links per subgroup + 1, finally subtracting 1 to get the link's index number. */
+              % (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) - 1;
+    }
+
+    if (test_iteration == 0 || test_iteration == 3) {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) subgroup_number);
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) subgroup_number, (int) link_idx_val);
+        }
+    }
+    else {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1));
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1),
+                    (int) (LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_NUM_LINKS_PER_GROUP - link_idx_val - 1));
+        }
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_VISIT_EXT_LINKS_NO_CYCLE_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+static herr_t link_visit_ud_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+
+/*
+ * Link visiting callback for the mixed link types + no cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    size_t *i = (size_t *) op_data;
+    size_t  counter_val = *((size_t *) op_data);
+    herr_t  ret_val = 0;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1) &&
+            (counter_val == 2 || counter_val == 14 || counter_val == 18 || counter_val == 30)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2) &&
+            (counter_val == 3 || counter_val == 13 || counter_val == 19 || counter_val == 29)) {
+        if (H5L_TYPE_SOFT != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3) &&
+            (counter_val == 6 || counter_val == 10 || counter_val == 22 || counter_val == 26)) {
+        if (H5L_TYPE_EXTERNAL != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4) &&
+            (counter_val == 7 || counter_val == 9 || counter_val == 23 || counter_val == 25)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME) &&
+            (counter_val == 1 || counter_val == 15 || counter_val == 17 || counter_val == 31)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2) &&
+            (counter_val == 5 || counter_val == 11 || counter_val == 21 || counter_val == 27)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2) &&
+            (counter_val == 0 || counter_val == 12 || counter_val == 16 || counter_val == 28)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3) &&
+            (counter_val == 4 || counter_val == 8 || counter_val == 20 || counter_val == 24)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3);
+        }
+
+        goto done;
+    }
+
+    HDprintf("    link name '%s' didn't match known names or came in an incorrect order\n", name);
+
+    ret_val = -1;
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link visiting callback for the hard links + cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_hard_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    hbool_t  is_subgroup_link;
+    size_t  *i = (size_t *) op_data;
+    size_t   counter_val = *((size_t *) op_data);
+    size_t   test_iteration;
+    size_t   subgroup_number;
+    size_t   link_idx_val;
+    char     expected_link_name[LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE];
+    herr_t   ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (H5L_TYPE_HARD != info->type) {
+        ret_val = H5_ITER_ERROR;
+        HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+        goto done;
+    }
+
+    /*
+     * Four tests are run in the following order per link visiting API call:
+     *
+     *  - visitation by link name in increasing order
+     *  - visitation by link name in decreasing order
+     *  - visitation by link creation order in increasing order
+     *  - visitation by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link and group
+     * names will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = counter_val / LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+    /* Determine which subgroup is currently being processed */
+    subgroup_number =
+            /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+            (counter_val % LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST)
+            /* and divide it by the number of links per subgroup + 1 to get the subgroup's index number. */
+          / (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1);
+
+    /* Determine whether the current link points to the current subgroup itself */
+    is_subgroup_link = (counter_val % (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) == 0);
+    if (!is_subgroup_link) {
+        /* Determine the index number of this link within its containing subgroup */
+        link_idx_val =
+                /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+                (counter_val % LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST)
+                /* and take it modulo the number of links per subgroup + 1, finally subtracting 1 to get the link's index number. */
+              % (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) - 1;
+    }
+
+    if (test_iteration == 0 || test_iteration == 3) {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) subgroup_number);
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_HARD_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) subgroup_number, (int) link_idx_val);
+        }
+    }
+    else {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1));
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_HARD_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_HARD_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1),
+                    (int) (LINK_VISIT_HARD_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP - link_idx_val - 1));
+        }
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_VISIT_HARD_LINKS_CYCLE_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link visiting callback for the soft links + cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_soft_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    hbool_t  is_subgroup_link;
+    size_t  *i = (size_t *) op_data;
+    size_t   counter_val = *((size_t *) op_data);
+    size_t   test_iteration;
+    size_t   subgroup_number;
+    size_t   link_idx_val;
+    char     expected_link_name[LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE];
+    herr_t   ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    /* Determine whether the current link points to the current subgroup itself */
+    is_subgroup_link = (counter_val % (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) == 0);
+
+    if (is_subgroup_link) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+            goto done;
+        }
+    }
+    else {
+        if (H5L_TYPE_SOFT != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n", name);
+            goto done;
+        }
+    }
+
+    /*
+     * Four tests are run in the following order per link visiting API call:
+     *
+     *  - visitation by link name in increasing order
+     *  - visitation by link name in decreasing order
+     *  - visitation by link creation order in increasing order
+     *  - visitation by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link and group
+     * names will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = counter_val / LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+    /* Determine which subgroup is currently being processed */
+    subgroup_number =
+            /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+            (counter_val % LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST)
+            /* and divide it by the number of links per subgroup + 1 to get the subgroup's index number. */
+          / (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1);
+
+    if (!is_subgroup_link) {
+        /* Determine the index number of this link within its containing subgroup */
+        link_idx_val =
+                /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+                (counter_val % LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST)
+                /* and take it modulo the number of links per subgroup + 1, finally subtracting 1 to get the link's index number. */
+              % (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) - 1;
+    }
+
+    if (test_iteration == 0 || test_iteration == 3) {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) subgroup_number);
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) subgroup_number, (int) link_idx_val);
+        }
+    }
+    else {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1));
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_SOFT_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1),
+                    (int) (LINK_VISIT_SOFT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP - link_idx_val - 1));
+        }
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_VISIT_SOFT_LINKS_CYCLE_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link visiting callback for the external links + cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_external_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    hbool_t  is_subgroup_link;
+    size_t  *i = (size_t *) op_data;
+    size_t   counter_val = *((size_t *) op_data);
+    size_t   test_iteration;
+    size_t   subgroup_number;
+    size_t   link_idx_val;
+    char     expected_link_name[LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE];
+    herr_t   ret_val = H5_ITER_CONT;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    /* Determine whether the current link points to the current subgroup itself */
+    is_subgroup_link = (counter_val % (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) == 0);
+
+    if (is_subgroup_link) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", name);
+            goto done;
+        }
+    }
+    else {
+        if (H5L_TYPE_EXTERNAL != info->type) {
+            ret_val = H5_ITER_ERROR;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n", name);
+            goto done;
+        }
+    }
+
+    /*
+     * Four tests are run in the following order per link visiting API call:
+     *
+     *  - visitation by link name in increasing order
+     *  - visitation by link name in decreasing order
+     *  - visitation by link creation order in increasing order
+     *  - visitation by link creation order in decreasing order
+     *
+     * Based on how the test is written, this will mean that the link and group
+     * names will run in increasing order on the first and fourth tests and decreasing
+     * order on the second and third tests.
+     */
+    test_iteration = counter_val / LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST;
+
+    /* Determine which subgroup is currently being processed */
+    subgroup_number =
+            /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+            (counter_val % LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST)
+            /* and divide it by the number of links per subgroup + 1 to get the subgroup's index number. */
+          / (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1);
+
+    if (!is_subgroup_link) {
+        /* Determine the index number of this link within its containing subgroup */
+        link_idx_val =
+                /* Take the current counter value modulo the total number of links per test iteration (links + subgroups) */
+                (counter_val % LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_TEST)
+                /* and take it modulo the number of links per subgroup + 1, finally subtracting 1 to get the link's index number. */
+              % (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP + 1) - 1;
+    }
+
+    if (test_iteration == 0 || test_iteration == 3) {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) subgroup_number);
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) subgroup_number, (int) link_idx_val);
+        }
+    }
+    else {
+        if (is_subgroup_link) {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d",
+                    (int) (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1));
+        }
+        else {
+            HDsnprintf(expected_link_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE,
+                    LINK_VISIT_EXT_LINKS_CYCLE_TEST_NESTED_GRP_NAME"%d" "/" LINK_VISIT_EXT_LINKS_CYCLE_TEST_LINK_NAME"%d",
+                    (int) (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_SUBGROUPS - subgroup_number - 1),
+                    (int) (LINK_VISIT_EXT_LINKS_CYCLE_TEST_NUM_LINKS_PER_GROUP - link_idx_val - 1));
+        }
+    }
+
+    if (HDstrncmp(name, expected_link_name, LINK_VISIT_EXT_LINKS_CYCLE_TEST_BUF_SIZE)) {
+        HDprintf("    link name '%s' didn't match expected name '%s'\n", name, expected_link_name);
+        ret_val = H5_ITER_ERROR;
+        goto done;
+    }
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+static herr_t link_visit_ud_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data);
+
+/*
+ * Link visiting callback for the mixed link types + cycles test which
+ * iterates recursively through all of the links in the test group and
+ * checks to make sure their names and link classes match what is expected.
+ */
+static herr_t
+link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+    size_t *i = (size_t *) op_data;
+    size_t  counter_val = *((size_t *) op_data);
+    herr_t  ret_val = 0;
+
+    UNUSED(group_id);
+    UNUSED(op_data);
+
+    if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1) &&
+            (counter_val == 1 || counter_val == 11 || counter_val == 13 || counter_val == 23)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2) &&
+            (counter_val == 2 || counter_val == 10 || counter_val == 14 || counter_val == 22)) {
+        if (H5L_TYPE_SOFT != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n",
+                    LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3) &&
+            (counter_val == 4 || counter_val == 8 || counter_val == 16 || counter_val == 20)) {
+        if (H5L_TYPE_EXTERNAL != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n",
+                    LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4) &&
+            (counter_val == 5 || counter_val == 7 || counter_val == 17 || counter_val == 19)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
+                    LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2) &&
+            (counter_val == 0 || counter_val == 9 || counter_val == 12 || counter_val == 21)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2);
+        }
+
+        goto done;
+    }
+    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3) &&
+            (counter_val == 3 || counter_val == 6 || counter_val == 15 || counter_val == 18)) {
+        if (H5L_TYPE_HARD != info->type) {
+            ret_val = -1;
+            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3);
+        }
+
+        goto done;
+    }
+
+    HDprintf("    link name '%s' didn't match known names or came in an incorrect order\n", name);
+
+    ret_val = -1;
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+/*
+ * Link visiting callback for the H5Lvisit(_by_name) invalid
+ * parameters test which simply does nothing.
+ */
+static herr_t
+link_visit_invalid_params_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
 {
     UNUSED(group_id);
     UNUSED(name);
@@ -6915,191 +10715,11 @@ link_iter_callback3(hid_t group_id, const char *name, const H5L_info_t *info, vo
 }
 
 /*
- * Link visit callback to simply iterate recursively through all of the links in a
- * group and check to make sure their names and link classes match what is expected.
+ * Link visiting callback for the 0 links visiting test which
+ * simply does nothing.
  */
 static herr_t
-link_visit_callback1(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
-{
-    size_t *i = (size_t *) op_data;
-    size_t  counter_val = *((size_t *) op_data);
-    herr_t  ret_val = 0;
-
-    UNUSED(group_id);
-    UNUSED(op_data);
-
-    if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1) &&
-            (counter_val == 2 || counter_val == 14 || counter_val == 18 || counter_val == 30)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME1);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2) &&
-            (counter_val == 3 || counter_val == 13 || counter_val == 19 || counter_val == 29)) {
-        if (H5L_TYPE_SOFT != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME2);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3) &&
-            (counter_val == 6 || counter_val == 10 || counter_val == 22 || counter_val == 26)) {
-        if (H5L_TYPE_EXTERNAL != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME3);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4) &&
-            (counter_val == 7 || counter_val == 9 || counter_val == 23 || counter_val == 25)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_NO_CYCLE_LINK_NAME4);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_NO_CYCLE_DSET_NAME) &&
-            (counter_val == 1 || counter_val == 15 || counter_val == 17 || counter_val == 31)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_NO_CYCLE_DSET_NAME);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_NO_CYCLE_DSET_NAME2) &&
-            (counter_val == 5 || counter_val == 11 || counter_val == 21 || counter_val == 27)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_NO_CYCLE_DSET_NAME2);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2) &&
-            (counter_val == 0 || counter_val == 12 || counter_val == 16 || counter_val == 28)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME2);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3) &&
-            (counter_val == 4 || counter_val == 8 || counter_val == 20 || counter_val == 24)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_NO_CYCLE_SUBGROUP_NAME3);
-        }
-
-        goto done;
-    }
-
-    HDprintf("    link name '%s' didn't match known names or came in an incorrect order\n", name);
-
-    ret_val = -1;
-
-done:
-    (*i)++;
-
-    return ret_val;
-}
-
-static herr_t
-link_visit_callback2(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
-{
-    size_t *i = (size_t *) op_data;
-    size_t  counter_val = *((size_t *) op_data);
-    herr_t  ret_val = 0;
-
-    UNUSED(group_id);
-    UNUSED(op_data);
-
-    if (!HDstrcmp(name, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME1) &&
-            (counter_val == 1 || counter_val == 11 || counter_val == 13 || counter_val == 23)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME1);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME2) &&
-            (counter_val == 2 || counter_val == 10 || counter_val == 14 || counter_val == 22)) {
-        if (H5L_TYPE_SOFT != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_SOFT!\n",
-                    LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME2);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME3) &&
-            (counter_val == 4 || counter_val == 8 || counter_val == 16 || counter_val == 20)) {
-        if (H5L_TYPE_EXTERNAL != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_EXTERNAL!\n",
-                    LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME3);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME4) &&
-            (counter_val == 5 || counter_val == 7 || counter_val == 17 || counter_val == 19)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n",
-                    LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3 "/" LINK_VISIT_TEST_CYCLE_LINK_NAME4);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2) &&
-            (counter_val == 0 || counter_val == 9 || counter_val == 12 || counter_val == 21)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME2);
-        }
-
-        goto done;
-    }
-    else if (!HDstrcmp(name, LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3) &&
-            (counter_val == 3 || counter_val == 6 || counter_val == 15 || counter_val == 18)) {
-        if (H5L_TYPE_HARD != info->type) {
-            ret_val = -1;
-            HDprintf("    link type for link '%s' was not H5L_TYPE_HARD!\n", LINK_VISIT_TEST_CYCLE_SUBGROUP_NAME3);
-        }
-
-        goto done;
-    }
-
-    HDprintf("    link name '%s' didn't match known names or came in an incorrect order\n", name);
-
-    ret_val = -1;
-
-done:
-    (*i)++;
-
-    return ret_val;
-}
-
-static herr_t
-link_visit_callback3(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
+link_visit_0_links_cb(hid_t group_id, const char *name, const H5L_info_t *info, void *op_data)
 {
     UNUSED(group_id);
     UNUSED(name);
@@ -7137,6 +10757,7 @@ vol_link_test(void)
 
     HDprintf("\n");
 
+    HDprintf("Cleaning up testing files\n");
     cleanup_files();
 
     return nerrors;
