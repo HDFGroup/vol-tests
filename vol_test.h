@@ -134,8 +134,8 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
  * knows to skip to the test's 'error' label once all test parts have finished.
  */
 #define PART_BEGIN(part_name) {
-#define PART_END(part_name) } part_##part_name##end:
-#define PART_ERROR(part_name) { nerrors++; goto part_##part_name##end; }
+#define PART_END(part_name) } part_##part_name##_end:
+#define PART_ERROR(part_name) { nerrors++; goto part_##part_name##_end; }
 
 /*
  * Alarm definitions to wait up (terminate) a test that runs too long.
