@@ -1201,10 +1201,7 @@ error:
 }
 
 /*
- * A test for H5Aopen.
- *
- * TODO: Have tests check something to make sure that the
- *       attribute in question was actually opened.
+ * A test for H5Aopen(_by_idx).
  */
 static int
 test_open_attribute(void)
@@ -1328,16 +1325,44 @@ test_open_attribute(void)
             TESTING_2("H5Aopen_by_idx by creation order in increasing order")
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_INC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by creation order in increasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME, 0);
+                PART_ERROR(H5Aopen_by_idx_crt_order_increasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
+                PART_ERROR(H5Aopen_by_idx_crt_order_increasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
                     H5_ITER_INC, 1, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' using H5Aopen_by_idx by creation order in increasing order\n",
-                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by creation order in increasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2, 1);
                 PART_ERROR(H5Aopen_by_idx_crt_order_increasing);
             }
 
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                PART_ERROR(H5Aopen_by_idx_crt_order_increasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_INC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by creation order in increasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME3, 2);
+                PART_ERROR(H5Aopen_by_idx_crt_order_increasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME3);
                 PART_ERROR(H5Aopen_by_idx_crt_order_increasing);
             }
 
@@ -1348,16 +1373,44 @@ test_open_attribute(void)
             TESTING_2("H5Aopen_by_idx by creation order in decreasing order")
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_DEC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by creation order in decreasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME, 2);
+                PART_ERROR(H5Aopen_by_idx_crt_order_decreasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
+                PART_ERROR(H5Aopen_by_idx_crt_order_decreasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
                     H5_ITER_DEC, 1, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' using H5Aopen_by_idx by creation order in decreasing order\n",
-                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by creation order in decreasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2, 1);
                 PART_ERROR(H5Aopen_by_idx_crt_order_decreasing);
             }
 
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                PART_ERROR(H5Aopen_by_idx_crt_order_decreasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_DEC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by creation order in decreasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME3, 0);
+                PART_ERROR(H5Aopen_by_idx_crt_order_decreasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME3);
                 PART_ERROR(H5Aopen_by_idx_crt_order_decreasing);
             }
 
@@ -1368,16 +1421,44 @@ test_open_attribute(void)
             TESTING_2("H5Aopen_by_idx by alphabetical order in increasing order")
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_INC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by alphabetical order in increasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME, 0);
+                PART_ERROR(H5Aopen_by_idx_name_order_increasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
+                PART_ERROR(H5Aopen_by_idx_name_order_increasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                     H5_ITER_INC, 1, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' using H5Aopen_by_idx by alphabetical order in increasing order\n",
-                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by alphabetical order in increasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2, 1);
                 PART_ERROR(H5Aopen_by_idx_name_order_increasing);
             }
 
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                PART_ERROR(H5Aopen_by_idx_name_order_increasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_INC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by alphabetical order in increasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME3, 2);
+                PART_ERROR(H5Aopen_by_idx_name_order_increasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME3);
                 PART_ERROR(H5Aopen_by_idx_name_order_increasing);
             }
 
@@ -1388,16 +1469,44 @@ test_open_attribute(void)
             TESTING_2("H5Aopen_by_idx by alphabetical order in decreasing order")
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_DEC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by alphabetical order in decreasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME, 2);
+                PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME);
+                PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                     H5_ITER_DEC, 1, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' using H5Aopen_by_idx by alphabetical order in decreasing order\n",
-                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by alphabetical order in decreasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME2, 1);
                 PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
             }
 
             if (H5Aclose(attr_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME2);
+                PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
+            }
+
+            if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_DEC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by alphabetical order in decreasing order\n",
+                        ATTRIBUTE_OPEN_TEST_ATTR_NAME3, 0);
+                PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
+            }
+
+            if (H5Aclose(attr_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close attribute '%s'\n", ATTRIBUTE_OPEN_TEST_ATTR_NAME3);
                 PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
             }
 
@@ -3409,7 +3518,7 @@ test_get_attribute_name(void)
                 PART_ERROR(H5Aget_name);
             }
 
-            if (HDstrcmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME)) {
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME);
                 PART_ERROR(H5Aget_name);
@@ -3424,27 +3533,52 @@ test_get_attribute_name(void)
             PASSED();
         } PART_END(H5Aget_name);
 
-        if (attr_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Aclose(attr_id);
-            } H5E_END_TRY;
-            attr_id = H5I_INVALID_HID;
-        }
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Aget_name_by_idx_crt_order_increasing) {
             TESTING_2("H5Aget_name_by_idx by creation order in increasing order")
 
             *name_buf = '\0';
-            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_INC, 0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve attribute name using H5Aget_name_by_index by creation order in increasing order\n");
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by creation order in increasing order\n", 0);
                 PART_ERROR(H5Aget_name_by_idx_crt_order_increasing);
             }
 
-            if (HDstrcmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME)) {
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_increasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_INC, 1, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by creation order in increasing order\n", 1);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_increasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_increasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_INC, 2, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by creation order in increasing order\n", 2);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_increasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3);
                 PART_ERROR(H5Aget_name_by_idx_crt_order_increasing);
             }
 
@@ -3455,14 +3589,42 @@ test_get_attribute_name(void)
             TESTING_2("H5Aget_name_by_idx by creation order in decreasing order")
 
             *name_buf = '\0';
-            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_DEC, 2, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve attribute name using H5Aget_name_by_idx by creation order in decreasing order\n");
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by creation order in decreasing order\n", 2);
                 PART_ERROR(H5Aget_name_by_idx_crt_order_decreasing);
             }
 
-            if (HDstrcmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3)) {
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_decreasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_DEC, 1, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by creation order in decreasing order\n", 1);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_decreasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_decreasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
+                    H5_ITER_DEC, 0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by creation order in decreasing order\n", 0);
+                PART_ERROR(H5Aget_name_by_idx_crt_order_decreasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3);
                 PART_ERROR(H5Aget_name_by_idx_crt_order_decreasing);
@@ -3475,16 +3637,44 @@ test_get_attribute_name(void)
             TESTING_2("H5Aget_name_by_idx by alphabetical order in increasing order")
 
             *name_buf = '\0';
-            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME, H5_ITER_INC,
-                    1, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_INC, 0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve attribute name using H5Aget_name_by_index by alphabetical order in increasing order\n");
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by alphabetical order in increasing order\n", 0);
                 PART_ERROR(H5Aget_name_by_idx_name_order_increasing);
             }
 
-            if (HDstrcmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2)) {
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME);
+                PART_ERROR(H5Aget_name_by_idx_name_order_increasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_INC, 1, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by alphabetical order in increasing order\n", 1);
+                PART_ERROR(H5Aget_name_by_idx_name_order_increasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2);
+                PART_ERROR(H5Aget_name_by_idx_name_order_increasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_INC, 2, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by alphabetical order in increasing order\n", 2);
+                PART_ERROR(H5Aget_name_by_idx_name_order_increasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3);
                 PART_ERROR(H5Aget_name_by_idx_name_order_increasing);
             }
 
@@ -3495,14 +3685,42 @@ test_get_attribute_name(void)
             TESTING_2("H5Aget_name_by_idx by alphabetical order in decreasing order")
 
             *name_buf = '\0';
-            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_DEC, 2, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve attribute name using H5Aget_name_by_idx by creation order in decreasing order\n");
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by alphabetical order in decreasing order\n", 2);
                 PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
             }
 
-            if (HDstrcmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3)) {
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME);
+                PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_DEC, 1, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by alphabetical order in decreasing order\n", 1);
+                PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2) + 1)) {
+                H5_FAILED();
+                HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2);
+                PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
+            }
+
+            *name_buf = '\0';
+            if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
+                    H5_ITER_DEC, 0, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index by alphabetical order in decreasing order\n", 0);
+                PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
+            }
+
+            if (HDstrncmp(name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3, strlen(ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    retrieved attribute name '%s' didn't match '%s'\n", name_buf, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3);
                 PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
@@ -3855,10 +4073,7 @@ test_get_attribute_storage_size(void)
 }
 
 /*
- * A test to check the functionality of H5Aget_info.
- *
- * TODO: Have tests check something to make sure that the
- *       attribute's info was actually retrieved.
+ * A test to check the functionality of H5Aget_info(_by_idx).
  */
 static int
 test_get_attribute_info(void)
@@ -3993,9 +4208,26 @@ test_get_attribute_info(void)
                 PART_ERROR(H5Aget_info);
             }
 
+            HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info(attr_id, &attr_info) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get attribute info\n");
+                PART_ERROR(H5Aget_info);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 0);
+                PART_ERROR(H5Aget_info);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Aget_info);
             }
 
@@ -4008,19 +4240,79 @@ test_get_attribute_info(void)
             PASSED();
         } PART_END(H5Aget_info);
 
-        if (attr_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Aclose(attr_id);
-            } H5E_END_TRY;
-            attr_id = H5I_INVALID_HID;
-        }
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Aget_info_by_name) {
             TESTING_2("H5Aget_info_by_name")
 
+            HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_name(group_id, ".", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME, &attr_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get attribute info by name\n");
+                HDprintf("    couldn't get attribute info by name '%s'\n", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME);
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 0);
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_name(group_id, ".", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME2, &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get attribute info by name '%s'\n", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME2);
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 1);
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_name(group_id, ".", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME3, &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get attribute info by name '%s'\n", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME3);
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 2);
+                PART_ERROR(H5Aget_info_by_name);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Aget_info_by_name);
             }
 
@@ -4030,10 +4322,75 @@ test_get_attribute_info(void)
         PART_BEGIN(H5Aget_info_by_idx_crt_order_increasing) {
             TESTING_2("H5Aget_info_by_idx by creation order in increasing order")
 
+            HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0,
                     &attr_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get attribute info using H5Aget_info_by_idx by creation order in increasing order\n");
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by creation order in increasing order\n", 0);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 0);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 1,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by creation order in increasing order\n", 1);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 1);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 2,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by creation order in increasing order\n", 2);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 2);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Aget_info_by_idx_crt_order_increasing);
             }
 
@@ -4043,10 +4400,75 @@ test_get_attribute_info(void)
         PART_BEGIN(H5Aget_info_by_idx_crt_order_decreasing) {
             TESTING_2("H5Aget_info_by_idx by creation order in decreasing order")
 
+            HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 2,
                     &attr_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get attribute info using H5Aget_info_by_idx by creation order in decreasing order\n");
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by creation order in decreasing order\n", 2);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 0);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 1,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by creation order in decreasing order\n", 1);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 1);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 0,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by creation order in decreasing order\n", 0);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 2);
+                PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Aget_info_by_idx_crt_order_decreasing);
             }
 
@@ -4056,10 +4478,75 @@ test_get_attribute_info(void)
         PART_BEGIN(H5Aget_info_by_idx_name_order_increasing) {
             TESTING_2("H5Aget_info_by_idx by alphabetical order in increasing order")
 
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by alphabetical order in increasing order\n", 0);
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 0);
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 1,
                     &attr_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get attribute info using H5Aget_info_by_idx by alphabetical order in increasing order\n");
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by alphabetical order in increasing order\n", 1);
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 1);
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 2,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by alphabetical order in increasing order\n", 2);
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 2);
+                PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Aget_info_by_idx_name_order_increasing);
             }
 
@@ -4069,10 +4556,75 @@ test_get_attribute_info(void)
         PART_BEGIN(H5Aget_info_by_idx_name_order_decreasing) {
             TESTING_2("H5Aget_info_by_idx by alphabetical order in decreasing order")
 
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 2,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by alphabetical order in decreasing order\n", 2);
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 0)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 0);
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
+            if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 1,
+                    &attr_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by alphabetical order in decreasing order\n", 1);
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 1)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 1);
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 0,
                     &attr_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get attribute info using H5Aget_info_by_idx by alphabetical order in decreasing order\n");
+                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by alphabetical order in decreasing order\n", 0);
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            if (attr_info.corder_valid && (attr_info.corder != 2)) {
+                H5_FAILED();
+                HDprintf("    attribute's creation order value '%lld' did not match expected value '%lld'\n",
+                        (long long) attr_info.corder, (long long) 2);
+                PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
+            }
+
+            /* Ensure that the cset field is at least set to a meaningful value */
+            if (attr_info.cset != H5T_CSET_ASCII &&
+                attr_info.cset != H5T_CSET_UTF8  &&
+                attr_info.cset != H5T_CSET_ERROR) {
+                H5_FAILED();
+                HDprintf("    attribute info's 'cset' field wasn't set to a meaningful value\n");
                 PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
             }
 
@@ -5807,7 +6359,8 @@ error:
 }
 
 /*
- * A test to check that an attribute can be deleted.
+ * A test to check that an attribute can be deleted
+ * using H5Adelete(_by_idx).
  */
 static int
 test_delete_attribute(void)
@@ -5917,6 +6470,10 @@ test_delete_attribute(void)
             PASSED();
         } PART_END(H5Adelete);
 
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
         PART_BEGIN(H5Adelete_by_name) {
             TESTING_2("H5Adelete_by_name")
 
@@ -5969,6 +6526,10 @@ test_delete_attribute(void)
 
             PASSED();
         } PART_END(H5Adelete_by_name);
+
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Adelete_by_idx_crt_order_increasing) {
             TESTING_2("H5Adelete_by_idx by creation order in increasing order")
@@ -6185,12 +6746,9 @@ test_delete_attribute(void)
             PASSED();
         } PART_END(H5Adelete_by_idx_crt_order_increasing);
 
-        if (attr_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Aclose(attr_id);
-            } H5E_END_TRY;
-            attr_id = H5I_INVALID_HID;
-        }
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Adelete_by_idx_crt_order_decreasing) {
             TESTING_2("H5Adelete_by_idx by creation order in decreasing order")
@@ -6407,12 +6965,9 @@ test_delete_attribute(void)
             PASSED();
         } PART_END(H5Adelete_by_idx_crt_order_decreasing);
 
-        if (attr_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Aclose(attr_id);
-            } H5E_END_TRY;
-            attr_id = H5I_INVALID_HID;
-        }
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Adelete_by_idx_name_order_increasing) {
             TESTING_2("H5Adelete_by_idx by alphabetical order in increasing order")
@@ -6629,12 +7184,9 @@ test_delete_attribute(void)
             PASSED();
         } PART_END(H5Adelete_by_idx_name_order_increasing);
 
-        if (attr_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Aclose(attr_id);
-            } H5E_END_TRY;
-            attr_id = H5I_INVALID_HID;
-        }
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
 
         PART_BEGIN(H5Adelete_by_idx_name_order_decreasing) {
             TESTING_2("H5Adelete_by_idx by alphabetical order in decreasing order")
@@ -6851,12 +7403,9 @@ test_delete_attribute(void)
             PASSED();
         } PART_END(H5Adelete_by_idx_name_order_decreasing);
 
-        if (attr_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Aclose(attr_id);
-            } H5E_END_TRY;
-            attr_id = H5I_INVALID_HID;
-        }
+        H5E_BEGIN_TRY {
+            H5Aclose(attr_id); attr_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -8084,19 +8633,19 @@ attr_iter_callback1(hid_t location_id, const char *attr_name, const H5A_info_t *
     UNUSED(location_id);
     UNUSED(ainfo);
 
-    if (!HDstrcmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME) &&
+    if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME) + 1) &&
             (counter_val == 0 || counter_val == 7 || counter_val == 8 || counter_val == 15)) {
         goto done;
     }
-    else if (!HDstrcmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2) &&
+    else if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME2) + 1) &&
             (counter_val == 1 || counter_val == 6 || counter_val == 9 || counter_val == 14)) {
         goto done;
     }
-    else if (!HDstrcmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3) &&
+    else if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME3) + 1) &&
             (counter_val == 2 || counter_val == 5 || counter_val == 10 || counter_val == 13)) {
         goto done;
     }
-    else if (!HDstrcmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4) &&
+    else if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME4) + 1) &&
             (counter_val == 3 || counter_val == 4 || counter_val == 11 || counter_val == 12)) {
         goto done;
     }
