@@ -585,8 +585,11 @@ static int
 test_file_open_dot(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, subgroup_id = H5I_INVALID_HID;
     hid_t dset_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
-    hid_t group_id = H5I_INVALID_HID, dtype_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t dtype_id = H5I_INVALID_HID;
+    hid_t attr_id = H5I_INVALID_HID;
     herr_t ret = -1;
 
     TESTING_MULTIPART("creating/opening objects with \".\" as the name");
@@ -595,7 +598,20 @@ test_file_open_dot(void)
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open file\n");
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, MISCELLANEOUS_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", MISCELLANEOUS_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((subgroup_id = H5Gcreate2(container_group, DOT_AS_OBJECT_NAME_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container subgroup '%s'\n", DOT_AS_OBJECT_NAME_TEST_SUBGROUP_NAME);
         goto error;
     }
 
@@ -613,7 +629,7 @@ test_file_open_dot(void)
 
             /* Create a group with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY {
-                group_id = H5Gcreate2(file_id, DOT_AS_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                group_id = H5Gcreate2(subgroup_id, ".", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (group_id >= 0) {
@@ -630,7 +646,7 @@ test_file_open_dot(void)
 
             /* Create a dataset with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY {
-                dset_id = H5Dcreate2(file_id, DOT_AS_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dset_id = H5Dcreate2(subgroup_id, ".", H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (dset_id >= 0) {
@@ -645,9 +661,18 @@ test_file_open_dot(void)
         PART_BEGIN(H5Acreate_dot_as_name) {
             TESTING_2("invalid creation of attribute with '.' as name")
 
-            /* TODO: */
+            /* Create an attribute with "." as the name. It should fail. */
+            H5E_BEGIN_TRY {
+                attr_id = H5Acreate2(subgroup_id, ".", H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
 
-            SKIPPED();
+            if (attr_id >= 0) {
+                H5_FAILED();
+                HDprintf("    an attribute was created with '.' as the name!\n");
+                PART_ERROR(H5Acreate_dot_as_name);
+            }
+
+            PASSED();
         } PART_END(H5Acreate_dot_as_name);
 
         PART_BEGIN(H5Tcommit_dot_as_name) {
@@ -659,9 +684,9 @@ test_file_open_dot(void)
                 PART_ERROR(H5Tcommit_dot_as_name);
             }
 
-            /* Commit a datatype with the "." as the name.  It should fail. */
+            /* Commit a datatype with "." as the name. It should fail. */
             H5E_BEGIN_TRY {
-                ret = H5Tcommit2(file_id, DOT_AS_NAME, dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                ret = H5Tcommit2(subgroup_id, ".", dtype_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (ret >= 0) {
@@ -670,47 +695,23 @@ test_file_open_dot(void)
                 PART_ERROR(H5Tcommit_dot_as_name);
             }
 
+            if (H5Tclose(dtype_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close datatype\n");
+                PART_ERROR(H5Tcommit_dot_as_name);
+            }
+
             PASSED();
         } PART_END(H5Tcommit_dot_as_name);
     } END_MULTIPART;
 
-    /* XXX: If we can't create an object with '.' as the name, then we can't reliably test
-     * opening of such objects.
-     */
-#if 0
-    /* Create a dataset with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        dset_id = H5Dopen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (dset_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a dataset was opened with the '.' as the name!\n");
-        goto error;
-    }
-
-    /* Open a datatype with the "." as the name.  It should fail. */
-    H5E_BEGIN_TRY {
-        dset_id = H5Topen2(file_id, DOT_AS_NAME, H5P_DEFAULT);
-    } H5E_END_TRY;
-
-    if (dset_id >= 0) {
-        H5_FAILED();
-        HDprintf("    a datatype was opened with the '.' as the name!\n");
-        goto error;
-    }
-
-    /* Open a group with the "." as the name using the file ID (should open the root group) */
-    if ((group_id = H5Gopen2(file_id, DOT_AS_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s'\n", DOT_AS_NAME);
-        goto error;
-    }
-#endif
-
     TESTING_2("test cleanup")
 
     if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(subgroup_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
         TEST_ERROR
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
@@ -722,9 +723,12 @@ test_file_open_dot(void)
 error:
     H5E_BEGIN_TRY {
         H5Sclose(dspace_id);
+        H5Aclose(attr_id);
         H5Dclose(dset_id);
         H5Tclose(dtype_id);
         H5Gclose(group_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
 

@@ -316,7 +316,7 @@ generate_random_datatype(H5T_class_t parent_class, hbool_t is_compact)
              * fixed-length strings, but these may change in the future.
              */
             if (0 == (rand() % 2)) {
-                if ((datatype = H5Tcreate(H5T_STRING, (size_t) (rand() % STRING_TYPE_MAX_SIZE))) < 0) {
+                if ((datatype = H5Tcreate(H5T_STRING, (size_t) (rand() % STRING_TYPE_MAX_SIZE) + 1)) < 0) {
                     H5_FAILED();
                     HDprintf("    couldn't create fixed-length string datatype\n");
                     goto done;

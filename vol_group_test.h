@@ -38,7 +38,8 @@ int vol_group_test(void);
 #define GROUP_PROPERTY_LIST_TEST_GROUP_NAME2 "property_list_test_group2"
 #define GROUP_PROPERTY_LIST_TEST_DUMMY_VAL   100
 
-#define GROUP_FOR_INFO "group_info_test"
+#define GROUP_GET_INFO_TEST_GROUP_NAME "group_info_test"
+#define GROUP_GET_INFO_TEST_GROUP_NUMB 16
 
 #define GROUP_FLUSH_GNAME "group_flush_test"
 
