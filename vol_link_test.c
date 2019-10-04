@@ -17,15 +17,21 @@
  */
 
 static int test_create_hard_link(void);
+static int test_create_hard_link_long_name(void);
+static int test_create_hard_link_many(void);
 static int test_create_hard_link_same_loc(void);
 static int test_create_hard_link_invalid_params(void);
 static int test_create_soft_link_existing_relative(void);
 static int test_create_soft_link_existing_absolute(void);
 static int test_create_soft_link_dangling_relative(void);
 static int test_create_soft_link_dangling_absolute(void);
+static int test_create_soft_link_long_name(void);
+static int test_create_soft_link_many(void);
 static int test_create_soft_link_invalid_params(void);
 static int test_create_external_link(void);
 static int test_create_external_link_dangling(void);
+static int test_create_external_link_multi(void);
+static int test_create_external_link_ping_pong(void);
 static int test_create_external_link_invalid_params(void);
 static int test_create_user_defined_link(void);
 static int test_create_user_defined_link_invalid_params(void);
@@ -88,15 +94,21 @@ static herr_t link_visit_0_links_cb(hid_t group_id, const char *name, const H5L_
  */
 static int (*link_tests[])(void) = {
         test_create_hard_link,
+        test_create_hard_link_long_name,
+        test_create_hard_link_many,
         test_create_hard_link_same_loc,
         test_create_hard_link_invalid_params,
         test_create_soft_link_existing_relative,
         test_create_soft_link_existing_absolute,
         test_create_soft_link_dangling_relative,
         test_create_soft_link_dangling_absolute,
+        test_create_soft_link_long_name,
+        test_create_soft_link_many,
         test_create_soft_link_invalid_params,
         test_create_external_link,
         test_create_external_link_dangling,
+        test_create_external_link_multi,
+        test_create_external_link_ping_pong,
         test_create_external_link_invalid_params,
         test_create_user_defined_link,
         test_create_user_defined_link_invalid_params,
@@ -197,6 +209,240 @@ test_create_hard_link(void)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that a hard link with a long name can be created
+ * using H5Lcreate_hard.
+ */
+static int
+test_create_hard_link_long_name(void)
+{
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    char   *objname = NULL; /* Name of object [Long] */
+    size_t u;               /* Local index variable */
+
+    TESTING("hard link creation with a long name")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, HARD_LINK_TEST_GROUP_LONG_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", HARD_LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    /* Construct very long file name */
+    if((objname = (char *)HDmalloc((size_t)(MAX_NAME_LEN + 1))) == NULL)
+        TEST_ERROR
+
+    for(u = 0; u < MAX_NAME_LEN; u++)
+        objname[u] = 'a';
+    objname[MAX_NAME_LEN] = '\0';
+
+    if (H5Lcreate_hard(file_id, "/", group_id, objname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create hard link with a long name\n");
+        goto error;
+    }
+
+    /* Verify the link has been created */
+    if ((link_exists = H5Lexists(group_id, objname, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if the link with a long name exists\n");
+        goto error;
+    }
+
+    if (!link_exists) {
+        H5_FAILED();
+        HDprintf("    link did not exist\n");
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    /* Release memory */
+    if(objname)
+        HDfree(objname);
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    if(objname)
+        HDfree(objname);
+
+    return 1;
+}
+
+/*
+ * A test to check that many hard links can be created
+ * using H5Lcreate_hard.
+ */
+static int
+test_create_hard_link_many(void)
+{
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
+    char   objname[HARD_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE];         /* Object name */
+
+    TESTING("hard link creation of many links")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, HARD_LINK_TEST_GROUP_MANY_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", HARD_LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id2 = H5Gcreate2(group_id, HARD_LINK_TEST_GROUP_MANY_FINAL_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
+        goto error;
+    }
+
+    if (H5Lcreate_hard(group_id, HARD_LINK_TEST_GROUP_MANY_FINAL_NAME, group_id, "hard1", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard1", group_id, "hard2", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard2", group_id, "hard3", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard3", group_id, "hard4", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard4", group_id, "hard5", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard5", group_id, "hard6", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard6", group_id, "hard7", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard7", group_id, "hard8", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard8", group_id, "hard9", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard9", group_id, "hard10", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard10", group_id, "hard11", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard11", group_id, "hard12", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard12", group_id, "hard13", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard13", group_id, "hard14", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard14", group_id, "hard15", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard15", group_id, "hard16", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard16", group_id, "hard17", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard17", group_id, "hard18", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard18", group_id, "hard19", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard19", group_id, "hard20", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_hard(group_id, "hard20", group_id, "hard21", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+
+    /* Verify the link has been created */
+    if ((link_exists = H5Lexists(group_id, "hard21", H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if link 'hard21' exists\n");
+        goto error;
+    }
+
+    if (!link_exists) {
+        H5_FAILED();
+        HDprintf("    link 'hard21' did not exist\n");
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id2) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    /* Reopen the file and group and verify the hard link */
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gopen2(container_group, HARD_LINK_TEST_GROUP_MANY_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container sub-group '%s'\n", HARD_LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    /* Open the object through last hard link */
+    if((group_id2 = H5Gopen2(group_id, "hard21", H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open the group '%s' with the last hard link 'hard21'\n", HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
+        goto error;
+    }
+
+    /* Check name */
+    if(H5Iget_name(group_id2, objname, (size_t)HARD_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get the name of the object '%s'\n", HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
+        goto error;
+    }
+
+    if(HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" HARD_LINK_TEST_GROUP_MANY_NAME "/hard21")) {
+        H5_FAILED();
+        HDprintf("    wrong name of the object '%s'\n", objname);
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id2) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(group_id2);
         H5Gclose(container_group);
         H5Fclose(file_id);
     } H5E_END_TRY;
@@ -328,6 +574,8 @@ test_create_hard_link_invalid_params(void)
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("hard link creation with invalid parameters");
 
@@ -470,6 +718,22 @@ test_create_hard_link_invalid_params(void)
             PASSED();
         } PART_END(H5Lcreate_hard_invalid_lapl);
 
+        PART_BEGIN(H5Lcreate_hard_invalid_same_loc) {
+            TESTING_2("H5Lcreate_hard with the invalid same location")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Lcreate_hard(H5L_SAME_LOC, "/", H5L_SAME_LOC, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    created hard link with the invalid same location!\n");
+                PART_ERROR(H5Lcreate_hard_invalid_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_hard_invalid_same_loc);
+
         PART_BEGIN(H5Lcreate_hard_invalid_existence) {
             TESTING_2("invalid link existence after expected H5Lcreate_hard failures")
 
@@ -488,10 +752,47 @@ test_create_hard_link_invalid_params(void)
 
             PASSED();
         } PART_END(H5Lcreate_hard_invalid_existence);
+
+        PART_BEGIN(H5Lcreate_hard_across_files) {
+
+            TESTING_2("H5Lcreate_hard with an invalid file location")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lcreate_hard_across_files);
+            }
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Lcreate_hard(file_id, "/", ext_file_id, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    created hard link across files!\n");
+                PART_ERROR(H5Lcreate_hard_across_files);
+            }
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Lcreate_hard(ext_file_id, "/", group_id, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    created hard link across files!\n");
+                PART_ERROR(H5Lcreate_hard_across_files);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_hard_across_files);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
 
+    if (H5Fclose(ext_file_id) < 0)
+	TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -507,11 +808,12 @@ error:
     H5E_BEGIN_TRY {
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
     return 1;
-}
+} /* test_create_hard_link_invalid_params */
 
 /*
  * A test to check that a soft link, which points to an
@@ -867,6 +1169,255 @@ test_create_soft_link_dangling_absolute(void)
     if ((object_id = H5Gopen2(group_id, SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_DANGLING_ABSOLUTE_TEST_LINK_NAME);
+        goto error;
+    }
+
+    if (H5Gclose(object_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(object_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that a soft link with a long name can be created
+ * using H5Lcreate_soft.
+ */
+static int
+test_create_soft_link_long_name(void)
+{
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    char   *objname = NULL; /* Name of object [Long] */
+    size_t u;               /* Local index variable */
+
+    TESTING("soft link creation with a long name")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, SOFT_LINK_TEST_GROUP_LONG_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", SOFT_LINK_TEST_GROUP_LONG_NAME);
+        goto error;
+    }
+
+    /* Construct very long file name */
+    if((objname = (char *)HDmalloc((size_t)(MAX_NAME_LEN + 1))) == NULL)
+        TEST_ERROR
+
+    for(u = 0; u < MAX_NAME_LEN; u++)
+        objname[u] = 'b';
+    objname[MAX_NAME_LEN] = '\0';
+
+    if (H5Lcreate_soft(SOFT_LINK_TEST_LONG_OBJECT_NAME, group_id, objname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create soft link with a long name\n");
+        goto error;
+    }
+
+    /* Verify the link has been created */
+    if ((link_exists = H5Lexists(group_id, objname, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if the link with a long name exists\n");
+        goto error;
+    }
+
+    if (!link_exists) {
+        H5_FAILED();
+        HDprintf("    link did not exist\n");
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    /* Release memory */
+    if(objname)
+        HDfree(objname);
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    if(objname)
+        HDfree(objname);
+
+    return 1;
+}
+
+/*
+ * A test to check that many soft links can be created
+ * using H5Lcreate_soft.
+ */
+static int
+test_create_soft_link_many(void)
+{
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID;
+    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  object_id = H5I_INVALID_HID;
+    char   objname[SOFT_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE];         /* Object name */
+
+    TESTING("soft link creation of many links")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, SOFT_LINK_TEST_GROUP_MANY_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", SOFT_LINK_TEST_GROUP_MANY_NAME);
+        goto error;
+    }
+
+    if (H5Lcreate_soft("/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME "/" SOFT_LINK_TEST_GROUP_MANY_FINAL_NAME,
+        group_id, "soft1", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft1", group_id, "soft2", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft2", group_id, "soft3", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft3", group_id, "soft4", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft4", group_id, "soft5", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft5", group_id, "soft6", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft6", group_id, "soft7", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft7", group_id, "soft8", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft8", group_id, "soft9", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft9", group_id, "soft10", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft10", group_id, "soft11", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft11", group_id, "soft12", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft12", group_id, "soft13", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft13", group_id, "soft14", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft14", group_id, "soft15", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+    if (H5Lcreate_soft("soft15", group_id, "soft16", H5P_DEFAULT, H5P_DEFAULT) < 0) TEST_ERROR
+
+    /* Verify the link has been created */
+    if ((link_exists = H5Lexists(group_id, "soft16", H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if link 'soft16' exists\n");
+        goto error;
+    }
+
+    if (!link_exists) {
+        H5_FAILED();
+        HDprintf("    link 'soft16' did not exist\n");
+        goto error;
+    }
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    /* Reopen the file and group and verify the hard link */
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gopen2(container_group, SOFT_LINK_TEST_GROUP_MANY_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container sub-group '%s'\n", SOFT_LINK_TEST_GROUP_MANY_NAME);
+        goto error;
+    }
+
+    /*
+     * XXX: Try to open the object through last soft link.  If should fail because it doesn't exist.  If H5Oopen is available, use that.
+     */
+    H5E_BEGIN_TRY {
+        object_id = H5Gopen2(group_id, "soft16", H5P_DEFAULT);
+    } H5E_END_TRY;
+
+    if (object_id >= 0) {
+        H5_FAILED();
+        HDprintf("    opened target of dangling soft link '%s'!\n", SOFT_LINK_TEST_GROUP_MANY_NAME);
+        H5Gclose(object_id);
+        goto error;
+    }
+
+    if ((object_id = H5Gcreate2(group_id, SOFT_LINK_TEST_GROUP_MANY_FINAL_NAME,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to create object '%s' for soft link's target\n", SOFT_LINK_TEST_GROUP_MANY_NAME);
+        goto error;
+    }
+
+    if (H5Gclose(object_id) < 0)
+        TEST_ERROR
+
+    /*
+     * XXX: Open the object through last soft link.  It should work this time.  If H5Oopen is available, use that.
+     */
+    if ((object_id = H5Gopen2(group_id, "soft16", H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_TEST_GROUP_MANY_NAME);
+        goto error;
+    }
+
+    /* Check name */
+    if(H5Iget_name(object_id, objname, (size_t)SOFT_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get the name of the object 'soft16'\n");
+        goto error;
+    }
+
+    if(HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME "/soft16")) {
+        H5_FAILED();
+        HDprintf("    wrong name of the object '%s'\n", objname);
         goto error;
     }
 
@@ -1280,6 +1831,571 @@ error:
         H5Gclose(container_group);
         H5Fclose(file_id);
         H5Fclose(ext_file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that an external link to an object
+ * that crosses several files using H5Lcreate_external.
+ */
+static int
+test_create_external_link_multi(void)
+{
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  group_id2 = H5I_INVALID_HID, group_id3 = H5I_INVALID_HID;
+    hid_t  root_id = H5I_INVALID_HID;
+    char   ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
+    char   ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
+    char   ext_link_filename3[VOL_TEST_FILENAME_MAX_LENGTH];
+    char   objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
+
+    TESTING_MULTIPART("external link creation to an object across several files")
+
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Lcreate_external_first_file) {
+            TESTING_2("Create the first external file to be pointed to")
+
+            HDsnprintf(ext_link_filename1, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((file_id = H5Fcreate(ext_link_filename1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename1);
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            /* Create object down a path */
+            if((group_id = H5Gcreate2(file_id, "A", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if((group_id = H5Gcreate2(file_id, "A/B", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if((group_id = H5Gcreate2(file_id, "A/B/C", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_first_file);
+
+        PART_BEGIN(H5Lcreate_external_second_file) {
+            TESTING_2("Create the second external file to be pointed to")
+
+            HDsnprintf(ext_link_filename2, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME2);
+
+            if ((file_id = H5Fcreate(ext_link_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename2);
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            /* Create object down a path */
+            if((group_id = H5Gcreate2(file_id, "D", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            if((group_id = H5Gcreate2(file_id, "D/E", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            /* Create external link to object in first file */
+            if(H5Lcreate_external(ext_link_filename1, "/A/B/C", group_id, "F", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link 'F'\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a file\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_second_file);
+
+        PART_BEGIN(H5Lcreate_external_third_file) {
+            TESTING_2("Create the third external file to be pointed to")
+
+            HDsnprintf(ext_link_filename3, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME3);
+
+            if ((file_id = H5Fcreate(ext_link_filename3, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename3);
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            /* Create object down a path */
+            if((group_id = H5Gcreate2(file_id, "G", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            if((group_id = H5Gcreate2(file_id, "G/H", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            /* Create external link to object in second file */
+            if(H5Lcreate_external(ext_link_filename2, "/D/E/F", group_id, "I", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link 'I'\n");
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a file\n");
+                PART_ERROR(H5Lcreate_external_third_file);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_third_file);
+
+        PART_BEGIN(H5Lcreate_external_final_file) {
+            TESTING_2("Open the file and create the final external link")
+
+            if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if ((group_id = H5Gcreate2(container_group, EXTERNAL_LINK_TEST_MULTI_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create container subgroup '%s'\n", EXTERNAL_LINK_TEST_MULTI_NAME);
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if (H5Lcreate_external(ext_link_filename3, "/G/H/I", group_id, "ext_link", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link 'ext_link'\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if ((group_id2 = H5Gopen2(group_id, "ext_link", H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open the group that is the external link\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            /* Check name */
+            if(H5Iget_name(group_id2, objname, (size_t)EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get the name of the object '%s'\n", HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if(HDstrcmp(objname, "/A/B/C")) {
+                H5_FAILED();
+                HDprintf("    wrong name of the object '%s'\n", objname);
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            /* Create an object in the external file */
+            if((group_id3 = H5Gcreate2(group_id2, "new_group", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group 'new_group' in the external file\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if (H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if (H5Gclose(group_id2) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if (H5Gclose(group_id3) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if (H5Gclose(container_group) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a file\n");
+                PART_ERROR(H5Lcreate_external_final_file);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_final_file);
+
+        PART_BEGIN(H5Lcreate_external_object_created) {
+            TESTING_2("Check the group being created through the external link")
+
+            if ((file_id = H5Fopen(ext_link_filename1, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open file '%s'\n", ext_link_filename1);
+                PART_ERROR(H5Lcreate_external_object_created);
+            }
+
+            if((group_id = H5Gopen2(file_id, "/A/B/C/new_group", H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open a group 'new_group' in the external file\n");
+                PART_ERROR(H5Lcreate_external_object_created);
+            }
+
+            /* Check name */
+            if(H5Iget_name(group_id, objname, (size_t)EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get the name of the object '/A/B/C/new_group'\n");
+                PART_ERROR(H5Lcreate_external_object_created);
+            }
+
+            if(HDstrcmp(objname, "/A/B/C/new_group")) {
+                H5_FAILED();
+                HDprintf("    wrong name of the object '%s'\n", objname);
+                PART_ERROR(H5Lcreate_external_object_created);
+            }
+
+            if (H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close the group\n");
+                PART_ERROR(H5Lcreate_external_object_created);
+            }
+
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close the file\n");
+                PART_ERROR(H5Lcreate_external_object_created);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_object_created);
+    } END_MULTIPART;
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(root_id);
+        H5Gclose(group_id);
+        H5Gclose(group_id2);
+        H5Gclose(group_id3);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to build a file with external link to object that
+ * goes back and forth between two files a couple of times:
+ *
+ *       file1:/link1    -> file2: /link2
+ *       file2:/link2    -> file1: /link3
+ *       file1:/link3    -> file2: /link4
+ *       file2:/link4    -> file1: /link5
+ *       file1:/link5    -> file2: /link6
+ *       file2:/link6    -> file1: /final
+ */
+static int
+test_create_external_link_ping_pong(void)
+{
+    htri_t link_exists;
+    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t  group_id2 = H5I_INVALID_HID;
+    hid_t  root_id = H5I_INVALID_HID;
+    char   ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
+    char   ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
+    char   objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
+
+    TESTING_MULTIPART("external link creation to an object in ping pong style")
+
+    HDsnprintf(ext_link_filename1, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_PING_PONG_NAME1);
+    HDsnprintf(ext_link_filename2, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_PING_PONG_NAME2);
+
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Lcreate_external_first_file) {
+            TESTING_2("Create the first external file")
+
+            /* Create the first file */
+            if ((file_id = H5Fcreate(ext_link_filename1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename1);
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            /* Create external links for chain */
+            if (H5Lcreate_external(ext_link_filename2, "/link2", file_id, "link1", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if (H5Lcreate_external(ext_link_filename2, "/link4", file_id, "link3", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if (H5Lcreate_external(ext_link_filename2, "/link6", file_id, "link5", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            /* Create final object */
+            if((group_id = H5Gcreate2(file_id, "final", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_first_file);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_first_file);
+
+        PART_BEGIN(H5Lcreate_external_second_file) {
+            TESTING_2("Create the second external file")
+
+            /* Create the second file */
+            if ((file_id = H5Fcreate(ext_link_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link\n", ext_link_filename2);
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            /* Create external links for chain */
+            if (H5Lcreate_external(ext_link_filename1, "/link3", file_id, "link2", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            if (H5Lcreate_external(ext_link_filename1, "/link5", file_id, "link4", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            if (H5Lcreate_external(ext_link_filename1, "/final", file_id, "link6", H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close the file\n");
+                PART_ERROR(H5Lcreate_external_second_file);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_second_file);
+
+        PART_BEGIN(H5Lcreate_external_verify) {
+            TESTING_2("Open the first file to verify the object being pointed to")
+
+            if ((file_id = H5Fopen(ext_link_filename1, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open file '%s'\n", ext_link_filename1);
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            /* Open object through external link */
+            if ((group_id = H5Gopen2(file_id, "link1", H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open the group that is the external link 'link1'\n");
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            /* Check the name of the object being pointed to */
+            if(H5Iget_name(group_id, objname, (size_t)EXTERNAL_LINK_TEST_PING_PONG_NAME_BUF_SIZE) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get the name of the object\n");
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            if(HDstrcmp(objname, "/final")) {
+                H5_FAILED();
+                HDprintf("    wrong name of the object '%s'\n", objname);
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            /* Create an object in the external file */
+            if ((group_id2 = H5Gcreate2(group_id, "new_group", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create a new group 'new_group'\n");
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            if(H5Gclose(group_id2) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close the file\n");
+                PART_ERROR(H5Lcreate_external_verify);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_verify);
+
+        PART_BEGIN(H5Lcreate_external_verify_again) {
+            TESTING_2("Open the first file to verify the object being created")
+
+            if ((file_id = H5Fopen(ext_link_filename1, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open file '%s'\n", ext_link_filename1);
+                PART_ERROR(H5Lcreate_external_verify_again);
+            }
+
+            /* Open object through external link */
+            if ((group_id = H5Gopen2(file_id, "/final/new_group", H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open the group that is the external link\n");
+                PART_ERROR(H5Lcreate_external_verify_again);
+            }
+
+            /* Check the name of the object being pointed to */
+            if(H5Iget_name(group_id, objname, (size_t)EXTERNAL_LINK_TEST_PING_PONG_NAME_BUF_SIZE) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't get the name of the object\n");
+                PART_ERROR(H5Lcreate_external_verify_again);
+            }
+
+            if(HDstrcmp(objname, "/final/new_group")) {
+                H5_FAILED();
+                HDprintf("    wrong name of the object '%s'\n", objname);
+                PART_ERROR(H5Lcreate_external_verify_again);
+            }
+
+            if(H5Gclose(group_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a group\n");
+                PART_ERROR(H5Lcreate_external_verify_again);
+            }
+
+            /* Close file */
+            if (H5Fclose(file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close the file\n");
+                PART_ERROR(H5Lcreate_external_verify_again);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_external_verify_again);
+    } END_MULTIPART;
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(group_id2);
+        H5Fclose(file_id);
     } H5E_END_TRY;
 
     return 1;
@@ -5162,6 +6278,53 @@ test_copy_link(void)
             PASSED();
         } PART_END(H5Lcopy_soft);
 
+        /* TODO - There is a problem with this copy test.  I will work on it later. */
+        PART_BEGIN(H5Lcopy_soft_across_files) {
+            TESTING_2("H5Lcopy on soft link across files")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_soft_cross_files);
+            }
+
+            if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, group_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create the soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lcopy_soft_cross_files);
+            }
+
+            /* Copy the link */
+            if (H5Lcopy(group_id, COPY_LINK_TEST_SOFT_LINK_NAME, ext_file_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lcopy_soft_cross_files);
+            }
+
+            /* Verify the link has been copied */
+            if ((link_exists = H5Lexists(ext_file_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME);
+                PART_ERROR(H5Lcopy_soft_cross_files);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link copy did not exist\n");
+                PART_ERROR(H5Lcopy_soft_cross_files);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_soft_cross_files);
+            }
+
+            SKIPPED();
+        } PART_END(H5Lcopy_soft_cross_files);
+
         PART_BEGIN(H5Lcopy_external) {
             TESTING_2("H5Lcopy on external link")
 
@@ -5290,6 +6453,8 @@ test_copy_link_invalid_params(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Lcopy with invalid parameters");
 
@@ -5470,6 +6635,54 @@ test_copy_link_invalid_params(void)
 
             PASSED();
         } PART_END(H5Lcopy_invalid_lapl);
+
+        PART_BEGIN(H5Lcopy_invalid_same_location) {
+            TESTING_2("H5Lcopy with an invalid same location")
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Lcopy(H5L_SAME_LOC, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5L_SAME_LOC,
+                        COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Lcopy succeeded with an invalid same location\n");
+                PART_ERROR(H5Lcopy_invalid_same_location);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_invalid_same_location);
+ 
+        PART_BEGIN(H5Lcopy_invalid_across_files) {
+            TESTING_2("H5Lcopy invalid across files")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_invalid_across_files);
+            }
+
+            H5E_BEGIN_TRY {
+                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, ext_file_id,
+                        COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Lcopy succeeded with an invalid same location\n");
+                PART_ERROR(H5Lcopy_invalid_across_files);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_invalid_across_files);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_invalid_across_files);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -5495,6 +6708,7 @@ error:
         H5Gclose(src_grp_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -5511,10 +6725,14 @@ test_move_link(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link moving")
 
     TESTING_2("test setup")
+
+    HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5621,6 +6839,45 @@ test_move_link(void)
             PASSED();
         } PART_END(H5Lmove_hard);
 
+        PART_BEGIN(H5Lmove_rename) {
+            TESTING_2("H5Lmove on renaming hard link")
+
+            /* Using H5Lmove to rename the hard link without moving it */
+            if (H5Lmove(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5L_SAME_LOC, MOVE_LINK_TEST_HARD_LINK_NEW_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lmove_rename);
+            }
+
+            /* Verify the link has been renamed */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if the hard link with the new name '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist\n");
+                PART_ERROR(H5Lmove_rename);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lmove_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old hard link exists\n");
+                PART_ERROR(H5Lmove_rename);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_rename);
+
         PART_BEGIN(H5Lmove_soft) {
             TESTING_2("H5Lmove on soft link")
 
@@ -5693,13 +6950,131 @@ test_move_link(void)
             PASSED();
         } PART_END(H5Lmove_soft);
 
+        PART_BEGIN(H5Lmove_soft_across_files) {
+            TESTING_2("H5Lmove on soft link to another file")
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_soft_across_files);
+            }
+
+            /* Move the soft link to another file */
+            if (H5Lmove(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, ext_file_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lmove_soft_across_files);
+            }
+
+            /* Verify the link has been moved */
+            if ((link_exists = H5Lexists(ext_file_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_soft_across_files);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link did not exist\n");
+                PART_ERROR(H5Lmove_soft_across_files);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lmove_soft);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old soft link exists\n");
+                PART_ERROR(H5Lmove_soft_across_files);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a file\n");
+                PART_ERROR(H5Lmove_soft_across_files);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_soft_across_files);
+
+#if 0
+        /* TODO - There is a problem with this test.  I'll fix it later. - Ray */
         PART_BEGIN(H5Lmove_external) {
             TESTING_2("H5Lmove on external link")
 
-            /* TODO */
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external);
+            }
+
+            /* Try to move a hard link */
+            if (H5Lcreate_external(ext_link_filename, "/", group_id,
+                MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lmove_external);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external);
+            }
+
+            /* Move the link */
+            if (H5Lmove(group_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, ext_file_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lmove_external);
+            }
+
+            /* Verify the link has been moved */
+            if ((link_exists = H5Lexists(ext_file_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_external);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old hard link exists\n");
+                PART_ERROR(H5Lmove_external);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close a file\n");
+                PART_ERROR(H5Lmove_external);
+            }
 
             SKIPPED();
         } PART_END(H5Lmove_external);
+#endif
 
         PART_BEGIN(H5Lmove_ud) {
             TESTING_2("H5Lmove on user-defined link")
@@ -5734,6 +7109,7 @@ error:
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
+        H5Fclose(ext_file_id);
     } H5E_END_TRY;
 
     return 1;
@@ -5751,6 +7127,8 @@ test_move_link_invalid_params(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
+    char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Lmove with invalid parameters");
 
@@ -5971,6 +7349,58 @@ test_move_link_invalid_params(void)
 
             PASSED();
         } PART_END(H5Lmove_existence);
+
+        PART_BEGIN(H5Lmove_same_location) {
+            TESTING_2("H5Lmove with an invalid same location")
+
+            /* Move a group within the file.  Both of source and destination use
+             * H5L_SAME_LOC.  Should fail. */
+            H5E_BEGIN_TRY {
+                err_ret = H5Lmove(H5L_SAME_LOC, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5L_SAME_LOC,
+                    MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Lmove succeeded with an invalid same location!\n");
+                PART_ERROR(H5Lmove_same_location);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_same_location);
+
+        PART_BEGIN(H5Lmove_across_files) {
+            TESTING_2("H5Lmove into another file")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_across_files);
+            }
+
+            /* Move a group across files. */
+            H5E_BEGIN_TRY {
+                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, ext_file_id,
+                    MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
+            } H5E_END_TRY;
+
+            if (err_ret >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Lmove succeeded with an invalid external location!\n");
+                PART_ERROR(H5Lmove_across_files);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to close a file!\n");
+                PART_ERROR(H5Lmove_across_files);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_across_files);
+
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -5996,6 +7426,7 @@ error:
         H5Gclose(src_grp_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
 
