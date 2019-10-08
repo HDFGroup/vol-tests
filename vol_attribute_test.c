@@ -5538,15 +5538,12 @@ error:
 static int
 test_attribute_iterate(void)
 {
-    size_t i;
+    size_t link_counter;
     htri_t attr_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  dset_id = H5I_INVALID_HID;
     hid_t  attr_id = H5I_INVALID_HID, attr_id2 = H5I_INVALID_HID, attr_id3 = H5I_INVALID_HID, attr_id4 = H5I_INVALID_HID;
-    hid_t  dset_dtype = H5I_INVALID_HID;
     hid_t  attr_dtype = H5I_INVALID_HID;
-    hid_t  dset_space_id = H5I_INVALID_HID;
     hid_t  attr_space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute iteration");
@@ -5555,7 +5552,7 @@ test_attribute_iterate(void)
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open file\n");
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
     }
 
@@ -5567,101 +5564,90 @@ test_attribute_iterate(void)
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container subgroup\n");
+        HDprintf("    couldn't create container subgroup '%s'\n", ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME);
         goto error;
     }
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
-
-    if ((dset_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
         TEST_ERROR
     if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK, NULL, NULL, TRUE)) < 0)
         TEST_ERROR
 
-    if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_ITERATE_TEST_DSET_NAME, dset_dtype,
-            dset_space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    /* Create some attributes in reverse ordering to test creation order */
+    if ((attr_id4 = H5Acreate2(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4, attr_dtype,
+            attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create dataset\n");
+        HDprintf("    couldn't create attribute '%s'\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME4);
         goto error;
     }
 
-    if ((attr_id = H5Acreate2(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME, attr_dtype,
+    if ((attr_id3 = H5Acreate2(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3, attr_dtype,
             attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create attribute\n");
+        HDprintf("    couldn't create attribute '%s'\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME3);
         goto error;
     }
 
-    if ((attr_id2 = H5Acreate2(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2, attr_dtype,
+    if ((attr_id2 = H5Acreate2(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2, attr_dtype,
             attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create attribute\n");
+        HDprintf("    couldn't create attribute '%s'\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME2);
         goto error;
     }
 
-    if ((attr_id3 = H5Acreate2(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3, attr_dtype,
+    if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME, attr_dtype,
             attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create attribute\n");
-        goto error;
-    }
-
-    if ((attr_id4 = H5Acreate2(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4, attr_dtype,
-            attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create attribute\n");
+        HDprintf("    couldn't create attribute '%s'\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME);
         goto error;
     }
 
     /* Verify the attributes have been created */
-    if ((attr_exists = H5Aexists(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME)) < 0) {
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if attribute exists\n");
+        HDprintf("    couldn't determine if attribute '%s' exists\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME);
         goto error;
     }
 
     if (!attr_exists) {
         H5_FAILED();
-        HDprintf("    attribute did not exist\n");
+        HDprintf("    attribute '%s' did not exist\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME);
         goto error;
     }
 
-    if ((attr_exists = H5Aexists(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2)) < 0) {
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if attribute exists\n");
-        goto error;
-    }
-
-    if (!attr_exists) {
-        H5_FAILED();
-        HDprintf("    attribute did not exist\n");
-        goto error;
-    }
-
-    if ((attr_exists = H5Aexists(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't determine if attribute exists\n");
+        HDprintf("    couldn't determine if attribute '%s' exists\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME2);
         goto error;
     }
 
     if (!attr_exists) {
         H5_FAILED();
-        HDprintf("    attribute did not exist\n");
+        HDprintf("    attribute '%s' did not exist\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME2);
         goto error;
     }
 
-    if ((attr_exists = H5Aexists(dset_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4)) < 0) {
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if attribute exists\n");
+        HDprintf("    couldn't determine if attribute '%s' exists\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME3);
         goto error;
     }
 
     if (!attr_exists) {
         H5_FAILED();
-        HDprintf("    attribute did not exist\n");
+        HDprintf("    attribute '%s' did not exist\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME3);
+        goto error;
+    }
+
+    if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't determine if attribute '%s' exists\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME4);
+        goto error;
+    }
+
+    if (!attr_exists) {
+        H5_FAILED();
+        HDprintf("    attribute '%s' did not exist\n", ATTRIBUTE_ITERATE_TEST_ATTR_NAME4);
         goto error;
     }
 
@@ -5675,15 +5661,22 @@ test_attribute_iterate(void)
          * iteration callback is the attribute's name, we need some other way of
          * ensuring that the attributes are coming back in the correct order.
          */
-        i = 0;
+        link_counter = 0;
 
         PART_BEGIN(H5Aiterate2_name_increasing) {
             TESTING_2("H5Aiterate by attribute name in increasing order")
 
             /* Test basic attribute iteration capability using both index types and both index orders */
-            if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback1, &i) < 0) {
+            if (H5Aiterate2(group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type name in increasing order failed\n");
+                PART_ERROR(H5Aiterate2_name_increasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == 0) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate2_name_increasing);
             }
 
@@ -5691,14 +5684,21 @@ test_attribute_iterate(void)
         } PART_END(H5Aiterate2_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+        link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate2_name_decreasing) {
             TESTING_2("H5Aiterate by attribute name in decreasing order")
 
-            if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &i) < 0) {
+            if (H5Aiterate2(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type name in decreasing order failed\n");
+                PART_ERROR(H5Aiterate2_name_decreasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == ATTRIBUTE_ITERATE_TEST_NUM_ATTRS) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate2_name_decreasing);
             }
 
@@ -5706,14 +5706,21 @@ test_attribute_iterate(void)
         } PART_END(H5Aiterate2_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+        link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate2_creation_increasing) {
             TESTING_2("H5Aiterate by creation order in increasing order")
 
-            if (H5Aiterate2(dset_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, attr_iter_callback1, &i) < 0) {
+            if (H5Aiterate2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Aiterate2_creation_increasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate2_creation_increasing);
             }
 
@@ -5721,14 +5728,21 @@ test_attribute_iterate(void)
         } PART_END(H5Aiterate2_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+        link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate2_creation_decreasing) {
             TESTING_2("H5Aiterate by creation order in decreasing order")
 
-            if (H5Aiterate2(dset_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, attr_iter_callback1, &i) < 0) {
+            if (H5Aiterate2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Aiterate2_creation_decreasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate2_creation_decreasing);
             }
 
@@ -5738,15 +5752,22 @@ test_attribute_iterate(void)
         /*
          * Make sure to reset the special counter.
          */
-        i = 0;
+        link_counter = 0;
 
         PART_BEGIN(H5Aiterate_by_name_name_increasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in increasing order")
 
-            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DSET_NAME,
-                    H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate_by_name by index type name in increasing order failed\n");
+                PART_ERROR(H5Aiterate_by_name_name_increasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == 0) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate_by_name sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate_by_name_name_increasing);
             }
 
@@ -5754,15 +5775,22 @@ test_attribute_iterate(void)
         } PART_END(H5Aiterate_by_name_name_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+        link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
 
-            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DSET_NAME,
-                    H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate_by_name by index type name in decreasing order failed\n");
+                PART_ERROR(H5Aiterate_by_name_name_decreasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == ATTRIBUTE_ITERATE_TEST_NUM_ATTRS) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate_by_name sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate_by_name_name_decreasing);
             }
 
@@ -5770,15 +5798,22 @@ test_attribute_iterate(void)
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+        link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate_by_name_creation_increasing) {
             TESTING_2("H5Aiterate_by_name by creation order in increasing order")
 
-            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DSET_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, attr_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_INC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate_by_name by index type creation order in increasing order failed\n");
+                PART_ERROR(H5Aiterate_by_name_creation_increasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate_by_name sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate_by_name_creation_increasing);
             }
 
@@ -5786,15 +5821,22 @@ test_attribute_iterate(void)
         } PART_END(H5Aiterate_by_name_creation_increasing);
 
         /* Reset the counter to the appropriate value for the next test */
-        i = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
+        link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing) {
             TESTING_2("H5Aiterate_by_name by creation order in decreasing order")
 
-            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DSET_NAME,
-                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, attr_iter_callback1, &i, H5P_DEFAULT) < 0) {
+            if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME,
+                    H5_INDEX_CRT_ORDER, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate_by_name by index type creation order in decreasing order failed\n");
+                PART_ERROR(H5Aiterate_by_name_creation_decreasing);
+            }
+
+            /* Make sure that the attribute iteration callback was actually called */
+            if (link_counter == 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS) {
+                H5_FAILED();
+                HDprintf("    H5Aiterate_by_name sentinel value is unchanged; supplied callback function must not have been called!\n");
                 PART_ERROR(H5Aiterate_by_name_creation_decreasing);
             }
 
@@ -5806,11 +5848,7 @@ test_attribute_iterate(void)
 
     TESTING_2("test cleanup")
 
-    if (H5Sclose(dset_space_id) < 0)
-        TEST_ERROR
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
-    if (H5Tclose(dset_dtype) < 0)
         TEST_ERROR
     if (H5Tclose(attr_dtype) < 0)
         TEST_ERROR
@@ -5821,8 +5859,6 @@ test_attribute_iterate(void)
     if (H5Aclose(attr_id3) < 0)
         TEST_ERROR
     if (H5Aclose(attr_id4) < 0)
-        TEST_ERROR
-    if (H5Dclose(dset_id) < 0)
         TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -5837,15 +5873,12 @@ test_attribute_iterate(void)
 
 error:
     H5E_BEGIN_TRY {
-        H5Sclose(dset_space_id);
         H5Sclose(attr_space_id);
-        H5Tclose(dset_dtype);
         H5Tclose(attr_dtype);
         H5Aclose(attr_id);
         H5Aclose(attr_id2);
         H5Aclose(attr_id3);
         H5Aclose(attr_id4);
-        H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -8634,19 +8667,19 @@ attr_iter_callback1(hid_t location_id, const char *attr_name, const H5A_info_t *
     UNUSED(ainfo);
 
     if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME) + 1) &&
-            (counter_val == 0 || counter_val == 7 || counter_val == 8 || counter_val == 15)) {
+            (counter_val == 0 || counter_val == 7 || counter_val == 11 || counter_val == 12)) {
         goto done;
     }
     else if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME2, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME2) + 1) &&
-            (counter_val == 1 || counter_val == 6 || counter_val == 9 || counter_val == 14)) {
+            (counter_val == 1 || counter_val == 6 || counter_val == 10 || counter_val == 13)) {
         goto done;
     }
     else if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME3, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME3) + 1) &&
-            (counter_val == 2 || counter_val == 5 || counter_val == 10 || counter_val == 13)) {
+            (counter_val == 2 || counter_val == 5 || counter_val == 9 || counter_val == 14)) {
         goto done;
     }
     else if (!HDstrncmp(attr_name, ATTRIBUTE_ITERATE_TEST_ATTR_NAME4, strlen(ATTRIBUTE_ITERATE_TEST_ATTR_NAME4) + 1) &&
-            (counter_val == 3 || counter_val == 4 || counter_val == 11 || counter_val == 12)) {
+            (counter_val == 3 || counter_val == 4 || counter_val == 8 || counter_val == 15)) {
         goto done;
     }
 
