@@ -38,8 +38,10 @@ static int test_create_user_defined_link_invalid_params(void);
 static int test_delete_link(void);
 static int test_delete_link_invalid_params(void);
 static int test_copy_link(void);
+static int test_copy_link_across_files(void);
 static int test_copy_link_invalid_params(void);
 static int test_move_link(void);
+static int test_move_link_across_files(void);
 static int test_move_link_invalid_params(void);
 static int test_get_link_val(void);
 static int test_get_link_val_invalid_params(void);
@@ -115,8 +117,10 @@ static int (*link_tests[])(void) = {
         test_delete_link,
         test_delete_link_invalid_params,
         test_copy_link,
+        test_copy_link_across_files,
         test_copy_link_invalid_params,
         test_move_link,
+        test_move_link_across_files,
         test_move_link_invalid_params,
         test_get_link_val,
         test_get_link_val_invalid_params,
@@ -734,28 +738,8 @@ test_create_hard_link_invalid_params(void)
             PASSED();
         } PART_END(H5Lcreate_hard_invalid_same_loc);
 
-        PART_BEGIN(H5Lcreate_hard_invalid_existence) {
-            TESTING_2("invalid link existence after expected H5Lcreate_hard failures")
-
-            /* Verify the link hasn't been created */
-            if ((link_exists = H5Lexists(group_id, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't determine if link '%s' exists\n", HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME);
-                PART_ERROR(H5Lcreate_hard_invalid_existence);
-            }
-
-            if (link_exists) {
-                H5_FAILED();
-                HDprintf("    link existed!\n");
-                PART_ERROR(H5Lcreate_hard_invalid_existence);
-            }
-
-            PASSED();
-        } PART_END(H5Lcreate_hard_invalid_existence);
-
         PART_BEGIN(H5Lcreate_hard_across_files) {
-
-            TESTING_2("H5Lcreate_hard with an invalid file location")
+            TESTING_2("H5Lcreate_hard across files")
 
             HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
@@ -787,6 +771,25 @@ test_create_hard_link_invalid_params(void)
 
             PASSED();
         } PART_END(H5Lcreate_hard_across_files);
+
+        PART_BEGIN(H5Lcreate_hard_invalid_existence) {
+            TESTING_2("invalid link existence after expected H5Lcreate_hard failures")
+
+            /* Verify the link hasn't been created */
+            if ((link_exists = H5Lexists(group_id, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if link '%s' exists\n", HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME);
+                PART_ERROR(H5Lcreate_hard_invalid_existence);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    link existed!\n");
+                PART_ERROR(H5Lcreate_hard_invalid_existence);
+            }
+
+            PASSED();
+        } PART_END(H5Lcreate_hard_invalid_existence);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -6160,255 +6163,1044 @@ test_copy_link(void)
     PASSED();
 
     BEGIN_MULTIPART {
-        PART_BEGIN(H5Lcopy_hard) {
-            TESTING_2("H5Lcopy on hard link")
+        PART_BEGIN(H5Lcopy_hard_no_check) {
+            TESTING_2("H5Lcopy on hard link (copied link's properties not checked)")
 
             /* Try to copy a hard link */
             if (H5Lcreate_hard(group_id, ".", src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             /* Verify the link has been created */
             if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link did not exist\n");
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             /* Verify the link doesn't currently exist in the target group */
             if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link existed in target group before copy!\n");
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             /* Copy the link */
             if (H5Lcopy(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to copy hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
-            /* Verify the link has been copied */
+            /* Verify the link has been copied and still exists in the source group */
             if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link copy '%s' exists\n", COPY_LINK_TEST_HARD_LINK_COPY_NAME);
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link copy did not exist\n");
-                PART_ERROR(H5Lcopy_hard);
+                PART_ERROR(H5Lcopy_hard_no_check);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lcopy_hard_no_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original hard link did not exist\n");
+                PART_ERROR(H5Lcopy_hard_no_check);
             }
 
             PASSED();
-        } PART_END(H5Lcopy_hard);
+        } PART_END(H5Lcopy_hard_no_check);
 
-        PART_BEGIN(H5Lcopy_soft) {
-            TESTING_2("H5Lcopy on soft link")
+        PART_BEGIN(H5Lcopy_hard_check) {
+            H5L_info_t orig_info, new_info;
+
+            TESTING_2("H5Lcopy on hard link (copied link's properties checked)")
+
+            /* Try to copy a hard link */
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            /* Retrieve the link's info */
+            if (H5Lget_info(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME2, &orig_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            /* Copy the link */
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME2, dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            /* Verify the link has been copied and still exists in the source group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link copy '%s' exists\n", COPY_LINK_TEST_HARD_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link copy did not exist\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original hard link did not exist\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            /* Retrieve the new link's info */
+            if (H5Lget_info(dst_grp_id, COPY_LINK_TEST_HARD_LINK_COPY_NAME2, &new_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", COPY_LINK_TEST_HARD_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (new_info.type != orig_info.type) {
+                H5_FAILED();
+                HDprintf("    copied link's link type doesn't match original link's type\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (new_info.u.address != orig_info.u.address) {
+                H5_FAILED();
+                HDprintf("    copied hard link's object address of %llu doesn't match original link's object address of %llu\n",
+                        (unsigned long long) new_info.u.address, (unsigned long long) orig_info.u.address);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (new_info.corder_valid != orig_info.corder_valid) {
+                H5_FAILED();
+                HDprintf("    copied link's 'corder_valid' field doesn't match original link's 'corder_valid' field\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (new_info.corder_valid && orig_info.corder_valid && (new_info.corder != orig_info.corder)) {
+                H5_FAILED();
+                HDprintf("    copied link's creation order value %lld doesn't match original link's creation order value %lld\n",
+                        new_info.corder, orig_info.corder);
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            if (new_info.cset != orig_info.cset) {
+                H5_FAILED();
+                HDprintf("    copied link's character set doesn't match original link's character set\n");
+                PART_ERROR(H5Lcopy_hard_check);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_hard_check);
+
+        PART_BEGIN(H5Lcopy_hard_same_loc) {
+            TESTING_2("H5Lcopy on hard link using H5L_SAME_LOC")
+
+            /* Try to copy a hard link */
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", COPY_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist\n");
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            /* Verify the links don't currently exist in the target group */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME2);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            /* Copy the link using H5L_SAME_LOC as the first parameter to H5Lcopy */
+            if (H5Lcopy(H5L_SAME_LOC, COPY_LINK_TEST_HARD_LINK_NAME3, src_grp_id,
+                    COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy hard link '%s' using H5L_SAME_LOC as first parameter to H5Lcopy\n", COPY_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            /* Copy the link using H5L_SAME_LOC as the third parameter to H5Lcopy */
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME3, H5L_SAME_LOC,
+                    COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy hard link '%s' using H5L_SAME_LOC as third parameter to H5Lcopy\n", COPY_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            /* Verify the links have been copied and the original still exist in the source group */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link copy '%s' exists\n", COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link copy did not exist\n");
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link copy '%s' exists\n", COPY_LINK_TEST_HARD_LINK_SAME_LOC_NAME2);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link copy did not exist\n");
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original hard link '%s' exists\n", COPY_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original hard link did not exist\n");
+                PART_ERROR(H5Lcopy_hard_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_hard_same_loc);
+
+        PART_BEGIN(H5Lcopy_soft_no_check) {
+            TESTING_2("H5Lcopy on soft link (copied link's properties not checked)")
 
             /* Try to copy a soft link */
             if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             /* Verify the link has been created */
             if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link did not exist\n");
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             /* Verify the link doesn't currently exist in the target group */
             if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link existed in target group before copy!\n");
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             /* Copy the link */
             if (H5Lcopy(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to copy soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
-            /* Verify the link has been copied */
+            /* Verify the link has been copied and still exists in the source group */
             if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME);
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link copy did not exist\n");
-                PART_ERROR(H5Lcopy_soft);
+                PART_ERROR(H5Lcopy_soft_no_check);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME);
+                PART_ERROR(H5Lcopy_soft_no_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original soft link did not exist\n");
+                PART_ERROR(H5Lcopy_soft_no_check);
             }
 
             PASSED();
-        } PART_END(H5Lcopy_soft);
+        } PART_END(H5Lcopy_soft_no_check);
 
-        /* TODO - There is a problem with this copy test.  I will work on it later. */
-        PART_BEGIN(H5Lcopy_soft_across_files) {
-            TESTING_2("H5Lcopy on soft link across files")
+        PART_BEGIN(H5Lcopy_soft_check) {
+            H5L_info_t orig_info, new_info;
+            char orig_link_val[COPY_LINK_TEST_LINK_VAL_BUF_SIZE];
+            char new_link_val[COPY_LINK_TEST_LINK_VAL_BUF_SIZE];
 
-            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+            TESTING_2("H5Lcopy on soft link (copied link's properties checked)")
 
-            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            /* Try to copy a soft link */
+            if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-                PART_ERROR(H5Lcopy_soft_cross_files);
+                HDprintf("    couldn't create soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
             }
 
-            if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, group_id, COPY_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create the soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lcopy_soft_cross_files);
+                HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link did not exist\n");
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            /* Retrieve the link's info */
+            if (H5Lget_info(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2, &orig_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            /* Retrieve the link's value */
+            if (H5Lget_val(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2,
+                    orig_link_val, COPY_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_soft_check);
             }
 
             /* Copy the link */
-            if (H5Lcopy(group_id, COPY_LINK_TEST_SOFT_LINK_NAME, ext_file_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2, dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to copy soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lcopy_soft_cross_files);
+                HDprintf("    failed to copy soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
             }
 
-            /* Verify the link has been copied */
-            if ((link_exists = H5Lexists(ext_file_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
+            /* Verify the link has been copied and still exists in the source group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME);
-                PART_ERROR(H5Lcopy_soft_cross_files);
+                HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link copy did not exist\n");
-                PART_ERROR(H5Lcopy_soft_cross_files);
+                PART_ERROR(H5Lcopy_soft_check);
             }
 
-            if (H5Fclose(ext_file_id) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
-                PART_ERROR(H5Lcopy_soft_cross_files);
+                HDprintf("    couldn't determine if original soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
             }
 
-            SKIPPED();
-        } PART_END(H5Lcopy_soft_cross_files);
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original soft link did not exist\n");
+                PART_ERROR(H5Lcopy_soft_check);
+            }
 
-        PART_BEGIN(H5Lcopy_external) {
-            TESTING_2("H5Lcopy on external link")
+            /* Retrieve the new link's info */
+            if (H5Lget_info(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME2, &new_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (new_info.type != orig_info.type) {
+                H5_FAILED();
+                HDprintf("    copied link's link type doesn't match original link's type\n");
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (new_info.u.val_size != orig_info.u.val_size) {
+                H5_FAILED();
+                HDprintf("    copied soft link's value size of %llu doesn't match original link's value size of %llu\n",
+                        (unsigned long long) new_info.u.val_size, (unsigned long long) orig_info.u.val_size);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (new_info.corder_valid != orig_info.corder_valid) {
+                H5_FAILED();
+                HDprintf("    copied link's 'corder_valid' field doesn't match original link's 'corder_valid' field\n");
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (new_info.corder_valid && orig_info.corder_valid && (new_info.corder != orig_info.corder)) {
+                H5_FAILED();
+                HDprintf("    copied link's creation order value %lld doesn't match original link's creation order value %lld\n",
+                        new_info.corder, orig_info.corder);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (new_info.cset != orig_info.cset) {
+                H5_FAILED();
+                HDprintf("    copied link's character set doesn't match original link's character set\n");
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            /* Check the soft link's value */
+            if (H5Lget_val(dst_grp_id, COPY_LINK_TEST_SOFT_LINK_COPY_NAME2,
+                    new_link_val, COPY_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            if (HDstrncmp(orig_link_val, new_link_val, COPY_LINK_TEST_LINK_VAL_BUF_SIZE)) {
+                H5_FAILED();
+                HDprintf("    copied soft link's value '%s' doesn't match original link's value '%s'\n",
+                        new_link_val, orig_link_val);
+                PART_ERROR(H5Lcopy_soft_check);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_soft_check);
+
+        PART_BEGIN(H5Lcopy_soft_same_loc) {
+            TESTING_2("H5Lcopy on soft link using H5L_SAME_LOC")
+
+            /* Try to copy a soft link */
+            if (H5Lcreate_soft(COPY_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id,
+                    COPY_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", COPY_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link did not exist\n");
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            /* Verify the links don't currently exist in the target group */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME2);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            /* Copy the link using H5L_SAME_LOC as the first parameter to H5Lcopy */
+            if (H5Lcopy(H5L_SAME_LOC, COPY_LINK_TEST_SOFT_LINK_NAME3, src_grp_id,
+                    COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy soft link '%s' using H5L_SAME_LOC as first parameter to H5Lcopy\n", COPY_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            /* Copy the link using H5L_SAME_LOC as the third parameter to H5Lcopy */
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME3, H5L_SAME_LOC,
+                    COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy soft link '%s' using H5L_SAME_LOC as third parameter to H5Lcopy\n", COPY_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            /* Verify the links have been copied and the original still exists in the source group */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link copy did not exist\n");
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' copy exists\n", COPY_LINK_TEST_SOFT_LINK_SAME_LOC_NAME2);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link copy did not exist\n");
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original soft link '%s' exists\n", COPY_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original soft link did not exist\n");
+                PART_ERROR(H5Lcopy_soft_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_soft_same_loc);
+
+        PART_BEGIN(H5Lcopy_external_no_check) {
+            TESTING_2("H5Lcopy on external link (copied link's properties not checked)")
 
             HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
             if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             if (H5Fclose(ext_file_id) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't close file '%s'\n", ext_link_filename);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             /* Try to copy an external link */
             if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             /* Verify the link has been created */
             if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    external link did not exist\n");
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             /* Verify the link doesn't currently exist in the target group */
             if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    external link existed in target group before copy!\n");
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             /* Copy the link */
             if (H5Lcopy(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to copy external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
-            /* Verify the link has been copied */
+            /* Verify the link has been copied and still exists in the source group */
             if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if external link copy '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME);
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    external link copy did not exist\n");
-                PART_ERROR(H5Lcopy_external);
+                PART_ERROR(H5Lcopy_external_no_check);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME);
+                PART_ERROR(H5Lcopy_external_no_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original external link did not exist\n");
+                PART_ERROR(H5Lcopy_external_no_check);
             }
 
             PASSED();
-        } PART_END(H5Lcopy_external);
+        } PART_END(H5Lcopy_external_no_check);
 
         H5E_BEGIN_TRY {
             H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
         } H5E_END_TRY;
 
-        PART_BEGIN(H5Lcopy_ud) {
-            TESTING_2("H5Lcopy on user-defined link")
+        PART_BEGIN(H5Lcopy_external_check) {
+            H5L_info_t orig_info, new_info;
+            unsigned unpack_flags = 0;
+            char orig_link_val[COPY_LINK_TEST_LINK_VAL_BUF_SIZE];
+            char new_link_val[COPY_LINK_TEST_LINK_VAL_BUF_SIZE];
+            char *orig_filename, *new_filename;
+            char *orig_objname, *new_objname;
+
+            TESTING_2("H5Lcopy on external link (copied link's properties checked)")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Try to copy an external link */
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Retrieve the link's info */
+            if (H5Lget_info(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2, &orig_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Retrieve the link's value */
+            if (H5Lget_val(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2,
+                    orig_link_val, COPY_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (H5Lunpack_elink_val(orig_link_val, orig_info.u.val_size, &unpack_flags,
+                    &orig_filename, &orig_objname) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't unpack original external link's value buffer\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Copy the link */
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2, dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Verify the link has been copied and still exists in the source group */
+            if ((link_exists = H5Lexists(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link copy '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link copy did not exist\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original external link did not exist\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Retrieve the new link's info */
+            if (H5Lget_info(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2, &new_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (new_info.type != orig_info.type) {
+                H5_FAILED();
+                HDprintf("    copied link's link type doesn't match original link's type\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (new_info.u.val_size != orig_info.u.val_size) {
+                H5_FAILED();
+                HDprintf("    copied external link's value size of %llu doesn't match original link's value size of %llu\n",
+                        (unsigned long long) new_info.u.val_size, (unsigned long long) orig_info.u.val_size);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (new_info.corder_valid != orig_info.corder_valid) {
+                H5_FAILED();
+                HDprintf("    copied link's 'corder_valid' field doesn't match original link's 'corder_valid' field\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (new_info.corder_valid && orig_info.corder_valid && (new_info.corder != orig_info.corder)) {
+                H5_FAILED();
+                HDprintf("    copied link's creation order value %lld doesn't match original link's creation order value %lld\n",
+                        new_info.corder, orig_info.corder);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (new_info.cset != orig_info.cset) {
+                H5_FAILED();
+                HDprintf("    copied link's character set doesn't match original link's character set\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            /* Check the external link's value */
+            if (H5Lget_val(dst_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2,
+                    new_link_val, COPY_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_COPY_NAME2);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (H5Lunpack_elink_val(new_link_val, new_info.u.val_size, &unpack_flags,
+                    &new_filename, &new_objname) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't unpack copied external link's value buffer\n");
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (HDstrncmp(new_filename, orig_filename, strlen(orig_filename)) < 0) {
+                H5_FAILED();
+                HDprintf("    copied external link's filename '%s' doesn't match original external link's filename '%s'\n",
+                        new_filename, orig_filename);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            if (HDstrncmp(new_objname, orig_objname, strlen(orig_objname)) < 0) {
+                H5_FAILED();
+                HDprintf("    copied external link's object name '%s' doesn't match original external link's object name '%s'\n",
+                        new_objname, orig_objname);
+                PART_ERROR(H5Lcopy_external_check);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_external_check);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lcopy_external_same_loc) {
+            TESTING_2("H5Lcopy on external link using H5L_SAME_LOC")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            /* Try to copy an external link */
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id,
+                    COPY_LINK_TEST_EXTERNAL_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME3);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME3);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            /* Verify the links don't currently exist in the target group */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME2);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before copy!\n");
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            /* Copy the link using H5L_SAME_LOC as the first parameter to H5Lcopy */
+            if (H5Lcopy(H5L_SAME_LOC, COPY_LINK_TEST_EXTERNAL_LINK_NAME3, src_grp_id,
+                    COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy external link '%s' using H5L_SAME_LOC as first parameter to H5Lcopy\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME3);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            /* Copy the link using H5L_SAME_LOC as the third parameter to H5Lcopy */
+            if (H5Lcopy(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME3, H5L_SAME_LOC,
+                    COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to copy external link '%s' using H5L_SAME_LOC as third parameter to H5Lcopy\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME3);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            /* Verify the links have been copied and the original still exists in the source group */
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link copy '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link copy did not exist\n");
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link copy '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_SAME_LOC_NAME2);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link copy did not exist\n");
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, COPY_LINK_TEST_EXTERNAL_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original external link '%s' exists\n", COPY_LINK_TEST_EXTERNAL_LINK_NAME3);
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original external link did not exist\n");
+                PART_ERROR(H5Lcopy_external_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lcopy_external_same_loc);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lcopy_ud_no_check) {
+            TESTING_2("H5Lcopy on user-defined link (copied link's properties not checked)")
 
             /* TODO */
 
             SKIPPED();
-        } PART_END(H5Lcopy_ud);
+        } PART_END(H5Lcopy_ud_no_check);
+
+        PART_BEGIN(H5Lcopy_ud_check) {
+            TESTING_2("H5Lcopy on user-defined link (copied link's properties checked)")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lcopy_ud_check);
+
+        PART_BEGIN(H5Lcopy_ud_same_loc) {
+            TESTING_2("H5Lcopy on user-defined link using H5L_SAME_LOC")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lcopy_ud_same_loc);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -6439,6 +7231,27 @@ error:
     } H5E_END_TRY;
 
     return 1;
+}
+
+/*
+ * A test to check the behavior of copying a link across files.
+ * This should fail for hard links but succeed for soft and
+ * external links (and user-defined links of those types).
+ *
+ * TODO: Ideally, tests should be written to verify that the
+ *       copied links retain the properties of the original
+ *       links.
+ */
+static int
+test_copy_link_across_files(void)
+{
+    TESTING("link copying across files")
+
+    /* TODO */
+
+    SKIPPED();
+
+    return 0;
 }
 
 /*
@@ -6767,322 +7580,1305 @@ test_move_link(void)
     PASSED();
 
     BEGIN_MULTIPART {
-        PART_BEGIN(H5Lmove_hard) {
-            TESTING_2("H5Lmove on hard link")
+        PART_BEGIN(H5Lmove_hard_no_check) {
+            TESTING_2("H5Lmove on hard link (moved link's properties not checked)")
 
             /* Try to move a hard link */
             if (H5Lcreate_hard(group_id, ".", src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create hard link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             /* Verify the link has been created */
             if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link did not exist\n");
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             /* Verify the link doesn't currently exist in the target group */
             if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link existed in target group before move!\n");
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             /* Move the link */
-            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             /* Verify the link has been moved */
             if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link did not exist\n");
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             /* Verify the old link is gone */
             if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    old hard link exists\n");
-                PART_ERROR(H5Lmove_hard);
+                PART_ERROR(H5Lmove_hard_no_check);
             }
 
             PASSED();
-        } PART_END(H5Lmove_hard);
+        } PART_END(H5Lmove_hard_no_check);
 
-        PART_BEGIN(H5Lmove_rename) {
-            TESTING_2("H5Lmove on renaming hard link")
+        PART_BEGIN(H5Lmove_hard_check) {
+            H5L_info_t orig_info, new_info;
 
-            /* Using H5Lmove to rename the hard link without moving it */
-            if (H5Lmove(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5L_SAME_LOC, MOVE_LINK_TEST_HARD_LINK_NEW_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            TESTING_2("H5Lmove on hard link (moved link's properties checked)")
+
+            /* Try to move a hard link */
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_rename);
+                HDprintf("    couldn't create hard link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
             }
 
-            /* Verify the link has been renamed */
-            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if the hard link with the new name '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NEW_NAME);
-                PART_ERROR(H5Lmove_rename);
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    hard link did not exist\n");
-                PART_ERROR(H5Lmove_rename);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            /* Retrieve the link's info */
+            if (H5Lget_info(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, &orig_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            /* Move the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            /* Verify the link has been moved */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist\n");
+                PART_ERROR(H5Lmove_hard_check);
             }
 
             /* Verify the old link is gone */
-            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_rename);
+                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    old hard link exists\n");
-                PART_ERROR(H5Lmove_rename);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            /* Retrieve the moved link's info */
+            if (H5Lget_info(dst_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME2, &new_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME2);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (new_info.type != orig_info.type) {
+                H5_FAILED();
+                HDprintf("    moved link's link type doesn't match original link's type\n");
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (new_info.u.address != orig_info.u.address) {
+                H5_FAILED();
+                HDprintf("    moved hard link's object address of %llu doesn't match original link's object address of %llu\n",
+                        (unsigned long long) new_info.u.address, (unsigned long long) orig_info.u.address);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (new_info.corder_valid != orig_info.corder_valid) {
+                H5_FAILED();
+                HDprintf("    moved link's 'corder_valid' field doesn't match original link's 'corder_valid' field\n");
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (new_info.corder_valid && orig_info.corder_valid && (new_info.corder != orig_info.corder)) {
+                H5_FAILED();
+                HDprintf("    moved link's creation order value %lld doesn't match original link's creation order value %lld\n",
+                        new_info.corder, orig_info.corder);
+                PART_ERROR(H5Lmove_hard_check);
+            }
+
+            if (new_info.cset != orig_info.cset) {
+                H5_FAILED();
+                HDprintf("    moved link's character set doesn't match original link's character set\n");
+                PART_ERROR(H5Lmove_hard_check);
             }
 
             PASSED();
-        } PART_END(H5Lmove_rename);
+        } PART_END(H5Lmove_hard_check);
 
-        PART_BEGIN(H5Lmove_soft) {
-            TESTING_2("H5Lmove on soft link")
+        PART_BEGIN(H5Lmove_hard_same_loc) {
+            TESTING_2("H5Lmove on hard link using H5L_SAME_LOC")
+
+            /* Try to move a hard link */
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist\n");
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            /* Rename the link using H5L_SAME_LOC as the first parameter to H5Lmove */
+            if (H5Lmove(H5L_SAME_LOC, MOVE_LINK_TEST_HARD_LINK_NAME3, src_grp_id,
+                    MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s' using H5L_SAME_LOC as first parameter to H5Lmove\n", MOVE_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            /* Ensure the link has been renamed */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    original hard link existed in target group after move!\n");
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist after move!\n");
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            /* Rename the link back using H5L_SAME_LOC as the third parameter to H5Lmove */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5L_SAME_LOC,
+                    MOVE_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s' using H5L_SAME_LOC as third parameter to H5Lmove\n", MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            /* Verify the link has been renamed back */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME3);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original hard link did not exist after moving the link back!\n");
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed hard link exists after moving the link back!\n");
+                PART_ERROR(H5Lmove_hard_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_hard_same_loc);
+
+        PART_BEGIN(H5Lmove_hard_rename) {
+            TESTING_2("H5Lmove to rename hard link without moving it")
+
+            /* Try to rename a hard link */
+            if (H5Lcreate_hard(group_id, ".", src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME4, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create hard link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME4);
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME4, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME4);
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    hard link did not exist\n");
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            /* Verify the renamed link doesn't currently exist in the source group */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if renamed hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed hard link existed in source group before move!\n");
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            /* Rename the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME4, src_grp_id, MOVE_LINK_TEST_HARD_LINK_NEW_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to rename link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME4);
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            /* Verify the link has been renamed */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if renamed hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed hard link did not exist\n");
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_HARD_LINK_NAME4, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME4);
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old hard link exists\n");
+                PART_ERROR(H5Lmove_hard_rename);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_hard_rename);
+
+        PART_BEGIN(H5Lmove_soft_no_check) {
+            TESTING_2("H5Lmove on soft link (moved link's properties not checked)")
 
             /* Try to move a soft link */
             if (H5Lcreate_soft(MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             /* Verify the link has been created */
             if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link did not exist\n");
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             /* Verify the link doesn't currently exist in the target group */
             if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link existed in target group before move!\n");
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             /* Move the link */
-            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             /* Verify the link has been moved */
             if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link did not exist\n");
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             /* Verify the old link is gone */
             if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    old soft link exists\n");
-                PART_ERROR(H5Lmove_soft);
+                PART_ERROR(H5Lmove_soft_no_check);
             }
 
             PASSED();
-        } PART_END(H5Lmove_soft);
+        } PART_END(H5Lmove_soft_no_check);
 
-        PART_BEGIN(H5Lmove_soft_across_files) {
-            TESTING_2("H5Lmove on soft link to another file")
+        PART_BEGIN(H5Lmove_soft_check) {
+            H5L_info_t orig_info, new_info;
+            char orig_link_val[MOVE_LINK_TEST_LINK_VAL_BUF_SIZE];
+            char new_link_val[MOVE_LINK_TEST_LINK_VAL_BUF_SIZE];
 
-            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            TESTING_2("H5Lmove on soft link (moved link's properties checked)")
+
+            /* Try to move a soft link */
+            if (H5Lcreate_soft(MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-                PART_ERROR(H5Lmove_soft_across_files);
+                HDprintf("    couldn't create soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
             }
 
-            /* Move the soft link to another file */
-            if (H5Lmove(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, ext_file_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft_across_files);
-            }
-
-            /* Verify the link has been moved */
-            if ((link_exists = H5Lexists(ext_file_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NEW_NAME);
-                PART_ERROR(H5Lmove_soft_across_files);
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
             }
 
             if (!link_exists) {
                 H5_FAILED();
                 HDprintf("    soft link did not exist\n");
-                PART_ERROR(H5Lmove_soft_across_files);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            /* Retrieve the link's info */
+            if (H5Lget_info(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, &orig_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            /* Retrieve the link's value */
+            if (H5Lget_val(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2,
+                    orig_link_val, MOVE_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            /* Move the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            /* Verify the link has been moved */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link did not exist\n");
+                PART_ERROR(H5Lmove_soft_check);
             }
 
             /* Verify the old link is gone */
-            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME);
-                PART_ERROR(H5Lmove_soft);
+                HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
             }
 
             if (link_exists) {
                 H5_FAILED();
                 HDprintf("    old soft link exists\n");
-                PART_ERROR(H5Lmove_soft_across_files);
+                PART_ERROR(H5Lmove_soft_check);
             }
 
-            if (H5Fclose(ext_file_id) < 0) {
+            /* Retrieve the moved link's info */
+            if (H5Lget_info(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2, &new_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't close a file\n");
-                PART_ERROR(H5Lmove_soft_across_files);
+                HDprintf("    couldn't retrieve info for link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (new_info.type != orig_info.type) {
+                H5_FAILED();
+                HDprintf("    moved link's link type doesn't match original link's type\n");
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (new_info.u.val_size != orig_info.u.val_size) {
+                H5_FAILED();
+                HDprintf("    moved soft link's value size of %llu doesn't match original link's value size of %llu\n",
+                        (unsigned long long) new_info.u.val_size, (unsigned long long) orig_info.u.val_size);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (new_info.corder_valid != orig_info.corder_valid) {
+                H5_FAILED();
+                HDprintf("    moved link's 'corder_valid' field doesn't match original link's 'corder_valid' field\n");
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (new_info.corder_valid && orig_info.corder_valid && (new_info.corder != orig_info.corder)) {
+                H5_FAILED();
+                HDprintf("    moved link's creation order value %lld doesn't match original link's creation order value %lld\n",
+                        new_info.corder, orig_info.corder);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (new_info.cset != orig_info.cset) {
+                H5_FAILED();
+                HDprintf("    moved link's character set doesn't match original link's character set\n");
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            /* Check the soft link's value */
+            if (H5Lget_val(dst_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME2,
+                    new_link_val, MOVE_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME2);
+                PART_ERROR(H5Lmove_soft_check);
+            }
+
+            if (HDstrncmp(orig_link_val, new_link_val, MOVE_LINK_TEST_LINK_VAL_BUF_SIZE)) {
+                H5_FAILED();
+                HDprintf("    moved soft link's value '%s' doesn't match original link's value '%s'\n",
+                        new_link_val, orig_link_val);
+                PART_ERROR(H5Lmove_soft_check);
             }
 
             PASSED();
-        } PART_END(H5Lmove_soft_across_files);
+        } PART_END(H5Lmove_soft_check);
 
-#if 0
-        /* TODO - There is a problem with this test.  I'll fix it later. - Ray */
-        PART_BEGIN(H5Lmove_external) {
-            TESTING_2("H5Lmove on external link")
+        PART_BEGIN(H5Lmove_soft_same_loc) {
+            TESTING_2("H5Lmove on soft link using H5L_SAME_LOC")
 
-            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            /* Try to move a soft link */
+            if (H5Lcreate_soft(MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
-                PART_ERROR(H5Lmove_external);
-            }
-
-            /* Try to move a hard link */
-            if (H5Lcreate_external(ext_link_filename, "/", group_id,
-                MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't create external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
-                PART_ERROR(H5Lmove_external);
+                HDprintf("    couldn't create soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lmove_soft_same_loc);
             }
 
             /* Verify the link has been created */
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_external);
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lmove_soft_same_loc);
             }
 
             if (!link_exists) {
                 H5_FAILED();
-                HDprintf("    external link did not exist\n");
-                PART_ERROR(H5Lmove_external);
+                HDprintf("    soft link did not exist\n");
+                PART_ERROR(H5Lmove_soft_same_loc);
             }
 
-            /* Move the link */
-            if (H5Lmove(group_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, ext_file_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_HARD_LINK_NAME);
-                PART_ERROR(H5Lmove_external);
-            }
-
-            /* Verify the link has been moved */
-            if ((link_exists = H5Lexists(ext_file_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't determine if hard link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME);
-                PART_ERROR(H5Lmove_external);
-            }
-
-            if (!link_exists) {
-                H5_FAILED();
-                HDprintf("    external link did not exist\n");
-                PART_ERROR(H5Lmove_external);
-            }
-
-            /* Verify the old link is gone */
-            if ((link_exists = H5Lexists(file_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't determine if old hard link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
-                PART_ERROR(H5Lmove_external);
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_soft_same_loc);
             }
 
             if (link_exists) {
                 H5_FAILED();
-                HDprintf("    old hard link exists\n");
-                PART_ERROR(H5Lmove_external);
+                HDprintf("    soft link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            /* Rename the link using H5L_SAME_LOC as the first parameter to H5Lmove */
+            if (H5Lmove(H5L_SAME_LOC, MOVE_LINK_TEST_SOFT_LINK_NAME3, src_grp_id,
+                    MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s' using H5L_SAME_LOC as first parameter to H5Lmove\n", MOVE_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            /* Ensure the link has been renamed */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    original soft link existed in target group after move!\n");
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link did not exist after move!\n");
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            /* Rename the link back using H5L_SAME_LOC as the third parameter to H5Lmove */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5L_SAME_LOC,
+                    MOVE_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s' using H5L_SAME_LOC as third parameter to H5Lmove\n", MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            /* Verify the link has been renamed back */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME3);
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original hard link did not exist after moving the link back!\n");
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed soft link exists after moving the link back!\n");
+                PART_ERROR(H5Lmove_soft_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_soft_same_loc);
+
+        PART_BEGIN(H5Lmove_soft_rename) {
+            TESTING_2("H5Lmove to rename soft link without moving it")
+
+            /* Try to rename a soft link */
+            if (H5Lcreate_soft(MOVE_LINK_TEST_SOFT_LINK_TARGET_PATH, src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME4,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create soft link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME4);
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME4, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME4);
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    soft link did not exist\n");
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            /* Verify the renamed link doesn't currently exist in the source group */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if renamed soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed soft link existed in source group before move!\n");
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            /* Rename the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME4, src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to rename link '%s'\n", MOVE_LINK_TEST_SOFT_LINK_NAME4);
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            /* Verify the link has been renamed */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if renamed soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed soft link did not exist\n");
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_SOFT_LINK_NAME4, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old soft link '%s' exists\n", MOVE_LINK_TEST_SOFT_LINK_NAME4);
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old soft link exists\n");
+                PART_ERROR(H5Lmove_soft_rename);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_soft_rename);
+
+        PART_BEGIN(H5Lmove_external_no_check) {
+            TESTING_2("H5Lmove on external link (moved link's properties not checked)")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_no_check);
             }
 
             if (H5Fclose(ext_file_id) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't close a file\n");
-                PART_ERROR(H5Lmove_external);
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_no_check);
             }
 
-            SKIPPED();
-        } PART_END(H5Lmove_external);
-#endif
+            /* Try to move an external link */
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external_no_check);
+            }
 
-        PART_BEGIN(H5Lmove_ud) {
-            TESTING_2("H5Lmove on user-defined link")
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            /* Move the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            /* Verify the link has been moved */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME);
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old external link exists\n");
+                PART_ERROR(H5Lmove_external_no_check);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_external_no_check);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lmove_external_check) {
+            H5L_info_t orig_info, new_info;
+            unsigned unpack_flags = 0;
+            char orig_link_val[MOVE_LINK_TEST_LINK_VAL_BUF_SIZE];
+            char new_link_val[MOVE_LINK_TEST_LINK_VAL_BUF_SIZE];
+            char *orig_filename, *new_filename;
+            char *orig_objname, *new_objname;
+
+            TESTING_2("H5Lmove on external link (moved link's properties checked)")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Try to move an external link */
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Retrieve the link's info */
+            if (H5Lget_info(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, &orig_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Retrieve the link's value */
+            if (H5Lget_val(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2,
+                    orig_link_val, MOVE_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (H5Lunpack_elink_val(orig_link_val, orig_info.u.val_size, &unpack_flags,
+                    &orig_filename, &orig_objname) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't unpack original external link's value buffer\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Move the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Verify the link has been moved */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old external link exists\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Retrieve the moved link's info */
+            if (H5Lget_info(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2, &new_info, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve info for link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (new_info.type != orig_info.type) {
+                H5_FAILED();
+                HDprintf("    moved link's link type doesn't match original link's type\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (new_info.u.val_size != orig_info.u.val_size) {
+                H5_FAILED();
+                HDprintf("    moved external link's value size of %llu doesn't match original link's value size of %llu\n",
+                        (unsigned long long) new_info.u.val_size, (unsigned long long) orig_info.u.val_size);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (new_info.corder_valid != orig_info.corder_valid) {
+                H5_FAILED();
+                HDprintf("    moved link's 'corder_valid' field doesn't match original link's 'corder_valid' field\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (new_info.corder_valid && orig_info.corder_valid && (new_info.corder != orig_info.corder)) {
+                H5_FAILED();
+                HDprintf("    moved link's creation order value %lld doesn't match original link's creation order value %lld\n",
+                        new_info.corder, orig_info.corder);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (new_info.cset != orig_info.cset) {
+                H5_FAILED();
+                HDprintf("    moved link's character set doesn't match original link's character set\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            /* Check the external link's value */
+            if (H5Lget_val(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME2,
+                    new_link_val, MOVE_LINK_TEST_LINK_VAL_BUF_SIZE, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't retrieve value for external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME2);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (H5Lunpack_elink_val(new_link_val, new_info.u.val_size, &unpack_flags,
+                    &new_filename, &new_objname) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't unpack moved external link's value buffer\n");
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (HDstrncmp(new_filename, orig_filename, strlen(orig_filename)) < 0) {
+                H5_FAILED();
+                HDprintf("    moved external link's filename '%s' doesn't match original external link's filename '%s'\n",
+                        new_filename, orig_filename);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            if (HDstrncmp(new_objname, orig_objname, strlen(orig_objname)) < 0) {
+                H5_FAILED();
+                HDprintf("    moved external link's object name '%s' doesn't match original external link's object name '%s'\n",
+                        new_objname, orig_objname);
+                PART_ERROR(H5Lmove_external_check);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_external_check);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lmove_external_same_loc) {
+            TESTING_2("H5Lmove on external link using H5L_SAME_LOC")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Try to move an external link */
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME3,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME3);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME3);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Verify the link doesn't currently exist in the target group */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    external link existed in target group before move!\n");
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Rename the link using H5L_SAME_LOC as the first parameter to H5Lmove */
+            if (H5Lmove(H5L_SAME_LOC, MOVE_LINK_TEST_EXTERN_LINK_NAME3, src_grp_id,
+                    MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME3);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Ensure the link has been renamed */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME3);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    original external link existed in target group after move!\n");
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist after move!\n");
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Rename the link back using H5L_SAME_LOC as the third parameter to H5Lmove */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME, H5L_SAME_LOC,
+                    MOVE_LINK_TEST_EXTERN_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to move link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            /* Verify the link has been renamed back */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME3);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original external link did not exist after moving the link back!\n");
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_SAME_LOC_NAME);
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed external link exists after moving the link back!\n");
+                PART_ERROR(H5Lmove_external_same_loc);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_external_same_loc);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lmove_external_rename) {
+            TESTING_2("H5Lmove to rename external link without moving it")
+
+            HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
+
+            if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create file '%s' for external link to reference\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            if (H5Fclose(ext_file_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close file '%s'\n", ext_link_filename);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            /* Try to move an external link */
+            if (H5Lcreate_external(ext_link_filename, "/", src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME4,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create external link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME4);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            /* Verify the link has been created */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME4, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME4);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    external link did not exist\n");
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            /* Verify the renamed link doesn't currently exist in the source group */
+            if ((link_exists = H5Lexists(dst_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if renamed external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed external link existed in source group before move!\n");
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            /* Rename the link */
+            if (H5Lmove(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME4, src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME,
+                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to rename link '%s'\n", MOVE_LINK_TEST_EXTERN_LINK_NAME4);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            /* Verify the link has been renamed */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if renamed external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NEW_NAME);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    renamed external link did not exist\n");
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            /* Verify the old link is gone */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_TEST_EXTERN_LINK_NAME4, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if old external link '%s' exists\n", MOVE_LINK_TEST_EXTERN_LINK_NAME4);
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            if (link_exists) {
+                H5_FAILED();
+                HDprintf("    old external link exists\n");
+                PART_ERROR(H5Lmove_external_rename);
+            }
+
+            PASSED();
+        } PART_END(H5Lmove_external_rename);
+
+        H5E_BEGIN_TRY {
+            H5Fclose(ext_file_id); ext_file_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Lmove_ud_no_check) {
+            TESTING_2("H5Lmove on user-defined link (moved link's properties not checked)")
 
             /* TODO */
 
             SKIPPED();
-        } PART_END(H5Lmove_ud);
+        } PART_END(H5Lmove_ud_no_check);
+
+        PART_BEGIN(H5Lmove_ud_check) {
+            TESTING_2("H5Lmove on user-defined link (moved link's properties checked)")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lmove_ud_check);
+
+        PART_BEGIN(H5Lmove_ud_same_loc) {
+            TESTING_2("H5Lmove on user-defined link using H5L_SAME_LOC")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lmove_ud_same_loc);
+
+        PART_BEGIN(H5Lmove_ud_rename) {
+            TESTING_2("H5Lmove to rename user-defined link without moving it")
+
+            /* TODO */
+
+            SKIPPED();
+        } PART_END(H5Lmove_ud_rename);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -7113,6 +8909,26 @@ error:
     } H5E_END_TRY;
 
     return 1;
+}
+
+/*
+ * A test to check the behavior of moving a link across files.
+ * This should fail for hard links but succeed for soft and
+ * external links (and user-defined links of those types).
+ *
+ * TODO: Ideally, tests should be written to verify that the
+ *       moved links retain their original properties.
+ */
+static int
+test_move_link_across_files(void)
+{
+    TESTING("link moving across files")
+
+    /* TODO */
+
+    SKIPPED();
+
+    return 0;
 }
 
 /*
@@ -7663,6 +9479,8 @@ test_get_link_val(void)
 
         PART_BEGIN(H5Lget_val_ud) {
             TESTING_2("H5Lget_val on user-defined link")
+
+            /* TODO */
 
             SKIPPED();
         } PART_END(H5Lget_val_ud);
@@ -9970,6 +11788,8 @@ test_get_link_info(void)
 
         PART_BEGIN(H5Lget_info_ud) {
             TESTING_2("H5Lget_info on user-defined link")
+
+            /* TODO */
 
             SKIPPED();
         } PART_END(H5Lget_info_ud);
@@ -15223,7 +17043,8 @@ error:
 static int
 test_link_iterate_ud_links(void)
 {
-    TESTING_MULTIPART("link iteration (only user-defined links)")
+    TESTING("link iteration (only user-defined links)")
+
     SKIPPED();
 
     return 1;
@@ -16964,7 +18785,8 @@ error:
 static int
 test_link_visit_ud_links_no_cycles(void)
 {
-    TESTING_MULTIPART("link visiting without cycles (only user-defined links)")
+    TESTING("link visiting without cycles (only user-defined links)")
+
     SKIPPED();
 
     return 1;
@@ -18149,7 +19971,8 @@ error:
 static int
 test_link_visit_ud_links_cycles(void)
 {
-    TESTING_MULTIPART("link visiting with cycles (only user-defined links)")
+    TESTING("link visiting with cycles (only user-defined links)")
+
     SKIPPED();
 
     return 1;
