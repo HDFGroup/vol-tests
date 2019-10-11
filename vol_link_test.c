@@ -6871,11 +6871,11 @@ test_copy_link(void)
 
         PART_BEGIN(H5Lcopy_external_check) {
             H5L_info_t orig_info, new_info;
+            const char *orig_filename, *new_filename;
+            const char *orig_objname, *new_objname;
             unsigned unpack_flags = 0;
             char orig_link_val[COPY_LINK_TEST_LINK_VAL_BUF_SIZE];
             char new_link_val[COPY_LINK_TEST_LINK_VAL_BUF_SIZE];
-            char *orig_filename, *new_filename;
-            char *orig_objname, *new_objname;
 
             TESTING_2("H5Lcopy on external link (copied link's properties checked)")
 
@@ -8445,11 +8445,11 @@ test_move_link(void)
 
         PART_BEGIN(H5Lmove_external_check) {
             H5L_info_t orig_info, new_info;
+            const char *orig_filename, *new_filename;
+            const char *orig_objname, *new_objname;
             unsigned unpack_flags = 0;
             char orig_link_val[MOVE_LINK_TEST_LINK_VAL_BUF_SIZE];
             char new_link_val[MOVE_LINK_TEST_LINK_VAL_BUF_SIZE];
-            char *orig_filename, *new_filename;
-            char *orig_objname, *new_objname;
 
             TESTING_2("H5Lmove on external link (moved link's properties checked)")
 
