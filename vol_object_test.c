@@ -5780,28 +5780,28 @@ object_visit_callback(hid_t o_id, const char *name, const H5O_info_t *object_inf
 
     UNUSED(o_id);
 
-    if (!HDstrcmp(name, ".") &&
+    if (!HDstrncmp(name, ".", strlen(".") + 1) &&
             (counter_val == 0 || counter_val == 4 || counter_val == 8 || counter_val == 12)) {
         if (H5O_TYPE_GROUP == object_info->type)
             goto done;
         else
             HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
     }
-    else if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME) &&
+    else if (!HDstrncmp(name, OBJECT_VISIT_TEST_GROUP_NAME, strlen(OBJECT_VISIT_TEST_GROUP_NAME) + 1) &&
             (counter_val == 2 || counter_val == 6 || counter_val == 9 || counter_val == 15)) {
         if (H5O_TYPE_GROUP == object_info->type)
             goto done;
         else
             HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
     }
-    else if (!HDstrcmp(name, OBJECT_VISIT_TEST_DSET_NAME) &&
+    else if (!HDstrncmp(name, OBJECT_VISIT_TEST_DSET_NAME, strlen(OBJECT_VISIT_TEST_DSET_NAME) + 1) &&
             (counter_val == 1 || counter_val == 7 || counter_val == 10 || counter_val == 14)) {
         if (H5O_TYPE_DATASET == object_info->type)
             goto done;
         else
             HDprintf("    type for object '%s' was not H5O_TYPE_DATASET\n", name);
     }
-    else if (!HDstrcmp(name, OBJECT_VISIT_TEST_TYPE_NAME) &&
+    else if (!HDstrncmp(name, OBJECT_VISIT_TEST_TYPE_NAME, strlen(OBJECT_VISIT_TEST_TYPE_NAME) + 1) &&
             (counter_val == 3 || counter_val == 5 || counter_val == 11 || counter_val == 13)) {
         if (H5O_TYPE_NAMED_DATATYPE == object_info->type)
             goto done;
@@ -5830,7 +5830,7 @@ object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *objec
     UNUSED(o_id);
     UNUSED(op_data);
 
-    if (HDstrcmp(name, ".")) {
+    if (HDstrncmp(name, ".", strlen(".") + 1)) {
         HDprintf("    object '%s' didn't match known names\n", name);
         return -1;
     }
@@ -5854,7 +5854,7 @@ object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *obje
     UNUSED(o_id);
     UNUSED(op_data);
 
-    if (HDstrcmp(name, ".")) {
+    if (HDstrncmp(name, ".", strlen(".") + 1)) {
         HDprintf("    object '%s' didn't match known names\n", name);
         return -1;
     }
@@ -5879,9 +5879,9 @@ object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *o
     UNUSED(object_info);
     UNUSED(op_data);
 
-    if (   !HDstrcmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1)
-        || !HDstrcmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2)
-        || !HDstrcmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3)) {
+    if (   !HDstrncmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1, strlen(OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1) + 1)
+        || !HDstrncmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2, strlen(OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2) + 1)
+        || !HDstrncmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3, strlen(OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3) + 1)) {
         HDprintf("    object visit callback should not have been called on a dangling soft link!\n");
         ret_val = -1;
     }

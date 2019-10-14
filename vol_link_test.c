@@ -9359,7 +9359,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_soft);
             }
 
-            if (HDstrcmp(link_val_buf, link_target)) {
+            if (HDstrncmp(link_val_buf, link_target, link_val_size)) {
                 H5_FAILED();
                 HDprintf("    soft link value did not match\n");
                 PART_ERROR(H5Lget_val_soft);
@@ -9451,13 +9451,13 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_external);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n", ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_external);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name, strlen(ext_obj_name) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n", ext_link_val, ext_obj_name);
                 PART_ERROR(H5Lget_val_external);
@@ -9584,7 +9584,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_a)) {
+            if (HDstrncmp(link_val_buf, link_target_a, strlen(link_target_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 0, link_target_a);
@@ -9615,7 +9615,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_b)) {
+            if (HDstrncmp(link_val_buf, link_target_b, strlen(link_target_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 1, link_target_b);
@@ -9646,7 +9646,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_c)) {
+            if (HDstrncmp(link_val_buf, link_target_c, strlen(link_target_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 2, link_target_c);
@@ -9761,7 +9761,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_a)) {
+            if (HDstrncmp(link_val_buf, link_target_a, strlen(link_target_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 2, link_target_a);
@@ -9792,7 +9792,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_b)) {
+            if (HDstrncmp(link_val_buf, link_target_b, strlen(link_target_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 1, link_target_b);
@@ -9823,7 +9823,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_c)) {
+            if (HDstrncmp(link_val_buf, link_target_c, strlen(link_target_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 0, link_target_c);
@@ -9938,7 +9938,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_name_order_increasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_a)) {
+            if (HDstrncmp(link_val_buf, link_target_a, strlen(link_target_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 0, link_target_a);
@@ -9969,7 +9969,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_name_order_increasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_b)) {
+            if (HDstrncmp(link_val_buf, link_target_b, strlen(link_target_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 1, link_target_b);
@@ -10000,7 +10000,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_name_order_increasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_c)) {
+            if (HDstrncmp(link_val_buf, link_target_c, strlen(link_target_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 2, link_target_c);
@@ -10115,7 +10115,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_a)) {
+            if (HDstrncmp(link_val_buf, link_target_a, strlen(link_target_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 2, link_target_a);
@@ -10146,7 +10146,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_b)) {
+            if (HDstrncmp(link_val_buf, link_target_b, strlen(link_target_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 1, link_target_b);
@@ -10177,7 +10177,7 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_soft_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_val_buf, link_target_c)) {
+            if (HDstrncmp(link_val_buf, link_target_c, strlen(link_target_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    link value '%s' for link at index %lld did not match expected value '%s'\n",
                         link_val_buf, 0, link_target_c);
@@ -10316,14 +10316,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_a)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_a, strlen(ext_obj_name_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_a);
@@ -10361,14 +10361,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_b)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_b, strlen(ext_obj_name_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_b);
@@ -10406,14 +10406,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_c)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_c, strlen(ext_obj_name_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_c);
@@ -10553,14 +10553,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_a)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_a, strlen(ext_obj_name_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_a);
@@ -10598,14 +10598,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_b)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_b, strlen(ext_obj_name_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_b);
@@ -10643,14 +10643,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_c)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_c, strlen(ext_obj_name_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_c);
@@ -10790,14 +10790,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_a)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_a, strlen(ext_obj_name_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_a);
@@ -10835,14 +10835,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_b)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_b, strlen(ext_obj_name_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_b);
@@ -10880,14 +10880,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_c)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_c, strlen(ext_obj_name_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_c);
@@ -11027,14 +11027,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_a)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_a, strlen(ext_obj_name_a) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_a);
@@ -11072,14 +11072,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_b)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_b, strlen(ext_obj_name_b) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_b);
@@ -11117,14 +11117,14 @@ test_get_link_val(void)
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_filepath, ext_link_filename)) {
+            if (HDstrncmp(ext_link_filepath, ext_link_filename, strlen(ext_link_filename) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link target file '%s' did not match expected '%s'\n",
                         ext_link_filepath, ext_link_filename);
                 PART_ERROR(H5Lget_val_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(ext_link_val, ext_obj_name_c)) {
+            if (HDstrncmp(ext_link_val, ext_obj_name_c, strlen(ext_obj_name_c) + 1)) {
                 H5_FAILED();
                 HDprintf("    external link value '%s' did not match expected '%s'\n",
                         ext_link_val, ext_obj_name_c);
@@ -14256,7 +14256,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3);
@@ -14277,7 +14277,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2);
@@ -14298,7 +14298,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME);
@@ -14400,7 +14400,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME);
@@ -14421,7 +14421,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2);
@@ -14442,7 +14442,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3);
@@ -14544,7 +14544,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME);
@@ -14565,7 +14565,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2);
@@ -14586,7 +14586,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3);
@@ -14688,7 +14688,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME3);
@@ -14709,7 +14709,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME2);
@@ -14730,7 +14730,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME, strlen(GET_LINK_NAME_TEST_HARD_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_HARD_LINK_NAME);
@@ -14835,7 +14835,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3);
@@ -14856,7 +14856,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2);
@@ -14877,7 +14877,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME);
@@ -14982,7 +14982,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME);
@@ -15003,7 +15003,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2);
@@ -15024,7 +15024,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3);
@@ -15129,7 +15129,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME);
@@ -15150,7 +15150,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2);
@@ -15171,7 +15171,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3);
@@ -15276,7 +15276,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME3);
@@ -15297,7 +15297,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME2);
@@ -15318,7 +15318,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME, strlen(GET_LINK_NAME_TEST_SOFT_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_SOFT_LINK_NAME);
@@ -15438,7 +15438,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3);
@@ -15459,7 +15459,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2);
@@ -15480,7 +15480,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME);
@@ -15601,7 +15601,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME);
@@ -15622,7 +15622,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2);
@@ -15643,7 +15643,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3);
@@ -15764,7 +15764,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME);
@@ -15785,7 +15785,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2);
@@ -15806,7 +15806,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_increasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3);
@@ -15927,7 +15927,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME3);
@@ -15948,7 +15948,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME2);
@@ -15969,7 +15969,7 @@ test_get_link_name(void)
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_decreasing);
             }
 
-            if (HDstrcmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME)) {
+            if (HDstrncmp(link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME, strlen(GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME) + 1)) {
                 H5_FAILED();
                 HDprintf("    link name '%s' did not match expected name '%s'\n",
                         link_name_buf, GET_LINK_NAME_TEST_EXTERNAL_LINK_NAME);
@@ -21055,7 +21055,7 @@ link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info_t *inf
     size_t  counter_val = *((size_t *) op_data);
     herr_t  ret_val = 0;
 
-    if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME) &&
+    if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME) + 1) &&
             (counter_val == 1 || counter_val == 4 || counter_val == 6 || counter_val == 11)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21064,7 +21064,7 @@ link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info_t *inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME) &&
+    else if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME) + 1) &&
             (counter_val == 2 || counter_val == 3 || counter_val == 7 || counter_val == 10)) {
         if (H5L_TYPE_SOFT != info->type) {
             ret_val = -1;
@@ -21073,7 +21073,7 @@ link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info_t *inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME) &&
+    else if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME) + 1) &&
             (counter_val == 0 || counter_val == 5 || counter_val == 8 || counter_val == 9)) {
         if (H5L_TYPE_EXTERNAL != info->type) {
             ret_val = -1;
@@ -21134,25 +21134,25 @@ link_iter_idx_saving_cb(hid_t group_id, const char *name, const H5L_info_t *info
 
     UNUSED(group_id);
 
-    if (broken && !*broken && !HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME)) {
+    if (broken && !*broken && !HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME) + 1)) {
         return (*broken = 1);
     }
 
-    if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME)) {
+    if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME) + 1)) {
         if (H5L_TYPE_HARD != info->type) {
             H5_FAILED();
             HDprintf("    link type did not match\n");
             goto error;
         }
     }
-    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME)) {
+    else if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_SOFT_LINK_NAME) + 1)) {
         if (H5L_TYPE_SOFT != info->type) {
             H5_FAILED();
             HDprintf("    link type did not match\n");
             goto error;
         }
     }
-    else if (!HDstrcmp(name, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME)) {
+    else if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_EXT_LINK_NAME) + 1)) {
         if (H5L_TYPE_EXTERNAL != info->type) {
             H5_FAILED();
             HDprintf("    link type did not match\n");
@@ -21496,7 +21496,8 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
     UNUSED(group_id);
     UNUSED(op_data);
 
-    if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1) &&
+    if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1,
+                  strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME1) + 1) &&
             (counter_val == 2 || counter_val == 14 || counter_val == 18 || counter_val == 30)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21506,7 +21507,8 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2,
+                       strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME2) + 1) &&
             (counter_val == 3 || counter_val == 13 || counter_val == 19 || counter_val == 29)) {
         if (H5L_TYPE_SOFT != info->type) {
             ret_val = -1;
@@ -21516,7 +21518,8 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3,
+                       strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME3) + 1) &&
             (counter_val == 6 || counter_val == 10 || counter_val == 22 || counter_val == 26)) {
         if (H5L_TYPE_EXTERNAL != info->type) {
             ret_val = -1;
@@ -21526,7 +21529,8 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4,
+                       strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_LINK_NAME4) + 1) &&
             (counter_val == 7 || counter_val == 9 || counter_val == 23 || counter_val == 25)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21536,7 +21540,8 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME,
+                       strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME) + 1) &&
             (counter_val == 1 || counter_val == 15 || counter_val == 17 || counter_val == 31)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21546,7 +21551,8 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2,
+                       strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_DSET_NAME2) + 1) &&
             (counter_val == 5 || counter_val == 11 || counter_val == 21 || counter_val == 27)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21556,7 +21562,7 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2, strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME2) + 1) &&
             (counter_val == 0 || counter_val == 12 || counter_val == 16 || counter_val == 28)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21566,7 +21572,7 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3, strlen(LINK_VISIT_MIXED_LINKS_NO_CYCLE_TEST_SUBGROUP_NAME3) + 1) &&
             (counter_val == 4 || counter_val == 8 || counter_val == 20 || counter_val == 24)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21912,7 +21918,8 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
     UNUSED(group_id);
     UNUSED(op_data);
 
-    if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1) &&
+    if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1,
+                 strlen(LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME1) + 1) &&
             (counter_val == 1 || counter_val == 11 || counter_val == 13 || counter_val == 23)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21922,7 +21929,8 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2,
+                       strlen(LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME2) + 1) &&
             (counter_val == 2 || counter_val == 10 || counter_val == 14 || counter_val == 22)) {
         if (H5L_TYPE_SOFT != info->type) {
             ret_val = -1;
@@ -21932,7 +21940,8 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3,
+                       strlen(LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME3) + 1) &&
             (counter_val == 4 || counter_val == 8 || counter_val == 16 || counter_val == 20)) {
         if (H5L_TYPE_EXTERNAL != info->type) {
             ret_val = -1;
@@ -21942,7 +21951,8 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4,
+                       strlen(LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3 "/" LINK_VISIT_MIXED_LINKS_CYCLE_TEST_LINK_NAME4) + 1) &&
             (counter_val == 5 || counter_val == 7 || counter_val == 17 || counter_val == 19)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21952,7 +21962,7 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2, strlen(LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME2) + 1) &&
             (counter_val == 0 || counter_val == 9 || counter_val == 12 || counter_val == 21)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;
@@ -21961,7 +21971,7 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
 
         goto done;
     }
-    else if (!HDstrcmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3) &&
+    else if (!HDstrncmp(name, LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3, strlen(LINK_VISIT_MIXED_LINKS_CYCLE_TEST_SUBGROUP_NAME3) + 1) &&
             (counter_val == 3 || counter_val == 6 || counter_val == 15 || counter_val == 18)) {
         if (H5L_TYPE_HARD != info->type) {
             ret_val = -1;

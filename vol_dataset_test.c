@@ -3302,7 +3302,7 @@ test_dataset_property_lists(void)
                     PART_ERROR(H5Dget_access_plist);
                 }
 
-                if (HDstrcmp(tmp_prefix, path_prefix)) {
+                if (HDstrncmp(tmp_prefix, path_prefix, buf_size + 1)) {
                     H5_FAILED();
                     HDprintf("    DAPL values were incorrect!\n");
                     PART_ERROR(H5Dget_access_plist);
@@ -3316,7 +3316,7 @@ test_dataset_property_lists(void)
                     PART_ERROR(H5Dget_access_plist);
                 }
 
-                if (!HDstrcmp(tmp_prefix, path_prefix)) {
+                if (!HDstrncmp(tmp_prefix, path_prefix, buf_size + 1)) {
                     H5_FAILED();
                     HDprintf("    DAPL property value was set!\n");
                     PART_ERROR(H5Dget_access_plist);
