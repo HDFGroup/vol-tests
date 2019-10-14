@@ -36,12 +36,16 @@ static int test_create_external_link_invalid_params(void);
 static int test_create_user_defined_link(void);
 static int test_create_user_defined_link_invalid_params(void);
 static int test_delete_link(void);
+static int test_delete_link_reset_grp_max_crt_order(void);
 static int test_delete_link_invalid_params(void);
 static int test_copy_link(void);
+static int test_copy_links_into_group_with_links(void);
 static int test_copy_link_across_files(void);
 static int test_copy_link_invalid_params(void);
 static int test_move_link(void);
+static int test_move_links_into_group_with_links(void);
 static int test_move_link_across_files(void);
+static int test_move_link_reset_grp_max_crt_order(void);
 static int test_move_link_invalid_params(void);
 static int test_get_link_val(void);
 static int test_get_link_val_invalid_params(void);
@@ -115,12 +119,16 @@ static int (*link_tests[])(void) = {
         test_create_user_defined_link,
         test_create_user_defined_link_invalid_params,
         test_delete_link,
+        test_delete_link_reset_grp_max_crt_order,
         test_delete_link_invalid_params,
         test_copy_link,
+        test_copy_links_into_group_with_links,
         test_copy_link_across_files,
         test_copy_link_invalid_params,
         test_move_link,
+        test_move_links_into_group_with_links,
         test_move_link_across_files,
+        test_move_link_reset_grp_max_crt_order,
         test_move_link_invalid_params,
         test_get_link_val,
         test_get_link_val_invalid_params,
@@ -5851,6 +5859,228 @@ error:
     return 1;
 }
 
+/*
+ * A test to check that a group's always-increasing
+ * maximum link creation order value gets reset once
+ * all the links have been deleted from the group.
+ */
+static int
+test_delete_link_reset_grp_max_crt_order(void)
+{
+    H5G_info_t grp_info;
+    size_t     i;
+    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      subgroup_id = H5I_INVALID_HID;
+    hid_t      gcpl_id = H5I_INVALID_HID;
+    char       link_name[LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE];
+
+    TESTING_MULTIPART("H5Ldelete of all links in group resets group's maximum link creation order value")
+
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create GCPL for link creation order tracking\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set link creation order tracking\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART {
+        PART_BEGIN(H5Ldelete_links_bottom_up) {
+            TESTING_2("H5Ldelete from least-recently created link to most-recently created link")
+
+            if ((subgroup_id = H5Gcreate2(group_id, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP1_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP1_NAME);
+                PART_ERROR(H5Ldelete_links_bottom_up);
+            }
+
+            /* Create several links inside the group */
+            for (i = 0; i < LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS; i++) {
+                snprintf(link_name, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE, "link%d", (int) i);
+
+                if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create hard link '%s'\n", link_name);
+                    PART_ERROR(H5Ldelete_links_bottom_up);
+                }
+            }
+
+            /* Delete the links, checking the group's maximum creation order value each time */
+            for (i = 0; i < LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS; i++) {
+                memset(&grp_info, 0, sizeof(grp_info));
+
+                if (H5Gget_info(subgroup_id, &grp_info) < 0) {
+                    H5_FAILED();
+                    HDprintf("    failed to retrieve group's info\n");
+                    PART_ERROR(H5Ldelete_links_bottom_up);
+                }
+
+                if (grp_info.max_corder != LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS) {
+                    H5_FAILED();
+                    HDprintf("    group's maximum creation order value got adjusted to %lld during link deletion; value should have remained at %lld\n",
+                            (long long) grp_info.max_corder, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS);
+                    PART_ERROR(H5Ldelete_links_bottom_up);
+                }
+
+                snprintf(link_name, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE, "link%d", (int) i);
+
+                if (H5Ldelete(subgroup_id, link_name, H5P_DEFAULT) < 0) {
+                    H5_FAILED();
+                    HDprintf("    failed to delete link '%s'\n", link_name);
+                    PART_ERROR(H5Ldelete_links_bottom_up);
+                }
+            }
+
+            /* Ensure the group's maximum creation order value has now reset to 0 after all the links are gone */
+            memset(&grp_info, 0, sizeof(grp_info));
+
+            if (H5Gget_info(subgroup_id, &grp_info) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve group's info\n");
+                PART_ERROR(H5Ldelete_links_bottom_up);
+            }
+
+            if (grp_info.max_corder != 0) {
+                H5_FAILED();
+                HDprintf("    group's maximum creation order value didn't reset to 0 after deleting all links from group; value is still %lld\n",
+                        (long long) grp_info.max_corder);
+                PART_ERROR(H5Ldelete_links_bottom_up);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_links_bottom_up);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+
+        PART_BEGIN(H5Ldelete_links_top_down) {
+            TESTING_2("H5Ldelete from most-recently created link to least-recently created link")
+
+            if ((subgroup_id = H5Gcreate2(group_id, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP2_NAME,
+                    H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't create subgroup '%s'\n", LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP2_NAME);
+                PART_ERROR(H5Ldelete_links_top_down);
+            }
+
+            /* Create several links inside the group */
+            for (i = 0; i < LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS; i++) {
+                snprintf(link_name, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE, "link%d", (int) i);
+
+                if (H5Lcreate_hard(subgroup_id, ".", subgroup_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                    H5_FAILED();
+                    HDprintf("    couldn't create hard link '%s'\n", link_name);
+                    PART_ERROR(H5Ldelete_links_top_down);
+                }
+            }
+
+            /* Delete the links, checking the group's maximum creation order value each time */
+            for (i = 0; i < LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS; i++) {
+                memset(&grp_info, 0, sizeof(grp_info));
+
+                if (H5Gget_info(subgroup_id, &grp_info) < 0) {
+                    H5_FAILED();
+                    HDprintf("    failed to retrieve group's info\n");
+                    PART_ERROR(H5Ldelete_links_top_down);
+                }
+
+                if (grp_info.max_corder != LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS) {
+                    H5_FAILED();
+                    HDprintf("    group's maximum creation order value got adjusted to %lld during link deletion; value should have remained at %lld\n",
+                            (long long) grp_info.max_corder, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS);
+                    PART_ERROR(H5Ldelete_links_top_down);
+                }
+
+                snprintf(link_name, LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE, "link%d", (int) (LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS - i - 1));
+
+                if (H5Ldelete(subgroup_id, link_name, H5P_DEFAULT) < 0) {
+                    H5_FAILED();
+                    HDprintf("    failed to delete link '%s'\n", link_name);
+                    PART_ERROR(H5Ldelete_links_top_down);
+                }
+            }
+
+            /* Ensure the group's maximum creation order value has now reset to 0 after all the links are gone */
+            memset(&grp_info, 0, sizeof(grp_info));
+
+            if (H5Gget_info(subgroup_id, &grp_info) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to retrieve group's info\n");
+                PART_ERROR(H5Ldelete_links_top_down);
+            }
+
+            if (grp_info.max_corder != 0) {
+                H5_FAILED();
+                HDprintf("    group's maximum creation order value didn't reset to 0 after deleting all links from group; value is still %lld\n",
+                        (long long) grp_info.max_corder);
+                PART_ERROR(H5Ldelete_links_top_down);
+            }
+
+            PASSED();
+        } PART_END(H5Ldelete_links_top_down);
+
+        H5E_BEGIN_TRY {
+            H5Gclose(subgroup_id); subgroup_id = H5I_INVALID_HID;
+        } H5E_END_TRY;
+    } END_MULTIPART;
+
+    TESTING_2("test cleanup")
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
 static int
 test_delete_link_invalid_params(void)
 {
@@ -7229,6 +7459,25 @@ error:
         H5Fclose(ext_file_id);
         H5Fclose(file_id);
     } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to check that using H5Lcopy to copy links into a
+ * group which already contains links will cause the new links
+ * to have creation order values ranging from the target group's
+ * maximum link creation order value and upwards. This is to
+ * check that it is not possible to run into the situation where
+ * H5Lcopy might cause a group to have two links with the same
+ * creation order values.
+ */
+static int
+test_copy_links_into_group_with_links(void)
+{
+    TESTING("H5Lcopy adjusting creation order values for copied links")
+
+    SKIPPED();
 
     return 1;
 }
@@ -8912,6 +9161,178 @@ error:
 }
 
 /*
+ * A test to check that using H5Lmove to move links into a
+ * group which already contains links will cause the new links
+ * to have creation order values ranging from the target group's
+ * maximum link creation order value and upwards. This is to
+ * check that it is not possible to run into the situation where
+ * H5Lmove might cause a group to have two links with the same
+ * creation order values.
+ */
+static int
+test_move_links_into_group_with_links(void)
+{
+    H5L_info_t link_info;
+    size_t     i;
+    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
+    hid_t      gcpl_id = H5I_INVALID_HID;
+    char       link_name[MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_BUF_SIZE];
+
+    TESTING("H5Lmove adjusting creation order values for moved links")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create GCPL for link creation order tracking\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set link creation order tracking\n");
+        goto error;
+    }
+
+    if ((src_grp_id = H5Gcreate2(group_id, MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_SRC_GRP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_SRC_GRP_NAME);
+        goto error;
+    }
+
+    if ((dst_grp_id = H5Gcreate2(group_id, MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_DST_GRP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_DST_GRP_NAME);
+        goto error;
+    }
+
+    /* Create several links in the source group */
+    for (i = 0; i < MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_NUM_LINKS; i++) {
+        snprintf(link_name, MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_BUF_SIZE, "link_to_move%d", (int) i);
+
+        if (H5Lcreate_hard(src_grp_id, ".", src_grp_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create link '%s' in source group\n", link_name);
+            goto error;
+        }
+
+        /* Check the current creation order value for each link */
+        memset(&link_info, 0, sizeof(link_info));
+        if (H5Lget_info(src_grp_id, link_name, &link_info, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to retrieve info for link '%s'\n", link_name);
+            goto error;
+        }
+
+        if (!link_info.corder_valid) {
+            H5_FAILED();
+            HDprintf("    creation order value for newly-created link '%s' was marked as not valid!\n", link_name);
+            goto error;
+        }
+
+        if (link_info.corder != (int64_t)i) {
+            H5_FAILED();
+            HDprintf("    creation order value %lld for link '%s' did not match expected value %lld\n",
+                    (long long) link_info.corder, link_name, (long long) i);
+            goto error;
+        }
+    }
+
+    /* Create several links in the destination group */
+    for (i = 0; i < MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_NUM_LINKS; i++) {
+        snprintf(link_name, MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_BUF_SIZE, "link%d", (int) i);
+
+        if (H5Lcreate_hard(dst_grp_id, ".", dst_grp_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create link '%s' in destination group\n", link_name);
+            goto error;
+        }
+    }
+
+    /* Move all the links from the source group into the destination group */
+    for (i = 0; i < MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_NUM_LINKS; i++) {
+        snprintf(link_name, MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_BUF_SIZE, "link_to_move%d", (int) i);
+
+        if (H5Lmove(src_grp_id, link_name, dst_grp_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to move link '%s' from source group to destination group\n");
+            goto error;
+        }
+
+        /* Check that the creation order value for each moved link has been adjusted */
+        memset(&link_info, 0, sizeof(link_info));
+        if (H5Lget_info(dst_grp_id, link_name, &link_info, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to retrieve info for link '%s'\n", link_name);
+            goto error;
+        }
+
+        if (!link_info.corder_valid) {
+            H5_FAILED();
+            HDprintf("    creation order value for moved link '%s' was marked as not valid!\n", link_name);
+            goto error;
+        }
+
+        if (link_info.corder != (int64_t) (i + MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_NUM_LINKS)) {
+            H5_FAILED();
+            HDprintf("    creation order value for moved link '%s' was not adjusted after move! It should have been %lld but was %lld\n",
+                    link_name, (long long) (i + MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_NUM_LINKS), (long long) link_info.corder);
+            goto error;
+        }
+    }
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(dst_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(src_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(dst_grp_id);
+        H5Gclose(src_grp_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
  * A test to check the behavior of moving a link across files.
  * This should fail for hard links but succeed for soft and
  * external links (and user-defined links of those types).
@@ -8929,6 +9350,174 @@ test_move_link_across_files(void)
     SKIPPED();
 
     return 0;
+}
+
+/*
+ * A test to check that a group's always-increasing
+ * maximum link creation order value gets reset once
+ * all the links have been moved out of the group.
+ */
+static int
+test_move_link_reset_grp_max_crt_order(void)
+{
+    H5G_info_t grp_info;
+    size_t     i;
+    hid_t      file_id = H5I_INVALID_HID;
+    hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t      src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
+    hid_t      gcpl_id = H5I_INVALID_HID;
+    char       link_name[MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE];
+
+    TESTING("H5Lmove of all links out of group resets group's maximum link creation order value")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create GCPL for link creation order tracking\n");
+        goto error;
+    }
+
+    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set link creation order tracking\n");
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_SUBGROUP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
+    if ((src_grp_id = H5Gcreate2(group_id, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_SRC_GRP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_SRC_GRP_NAME);
+        goto error;
+    }
+
+    if ((dst_grp_id = H5Gcreate2(group_id, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_DST_GRP_NAME,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_DST_GRP_NAME);
+        goto error;
+    }
+
+    /* Create several links inside the source group */
+    for (i = 0; i < MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS; i++) {
+        snprintf(link_name, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE, "link%d", (int) i);
+
+        if (H5Lcreate_hard(src_grp_id, ".", src_grp_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't create hard link '%s' in source group\n", link_name);
+            goto error;
+        }
+    }
+
+    /*
+     * Move links out of the source group and into the destination group, checking the
+     * source group's maximum creation order value each time.
+     */
+    for (i = 0; i < MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS; i++) {
+        memset(&grp_info, 0, sizeof(grp_info));
+
+        if (H5Gget_info(src_grp_id, &grp_info) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to retrieve source group's info\n");
+            goto error;
+        }
+
+        if (grp_info.max_corder != MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS) {
+            H5_FAILED();
+            HDprintf("    source group's maximum creation order value got adjusted to %lld during link moving; value should have remained at %lld\n",
+                    (long long) grp_info.max_corder, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS);
+            goto error;
+        }
+
+        snprintf(link_name, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE, "link%d", (int) i);
+
+        if (H5Lmove(src_grp_id, link_name, dst_grp_id, link_name, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to move link '%s' to destination group\n", link_name);
+            goto error;
+        }
+    }
+
+    /*
+     * Ensure the source group's maximum creation order value has now
+     * reset to 0 after all the links have been moved out of it.
+     */
+    memset(&grp_info, 0, sizeof(grp_info));
+
+    if (H5Gget_info(src_grp_id, &grp_info) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve source group's info\n");
+        goto error;
+    }
+
+    if (grp_info.max_corder != 0) {
+        H5_FAILED();
+        HDprintf("    source group's maximum creation order value didn't reset to 0 after moving all links out of it; value is still %lld\n",
+                (long long) grp_info.max_corder);
+        goto error;
+    }
+
+    /* For good measure, check that destination group's max. creation order value is as expected */
+    memset(&grp_info, 0, sizeof(grp_info));
+
+    if (H5Gget_info(dst_grp_id, &grp_info) < 0) {
+        H5_FAILED();
+        HDprintf("    failed to retrieve destination group's info\n");
+        goto error;
+    }
+
+    if (grp_info.max_corder != MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS) {
+        H5_FAILED();
+        HDprintf("    destination group's maximum creation order value of %lld didn't match expected value of %lld after moving all links into it\n",
+                (long long) grp_info.max_corder, MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS);
+        goto error;
+    }
+
+    if (H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(dst_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(src_grp_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(gcpl_id);
+        H5Gclose(dst_grp_id);
+        H5Gclose(src_grp_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
 }
 
 /*

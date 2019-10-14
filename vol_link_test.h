@@ -128,6 +128,12 @@ int vol_link_test(void);
 #define LINK_DELETE_TEST_SUBGROUP19_NAME     "H5Ldelete_by_idx_ud_link_name_order_increasing"
 #define LINK_DELETE_TEST_SUBGROUP20_NAME     "H5Ldelete_by_idx_ud_link_name_order_decreasing"
 
+#define LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP_NAME  "H5Ldelete_reset_grp_max_crt_order_test"
+#define LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP1_NAME "H5Ldelete_bottom_up"
+#define LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_SUBGROUP2_NAME "H5Ldelete_top_down"
+#define LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS      5
+#define LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE       1024
+
 #define LINK_DELETE_INVALID_PARAMS_TEST_HARD_LINK_NAME "hard_link"
 #define LINK_DELETE_INVALID_PARAMS_TEST_GROUP_NAME     "link_deletion_invalid_params_test"
 
@@ -188,6 +194,18 @@ int vol_link_test(void);
 #define MOVE_LINK_TEST_SRC_GROUP_NAME            "src_group"
 #define MOVE_LINK_TEST_DST_GROUP_NAME            "dst_group"
 #define MOVE_LINK_TEST_SUBGROUP_NAME             "link_move_test"
+
+#define MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_SUBGROUP_NAME "link_move_into_group_with_links_test"
+#define MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_SRC_GRP_NAME  "source_group"
+#define MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_DST_GRP_NAME  "dest_group"
+#define MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_NUM_LINKS     5
+#define MOVE_LINK_INTO_GRP_WITH_LINKS_TEST_BUF_SIZE      1024
+
+#define MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_SUBGROUP_NAME "H5Lmove_reset_grp_max_crt_order_test"
+#define MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_SRC_GRP_NAME  "source_group"
+#define MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_DST_GRP_NAME  "dest_group"
+#define MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_NUM_LINKS     5
+#define MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE      1024
 
 #define MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME "hard_link"
 #define MOVE_LINK_INVALID_PARAMS_TEST_SRC_GROUP_NAME "src_grp"
