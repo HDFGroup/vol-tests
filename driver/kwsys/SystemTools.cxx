@@ -3317,7 +3317,6 @@ std::string SystemTools::CollapseFullPath(const std::string& in_path,
   // Use the current working directory as a base path.
   char buf[2048];
   const char* res_in_base = in_base;
-  char buf[2048];
   if (!res_in_base) {
     if (const char* cwd = Getcwd(buf, 2048)) {
       res_in_base = cwd;
