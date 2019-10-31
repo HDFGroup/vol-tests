@@ -20,8 +20,8 @@ protected:
     int  ProcessCommandLine(int argc, char *argv[]);
     void CollectConfiguredOptions();
     void CreateCommandLine(std::vector<const char *> &commandLine,
-        const char *cmd, int isServer, const char *numProc, int argStart = 0,
-        int argCount = 0, char *argv[] = 0);
+        const char *cmd, int isServer, int isHelper, const char *numProc,
+        int argStart = 0, int argCount = 0, char *argv[] = 0);
 
     int StartServer(h5vl_test_sysProcess *server, const char *name,
         std::vector<char> &out, std::vector<char> &err);
@@ -40,6 +40,7 @@ protected:
 
 private:
     std::string ClientExecutable;       // fullpath to client executable
+    std::string ClientHelperExecutable; // fullpath to client helper executable
     std::string ServerExecutable;       // fullpath to server executable
     std::string MPIRun;                 // fullpath to mpirun executable
 
@@ -63,10 +64,13 @@ private:
 
     double TimeOut;
     double ServerExitTimeOut;   // time to wait for servers to finish.
+    bool ClientHelper;
     bool TestServer;
 
     int ClientArgStart;
     int ClientArgCount;
+    int ClientHelperArgStart;
+    int ClientHelperArgCount;
     int ServerArgStart;
     int ServerArgCount;
     bool AllowErrorInOutput;
