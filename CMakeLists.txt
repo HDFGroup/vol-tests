@@ -228,18 +228,41 @@ if(NOT HDF5_VOL_TEST_SERVER)
     )
   endif()
 else()
-  # Dynamic client/server test
+  if(HDF5_VOL_TEST_CLIENT_HELPER)
+    set(HDF5_VOL_TEST_CLIENT_HELPER_CMD --client_helper ${HDF5_VOL_TEST_CLIENT_HELPER})
+  endif()
+  # Serial dynamic client/server test
   add_test(NAME "h5vl_test"
     COMMAND $<TARGET_FILE:h5vl_test_driver>
     --server ${HDF5_VOL_TEST_SERVER}
     --client $<TARGET_FILE:h5vl_test>
     --serial
+    ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
   )
+  foreach(ext_vol_test ${HDF5_VOL_EXT_SERIAL_TESTS})
+    add_test(NAME "h5vl_ext_${ext_vol_test}"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:${ext_vol_test}>
+      --serial
+      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
+    )
+  endforeach()
+  # Parallel dynamic client/server test
   if(HDF5_VOL_TEST_ENABLE_PARALLEL)
     add_test(NAME "h5vl_test_parallel"
       COMMAND $<TARGET_FILE:h5vl_test_driver>
       --server ${HDF5_VOL_TEST_SERVER}
       --client $<TARGET_FILE:h5vl_test_parallel>
+      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
     )
+    foreach(ext_vol_test ${HDF5_VOL_EXT_PARALLEL_TESTS})
+      add_test(NAME "h5vl_ext_${ext_vol_test}"
+        COMMAND $<TARGET_FILE:h5vl_test_driver>
+        --server ${HDF5_VOL_TEST_SERVER}
+        --client $<TARGET_FILE:${ext_vol_test}>
+        ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
+      )
+    endforeach()
   endif()
 endif()
