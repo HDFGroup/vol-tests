@@ -141,15 +141,16 @@ int vol_attribute_test(void);
 #define ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_NEW_NAME   "invalid_params_renamed_attr"
 #define ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_NEW_NAME2  "invalid_params_renamed_attr2"
 
-#define ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK 2
-#define ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK 1
-#define ATTRIBUTE_ITERATE_TEST_SUBGROUP_NAME   "attribute_iterate_test"
-#define ATTRIBUTE_ITERATE_TEST_DSET_NAME       "attribute_iterate_dset"
-#define ATTRIBUTE_ITERATE_TEST_ATTR_NAME       "iter_attr1"
-#define ATTRIBUTE_ITERATE_TEST_ATTR_NAME2      "iter_attr2"
-#define ATTRIBUTE_ITERATE_TEST_ATTR_NAME3      "iter_attr3"
-#define ATTRIBUTE_ITERATE_TEST_ATTR_NAME4      "iter_attr4"
-#define ATTRIBUTE_ITERATE_TEST_NUM_ATTRS       4
+#define ATTRIBUTE_ITERATE_TEST_ATTR_NAME_BUF_SIZE  256
+#define ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK     2
+#define ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK     1
+#define ATTRIBUTE_ITERATE_TEST_GRP_SUBGROUP_NAME   "attribute_iterate_group_test"
+#define ATTRIBUTE_ITERATE_TEST_DSET_SUBGROUP_NAME  "attribute_iterate_dset_test"
+#define ATTRIBUTE_ITERATE_TEST_DTYPE_SUBGROUP_NAME "attribute_iterate_datatype_test"
+#define ATTRIBUTE_ITERATE_TEST_DSET_NAME           "attribute_iterate_dset"
+#define ATTRIBUTE_ITERATE_TEST_DTYPE_NAME          "attribute_iterate_dtype"
+#define ATTRIBUTE_ITERATE_TEST_ATTR_NAME           "iter_attr"
+#define ATTRIBUTE_ITERATE_TEST_NUM_ATTRS           4
 
 #define ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK 2
 #define ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_SUBGROUP_NAME   "attribute_iterate_test_0_attributes"
