@@ -21,55 +21,6 @@
 /* Moved from h5test */
 
 /*
- * Predefined test verbosity levels.
- *
- * Convention:
- *
- * The higher the verbosity value, the more information printed.
- * So, output for higher verbosity also include output of all lower
- * verbosity.
- *
- *  Value     Description
- *  0         None:   No informational message.
- *  1                 "All tests passed"
- *  2                 Header of overall test
- *  3         Default: header and results of individual test
- *  4
- *  5         Low:    Major category of tests.
- *  6
- *  7         Medium: Minor category of tests such as functions called.
- *  8
- *  9         High:   Highest level.  All information.
- */
-#define VERBO_NONE 0     /* None    */
-#define VERBO_DEF  3     /* Default */
-#define VERBO_LO   5     /* Low     */
-#define VERBO_MED  7     /* Medium  */
-#define VERBO_HI   9     /* High    */
-
-/*
- * Verbose queries
- * Only None needs an exact match.  The rest are at least as much.
- */
-
-/* A macro version of HDGetTestVerbosity(). */
-/* Should be used internally by the libtest.a only. */
-#define HDGetTestVerbosity() (TestVerbosity)
-
-#define VERBOSE_NONE  (HDGetTestVerbosity()==VERBO_NONE)
-#define VERBOSE_DEF  (HDGetTestVerbosity()>=VERBO_DEF)
-#define VERBOSE_LO  (HDGetTestVerbosity()>=VERBO_LO)
-#define VERBOSE_MED  (HDGetTestVerbosity()>=VERBO_MED)
-#define VERBOSE_HI  (HDGetTestVerbosity()>=VERBO_HI)
-
-/*
- * Test controls definitions.
- */
-#define SKIPTEST  1  /* Skip this test */
-#define ONLYTEST  2  /* Do only this test */
-#define BEGINTEST  3  /* Skip all tests before this test */
-
-/*
  * This contains the filename prefix specificied as command line option for
  * the parallel test files.
  */

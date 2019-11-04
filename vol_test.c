@@ -48,7 +48,7 @@ size_t n_tests_skipped_g;
 int main(int argc, char **argv)
 {
     char *vol_connector_name;
-    int   nerrors = 0;
+    hbool_t err_occurred = FALSE;
 
 #ifdef H5_HAVE_PARALLEL
     /* If HDF5 was built with parallel enabled, go ahead and call MPI_Init before
@@ -86,17 +86,18 @@ int main(int argc, char **argv)
      */
     if (create_test_container(vol_test_filename) < 0) {
         HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
+        err_occurred = TRUE;
         goto done;
     }
 
-    nerrors += vol_file_test();
-    nerrors += vol_group_test();
-    nerrors += vol_dataset_test();
-    nerrors += vol_datatype_test();
-    nerrors += vol_attribute_test();
-    nerrors += vol_link_test();
-    nerrors += vol_object_test();
-    nerrors += vol_misc_test();
+    (void)vol_file_test();
+    (void)vol_group_test();
+    (void)vol_dataset_test();
+    (void)vol_datatype_test();
+    (void)vol_attribute_test();
+    (void)vol_link_test();
+    (void)vol_object_test();
+    (void)vol_misc_test();
 
     HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n",
             (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / n_tests_run_g * 100.0), vol_connector_name);
@@ -112,5 +113,5 @@ done:
     MPI_Finalize();
 #endif
 
-    HDexit((nerrors ? EXIT_FAILURE : EXIT_SUCCESS));
+    HDexit((err_occurred ? EXIT_FAILURE : EXIT_SUCCESS));
 }
