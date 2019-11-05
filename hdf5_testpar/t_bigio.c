@@ -234,7 +234,7 @@ verify_data(hsize_t start[], hsize_t count[], hsize_t stride[], hsize_t block[],
 
 /* Set up the selection */
 static void
-ccslab_set(int mpi_rank,
+ccslab_set(int loc_mpi_rank,
     int mpi_size,
     hsize_t start[],
     hsize_t count[],
@@ -253,7 +253,7 @@ ccslab_set(int mpi_rank,
     stride[1] =  1;
     count[0]  =  space_dim1;
     count[1]  =  space_dim2;
-    start[0]  =  mpi_rank*count[0];
+    start[0]  =  loc_mpi_rank*count[0];
     start[1]  =  0;
 
     break;
@@ -266,7 +266,7 @@ ccslab_set(int mpi_rank,
         stride[1] =  3;
         count[0]  =  space_dim1/(stride[0]*block[0]);
         count[1]  =  (space_dim2)/(stride[1]*block[1]);
-    start[0]  =  space_dim1*mpi_rank;
+    start[0]  =  space_dim1*loc_mpi_rank;
     start[1]  =  0;
 
     break;
@@ -278,9 +278,9 @@ ccslab_set(int mpi_rank,
     block[1]  =  1;
     stride[0] =  1;
     stride[1] =  1;
-    count[0]  =  ((mpi_rank >= MAX(1,(mpi_size-2)))?0:space_dim1);
+    count[0]  =  ((loc_mpi_rank >= MAX(1,(mpi_size-2)))?0:space_dim1);
     count[1]  =  space_dim2;
-    start[0]  =  mpi_rank*count[0];
+    start[0]  =  loc_mpi_rank*count[0];
     start[1]  =  0;
 
     break;
@@ -297,8 +297,8 @@ ccslab_set(int mpi_rank,
         count[1]  = 1;
         start[1]  = 0;
         stride[1] = 1;
-    if((mpi_rank *3)<(mpi_size*2)) start[0]  = mpi_rank;
-    else start[0] = 1 + space_dim1*mpi_size/2 + (mpi_rank-2*mpi_size/3);
+    if((loc_mpi_rank *3)<(mpi_size*2)) start[0]  = loc_mpi_rank;
+    else start[0] = 1 + space_dim1*mpi_size/2 + (loc_mpi_rank-2*mpi_size/3);
         break;
 
     case BYROW_SELECTINCHUNK:
@@ -306,7 +306,7 @@ ccslab_set(int mpi_rank,
 
         block[0] = 1;
         count[0] = 1;
-    start[0] = mpi_rank*space_dim1;
+    start[0] = loc_mpi_rank*space_dim1;
         stride[0]= 1;
     block[1] = space_dim2;
     count[1] = 1;
@@ -1188,10 +1188,6 @@ create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type)
 {
     hid_t ret_pl = -1;
     herr_t ret;                 /* generic return value */
-    int mpi_rank;        /* mpi variables */
-
-    /* need the rank for error checking macros */
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
     ret_pl = H5Pcreate (H5P_FILE_ACCESS);
     VRFY((ret_pl >= 0), "H5P_FILE_ACCESS");

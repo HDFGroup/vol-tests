@@ -2154,6 +2154,7 @@ test_write_dataset_hyper_file_all_mem(void)
 
     return 0;
 
+#ifdef BROKEN
 error:
     H5E_BEGIN_TRY {
         if (read_buf) HDfree(read_buf);
@@ -2169,6 +2170,7 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#endif
 }
 
 /*

@@ -740,7 +740,7 @@ error:
  * functions of a VOL connector can be called multiple times
  * in a row.
  *
- * XXX: Not sure if this test can be done from public APIs
+ * TODO: Not sure if this test can be done from public APIs
  * at the moment.
  */
 static int
@@ -752,8 +752,10 @@ test_double_init_term(void)
 
     return 0;
 
+#if 0
 error:
     return 1;
+#endif
 }
 
 static int
