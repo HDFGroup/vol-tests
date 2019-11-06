@@ -19,6 +19,20 @@
 #include "H5private.h"
 #include "testpar.h"
 
+/*
+ * Define parameters for various tests since we do not have access to
+ * passing parameters to tests via the testphdf5 test framework.
+ */
+#define PARATESTFILE "ParaTest.h5"
+#define NDATASETS 300
+#define NGROUPS 512
+
+/* Turn off verbose reporting by default */
+#define VERBOSE_MED (FALSE)
+
+/* Disable express testing by default */
+#define EXPRESS_MODE 0
+
 enum H5TEST_COLL_CHUNK_API {API_NONE=0,API_LINK_HARD,
                         API_MULTI_HARD,API_LINK_TRUE,API_LINK_FALSE,
                             API_MULTI_COLL,API_MULTI_IND};

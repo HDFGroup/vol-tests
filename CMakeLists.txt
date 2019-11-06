@@ -186,6 +186,7 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
     t_bigio
     t_pshutdown
     t_shapesame
+    testphdf5
   )
 endif()
 
@@ -246,7 +247,24 @@ foreach(hdf5_test ${hdf5_tests})
 endforeach()
 if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   foreach(hdf5_partest ${hdf5_partests})
-    add_executable(h5_partest_${hdf5_partest} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c)
+    if(${hdf5_partest} STREQUAL "testphdf5")
+      add_executable(h5_partest_${hdf5_partest}
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_ph5basic.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_file.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_dset.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_mdset.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_coll_chunk.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_span_tree.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_prop.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_file_image.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_coll_md_read.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_chunk_alloc.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_filter_read.c
+      )
+    else()
+      add_executable(h5_partest_${hdf5_partest} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c)
+    endif()
 
     target_include_directories(h5_partest_${hdf5_partest}
       SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}

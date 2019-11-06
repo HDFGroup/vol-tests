@@ -1937,15 +1937,12 @@ test_write_dataset_hyper_file_all_mem(void)
 {
 #ifdef BROKEN
     hssize_t  space_npoints;
-#endif
     hsize_t  *dims = NULL;
-#ifdef BROKEN
     hsize_t   start[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     hsize_t   stride[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     hsize_t   count[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     hsize_t   block[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     size_t    i, data_size;
-#endif
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -1954,6 +1951,7 @@ test_write_dataset_hyper_file_all_mem(void)
     hid_t     mspace_id = H5I_INVALID_HID;
     void     *write_buf = NULL;
     void     *read_buf = NULL;
+#endif
 
     TESTING("write to dataset with hyperslab sel. for file space; all sel. for memory")
 

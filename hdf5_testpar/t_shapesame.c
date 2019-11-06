@@ -30,18 +30,11 @@
  * filenames[0] is reserved as the file name for PARATESTFILE.
  */
 #define NFILENAME 2
-#define PARATESTFILE filenames[0]
 const char *FILENAME[NFILENAME]={
         "ShapeSameTest.h5",
         NULL};
 char    filenames[NFILENAME][PATH_MAX];
 hid_t    fapl;                /* file access property list */
-
-/* Turn off verbose reporting by default */
-#define VERBOSE_MED (FALSE)
-
-/* Disable express testing by default */
-#define EXPRESS_MODE 0
 
 /* On Lustre (and perhaps other parallel file systems?), we have severe
  * slow downs if two or more processes attempt to access the same file system
@@ -4983,13 +4976,13 @@ int main(int argc, char **argv)
     /* Shape Same tests using contigous hyperslab */
 #if 0
     AddTest("sscontig1", sscontig1, NULL,
-    "Cntg hslab, ind IO, cntg dsets", PARATESTFILE);
+    "Cntg hslab, ind IO, cntg dsets", filenames[0]);
     AddTest("sscontig2", sscontig2, NULL,
-    "Cntg hslab, col IO, cntg dsets", PARATESTFILE);
+    "Cntg hslab, col IO, cntg dsets", filenames[0]);
     AddTest("sscontig3", sscontig3, NULL,
-    "Cntg hslab, ind IO, chnk dsets", PARATESTFILE);
+    "Cntg hslab, ind IO, chnk dsets", filenames[0]);
     AddTest("sscontig4", sscontig4, NULL,
-    "Cntg hslab, col IO, chnk dsets", PARATESTFILE);
+    "Cntg hslab, col IO, chnk dsets", filenames[0]);
 #endif
     printf("Cntg hslab, ind IO, cntg dsets\n"); fflush(stdout);
     sscontig1();
@@ -5003,13 +4996,13 @@ int main(int argc, char **argv)
     /* Shape Same tests using checker board hyperslab */
 #if 0
     AddTest("sschecker1", sschecker1, NULL,
-    "Check hslab, ind IO, cntg dsets", PARATESTFILE);
+    "Check hslab, ind IO, cntg dsets", filenames[0]);
     AddTest("sschecker2", sschecker2, NULL,
-    "Check hslab, col IO, cntg dsets", PARATESTFILE);
+    "Check hslab, col IO, cntg dsets", filenames[0]);
     AddTest("sschecker3", sschecker3, NULL,
-    "Check hslab, ind IO, chnk dsets", PARATESTFILE);
+    "Check hslab, ind IO, chnk dsets", filenames[0]);
     AddTest("sschecker4", sschecker4, NULL,
-    "Check hslab, col IO, chnk dsets", PARATESTFILE);
+    "Check hslab, col IO, chnk dsets", filenames[0]);
 #endif
     printf("Check hslab, ind IO, cntg dsets\n"); fflush(stdout);
     sschecker1();

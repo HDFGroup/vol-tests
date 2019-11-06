@@ -33,9 +33,6 @@ const char *FILENAME[] = {
     NULL
 };
 
-/* Turn off verbose reporting by default */
-#define VERBOSE_MED (FALSE)
-
 int
 main (int argc, char **argv)
 {

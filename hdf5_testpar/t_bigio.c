@@ -36,12 +36,6 @@ const char *FILENAME[3]={ "bigio_test.h5",
 #define POINT 2
 #define ALL 3
 
-/* Turn off verbose reporting by default */
-#define VERBOSE_MED (FALSE)
-
-/* Disable express testing by default */
-#define EXPRESS_MODE 0
-
 /* Dataset data type.  Int's can be easily octo dumped. */
 typedef hsize_t B_DATATYPE;
 
@@ -235,7 +229,7 @@ verify_data(hsize_t start[], hsize_t count[], hsize_t stride[], hsize_t block[],
 /* Set up the selection */
 static void
 ccslab_set(int loc_mpi_rank,
-    int mpi_size,
+    int loc_mpi_size,
     hsize_t start[],
     hsize_t count[],
     hsize_t stride[],
@@ -278,7 +272,7 @@ ccslab_set(int loc_mpi_rank,
     block[1]  =  1;
     stride[0] =  1;
     stride[1] =  1;
-    count[0]  =  ((loc_mpi_rank >= MAX(1,(mpi_size-2)))?0:space_dim1);
+    count[0]  =  ((loc_mpi_rank >= MAX(1,(loc_mpi_size-2)))?0:space_dim1);
     count[1]  =  space_dim2;
     start[0]  =  loc_mpi_rank*count[0];
     start[1]  =  0;
@@ -292,13 +286,13 @@ ccslab_set(int loc_mpi_rank,
 
         block[0]  = 1;
     count[0]  = 2;
-        stride[0] = space_dim1*mpi_size/4+1;
+        stride[0] = space_dim1*loc_mpi_size/4+1;
         block[1]  = space_dim2;
         count[1]  = 1;
         start[1]  = 0;
         stride[1] = 1;
-    if((loc_mpi_rank *3)<(mpi_size*2)) start[0]  = loc_mpi_rank;
-    else start[0] = 1 + space_dim1*mpi_size/2 + (loc_mpi_rank-2*mpi_size/3);
+    if((loc_mpi_rank *3)<(loc_mpi_size*2)) start[0]  = loc_mpi_rank;
+    else start[0] = 1 + space_dim1*loc_mpi_size/2 + (loc_mpi_rank-2*loc_mpi_size/3);
         break;
 
     case BYROW_SELECTINCHUNK:
@@ -317,7 +311,7 @@ ccslab_set(int loc_mpi_rank,
 
     default:
     /* Unknown mode.  Set it to cover the whole dataset. */
-    block[0]  = space_dim1*mpi_size;
+    block[0]  = space_dim1*loc_mpi_size;
     block[1]  = space_dim2;
     stride[0] = block[0];
     stride[1] = block[1];
