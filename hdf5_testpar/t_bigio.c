@@ -30,7 +30,7 @@ const char *FILENAME[3]={ "bigio_test.h5",
 #define DXFER_COLLECTIVE_IO 0x1  /* Collective IO*/
 #define DXFER_INDEPENDENT_IO 0x2 /* Independent IO collectively */
 #define DXFER_BIGCOUNT (1 < 29)
-#define LARGE_DIM 1610612736
+#define LARGE_DIM 536870912
 
 #define HYPER 1
 #define POINT 2
@@ -41,7 +41,7 @@ typedef hsize_t B_DATATYPE;
 
 int facc_type = FACC_MPIO;        /*Test file access type */
 int dxfer_coll_type = DXFER_COLLECTIVE_IO;
-size_t bigcount = (size_t)DXFER_BIGCOUNT;
+size_t bigcount = /* (size_t)DXFER_BIGCOUNT */13107200;
 int nerrors = 0;
 int mpi_size, mpi_rank;
 
