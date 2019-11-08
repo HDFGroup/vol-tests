@@ -132,6 +132,17 @@ extern char vol_test_filename[];
 #define GROUP_CREATION_IS_SUPPORTED
 
 /*
+ * Temporarily disable iteration tests that iterate by
+ * alphabetical order in decreasing order.
+ */
+#define NO_DECREASING_ALPHA_ITER_ORDER
+
+/*
+ * Temporarily disable user-defined link tests.
+ */
+#define NO_USER_DEFINED_LINKS
+
+/*
  * Global variables to keep track of statistics on the
  * number of tests skipped, failed and run total.
  */

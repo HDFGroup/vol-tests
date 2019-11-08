@@ -4467,7 +4467,7 @@ test_object_visit(void)
 
         PART_BEGIN(H5Ovisit_obj_name_decreasing) {
             TESTING_2("H5Ovisit by object name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in decreasing order failed\n");
@@ -4475,6 +4475,9 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Ovisit_obj_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -4573,7 +4576,7 @@ test_object_visit(void)
 
         PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
             TESTING_2("H5Ovisit_by_name by object name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4591,6 +4594,9 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Ovisit_by_name_obj_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -4799,7 +4805,7 @@ test_object_visit_dangling_soft_link(void)
 
         PART_BEGIN(H5Ovisit_obj_name_decreasing) {
             TESTING_2("H5Ovisit by object name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in decreasing order failed\n");
@@ -4807,6 +4813,9 @@ test_object_visit_dangling_soft_link(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Ovisit_obj_name_decreasing);
 
         PART_BEGIN(H5Ovisit_create_order_increasing) {
@@ -4856,7 +4865,7 @@ test_object_visit_dangling_soft_link(void)
 
         PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
             TESTING_2("H5Ovisit_by_name by object name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4873,6 +4882,9 @@ test_object_visit_dangling_soft_link(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Ovisit_by_name_obj_name_decreasing);
 
         PART_BEGIN(H5Ovisit_by_name_create_order_increasing) {

@@ -207,6 +207,9 @@ test_create_file_invalid_params(void)
 
 error:
     H5E_BEGIN_TRY {
+        /* Attempt to remove the file if it ended up being created. */
+        H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT);
+
         H5Fclose(file_id);
     } H5E_END_TRY;
 
@@ -2717,7 +2720,10 @@ cleanup_files(void)
 {
     H5Fdelete(FILE_CREATE_TEST_FILENAME, H5P_DEFAULT);
     H5Fdelete(FILE_CREATE_EXCL_FILE_NAME, H5P_DEFAULT);
-    H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT);
+
+    /* The below file should not get created */
+    /* H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT); */
+
     H5Fdelete(OVERLAPPING_FILENAME, H5P_DEFAULT);
     H5Fdelete(FILE_PERMISSION_TEST_FILENAME, H5P_DEFAULT);
     H5Fdelete(FILE_FLUSH_TEST_FILENAME, H5P_DEFAULT);

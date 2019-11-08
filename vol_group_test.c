@@ -1344,7 +1344,7 @@ test_get_group_info(void)
 
         PART_BEGIN(H5Gget_info_by_idx_name_order_decreasing) {
             TESTING_2("H5Gget_info_by_idx by alphabetical order in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             for (i = 0; i < GROUP_GET_INFO_TEST_GROUP_NUMB; i++) {
                 memset(&group_info, 0, sizeof(group_info));
 
@@ -1389,6 +1389,9 @@ test_get_group_info(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Gget_info_by_idx_name_order_decreasing);
     } END_MULTIPART;
 

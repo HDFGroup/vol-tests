@@ -12,6 +12,9 @@
 
 #include "vol_dataset_test.h"
 
+/* Skip certain tests until non-shape same support is added for chunked datasets */
+#define NON_SHAPE_SAME_NOT_SUPPORTED
+
 /*
  * XXX: H5Dread_chunk/H5Dwrite_chunk, H5Dfill/scatter/gather
  */
@@ -7647,6 +7650,7 @@ error:
 static int
 test_write_multi_chunk_dataset_diff_shape_read(void)
 {
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     hsize_t  dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 100, 100 };
     hsize_t  chunk_dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 10, 10 };
     hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
@@ -7661,9 +7665,10 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     hid_t    mspace_id = H5I_INVALID_HID;
     void    *write_buf = NULL;
     void    *read_buf = NULL;
+#endif
 
     TESTING("write to dataset with multiple chunks using differently shaped dataspaces")
-
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -7941,6 +7946,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*
@@ -8254,6 +8263,7 @@ error:
 static int
 test_overwrite_multi_chunk_dataset_diff_shape_read(void)
 {
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     hsize_t  dims[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 100, 100 };
     hsize_t  chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK] = { 10, 10 };
     hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
@@ -8269,9 +8279,10 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     hid_t    mspace_id = H5I_INVALID_HID;
     void    *write_buf = NULL;
     void    *read_buf = NULL;
+#endif
 
     TESTING("several overwrites to dataset with multiple chunks using differently shaped dataspaces")
-
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -8554,6 +8565,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*

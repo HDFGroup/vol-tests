@@ -1473,7 +1473,7 @@ test_open_attribute(void)
 
         PART_BEGIN(H5Aopen_by_idx_name_order_decreasing) {
             TESTING_2("H5Aopen_by_idx by alphabetical order in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                     H5_ITER_DEC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -1517,6 +1517,9 @@ test_open_attribute(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aopen_by_idx_name_order_decreasing);
     } END_MULTIPART;
 
@@ -3689,7 +3692,7 @@ test_get_attribute_name(void)
 
         PART_BEGIN(H5Aget_name_by_idx_name_order_decreasing) {
             TESTING_2("H5Aget_name_by_idx by alphabetical order in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             *name_buf = '\0';
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
                     H5_ITER_DEC, 2, name_buf, (size_t) name_buf_size, H5P_DEFAULT) < 0) {
@@ -3733,6 +3736,9 @@ test_get_attribute_name(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aget_name_by_idx_name_order_decreasing);
     } END_MULTIPART;
 
@@ -4561,7 +4567,7 @@ test_get_attribute_info(void)
 
         PART_BEGIN(H5Aget_info_by_idx_name_order_decreasing) {
             TESTING_2("H5Aget_info_by_idx by alphabetical order in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 2,
                     &attr_info, H5P_DEFAULT) < 0) {
@@ -4635,6 +4641,9 @@ test_get_attribute_info(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aget_info_by_idx_name_order_decreasing);
     } END_MULTIPART;
 
@@ -5666,7 +5675,7 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate2_name_decreasing) {
             TESTING_2("H5Aiterate by attribute name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate2(group_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type name in decreasing order failed\n");
@@ -5681,6 +5690,9 @@ test_attribute_iterate_group(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate2_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -5757,7 +5769,7 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_GRP_SUBGROUP_NAME,
                     H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -5773,6 +5785,9 @@ test_attribute_iterate_group(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -6001,7 +6016,7 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate2_name_decreasing) {
             TESTING_2("H5Aiterate by attribute name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type name in decreasing order failed\n");
@@ -6016,6 +6031,9 @@ test_attribute_iterate_dataset(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate2_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -6092,7 +6110,7 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DSET_SUBGROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DSET_NAME,
                     H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -6108,6 +6126,9 @@ test_attribute_iterate_dataset(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -6341,7 +6362,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate2_name_decreasing) {
             TESTING_2("H5Aiterate by attribute name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate2(type_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 by index type name in decreasing order failed\n");
@@ -6356,6 +6377,9 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate2_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -6432,7 +6456,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate_by_name(file_id, "/" ATTRIBUTE_TEST_GROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DTYPE_SUBGROUP_NAME "/" ATTRIBUTE_ITERATE_TEST_DTYPE_NAME,
                     H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback1, &link_counter, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -6448,6 +6472,9 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
         /* Reset the counter to the appropriate value for the next test */
@@ -6972,7 +6999,7 @@ test_attribute_iterate_0_attributes(void)
 
         PART_BEGIN(H5Aiterate_0_attributes_dec) {
             TESTING_2("H5Aiterate (decreasing order)")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback2, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 on object with 0 attributes failed\n");
@@ -6980,6 +7007,9 @@ test_attribute_iterate_0_attributes(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate_0_attributes_dec);
 
         PART_BEGIN(H5Aiterate_by_name_0_attributes_native) {
@@ -7010,7 +7040,7 @@ test_attribute_iterate_0_attributes(void)
 
         PART_BEGIN(H5Aiterate_by_name_0_attributes_dec) {
             TESTING_2("H5Aiterate_by_name (decreasing order)")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             if (H5Aiterate_by_name(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, H5_INDEX_NAME, H5_ITER_DEC,
                     NULL, attr_iter_callback2, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -7019,6 +7049,9 @@ test_attribute_iterate_0_attributes(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Aiterate_by_name_0_attributes_dec);
     } END_MULTIPART;
 
@@ -7886,7 +7919,7 @@ test_delete_attribute(void)
 
         PART_BEGIN(H5Adelete_by_idx_name_order_decreasing) {
             TESTING_2("H5Adelete_by_idx by alphabetical order in decreasing order")
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
             /* Create several attributes */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype,
                     space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -8097,6 +8130,9 @@ test_delete_attribute(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+#endif
         } PART_END(H5Adelete_by_idx_name_order_decreasing);
 
         H5E_BEGIN_TRY {
