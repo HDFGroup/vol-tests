@@ -139,9 +139,10 @@ extern char vol_test_filename[];
 #define NO_DECREASING_ALPHA_ITER_ORDER
 
 /*
- * Temporarily disable user-defined link tests.
+ * Temporarily disable user-defined and external link tests.
  */
 #define NO_USER_DEFINED_LINKS
+#define NO_EXTERNAL_LINKS
 
 /*
  * Global variables to keep track of statistics on the

@@ -44,7 +44,7 @@ typedef hsize_t B_DATATYPE;
 
 int facc_type = FACC_MPIO;        /*Test file access type */
 int dxfer_coll_type = DXFER_COLLECTIVE_IO;
-size_t bigcount = /* (size_t)DXFER_BIGCOUNT */13107200;
+size_t bigcount = /* (size_t)DXFER_BIGCOUNT */1310720;
 int nerrors = 0;
 int mpi_size, mpi_rank;
 
