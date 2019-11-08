@@ -1391,6 +1391,7 @@ test_get_group_info(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Gget_info_by_idx_name_order_decreasing);
 #endif
         } PART_END(H5Gget_info_by_idx_name_order_decreasing);
     } END_MULTIPART;

@@ -4477,6 +4477,7 @@ test_object_visit(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Ovisit_obj_name_decreasing);
 #endif
         } PART_END(H5Ovisit_obj_name_decreasing);
 
@@ -4518,6 +4519,7 @@ test_object_visit(void)
              */
 
             SKIPPED();
+            PART_EMPTY(H5Ovisit_file);
         } PART_END(H5Ovisit_file);
 
         PART_BEGIN(H5Ovisit_dset) {
@@ -4596,6 +4598,7 @@ test_object_visit(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_obj_name_decreasing);
 #endif
         } PART_END(H5Ovisit_by_name_obj_name_decreasing);
 
@@ -4657,6 +4660,7 @@ test_object_visit(void)
              */
 
             SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_file);
         } PART_END(H5Ovisit_by_name_file);
 
         PART_BEGIN(H5Ovisit_by_name_dset) {
@@ -4815,6 +4819,7 @@ test_object_visit_dangling_soft_link(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Ovisit_obj_name_decreasing);
 #endif
         } PART_END(H5Ovisit_obj_name_decreasing);
 
@@ -4884,6 +4889,7 @@ test_object_visit_dangling_soft_link(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_obj_name_decreasing);
 #endif
         } PART_END(H5Ovisit_by_name_obj_name_decreasing);
 

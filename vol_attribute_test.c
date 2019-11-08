@@ -1519,6 +1519,7 @@ test_open_attribute(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aopen_by_idx_name_order_decreasing);
 #endif
         } PART_END(H5Aopen_by_idx_name_order_decreasing);
     } END_MULTIPART;
@@ -3738,6 +3739,7 @@ test_get_attribute_name(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aget_name_by_idx_name_order_decreasing);
 #endif
         } PART_END(H5Aget_name_by_idx_name_order_decreasing);
     } END_MULTIPART;
@@ -4643,6 +4645,7 @@ test_get_attribute_info(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aget_info_by_idx_name_order_decreasing);
 #endif
         } PART_END(H5Aget_info_by_idx_name_order_decreasing);
     } END_MULTIPART;
@@ -5692,6 +5695,7 @@ test_attribute_iterate_group(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate2_name_decreasing);
 #endif
         } PART_END(H5Aiterate2_name_decreasing);
 
@@ -5787,6 +5791,7 @@ test_attribute_iterate_group(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate_by_name_name_decreasing);
 #endif
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
@@ -6033,6 +6038,7 @@ test_attribute_iterate_dataset(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate2_name_decreasing);
 #endif
         } PART_END(H5Aiterate2_name_decreasing);
 
@@ -6128,6 +6134,7 @@ test_attribute_iterate_dataset(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate_by_name_name_decreasing);
 #endif
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
@@ -6379,6 +6386,7 @@ test_attribute_iterate_datatype(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate2_name_decreasing);
 #endif
         } PART_END(H5Aiterate2_name_decreasing);
 
@@ -6474,6 +6482,7 @@ test_attribute_iterate_datatype(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate_by_name_name_decreasing);
 #endif
         } PART_END(H5Aiterate_by_name_name_decreasing);
 
@@ -7009,6 +7018,7 @@ test_attribute_iterate_0_attributes(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate_0_attributes_dec);
 #endif
         } PART_END(H5Aiterate_0_attributes_dec);
 
@@ -7051,6 +7061,7 @@ test_attribute_iterate_0_attributes(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Aiterate_by_name_0_attributes_dec);
 #endif
         } PART_END(H5Aiterate_by_name_0_attributes_dec);
     } END_MULTIPART;
@@ -8132,6 +8143,7 @@ test_delete_attribute(void)
             PASSED();
 #else
             SKIPPED();
+            PART_EMPTY(H5Adelete_by_idx_name_order_decreasing);
 #endif
         } PART_END(H5Adelete_by_idx_name_order_decreasing);
 

@@ -415,6 +415,7 @@ test_absolute_vs_relative_path(void)
             /* TODO: */
 
             SKIPPED();
+            PART_EMPTY(H5Dcreate_relative_from_root);
         } PART_END(H5Dcreate_relative_from_root);
 
         PART_BEGIN(H5Dcreate_relative_from_nonroot) {
