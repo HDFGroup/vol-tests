@@ -166,6 +166,7 @@ test_split_comm_file_access(void)
     hid_t    fapl_id = H5I_INVALID_HID;
     int      is_old;
     int      newrank;
+    int      err_occurred = 0;
 
     TESTING("file access with a split communicator")
 
@@ -181,8 +182,10 @@ test_split_comm_file_access(void)
 
     if (is_old) {
         /* odd-rank processes */
-        if (MPI_SUCCESS != MPI_Barrier(comm))
-            TEST_ERROR
+        if (MPI_SUCCESS != MPI_Barrier(comm)) {
+            err_occurred = 1;
+            goto access_end;
+        }
     }
     else {
         /* even-rank processes */
@@ -191,30 +194,54 @@ test_split_comm_file_access(void)
         MPI_Comm_rank(comm, &sub_mpi_rank);
 
         /* setup file access template */
-        if ((fapl_id = create_mpi_fapl(comm, info)) < 0)
-            TEST_ERROR
+        if ((fapl_id = create_mpi_fapl(comm, info)) < 0) {
+            err_occurred = 1;
+            goto access_end;
+        }
 
         /* create the file collectively */
         if ((file_id = H5Fcreate(SPLIT_FILE_COMM_TEST_FILE_NAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
             H5_FAILED();
             HDprintf("    couldn't create file '%s'\n", SPLIT_FILE_COMM_TEST_FILE_NAME);
-            goto error;
+            err_occurred = 1;
+            goto access_end;
         }
-
-        /* Release file-access template */
-        if (H5Pclose(fapl_id) < 0)
-            TEST_ERROR
 
         /* close the file */
         if (H5Fclose(file_id) < 0) {
             H5_FAILED();
             HDprintf("    failed to close file '%s'\n", SPLIT_FILE_COMM_TEST_FILE_NAME);
-            goto error;
+            err_occurred = 1;
+            goto access_end;
         }
 
         /* delete the test file */
-        if (sub_mpi_rank == 0)
-            MPI_File_delete(SPLIT_FILE_COMM_TEST_FILE_NAME, info);
+        if (H5Fdelete(SPLIT_FILE_COMM_TEST_FILE_NAME, fapl_id) < 0) {
+            H5_FAILED();
+            HDprintf("    failed to delete file '%s'\n", SPLIT_FILE_COMM_TEST_FILE_NAME);
+            err_occurred = 1;
+            goto access_end;
+        }
+
+        /* Release file-access template */
+        if (H5Pclose(fapl_id) < 0) {
+            err_occurred = 1;
+            goto access_end;
+        }
+    }
+access_end:
+
+    /* Get the collective results about whether an error occurred */
+    if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &err_occurred, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD)) {
+        H5_FAILED();
+        HDprintf("    MPI_Allreduce failed\n");
+        goto error;
+    }
+
+    if (err_occurred) {
+        H5_FAILED();
+        HDprintf("    an error occurred on only some ranks during split-communicator file access! - collectively failing\n");
+        goto error;
     }
 
     if (MPI_SUCCESS != MPI_Comm_free(&comm)) {
@@ -249,7 +276,9 @@ static void
 cleanup_files(void)
 {
     H5Fdelete(FILE_CREATE_TEST_FILENAME, H5P_DEFAULT);
-    H5Fdelete(SPLIT_FILE_COMM_TEST_FILE_NAME, H5P_DEFAULT);
+
+    /* The below file is deleted as part of the test */
+    /* H5Fdelete(SPLIT_FILE_COMM_TEST_FILE_NAME, H5P_DEFAULT); */
 }
 
 int
