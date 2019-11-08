@@ -16,6 +16,9 @@
  */
 #include "vol_dataset_test_parallel.h"
 
+/* Skip certain tests until non-shape same support is added for chunked datasets */
+#define NON_SHAPE_SAME_NOT_SUPPORTED
+
 static int test_write_dataset_data_verification(void);
 static int test_write_dataset_independent(void);
 static int test_write_dataset_one_proc_0_selection(void);
@@ -1937,15 +1940,12 @@ test_write_dataset_hyper_file_all_mem(void)
 {
 #ifdef BROKEN
     hssize_t  space_npoints;
-#endif
     hsize_t  *dims = NULL;
-#ifdef BROKEN
     hsize_t   start[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     hsize_t   stride[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     hsize_t   count[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     hsize_t   block[DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK];
     size_t    i, data_size;
-#endif
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -1954,6 +1954,7 @@ test_write_dataset_hyper_file_all_mem(void)
     hid_t     mspace_id = H5I_INVALID_HID;
     void     *write_buf = NULL;
     void     *read_buf = NULL;
+#endif
 
     TESTING("write to dataset with hyperslab sel. for file space; all sel. for memory")
 
@@ -2154,6 +2155,7 @@ test_write_dataset_hyper_file_all_mem(void)
 
     return 0;
 
+#ifdef BROKEN
 error:
     H5E_BEGIN_TRY {
         if (read_buf) HDfree(read_buf);
@@ -2169,6 +2171,7 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#endif
 }
 
 /*
@@ -5917,6 +5920,7 @@ error:
 static int
 test_write_multi_chunk_dataset_diff_shape_read(void)
 {
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     hsize_t *dims = NULL;
     hsize_t *chunk_dims = NULL;
     hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK];
@@ -5932,9 +5936,10 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     hid_t    mspace_id = H5I_INVALID_HID;
     void    *write_buf = NULL;
     int      read_buf[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE][DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE];
+#endif
 
     TESTING("write to dataset with multiple chunks using differently shaped dataspaces")
-
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     if (NULL == (dims = HDmalloc(DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK * sizeof(hsize_t)))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
@@ -6310,6 +6315,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*
@@ -6781,6 +6790,7 @@ error:
 static int
 test_overwrite_multi_chunk_dataset_diff_shape_read(void)
 {
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     hsize_t *dims = NULL;
     hsize_t *chunk_dims = NULL;
     hsize_t  retrieved_chunk_dims[DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK];
@@ -6797,9 +6807,10 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     hid_t    mspace_id = H5I_INVALID_HID;
     void    *write_buf = NULL;
     int      read_buf[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE][DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE];
+#endif
 
     TESTING("several overwrites to dataset with multiple chunks using differently shaped dataspaces")
-
+#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
     if (NULL == (dims = HDmalloc(DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK * sizeof(hsize_t)))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for dataset dimensionality\n");
@@ -7210,6 +7221,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 int

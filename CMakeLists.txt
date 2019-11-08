@@ -164,6 +164,8 @@ add_subdirectory(driver)
 #-----------------------------------------------------------------------------
 # Define Sources and tests
 #-----------------------------------------------------------------------------
+
+# Generic VOL tests
 set(vol_tests
   attribute
   dataset
@@ -174,6 +176,20 @@ set(vol_tests
   misc
   object
 )
+
+# Ported HDF5 tests
+set(hdf5_tests
+
+)
+if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  set(hdf5_partests
+    t_bigio
+    t_pshutdown
+    t_shapesame
+    testphdf5
+  )
+endif()
+
 
 foreach(vol_test ${vol_tests})
   set(HDF5_VOL_TEST_SRCS
@@ -216,16 +232,73 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   )
 endif()
 
+# Include the ported HDF5 tests
+foreach(hdf5_test ${hdf5_tests})
+  add_executable(h5_test_${hdf5_test} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/${hdf5_test}.c)
+
+  target_include_directories(h5_test_${hdf5_test}
+    SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+  )
+  target_link_libraries(h5_test_${hdf5_test}
+    ${HDF5_VOL_TEST_EXPORTED_LIBS}
+    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+    ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
+  )
+endforeach()
+if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  foreach(hdf5_partest ${hdf5_partests})
+    if(${hdf5_partest} STREQUAL "testphdf5")
+      add_executable(h5_partest_${hdf5_partest}
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_ph5basic.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_file.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_dset.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_mdset.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_coll_chunk.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_span_tree.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_prop.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_file_image.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_coll_md_read.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_chunk_alloc.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_filter_read.c
+      )
+    else()
+      add_executable(h5_partest_${hdf5_partest} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c)
+    endif()
+
+    target_include_directories(h5_partest_${hdf5_partest}
+      SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+    )
+    target_link_libraries(h5_partest_${hdf5_partest}
+      ${HDF5_VOL_TEST_EXPORTED_LIBS}
+      ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+      ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
+    )
+  endforeach()
+endif()
+
 if(NOT HDF5_VOL_TEST_SERVER)
   add_test(NAME "h5vl_test"
     COMMAND $<TARGET_FILE:h5vl_test>
   )
+  foreach(hdf5_test ${hdf5_tests})
+    add_test(NAME "h5_test_${hdf5_test}"
+      COMMAND $<TARGET_FILE:h5_test_${hdf5_test}>
+    )
+  endforeach()
   if(HDF5_VOL_TEST_ENABLE_PARALLEL)
     add_test(NAME "h5vl_test_parallel"
       COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
         ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5vl_test_parallel>
         ${MPIEXEC_POSTFLAGS}
     )
+    foreach(hdf5_partest ${hdf5_partests})
+      add_test(NAME "h5_partest_${hdf5_partest}"
+        COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
+          ${MPIEXEC_PREFLAGS} $<TARGET_FILE:h5_partest_${hdf5_partest}>
+          ${MPIEXEC_POSTFLAGS}
+      )
+    endforeach()
   endif()
 else()
   if(HDF5_VOL_TEST_CLIENT_HELPER)
@@ -239,6 +312,15 @@ else()
     --serial
     ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
   )
+  foreach(hdf5_test ${hdf5_tests})
+    add_test(NAME "h5_test_${hdf5_test}"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:h5_test_${hdf5_test}>
+      --serial
+      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
+    )
+  endforeach()
   foreach(ext_vol_test ${HDF5_VOL_EXT_SERIAL_TESTS})
     add_test(NAME "h5vl_ext_${ext_vol_test}"
       COMMAND $<TARGET_FILE:h5vl_test_driver>
@@ -256,6 +338,14 @@ else()
       --client $<TARGET_FILE:h5vl_test_parallel>
       ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
     )
+    foreach(hdf5_partest ${hdf5_partests})
+      add_test(NAME "h5_partest_${hdf5_partest}"
+        COMMAND $<TARGET_FILE:h5vl_test_driver>
+        --server ${HDF5_VOL_TEST_SERVER}
+        --client $<TARGET_FILE:h5_partest_${hdf5_partest}>
+        ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
+      )
+    endforeach()
     foreach(ext_vol_test ${HDF5_VOL_EXT_PARALLEL_TESTS})
       add_test(NAME "h5vl_ext_${ext_vol_test}"
         COMMAND $<TARGET_FILE:h5vl_test_driver>

@@ -95,7 +95,6 @@ int
 main(int argc, char **argv)
 {
     char *vol_connector_name;
-    int   nerrors = 0;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -144,14 +143,14 @@ main(int argc, char **argv)
         }
     } END_INDEPENDENT_OP(create_test_container);
 
-    nerrors += vol_file_test_parallel();
-    nerrors += vol_group_test_parallel();
-    nerrors += vol_dataset_test_parallel();
-    nerrors += vol_datatype_test_parallel();
-    nerrors += vol_attribute_test_parallel();
-    nerrors += vol_link_test_parallel();
-    nerrors += vol_object_test_parallel();
-    nerrors += vol_misc_test_parallel();
+    (void)vol_file_test_parallel();
+    (void)vol_group_test_parallel();
+    (void)vol_dataset_test_parallel();
+    (void)vol_datatype_test_parallel();
+    (void)vol_attribute_test_parallel();
+    (void)vol_link_test_parallel();
+    (void)vol_object_test_parallel();
+    (void)vol_misc_test_parallel();
 
     if (MAINPROCESS)
         HDprintf("The below statistics are minimum values due to the possibility of some ranks failing a test while others pass:\n");
@@ -180,10 +179,14 @@ main(int argc, char **argv)
                 (long) n_tests_skipped_g, (long) n_tests_run_g, ((float) n_tests_skipped_g / n_tests_run_g * 100.0), vol_connector_name);
     }
 
-done: error:
     H5close();
 
     MPI_Finalize();
 
-    HDexit((nerrors ? EXIT_FAILURE : EXIT_SUCCESS));
+    HDexit(EXIT_SUCCESS);
+
+error:
+    MPI_Finalize();
+
+    HDexit(EXIT_FAILURE);
 }

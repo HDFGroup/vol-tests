@@ -1854,15 +1854,14 @@ error:
 static int
 test_create_external_link_multi(void)
 {
-    htri_t link_exists;
-    hid_t  file_id = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  group_id2 = H5I_INVALID_HID, group_id3 = H5I_INVALID_HID;
-    hid_t  root_id = H5I_INVALID_HID;
-    char   ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
-    char   ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
-    char   ext_link_filename3[VOL_TEST_FILENAME_MAX_LENGTH];
-    char   objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t group_id2 = H5I_INVALID_HID, group_id3 = H5I_INVALID_HID;
+    hid_t root_id = H5I_INVALID_HID;
+    char  ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
+    char  ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
+    char  ext_link_filename3[VOL_TEST_FILENAME_MAX_LENGTH];
+    char  objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
 
     TESTING_MULTIPART("external link creation to an object across several files")
 
@@ -2190,14 +2189,12 @@ error:
 static int
 test_create_external_link_ping_pong(void)
 {
-    htri_t link_exists;
-    hid_t  file_id = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  group_id2 = H5I_INVALID_HID;
-    hid_t  root_id = H5I_INVALID_HID;
-    char   ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
-    char   ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
-    char   objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t group_id2 = H5I_INVALID_HID;
+    char  ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
+    char  ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
+    char  objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
 
     TESTING_MULTIPART("external link creation to an object in ping pong style")
 
@@ -21643,6 +21640,8 @@ link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info_t *inf
     size_t *i = (size_t *) op_data;
     size_t  counter_val = *((size_t *) op_data);
     herr_t  ret_val = 0;
+
+    UNUSED(group_id);
 
     if (!HDstrncmp(name, LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME, strlen(LINK_ITER_MIXED_LINKS_TEST_HARD_LINK_NAME) + 1) &&
             (counter_val == 1 || counter_val == 4 || counter_val == 6 || counter_val == 11)) {
