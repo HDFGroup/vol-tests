@@ -2503,11 +2503,24 @@ extend_readAll(void)
     if(data_origin1) HDfree(data_origin1);
 }
 
+#ifdef H5_HAVE_FILTER_DEFLATE
+static const char *
+h5_rmprefix(const char *filename)
+{
+    const char *ret_ptr;
+
+    if ((ret_ptr = HDstrstr(filename, ":")) == NULL)
+        ret_ptr = filename;
+    else
+        ret_ptr++;
+
+    return(ret_ptr);
+}
+
 /*
  * Example of using the parallel HDF5 library to read a compressed
  * dataset in an HDF5 file with collective parallel access support.
  */
-#ifdef H5_HAVE_FILTER_DEFLATE
 void
 compress_readAll(void)
 {

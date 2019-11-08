@@ -50,6 +50,53 @@ h5_rmprefix(const char *filename)
     return(ret_ptr);
 }
 
+#ifdef H5_HAVE_FILTER_SZIP
+
+
+/*-------------------------------------------------------------------------
+ * Function:  h5_szip_can_encode
+ *
+ * Purpose:  Retrieve the filter config flags for szip, tell if
+ *              encoder is available.
+ *
+ * Return:  1:  decode+encode is enabled
+ *    0:  only decode is enabled
+ *              -1: other
+ *
+ * Programmer:
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+int h5_szip_can_encode(void )
+{
+    unsigned int filter_config_flags;
+
+    H5Zget_filter_info(H5Z_FILTER_SZIP, &filter_config_flags);
+    if ((filter_config_flags &
+            (H5Z_FILTER_CONFIG_ENCODE_ENABLED|H5Z_FILTER_CONFIG_DECODE_ENABLED)) == 0) {
+        /* filter present but neither encode nor decode is supported (???) */
+        return -1;
+    } else if ((filter_config_flags &
+            (H5Z_FILTER_CONFIG_ENCODE_ENABLED|H5Z_FILTER_CONFIG_DECODE_ENABLED)) ==
+            H5Z_FILTER_CONFIG_DECODE_ENABLED) {
+        /* decoder only: read but not write */
+        return 0;
+    } else if ((filter_config_flags &
+            (H5Z_FILTER_CONFIG_ENCODE_ENABLED|H5Z_FILTER_CONFIG_DECODE_ENABLED)) ==
+            H5Z_FILTER_CONFIG_ENCODE_ENABLED) {
+        /* encoder only: write but not read (???) */
+        return -1;
+    } else if ((filter_config_flags &
+            (H5Z_FILTER_CONFIG_ENCODE_ENABLED|H5Z_FILTER_CONFIG_DECODE_ENABLED)) ==
+            (H5Z_FILTER_CONFIG_ENCODE_ENABLED|H5Z_FILTER_CONFIG_DECODE_ENABLED)) {
+        return 1;
+    }
+   return(-1);
+}
+#endif /* H5_HAVE_FILTER_SZIP */
+
 /*-------------------------------------------------------------------------
  * Function:    filter_read_internal
  *

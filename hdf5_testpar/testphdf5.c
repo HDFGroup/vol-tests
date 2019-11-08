@@ -491,7 +491,10 @@ int main(int argc, char **argv)
             "compressed dataset collective read", PARATESTFILE);
 #endif
 
-    printf("compressed dataset collective read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("compressed dataset collective read\n");
+        fflush(stdout);
+    }
     compress_readAll();
 #endif /* H5_HAVE_FILTER_DEFLATE */
 
