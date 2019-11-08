@@ -171,7 +171,7 @@ main(int argc, char **argv)
     }
 
     if (MAINPROCESS) {
-        HDprintf("%s%ld/%ld (%.2f%%) VOL tests failed across all ranks with VOL connector '%s'\n",
+        HDprintf("%s%ld/%ld (%.2f%%) VOL tests did not pass across all ranks with VOL connector '%s'\n",
                 n_tests_failed_g > 0 ? "At least " : "",
                 (long) n_tests_failed_g, (long) n_tests_run_g, ((float) n_tests_failed_g / n_tests_run_g * 100.0), vol_connector_name);
 

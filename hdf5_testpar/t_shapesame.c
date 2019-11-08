@@ -5101,7 +5101,7 @@ int main(int argc, char **argv)
         if (nerrors)
             HDprintf("***Shape Same tests detected %d errors***\n", nerrors);
         else
-            HDprintf("Shape Same tests finished with no errors\n");
+            HDprintf("Shape Same tests finished successfully\n");
         HDprintf("===================================\n");
     }
 
