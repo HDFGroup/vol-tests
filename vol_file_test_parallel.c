@@ -275,10 +275,24 @@ error:
 static void
 cleanup_files(void)
 {
-    H5Fdelete(FILE_CREATE_TEST_FILENAME, H5P_DEFAULT);
+    hid_t fapl_id = H5I_INVALID_HID;
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0) {
+        if (MAINPROCESS)
+            HDprintf("    failed to create FAPL for deleting test files\n");
+        return;
+    }
+
+    H5Fdelete(FILE_CREATE_TEST_FILENAME, fapl_id);
 
     /* The below file is deleted as part of the test */
     /* H5Fdelete(SPLIT_FILE_COMM_TEST_FILE_NAME, H5P_DEFAULT); */
+
+    if (H5Pclose(fapl_id) < 0) {
+        if (MAINPROCESS)
+            HDprintf("    failed to close FAPL used for deleting test files\n");
+        return;
+    }
 }
 
 int

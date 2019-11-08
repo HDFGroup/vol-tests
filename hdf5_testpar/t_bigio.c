@@ -8,6 +8,9 @@ const char *FILENAME[3]={ "bigio_test.h5",
                            NULL
                         };
 
+/* Skip certain tests until non-shape same support is added for chunked datasets */
+#define NON_SHAPE_SAME_NOT_SUPPORTED
+
 /* Constants definitions */
 #define MAX_ERR_REPORT  10      /* Maximum number of errors reported */
 
@@ -30,7 +33,7 @@ const char *FILENAME[3]={ "bigio_test.h5",
 #define DXFER_COLLECTIVE_IO 0x1  /* Collective IO*/
 #define DXFER_INDEPENDENT_IO 0x2 /* Independent IO collectively */
 #define DXFER_BIGCOUNT (1 < 29)
-#define LARGE_DIM 536870912
+#define LARGE_DIM 134217728
 
 #define HYPER 1
 #define POINT 2
@@ -1164,12 +1167,11 @@ single_rank_independent_io(void)
         free(data);
         H5Sclose(mspace_id);
         H5Sclose(fspace_id);
-        H5Pclose(fapl_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
 
-        HDremove(FILENAME[1]);
-
+        H5Fdelete(FILENAME[1], fapl_id);
+        H5Pclose(fapl_id);
     }
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -1821,6 +1823,7 @@ int main(int argc, char **argv)
     hsize_t newsize = 1048576;
     /* Set the bigio processing limit to be 'newsize' bytes */
     hsize_t oldsize = 0; /* H5_mpi_set_bigio_count(newsize); */
+    hid_t acc_plist = H5I_INVALID_HID;
 
     /* Having set the bigio handling to a size that is managable,
      * we'll set our 'bigcount' variable to be 2X that limit so
@@ -1857,17 +1860,25 @@ int main(int argc, char **argv)
           HDprintf("***Express test mode on.  Several tests are skipped\n");
     }
     else {
+#ifdef NON_SHAPE_SAME_NOT_SUPPORTED
+      if (MAINPROCESS)
+          HDprintf(" - SKIPPING collective chunk tests until non-shapesame selections are supported -\n");
+#else
       coll_chunk1();
       MPI_Barrier(MPI_COMM_WORLD);
       coll_chunk2();
       MPI_Barrier(MPI_COMM_WORLD);
       coll_chunk3();
       MPI_Barrier(MPI_COMM_WORLD);
+#endif
       single_rank_independent_io();
     }
 
-    if (mpi_rank == 0)
-        HDremove(FILENAME[0]);
+    acc_plist = create_faccess_plist(MPI_COMM_WORLD, MPI_INFO_NULL, facc_type);
+
+    H5Fdelete(FILENAME[0], acc_plist);
+
+    H5Pclose(acc_plist);
 
     /* close HDF5 library */
     H5close();

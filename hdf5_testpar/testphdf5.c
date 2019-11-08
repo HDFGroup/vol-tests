@@ -364,7 +364,10 @@ int main(int argc, char **argv)
             "fapl_mpio duplicate", NULL);
 #endif
 
-    printf("fapl_mpio duplicate\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("fapl_mpio duplicate\n");
+        fflush(stdout);
+    }
     test_fapl_mpio_dup();
 
 #if 0
@@ -374,10 +377,16 @@ int main(int argc, char **argv)
             "Coll Metadata file property settings", PARATESTFILE);
 #endif
 
-    printf("dataset using split communicators\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("dataset using split communicators\n");
+        fflush(stdout);
+    }
     test_split_comm_access();
 
-    printf("Coll Metadata file property settings\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Coll Metadata file property settings\n");
+        fflush(stdout);
+    }
     test_file_properties();
 
 #if 0
@@ -387,9 +396,15 @@ int main(int argc, char **argv)
             "dataset independent read", PARATESTFILE);
 #endif
 
-    printf("dataset independent write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("dataset independent write\n");
+        fflush(stdout);
+    }
     dataset_writeInd();
-    printf("dataset independent read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("dataset independent read\n");
+        fflush(stdout);
+    }
     dataset_readInd();
 
 #if 0
@@ -399,9 +414,15 @@ int main(int argc, char **argv)
             "dataset collective read", PARATESTFILE);
 #endif
 
-    printf("dataset collective write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("dataset collective write\n");
+        fflush(stdout);
+    }
     dataset_writeAll();
-    printf("dataset collective read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("dataset collective read\n");
+        fflush(stdout);
+    }
     dataset_readAll();
 
 #if 0
@@ -423,21 +444,45 @@ int main(int argc, char **argv)
             "parallel read of dataset written serially with filters", PARATESTFILE);
 #endif
 
-    printf("extendible dataset independent write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("extendible dataset independent write\n");
+        fflush(stdout);
+    }
     extend_writeInd();
-    printf("extendible dataset independent read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("extendible dataset independent read\n");
+        fflush(stdout);
+    }
     extend_readInd();
-    printf("extendible dataset collective write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("extendible dataset collective write\n");
+        fflush(stdout);
+    }
     extend_writeAll();
-    printf("extendible dataset collective read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("extendible dataset collective read\n");
+        fflush(stdout);
+    }
     extend_readAll();
-    printf("extendible dataset independent write #2\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("extendible dataset independent write #2\n");
+        fflush(stdout);
+    }
     extend_writeInd2();
-    printf("chunked dataset with none-selection\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("chunked dataset with none-selection\n");
+        fflush(stdout);
+    }
     none_selection_chunk();
-    printf("parallel extend Chunked allocation on serial file\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("parallel extend Chunked allocation on serial file\n");
+        fflush(stdout);
+    }
     test_chunk_alloc();
-    printf("parallel read of dataset written serially with filters\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("parallel read of dataset written serially with filters\n");
+        fflush(stdout);
+    }
     test_filter_read();
 
 #ifdef H5_HAVE_FILTER_DEFLATE
@@ -455,7 +500,10 @@ int main(int argc, char **argv)
             "zero dim dset", PARATESTFILE);
 #endif
 
-    printf("zero dim dset\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("zero dim dset\n");
+        fflush(stdout);
+    }
     zero_dim_dset();
 
 #if 0
@@ -465,7 +513,10 @@ int main(int argc, char **argv)
             "multiple datasets write", &ndsets_params);
 #endif
 
-    printf("multiple datasets write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("multiple datasets write\n");
+        fflush(stdout);
+    }
     multiple_dset_write();
 
 #if 0
@@ -477,9 +528,15 @@ int main(int argc, char **argv)
             "multiple groups read", &ngroups_params);
 #endif
 
-    printf("multiple groups write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("multiple groups write\n");
+        fflush(stdout);
+    }
     multiple_group_write();
-    printf("multiple groups read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("multiple groups read\n");
+        fflush(stdout);
+    }
     multiple_group_read();
 
 #if 0
@@ -487,7 +544,10 @@ int main(int argc, char **argv)
             "compact dataset test", PARATESTFILE);
 #endif
 
-    printf("compact dataset test\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("compact dataset test\n");
+        fflush(stdout);
+    }
     compact_dataset();
 
 #if 0
@@ -505,9 +565,15 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-    printf("collective grp/dset write - independent grp/dset read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective grp/dset write - independent grp/dset read\n");
+        fflush(stdout);
+    }
     collective_group_write_independent_group_read();
-    printf("big dataset test\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("big dataset test\n");
+        fflush(stdout);
+    }
     big_dataset();
 
 #if 0
@@ -515,7 +581,10 @@ int main(int argc, char **argv)
             "dataset fill value", PARATESTFILE);
 #endif
 
-    printf("dataset fill value\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("dataset fill value\n");
+        fflush(stdout);
+    }
     dataset_fillvalue();
 
 #if 0
@@ -529,13 +598,25 @@ int main(int argc, char **argv)
             coll_chunk4,NULL, "collective chunk io with partial non-selection ",PARATESTFILE);
 #endif
 
-    printf("simple collective chunk io\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("simple collective chunk io\n");
+        fflush(stdout);
+    }
     coll_chunk1();
-    printf("noncontiguous collective chunk io\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("noncontiguous collective chunk io\n");
+        fflush(stdout);
+    }
     coll_chunk2();
-    printf("multi-chunk collective chunk io\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("multi-chunk collective chunk io\n");
+        fflush(stdout);
+    }
     coll_chunk3();
-    printf("collective chunk io with partial non-selection\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective chunk io with partial non-selection\n");
+        fflush(stdout);
+    }
     coll_chunk4();
 
     if((mpi_size < 3) && MAINPROCESS ) {
@@ -566,17 +647,35 @@ int main(int argc, char **argv)
 #endif
 
     if(mpi_size >= 3) {
-        printf("linked chunk collective IO without optimization\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("linked chunk collective IO without optimization\n");
+            fflush(stdout);
+        }
         coll_chunk5();
-        printf("multi-chunk collective IO with direct request\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("multi-chunk collective IO with direct request\n");
+            fflush(stdout);
+        }
         coll_chunk6();
-        printf("linked chunk collective IO with optimization\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("linked chunk collective IO with optimization\n");
+            fflush(stdout);
+        }
         coll_chunk7();
-        printf("linked chunk collective IO transferring to multi-chunk\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("linked chunk collective IO transferring to multi-chunk\n");
+            fflush(stdout);
+        }
         coll_chunk8();
-        printf("multiple chunk collective IO with optimization\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("multiple chunk collective IO with optimization\n");
+            fflush(stdout);
+        }
         coll_chunk9();
-        printf("multiple chunk collective IO transferring to independent IO\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("multiple chunk collective IO transferring to independent IO\n");
+            fflush(stdout);
+        }
         coll_chunk10();
     }
 
@@ -602,17 +701,35 @@ int main(int argc, char **argv)
             "collective irregular complex chunk read",PARATESTFILE);
 #endif
 
-    printf("collective irregular contiguous write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective irregular contiguous write\n");
+        fflush(stdout);
+    }
     coll_irregular_cont_write();
-    printf("collective irregular contiguous read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective irregular contiguous read\n");
+        fflush(stdout);
+    }
     coll_irregular_cont_read();
-    printf("collective irregular simple chunk write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective irregular simple chunk write\n");
+        fflush(stdout);
+    }
     coll_irregular_simple_chunk_write();
-    printf("collective irregular simple chunk read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective irregular simple chunk read\n");
+        fflush(stdout);
+    }
     coll_irregular_simple_chunk_read();
-    printf("collective irregular complex chunk write\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective irregular complex chunk write\n");
+        fflush(stdout);
+    }
     coll_irregular_complex_chunk_write();
-    printf("collective irregular complex chunk read\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("collective irregular complex chunk read\n");
+        fflush(stdout);
+    }
     coll_irregular_complex_chunk_read();
 
 #if 0
@@ -620,7 +737,10 @@ int main(int argc, char **argv)
             "null dataset test", PARATESTFILE);
 #endif
 
-    printf("null dataset test\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("null dataset test\n");
+        fflush(stdout);
+    }
     null_dataset();
 
 #if 0
@@ -632,7 +752,10 @@ int main(int argc, char **argv)
             &io_mode_confusion_params);
 #endif
 
-    printf("I/O mode confusion test -- hangs quickly on failure\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("I/O mode confusion test -- hangs quickly on failure\n");
+        fflush(stdout);
+    }
     io_mode_confusion();
 
     if((mpi_size < 3) && MAINPROCESS) {
@@ -649,7 +772,10 @@ int main(int argc, char **argv)
                 &rr_obj_flush_confusion_params);
 #endif
 
-        printf("round robin object header flush confusion test\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("round robin object header flush confusion test\n");
+            fflush(stdout);
+        }
         rr_obj_hdr_flush_confusion();
     }
 
@@ -681,17 +807,35 @@ int main(int argc, char **argv)
             "encode/decode Property Lists", NULL);
 #endif
 
-    printf("Chunk allocation with alignment bug\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Chunk allocation with alignment bug\n");
+        fflush(stdout);
+    }
     chunk_align_bug_1();
-    printf("test lower dim size comp in span tree to mpi derived type\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("test lower dim size comp in span tree to mpi derived type\n");
+        fflush(stdout);
+    }
     lower_dim_size_comp_test();
-    printf("test mpi derived type management\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("test mpi derived type management\n");
+        fflush(stdout);
+    }
     link_chunk_collective_io_test();
-    printf("test actual io mode proprerty\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("test actual io mode proprerty\n");
+        fflush(stdout);
+    }
     actual_io_mode_tests();
-    printf("test cause for broken collective io\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("test cause for broken collective io\n");
+        fflush(stdout);
+    }
     no_collective_cause_tests();
-    printf("encode/decode Property Lists\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("encode/decode Property Lists\n");
+        fflush(stdout);
+    }
     test_plist_ed();
 
     if((mpi_size < 2) && MAINPROCESS) {
@@ -705,7 +849,10 @@ int main(int argc, char **argv)
 #endif
 
     if (mpi_size >= 2) {
-        printf("file image ops daisy chain\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("file image ops daisy chain\n");
+            fflush(stdout);
+        }
         file_image_daisy_chain_test();
     }
 
@@ -722,7 +869,10 @@ int main(int argc, char **argv)
                 "dataset atomic updates", PARATESTFILE);
 #endif
 
-        printf("dataset atomic updates\n"); fflush(stdout);
+        if (MAINPROCESS) {
+            printf("dataset atomic updates\n");
+            fflush(stdout);
+        }
         dataset_atomicity();
     }
 
@@ -731,7 +881,10 @@ int main(int argc, char **argv)
             "Store Dense Attributes", PARATESTFILE);
 #endif
 
-    printf("Store Dense Attributes\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Store Dense Attributes\n");
+        fflush(stdout);
+    }
     test_dense_attr();
 
 #if 0
@@ -743,11 +896,20 @@ int main(int argc, char **argv)
             "Collective MD read with link chunk I/O (H5D__sort_chunk)", PARATESTFILE);
 #endif
 
-    printf("Collective Metadata read with some ranks having no selection\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Collective Metadata read with some ranks having no selection\n");
+        fflush(stdout);
+    }
     test_partial_no_selection_coll_md_read();
-    printf("Collective MD read with multi chunk I/O\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Collective MD read with multi chunk I/O\n");
+        fflush(stdout);
+    }
     test_multi_chunk_io_addrmap_issue();
-    printf("Collective MD read with link chunk I/O\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Collective MD read with link chunk I/O\n");
+        fflush(stdout);
+    }
     test_link_chunk_io_sort_chunk_issue();
 
     /* Display testing information */
@@ -781,6 +943,8 @@ int main(int argc, char **argv)
 
     /* Clean up test files */
     /* h5_clean_files(FILENAME, fapl); */
+    H5Fdelete(FILENAME[0], fapl);
+    H5Pclose(fapl);
 
     /* nerrors += GetTestNumErrs(); */
 
@@ -810,6 +974,6 @@ int main(int argc, char **argv)
     MPI_Finalize();
 
     /* cannot just return (nerrors) because exit code is limited to 1byte */
-    return(nerrors!=0);
+    return(nerrors != 0);
 }
 

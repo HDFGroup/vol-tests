@@ -525,11 +525,11 @@ hs_dr_pio_test__setup(const int test_num,
 
 
     /* sync with the other processes before checking data */
-    if ( ! use_collective_io ) {
+    /* if ( ! use_collective_io ) { */
 
         mrc = MPI_Barrier(MPI_COMM_WORLD);
         VRFY((mrc==MPI_SUCCESS), "Sync after small dataset writes");
-    }
+    /* } */
 
     /* read the small data set back to verify that it contains the
      * expected data.  Note that each process reads in the entire
@@ -633,11 +633,11 @@ hs_dr_pio_test__setup(const int test_num,
 
 
     /* sync with the other processes before checking data */
-    if ( ! use_collective_io ) {
+    /* if ( ! use_collective_io ) { */
 
         mrc = MPI_Barrier(MPI_COMM_WORLD);
         VRFY((mrc==MPI_SUCCESS), "Sync after large dataset writes");
-    }
+    /* } */
 
 
     /* read the large data set back to verify that it contains the
@@ -4990,10 +4990,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (dxfer_coll_type == DXFER_INDEPENDENT_IO && MAINPROCESS){
-    HDprintf("===================================\n"
-        "   Using Independent I/O with file set view to replace collective I/O \n"
-        "===================================\n");
+    if (dxfer_coll_type == DXFER_INDEPENDENT_IO && MAINPROCESS) {
+        HDprintf("===================================\n"
+                 "   Using Independent I/O with file set view to replace collective I/O \n"
+                 "===================================\n");
     }
 
     /* Shape Same tests using contigous hyperslab */
@@ -5007,13 +5007,25 @@ int main(int argc, char **argv)
     AddTest("sscontig4", sscontig4, NULL,
     "Cntg hslab, col IO, chnk dsets", filenames[0]);
 #endif
-    if (MAINPROCESS) printf("Cntg hslab, ind IO, cntg dsets\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Cntg hslab, ind IO, cntg dsets\n");
+        fflush(stdout);
+    }
     sscontig1();
-    if (MAINPROCESS) printf("Cntg hslab, col IO, cntg dsets\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Cntg hslab, col IO, cntg dsets\n");
+        fflush(stdout);
+    }
     sscontig2();
-    if (MAINPROCESS) printf("Cntg hslab, ind IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Cntg hslab, ind IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        fflush(stdout);
+    }
     /* sscontig3(); */
-    if (MAINPROCESS) printf("Cntg hslab, col IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Cntg hslab, col IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        fflush(stdout);
+    }
     /* sscontig4(); */
 
     /* Shape Same tests using checker board hyperslab */
@@ -5027,20 +5039,32 @@ int main(int argc, char **argv)
     AddTest("sschecker4", sschecker4, NULL,
     "Check hslab, col IO, chnk dsets", filenames[0]);
 #endif
-    if (MAINPROCESS) printf("Check hslab, ind IO, cntg dsets\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Check hslab, ind IO, cntg dsets\n");
+        fflush(stdout);
+    }
     sschecker1();
-    if (MAINPROCESS) printf("Check hslab, col IO, cntg dsets\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Check hslab, col IO, cntg dsets\n");
+        fflush(stdout);
+    }
     sschecker2();
-    if (MAINPROCESS) printf("Check hslab, ind IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Check hslab, ind IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        fflush(stdout);
+    }
     /* sschecker3(); */
-    if (MAINPROCESS) printf("Check hslab, col IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n"); fflush(stdout);
+    if (MAINPROCESS) {
+        printf("Check hslab, col IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        fflush(stdout);
+    }
     /* sschecker4(); */
 
     /* Display testing information */
     /* TestInfo(argv[0]); */
 
     /* setup file access property list */
-    fapl = H5Pcreate (H5P_FILE_ACCESS);
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fapl_mpio(fapl, MPI_COMM_WORLD, MPI_INFO_NULL);
 
     /* Parse command line arguments */
@@ -5060,6 +5084,8 @@ int main(int argc, char **argv)
 
     /* Clean up test files */
     /* h5_clean_files(FILENAME, fapl); */
+    H5Fdelete(FILENAME[0], fapl);
+    H5Pclose(fapl);
 
     /* nerrors += GetTestNumErrs(); */
 
@@ -5067,16 +5093,16 @@ int main(int argc, char **argv)
     {
         int temp;
         MPI_Allreduce(&nerrors, &temp, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    nerrors=temp;
+        nerrors = temp;
     }
 
-    if (MAINPROCESS){        /* only process 0 reports */
-    HDprintf("===================================\n");
-    if (nerrors)
-        HDprintf("***Shape Same tests detected %d errors***\n", nerrors);
-    else
-        HDprintf("Shape Same tests finished with no errors\n");
-    HDprintf("===================================\n");
+    if (MAINPROCESS) {        /* only process 0 reports */
+        HDprintf("===================================\n");
+        if (nerrors)
+            HDprintf("***Shape Same tests detected %d errors***\n", nerrors);
+        else
+            HDprintf("Shape Same tests finished with no errors\n");
+        HDprintf("===================================\n");
     }
 
     /* close HDF5 library */
@@ -5088,6 +5114,6 @@ int main(int argc, char **argv)
     MPI_Finalize();
 
     /* cannot just return (nerrors) because exit code is limited to 1byte */
-    return(nerrors!=0);
+    return(nerrors != 0);
 }
 

@@ -397,9 +397,9 @@ verify_data(const char *filename, int chunk_factor, write_type write_pattern, in
                 value = 100;
             else
                 value = 0;
-                break;
-            default:
-                HDassert(0);
+            break;
+        default:
+            HDassert(0);
         }
 
         /* verify content of the chunk */

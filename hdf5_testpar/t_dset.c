@@ -3749,8 +3749,6 @@ test_no_collective_cause_mode(int selection_mode)
     /* Release some resources */
     if (sid)
         H5Sclose(sid);
-    if (fapl)
-        H5Pclose(fapl);
     if (dcpl)
         H5Pclose(dcpl);
     if (dxpl_write)
@@ -3769,7 +3767,10 @@ test_no_collective_cause_mode(int selection_mode)
 
     /* clean up external file */
     if (selection_mode & TEST_NOT_CONTIGUOUS_OR_CHUNKED_DATASET_EXTERNAL)
-        HDremove(FILE_EXTERNAL);
+        H5Fdelete(FILE_EXTERNAL, fapl);
+
+    if (fapl)
+        H5Pclose(fapl);
 
     return;
 }
