@@ -1975,6 +1975,10 @@ lower_dim_size_comp_test__run_test(const int chunk_edge_size,
                    small_ds_buf_0);
     VRFY((ret >= 0), "H5Dwrite() small_dataset initial write succeeded");
 
+    /* sync with the other processes before reading data */
+    mrc = MPI_Barrier(MPI_COMM_WORLD);
+    VRFY((mrc==MPI_SUCCESS), "Sync after small dataset writes");
+
 
     /* read the small data set back to verify that it contains the
      * expected data.  Note that each process reads in the entire

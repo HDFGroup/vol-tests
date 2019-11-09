@@ -82,19 +82,17 @@ test_split_comm_access(void)
     fid=H5Fcreate(filename,H5F_ACC_TRUNC,H5P_DEFAULT,acc_tpl);
     VRFY((fid >= 0), "H5Fcreate succeeded");
 
-    /* Release file-access template */
-    ret=H5Pclose(acc_tpl);
-    VRFY((ret >= 0), "");
-
     /* close the file */
     ret=H5Fclose(fid);
     VRFY((ret >= 0), "");
 
     /* delete the test file */
-    if (sub_mpi_rank == 0){
-        mrc = MPI_File_delete((char *)filename, info);
-        /*VRFY((mrc==MPI_SUCCESS), ""); */
-    }
+    ret = H5Fdelete(filename, acc_tpl);
+    VRFY((ret >= 0), "H5Fdelete succeeded");
+
+    /* Release file-access template */
+    ret=H5Pclose(acc_tpl);
+    VRFY((ret >= 0), "");
     }
     mrc = MPI_Comm_free(&comm);
     VRFY((mrc==MPI_SUCCESS), "MPI_Comm_free succeeded");

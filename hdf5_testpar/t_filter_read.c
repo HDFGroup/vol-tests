@@ -125,6 +125,8 @@ filter_read_internal(const char *filename, hid_t dcpl,
     int                 *points = NULL; /* Writing buffer for entire dataset */
     int                 *check = NULL; /* Reading buffer for selected hyperslab */
 
+    (void)dset_size; /* silence compiler */
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -168,9 +170,10 @@ filter_read_internal(const char *filename, hid_t dcpl,
 
         hrc = H5Dwrite(dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, points);
         VRFY(hrc>=0, "H5Dwrite");
-
+#if 0
         *dset_size = H5Dget_storage_size(dataset);
         VRFY(*dset_size>0, "H5Dget_storage_size");
+#endif
 
         hrc = H5Dclose (dataset);
         VRFY(hrc>=0, "H5Dclose");
@@ -222,10 +225,11 @@ filter_read_internal(const char *filename, hid_t dcpl,
         }
     }
     }
-
+#if 0
     /* Get the storage size of the dataset */
     *dset_size=H5Dget_storage_size(dataset);
     VRFY(*dset_size!=0, "H5Dget_storage_size");
+#endif
 
     /* Clean up objects used for this test */
     hrc = H5Dclose (dataset);
@@ -269,7 +273,9 @@ test_filter_read(void)
 {
     hid_t    dc;                 /* HDF5 IDs */
     const hsize_t chunk_size[2] = {CHUNK_DIM1, CHUNK_DIM2};  /* Chunk dimensions */
+#if 0
     hsize_t     null_size;          /* Size of dataset without filters */
+#endif
     unsigned    chunk_opts;         /* Chunk options */
     unsigned    disable_partial_chunk_filters; /* Whether filters are disabled on partial chunks */
     herr_t      hrc;
@@ -288,7 +294,9 @@ test_filter_read(void)
     unsigned szip_pixels_per_block=4;
 #endif /* H5_HAVE_FILTER_SZIP */
 
+#if 0
     hsize_t     shuffle_size;       /* Size of dataset with shuffle filter */
+#endif
 
 #if(defined H5_HAVE_FILTER_DEFLATE || defined H5_HAVE_FILTER_SZIP)
     hsize_t     combo_size;     /* Size of dataset with multiple filters */
@@ -309,7 +317,7 @@ test_filter_read(void)
     hrc = H5Pset_chunk (dc, 2, chunk_size);
     VRFY(hrc>=0,"H5Pset_chunk");
 
-    filter_read_internal(filename,dc,&null_size);
+    filter_read_internal(filename,dc,/* &null_size */ NULL);
 
     /* Clean up objects used for this test */
     hrc = H5Pclose (dc);
@@ -429,8 +437,10 @@ test_filter_read(void)
     hrc = H5Pset_shuffle (dc);
     VRFY(hrc>=0, "H5Pset_shuffle");
 
-    filter_read_internal(filename,dc,&shuffle_size);
+    filter_read_internal(filename,dc,/* &shuffle_size */ NULL);
+#if 0
     VRFY(shuffle_size==null_size,"Shuffled size not the same as uncompressed size.");
+#endif
 
     /* Clean up objects used for this test */
     hrc = H5Pclose (dc);

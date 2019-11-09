@@ -29,6 +29,7 @@ static int mpi_size, mpi_rank;
 #define CLOSE           1
 #define NO_CLOSE        0
 
+#if 0
 static MPI_Offset
 get_filesize(const char *filename)
 {
@@ -48,6 +49,7 @@ get_filesize(const char *filename)
 
     return(filesize);
 }
+#endif
 
 typedef enum write_pattern {
     none,
@@ -85,9 +87,10 @@ create_chunked_dataset(const char *filename, int chunk_factor, write_type write_
     char         buffer[CHUNK_SIZE];
     long         nchunks;
     herr_t       hrc;
-
+#if 0
     MPI_Offset  filesize,        /* actual file size */
         est_filesize;        /* estimated file size */
+#endif
 
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -156,11 +159,12 @@ create_chunked_dataset(const char *filename, int chunk_factor, write_type write_
         VRFY((hrc >= 0), "");
         file_id = -1;
 
+#if 0
         /* verify file size */
         filesize = get_filesize(filename);
         est_filesize = nchunks * CHUNK_SIZE * sizeof(unsigned char);
         VRFY((filesize >= est_filesize), "file size check");
-
+#endif
     }
 
     /* Make sure all processes are done before exiting this routine.  Otherwise,
@@ -199,9 +203,11 @@ parallel_access_dataset(const char *filename, int chunk_factor, access_type acti
     char         buffer[CHUNK_SIZE];
     int         i;
     long        nchunks;
+#if 0
     /* MPI Gubbins */
     MPI_Offset  filesize,        /* actual file size */
         est_filesize;        /* estimated file size */
+#endif
 
     /* Initialize MPI */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -292,11 +298,12 @@ parallel_access_dataset(const char *filename, int chunk_factor, access_type acti
     hrc = H5Fclose(*file_id);
     VRFY((hrc >= 0), "");
     *file_id = -1;
-
+#if 0
     /* verify file size */
     filesize = get_filesize(filename);
     est_filesize = nchunks*CHUNK_SIZE*sizeof(unsigned char);
     VRFY((filesize >= est_filesize), "file size check");
+#endif
 
     /* Can close some plists */
     hrc = H5Pclose(access_plist);

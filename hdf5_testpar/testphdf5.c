@@ -246,9 +246,11 @@ parse_options(int argc, char **argv)
                 return(1);
             }
 #endif
-        HDprintf("Test filenames are:\n");
-        for (i=0; i < n; i++)
-            HDprintf("    %s\n", filenames[i]);
+        if (MAINPROCESS) {
+            HDprintf("Test filenames are:\n");
+            for (i=0; i < n; i++)
+                HDprintf("    %s\n", filenames[i]);
+        }
     }
 
     return(0);
@@ -475,10 +477,10 @@ int main(int argc, char **argv)
     }
     none_selection_chunk();
     if (MAINPROCESS) {
-        printf("parallel extend Chunked allocation on serial file\n");
+        printf("parallel extend Chunked allocation on serial file - SKIPPED currently until fill values are supported\n");
         fflush(stdout);
     }
-    test_chunk_alloc();
+    /* test_chunk_alloc(); */
     if (MAINPROCESS) {
         printf("parallel read of dataset written serially with filters\n");
         fflush(stdout);
@@ -585,10 +587,10 @@ int main(int argc, char **argv)
 #endif
 
     if (MAINPROCESS) {
-        printf("dataset fill value\n");
+        printf("dataset fill value - SKIPPED currently until fill values are supported\n");
         fflush(stdout);
     }
-    dataset_fillvalue();
+    /* dataset_fillvalue(); */
 
 #if 0
     AddTest("cchunk1",
@@ -602,25 +604,25 @@ int main(int argc, char **argv)
 #endif
 
     if (MAINPROCESS) {
-        printf("simple collective chunk io\n");
+        printf("simple collective chunk io - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    coll_chunk1();
+    /* coll_chunk1(); */
     if (MAINPROCESS) {
-        printf("noncontiguous collective chunk io\n");
+        printf("noncontiguous collective chunk io - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    coll_chunk2();
+    /* coll_chunk2(); */
     if (MAINPROCESS) {
-        printf("multi-chunk collective chunk io\n");
+        printf("multi-chunk collective chunk io - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    coll_chunk3();
+    /* coll_chunk3(); */
     if (MAINPROCESS) {
-        printf("collective chunk io with partial non-selection\n");
+        printf("collective chunk io with partial non-selection - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    coll_chunk4();
+    /* coll_chunk4(); */
 
     if((mpi_size < 3) && MAINPROCESS ) {
         HDprintf("Collective chunk IO optimization APIs ");
@@ -651,35 +653,35 @@ int main(int argc, char **argv)
 
     if(mpi_size >= 3) {
         if (MAINPROCESS) {
-            printf("linked chunk collective IO without optimization\n");
+            printf("linked chunk collective IO without optimization - SKIPPED currently until non-shapesame selections are supported\n");
             fflush(stdout);
         }
-        coll_chunk5();
+        /* coll_chunk5(); */
         if (MAINPROCESS) {
-            printf("multi-chunk collective IO with direct request\n");
+            printf("multi-chunk collective IO with direct request - SKIPPED currently until non-shapesame selections are supported\n");
             fflush(stdout);
         }
-        coll_chunk6();
+        /* coll_chunk6(); */
         if (MAINPROCESS) {
-            printf("linked chunk collective IO with optimization\n");
+            printf("linked chunk collective IO with optimization - SKIPPED currently until non-shapesame selections are supported\n");
             fflush(stdout);
         }
-        coll_chunk7();
+        /* coll_chunk7(); */
         if (MAINPROCESS) {
-            printf("linked chunk collective IO transferring to multi-chunk\n");
+            printf("linked chunk collective IO transferring to multi-chunk - SKIPPED currently until non-shapesame selections are supported\n");
             fflush(stdout);
         }
-        coll_chunk8();
+        /* coll_chunk8(); */
         if (MAINPROCESS) {
-            printf("multiple chunk collective IO with optimization\n");
+            printf("multiple chunk collective IO with optimization - SKIPPED currently until non-shapesame selections are supported\n");
             fflush(stdout);
         }
-        coll_chunk9();
+        /* coll_chunk9(); */
         if (MAINPROCESS) {
-            printf("multiple chunk collective IO transferring to independent IO\n");
+            printf("multiple chunk collective IO transferring to independent IO - SKIPPED currently until non-shapesame selections are supported\n");
             fflush(stdout);
         }
-        coll_chunk10();
+        /* coll_chunk10(); */
     }
 
 #if 0
@@ -715,20 +717,20 @@ int main(int argc, char **argv)
     }
     coll_irregular_cont_read();
     if (MAINPROCESS) {
-        printf("collective irregular simple chunk write\n");
+        printf("collective irregular simple chunk write - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    coll_irregular_simple_chunk_write();
+    /* coll_irregular_simple_chunk_write(); */
     if (MAINPROCESS) {
         printf("collective irregular simple chunk read\n");
         fflush(stdout);
     }
     coll_irregular_simple_chunk_read();
     if (MAINPROCESS) {
-        printf("collective irregular complex chunk write\n");
+        printf("collective irregular complex chunk write - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    coll_irregular_complex_chunk_write();
+    /* coll_irregular_complex_chunk_write(); */
     if (MAINPROCESS) {
         printf("collective irregular complex chunk read\n");
         fflush(stdout);
@@ -741,10 +743,10 @@ int main(int argc, char **argv)
 #endif
 
     if (MAINPROCESS) {
-        printf("null dataset test\n");
+        printf("null dataset test - SKIPPED currently due to assertion failure in HDF5\n");
         fflush(stdout);
     }
-    null_dataset();
+    /* null_dataset(); */
 
 #if 0
     io_mode_confusion_params.name  = PARATESTFILE;
@@ -826,15 +828,15 @@ int main(int argc, char **argv)
     }
     link_chunk_collective_io_test();
     if (MAINPROCESS) {
-        printf("test actual io mode proprerty\n");
+        printf("test actual io mode property - SKIPPED currently due to native-specific testing\n");
         fflush(stdout);
     }
-    actual_io_mode_tests();
+    /* actual_io_mode_tests(); */
     if (MAINPROCESS) {
-        printf("test cause for broken collective io\n");
+        printf("test cause for broken collective io - SKIPPED currently due to native-specific testing\n");
         fflush(stdout);
     }
-    no_collective_cause_tests();
+    /* no_collective_cause_tests(); */
     if (MAINPROCESS) {
         printf("encode/decode Property Lists\n");
         fflush(stdout);
@@ -853,10 +855,10 @@ int main(int argc, char **argv)
 
     if (mpi_size >= 2) {
         if (MAINPROCESS) {
-            printf("file image ops daisy chain\n");
+            printf("file image ops daisy chain - SKIPPED currently due to native-specific testing\n");
             fflush(stdout);
         }
-        file_image_daisy_chain_test();
+        /* file_image_daisy_chain_test(); */
     }
 
     if((mpi_size < 2)&& MAINPROCESS ) {
@@ -873,10 +875,10 @@ int main(int argc, char **argv)
 #endif
 
         if (MAINPROCESS) {
-            printf("dataset atomic updates\n");
+            printf("dataset atomic updates - SKIPPED currently due to native-specific testing\n");
             fflush(stdout);
         }
-        dataset_atomicity();
+        /* dataset_atomicity(); */
     }
 
 #if 0
@@ -900,10 +902,10 @@ int main(int argc, char **argv)
 #endif
 
     if (MAINPROCESS) {
-        printf("Collective Metadata read with some ranks having no selection\n");
+        printf("Collective Metadata read with some ranks having no selection - SKIPPED currently until non-shapesame selections are supported\n");
         fflush(stdout);
     }
-    test_partial_no_selection_coll_md_read();
+    /* test_partial_no_selection_coll_md_read(); */
     if (MAINPROCESS) {
         printf("Collective MD read with multi chunk I/O\n");
         fflush(stdout);
@@ -963,7 +965,7 @@ int main(int argc, char **argv)
         if (nerrors)
             HDprintf("***PHDF5 tests detected %d errors***\n", nerrors);
         else
-            HDprintf("PHDF5 tests finished with no errors\n");
+            HDprintf("PHDF5 tests finished successfully\n");
         HDprintf("===================================\n");
     }
 
