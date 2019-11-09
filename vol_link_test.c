@@ -347,7 +347,9 @@ test_create_hard_link_many(void)
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID;
     hid_t  group_id = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
+#ifndef NO_OBJECT_GET_NAME
     char   objname[HARD_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE];         /* Object name */
+#endif
 
     TESTING("hard link creation of many links")
 
@@ -444,7 +446,7 @@ test_create_hard_link_many(void)
         HDprintf("    couldn't open the group '%s' with the last hard link 'hard21'\n", HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
         goto error;
     }
-
+#ifndef NO_OBJECT_GET_NAME
     /* Check name */
     if(H5Iget_name(group_id2, objname, (size_t)HARD_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE) < 0) {
         H5_FAILED();
@@ -457,6 +459,7 @@ test_create_hard_link_many(void)
         HDprintf("    wrong name of the object '%s'\n", objname);
         goto error;
     }
+#endif
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -607,7 +610,9 @@ test_create_hard_link_invalid_params(void)
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+#ifndef NO_PREVENT_HARD_LINKS_ACROSS_FILES
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+#endif
     hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("hard link creation with invalid parameters");
@@ -769,7 +774,7 @@ test_create_hard_link_invalid_params(void)
 
         PART_BEGIN(H5Lcreate_hard_across_files) {
             TESTING_2("H5Lcreate_hard across files")
-
+#ifndef NO_PREVENT_HARD_LINKS_ACROSS_FILES
             HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
             if ((ext_file_id = H5Fcreate(ext_link_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -799,10 +804,14 @@ test_create_hard_link_invalid_params(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Lcreate_hard_across_files);
+#endif
         } PART_END(H5Lcreate_hard_across_files);
 
         PART_BEGIN(H5Lcreate_hard_invalid_existence) {
-            TESTING_2("invalid link existence after expected H5Lcreate_hard failures")
+            TESTING_2("invalid link existence after previous invalid H5Lcreate_hard calls")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, HARD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -822,9 +831,10 @@ test_create_hard_link_invalid_params(void)
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
-
+#ifndef NO_PREVENT_HARD_LINKS_ACROSS_FILES
     if (H5Fclose(ext_file_id) < 0)
-	TEST_ERROR
+	    TEST_ERROR
+#endif
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -1323,15 +1333,19 @@ error:
 static int
 test_create_soft_link_many(void)
 {
+#ifndef NO_SOFT_LINK_MANY_DANGLING
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID;
     hid_t  group_id = H5I_INVALID_HID;
     hid_t  object_id = H5I_INVALID_HID;
+#ifndef NO_OBJECT_GET_NAME
     char   objname[SOFT_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE];         /* Object name */
+#endif
+#endif
 
     TESTING("soft link creation of many links")
-
+#ifndef NO_SOFT_LINK_MANY_DANGLING
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -1439,7 +1453,7 @@ test_create_soft_link_many(void)
         HDprintf("    failed to open object pointed to by soft link '%s'\n", SOFT_LINK_TEST_GROUP_MANY_NAME);
         goto error;
     }
-
+#ifndef NO_OBJECT_GET_NAME
     /* Check name */
     if(H5Iget_name(object_id, objname, (size_t)SOFT_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE) < 0) {
         H5_FAILED();
@@ -1452,6 +1466,7 @@ test_create_soft_link_many(void)
         HDprintf("    wrong name of the object '%s'\n", objname);
         goto error;
     }
+#endif
 
     if (H5Gclose(object_id) < 0)
         TEST_ERROR
@@ -1475,6 +1490,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*
@@ -1600,7 +1619,7 @@ test_create_soft_link_invalid_params(void)
 
         PART_BEGIN(H5Lcreate_soft_invalid_lapl) {
             TESTING_2("H5Lcreate_soft with an invalid LAPL")
-
+#ifndef NO_INVALID_PROPERTY_LIST_TESTS
             H5E_BEGIN_TRY {
                 err_ret = H5Lcreate_soft("/", group_id, SOFT_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT, H5I_INVALID_HID);
             } H5E_END_TRY;
@@ -1612,10 +1631,14 @@ test_create_soft_link_invalid_params(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Lcreate_soft_invalid_lapl);
+#endif
         } PART_END(H5Lcreate_soft_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_soft_invalid_existence) {
-            TESTING_2("invalid link existence after expected H5Lcreate_soft failures")
+            TESTING_2("invalid link existence after previous invalid H5Lcreate_soft calls")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, SOFT_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -2630,7 +2653,7 @@ test_create_external_link_invalid_params(void)
         } PART_END(H5Lcreate_external_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_external_invalid_existence) {
-            TESTING_2("invalid link existence after expected H5Lcreate_external failures")
+            TESTING_2("invalid link existence after previous invalid H5Lcreate_external calls")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, EXTERNAL_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -2910,7 +2933,7 @@ test_create_user_defined_link_invalid_params(void)
         } PART_END(H5Lcreate_ud_invalid_lapl);
 
         PART_BEGIN(H5Lcreate_ud_invalid_existence) {
-            TESTING_2("invalid link existence after expected H5Lcreate_ud failures")
+            TESTING_2("invalid link existence after previous invalid H5Lcreate_ud calls")
 
             /* Verify the link hasn't been created */
             if ((link_exists = H5Lexists(group_id, UD_LINK_INVALID_PARAMS_TEST_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -5950,6 +5973,7 @@ error:
 static int
 test_delete_link_reset_grp_max_crt_order(void)
 {
+#ifndef NO_MAX_CRT_ORDER_RESET
     H5G_info_t grp_info;
     size_t     i;
     hid_t      file_id = H5I_INVALID_HID;
@@ -5957,9 +5981,10 @@ test_delete_link_reset_grp_max_crt_order(void)
     hid_t      subgroup_id = H5I_INVALID_HID;
     hid_t      gcpl_id = H5I_INVALID_HID;
     char       link_name[LINK_DELETE_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE];
+#endif
 
     TESTING_MULTIPART("H5Ldelete of all links in group resets group's maximum link creation order value")
-
+#ifndef NO_MAX_CRT_ORDER_RESET
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -6162,6 +6187,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 static int
@@ -6260,7 +6289,7 @@ test_delete_link_invalid_params(void)
 
         PART_BEGIN(H5Ldelete_invalid_lapl) {
             TESTING_2("H5Ldelete with an invalid LAPL")
-
+#ifndef NO_INVALID_PROPERTY_LIST_TESTS
             H5E_BEGIN_TRY {
                 err_ret = H5Ldelete(group_id, LINK_DELETE_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5I_INVALID_HID);
             } H5E_END_TRY;
@@ -6272,6 +6301,10 @@ test_delete_link_invalid_params(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ldelete_invalid_lapl);
+#endif
         } PART_END(H5Ldelete_invalid_lapl);
 
         PART_BEGIN(H5Ldelete_by_idx_invalid_loc_id) {
@@ -6370,7 +6403,7 @@ test_delete_link_invalid_params(void)
 
         PART_BEGIN(H5Ldelete_by_idx_invalid_lapl) {
             TESTING_2("H5Ldelete_by_idx with an invalid LAPL")
-
+#ifndef NO_INVALID_PROPERTY_LIST_TESTS
             H5E_BEGIN_TRY {
                 err_ret = H5Ldelete_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, H5I_INVALID_HID);
             } H5E_END_TRY;
@@ -6382,10 +6415,14 @@ test_delete_link_invalid_params(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ldelete_by_idx_invalid_lapl);
+#endif
         } PART_END(H5Ldelete_by_idx_invalid_lapl);
 
         PART_BEGIN(H5Ldelete_by_idx_link_existence) {
-            TESTING_2("valid link existence after expected H5Ldelete(_by_idx) failures")
+            TESTING_2("valid link existence after previous invalid H5Ldelete(_by_idx) calls")
 
             /* Verify that the link hasn't been deleted */
             if ((link_exists = H5Lexists(group_id, LINK_DELETE_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -7785,7 +7822,7 @@ test_copy_link_invalid_params(void)
 
         PART_BEGIN(H5Lcopy_invalid_lapl) {
             TESTING_2("H5Lcopy with an invalid LAPL")
-
+#ifndef NO_INVALID_PROPERTY_LIST_TESTS
             H5E_BEGIN_TRY {
                 err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5I_INVALID_HID);
@@ -7798,6 +7835,10 @@ test_copy_link_invalid_params(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Lcopy_invalid_lapl);
+#endif
         } PART_END(H5Lcopy_invalid_lapl);
 
         PART_BEGIN(H5Lcopy_invalid_same_location) {
@@ -9484,6 +9525,7 @@ test_move_link_across_files(void)
 static int
 test_move_link_reset_grp_max_crt_order(void)
 {
+#ifndef NO_MAX_CRT_ORDER_RESET
     H5G_info_t grp_info;
     size_t     i;
     hid_t      file_id = H5I_INVALID_HID;
@@ -9491,9 +9533,10 @@ test_move_link_reset_grp_max_crt_order(void)
     hid_t      src_grp_id = H5I_INVALID_HID, dst_grp_id = H5I_INVALID_HID;
     hid_t      gcpl_id = H5I_INVALID_HID;
     char       link_name[MOVE_LINK_RESET_MAX_CRT_ORDER_TEST_BUF_SIZE];
+#endif
 
     TESTING("H5Lmove of all links out of group resets group's maximum link creation order value")
-
+#ifndef NO_MAX_CRT_ORDER_RESET
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -9642,6 +9685,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*
@@ -9833,7 +9880,7 @@ test_move_link_invalid_params(void)
 
         PART_BEGIN(H5Lmove_invalid_lapl) {
             TESTING_2("H5Lmove with an invalid LAPL")
-
+#ifndef NO_INVALID_PROPERTY_LIST_TESTS
             H5E_BEGIN_TRY {
                 err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, dst_grp_id,
                         MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5I_INVALID_HID);
@@ -9846,10 +9893,14 @@ test_move_link_invalid_params(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Lmove_invalid_lapl);
+#endif
         } PART_END(H5Lmove_invalid_lapl);
 
         PART_BEGIN(H5Lmove_existence) {
-            TESTING_2("valid link existence in original group after expected H5Lmove failures")
+            TESTING_2("valid link existence in original group after previous invalid H5Lmove calls")
 
             /* Verify the link hasn't been moved */
             if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
@@ -18393,7 +18444,7 @@ test_link_iterate_invalid_params(void)
         HDprintf("    second link did not exist\n");
         goto error;
     }
-
+#ifndef NO_EXTERNAL_LINKS
     if ((link_exists = H5Lexists(group_id, LINK_ITER_INVALID_PARAMS_TEST_EXT_LINK_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if link '%s' exists\n", LINK_ITER_INVALID_PARAMS_TEST_EXT_LINK_NAME);
@@ -18405,6 +18456,7 @@ test_link_iterate_invalid_params(void)
         HDprintf("    third link did not exist\n");
         goto error;
     }
+#endif
 
     PASSED();
 
@@ -21401,7 +21453,7 @@ test_link_visit_invalid_params(void)
         HDprintf("    link 2 did not exist\n");
         goto error;
     }
-
+#ifndef NO_EXTERNAL_LINKS
     if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_INVALID_PARAMS_TEST_LINK_NAME3, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if third link '%s' exists\n", LINK_VISIT_INVALID_PARAMS_TEST_LINK_NAME3);
@@ -21413,7 +21465,7 @@ test_link_visit_invalid_params(void)
         HDprintf("    link 3 did not exist\n");
         goto error;
     }
-
+#endif
     if ((link_exists = H5Lexists(subgroup2, LINK_VISIT_INVALID_PARAMS_TEST_LINK_NAME4, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't determine if fourth link '%s' exists\n", LINK_VISIT_INVALID_PARAMS_TEST_LINK_NAME4);

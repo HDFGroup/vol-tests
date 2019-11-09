@@ -15,7 +15,7 @@
 static int test_open_link_without_leading_slash(void);
 static int test_object_creation_by_absolute_path(void);
 static int test_absolute_vs_relative_path(void);
-static int test_file_open_dot(void);
+static int test_dot_for_object_name(void);
 static int test_symbols_in_compound_field_name(void);
 static int test_double_init_term(void);
 
@@ -26,7 +26,7 @@ static int (*misc_tests[])(void) = {
         test_open_link_without_leading_slash,
         test_object_creation_by_absolute_path,
         test_absolute_vs_relative_path,
-        test_file_open_dot,
+        test_dot_for_object_name,
         test_symbols_in_compound_field_name,
         test_double_init_term,
 };
@@ -583,7 +583,7 @@ error:
  * A test to check creating/opening objects with the "." as the name
  */
 static int
-test_file_open_dot(void)
+test_dot_for_object_name(void)
 {
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, subgroup_id = H5I_INVALID_HID;
@@ -591,9 +591,11 @@ test_file_open_dot(void)
     hid_t group_id = H5I_INVALID_HID;
     hid_t dtype_id = H5I_INVALID_HID;
     hid_t attr_id = H5I_INVALID_HID;
+#ifndef NO_PREVENT_DOT_FOR_NAME
     herr_t ret = -1;
+#endif
 
-    TESTING_MULTIPART("creating/opening objects with \".\" as the name");
+    TESTING_MULTIPART("creating objects with \".\" as the name");
 
     TESTING_2("test setup")
 
@@ -627,7 +629,7 @@ test_file_open_dot(void)
     BEGIN_MULTIPART {
         PART_BEGIN(H5Gcreate_dot_as_name) {
             TESTING_2("invalid creation of group with '.' as name")
-
+#ifndef NO_PREVENT_DOT_FOR_NAME
             /* Create a group with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY {
                 group_id = H5Gcreate2(subgroup_id, ".", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -640,11 +642,15 @@ test_file_open_dot(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Gcreate_dot_as_name);
+#endif
         } PART_END(H5Gcreate_dot_as_name);
 
         PART_BEGIN(H5Dcreate_dot_as_name) {
             TESTING_2("invalid creation of dataset with '.' as name")
-
+#ifndef NO_PREVENT_DOT_FOR_NAME
             /* Create a dataset with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY {
                 dset_id = H5Dcreate2(subgroup_id, ".", H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -657,11 +663,15 @@ test_file_open_dot(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Dcreate_dot_as_name);
+#endif
         } PART_END(H5Dcreate_dot_as_name);
 
         PART_BEGIN(H5Acreate_dot_as_name) {
             TESTING_2("invalid creation of attribute with '.' as name")
-
+#ifndef NO_PREVENT_DOT_FOR_NAME
             /* Create an attribute with "." as the name. It should fail. */
             H5E_BEGIN_TRY {
                 attr_id = H5Acreate2(subgroup_id, ".", H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
@@ -674,11 +684,15 @@ test_file_open_dot(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Acreate_dot_as_name);
+#endif
         } PART_END(H5Acreate_dot_as_name);
 
         PART_BEGIN(H5Tcommit_dot_as_name) {
             TESTING_2("invalid creation of committed datatype with '.' as name")
-
+#ifndef NO_PREVENT_DOT_FOR_NAME
             if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't copy a native datatype\n");
@@ -703,6 +717,10 @@ test_file_open_dot(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Tcommit_dot_as_name);
+#endif
         } PART_END(H5Tcommit_dot_as_name);
     } END_MULTIPART;
 

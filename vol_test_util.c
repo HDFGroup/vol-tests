@@ -436,6 +436,9 @@ generate_random_datatype(H5T_class_t parent_class, hbool_t is_compact)
         case_reference:
         case H5T_REFERENCE:
         {
+            /* Temporarily disable generation of reference datatypes */
+            goto reroll;
+
             /* Currently only allows arrays of integer, float or string. Pick another type if we
              * are creating an array of something other than these. */
             if (H5T_ARRAY == parent_class)

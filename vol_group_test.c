@@ -626,7 +626,7 @@ test_open_nonexistent_group(void)
     hid_t file_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
 
-    TESTING("for failure when opening a nonexistent group")
+    TESTING("for invalid opening of a nonexistent group")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();

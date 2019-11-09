@@ -133,16 +133,24 @@ extern char vol_test_filename[];
 #define GROUP_CREATION_IS_SUPPORTED
 
 /*
- * Temporarily disable iteration tests that iterate by
- * alphabetical order in decreasing order.
+ * Temporarily disable certain tests.
  */
 #define NO_DECREASING_ALPHA_ITER_ORDER
-
-/*
- * Temporarily disable user-defined and external link tests.
- */
 #define NO_USER_DEFINED_LINKS
 #define NO_EXTERNAL_LINKS
+#define NO_FILE_MOUNTS
+#define NO_FILL_VALUES
+#define NO_DOUBLE_OBJECT_OPENS
+#define NO_OBJECT_GET_NAME
+#define NO_WRAP_COMMITTED_TYPES /* bug in HDF5 */
+#define NO_REF_COUNT
+#define WRONG_DATATYPE_OBJ_COUNT
+#define NO_SHARED_DATATYPES
+#define NO_INVALID_PROPERTY_LIST_TESTS
+#define NO_MAX_CRT_ORDER_RESET
+#define NO_PREVENT_DOT_FOR_NAME
+#define NO_PREVENT_HARD_LINKS_ACROSS_FILES
+#define NO_SOFT_LINK_MANY_DANGLING
 
 /*
  * Global variables to keep track of statistics on the

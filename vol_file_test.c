@@ -425,7 +425,7 @@ test_open_nonexistent_file(void)
     hid_t file_id = H5I_INVALID_HID;
     char  test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-    TESTING("for failure when opening a non-existent file")
+    TESTING("for invalid opening of a non-existent file")
 
     HDsnprintf(test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", NONEXISTENT_FILENAME);
 
@@ -1350,7 +1350,7 @@ test_get_file_obj_count(void)
 
         PART_BEGIN(H5Fget_obj_count_types) {
             TESTING_2("H5Fget_obj_count for datatypes")
-
+#ifndef WRONG_DATATYPE_OBJ_COUNT
             /* Get the number of named datatype in two opened files */
             if ((obj_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_DATATYPE)) < 0) {
                 H5_FAILED();
@@ -1365,6 +1365,10 @@ test_get_file_obj_count(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Fget_obj_count_types);
+#endif
         } PART_END(H5Fget_obj_count_types);
 
         PART_BEGIN(H5Fget_obj_count_attrs) {
@@ -1427,7 +1431,7 @@ test_get_file_obj_count(void)
 
         PART_BEGIN(H5Fget_obj_count_all) {
             TESTING_2("H5Fget_obj_count for all object types")
-
+#ifndef WRONG_DATATYPE_OBJ_COUNT
             /* Get the number of all open objects */
             if ((obj_count = H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL)) < 0) {
                 H5_FAILED();
@@ -1442,6 +1446,10 @@ test_get_file_obj_count(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Fget_obj_count_all);
+#endif
         } PART_END(H5Fget_obj_count_all);
 
         PART_BEGIN(H5Fget_obj_ids_singular_grp) {
@@ -1505,14 +1513,16 @@ error:
 static int
 test_file_open_overlap(void)
 {
+#ifndef NO_DOUBLE_OBJECT_OPENS
     ssize_t obj_count;
     hid_t   file_id = H5I_INVALID_HID;
     hid_t   file_id2 = H5I_INVALID_HID;
     hid_t   group_id = H5I_INVALID_HID;
     hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
+#endif
 
     TESTING("overlapping file opens")
-
+#ifndef NO_DOUBLE_OBJECT_OPENS
     if ((file_id = H5Fcreate(OVERLAPPING_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", OVERLAPPING_FILENAME);
@@ -1606,6 +1616,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*
@@ -1615,11 +1629,13 @@ error:
 static int
 test_file_mounts(void)
 {
+#ifndef NO_FILE_MOUNTS
     hid_t file_id = H5I_INVALID_HID;
     hid_t child_fid = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+#endif
 
     TESTING("file mounting/unmounting")
-
+#ifndef NO_FILE_MOUNTS
     if ((file_id = H5Fcreate(FILE_MOUNT_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", FILE_GET_ID_TEST_FILENAME);
@@ -1670,7 +1686,10 @@ error:
     } H5E_END_TRY;
 
     return 1;
-
+#else
+    SKIPPED();
+    return 0;
+#endif
 }
 
 /*
@@ -2724,7 +2743,9 @@ cleanup_files(void)
     /* The below file should not get created */
     /* H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT); */
 
+#ifndef NO_DOUBLE_OBJECT_OPENS
     H5Fdelete(OVERLAPPING_FILENAME, H5P_DEFAULT);
+#endif
     H5Fdelete(FILE_PERMISSION_TEST_FILENAME, H5P_DEFAULT);
     H5Fdelete(FILE_FLUSH_TEST_FILENAME, H5P_DEFAULT);
     H5Fdelete(FILE_PROPERTY_LIST_TEST_FNAME1, H5P_DEFAULT);
@@ -2732,7 +2753,9 @@ cleanup_files(void)
     H5Fdelete(FILE_INTENT_TEST_FILENAME, H5P_DEFAULT);
     H5Fdelete(GET_OBJ_COUNT_TEST_FILENAME1, H5P_DEFAULT);
     H5Fdelete(GET_OBJ_COUNT_TEST_FILENAME2, H5P_DEFAULT);
+#ifndef NO_FILE_MOUNTS
     H5Fdelete(FILE_MOUNT_TEST_FILENAME, H5P_DEFAULT);
+#endif
     H5Fdelete(GET_FILE_NAME_TEST_FNAME, H5P_DEFAULT);
 #if 0 /* for native VOL connector test only */
     HDremove(FILESPACE_INFO_FILENAME);

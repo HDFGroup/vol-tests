@@ -56,9 +56,13 @@ static int test_refresh_object_invalid_params(void);
 static herr_t object_copy_attribute_iter_callback(hid_t location_id, const char *attr_name, const H5A_info_t *ainfo, void *op_data);
 static herr_t object_copy_soft_link_non_expand_callback(hid_t group, const char *name, const H5L_info_t *info, void *op_data);
 static herr_t object_copy_soft_link_expand_callback(hid_t group, const char *name, const H5L_info_t *info, void *op_data);
+#ifndef NO_WRAP_COMMITTED_TYPES
 static herr_t object_visit_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+#endif
 static herr_t object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+#ifndef NO_WRAP_COMMITTED_TYPES
 static herr_t object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+#endif
 static herr_t object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
 static herr_t object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
 
@@ -1313,7 +1317,7 @@ test_link_object_invalid_params(void)
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Olink_invalid_object_id) {
-            TESTING_2("H5Olink with invalid object ID")
+            TESTING_2("H5Olink with an invalid object ID")
 
             H5E_BEGIN_TRY {
                 status = H5Olink(H5I_INVALID_HID, group_id, OBJECT_LINK_TEST_GROUP_NAME2, H5P_DEFAULT, H5P_DEFAULT);
@@ -1321,7 +1325,7 @@ test_link_object_invalid_params(void)
 
             if (status >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Olink linked to a invalid object ID\n");
+                HDprintf("    H5Olink succeeded with an invalid object ID!\n");
                 PART_ERROR(H5Olink_invalid_object_id);
             }
 
@@ -1329,7 +1333,7 @@ test_link_object_invalid_params(void)
         } PART_END(H5Olink_invalid_object_id);
 
         PART_BEGIN(H5Olink_invalid_location) {
-            TESTING_2("H5Olink with invalid location ID")
+            TESTING_2("H5Olink with an invalid location ID")
 
             H5E_BEGIN_TRY {
                 status = H5Olink(group_id2, H5I_INVALID_HID, OBJECT_LINK_TEST_GROUP_NAME2, H5P_DEFAULT, H5P_DEFAULT);
@@ -1337,7 +1341,7 @@ test_link_object_invalid_params(void)
 
             if (status >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Olink linked to a invalid location ID\n");
+                HDprintf("    H5Olink succeeded with an invalid location ID!\n");
                 PART_ERROR(H5Olink_invalid_location);
             }
 
@@ -1345,7 +1349,7 @@ test_link_object_invalid_params(void)
         } PART_END(H5Olink_invalid_location);
 
         PART_BEGIN(H5Olink_invalid_name) {
-            TESTING_2("H5Olink with invalid name")
+            TESTING_2("H5Olink with an invalid name")
 
             H5E_BEGIN_TRY {
                 status = H5Olink(group_id2, group_id, NULL, H5P_DEFAULT, H5P_DEFAULT);
@@ -1353,7 +1357,7 @@ test_link_object_invalid_params(void)
 
             if (status >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Olink linked with NULL as the name\n");
+                HDprintf("    H5Olink succeeded with NULL as the object name!\n");
                 PART_ERROR(H5Olink_invalid_name);
             }
 
@@ -1363,15 +1367,15 @@ test_link_object_invalid_params(void)
 
             if (status >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Olink linked with NULL as the name\n");
+                HDprintf("    H5Olink succeeded with an invalid object name of ''!\n");
                 PART_ERROR(H5Olink_invalid_name);
             }
 
             PASSED();
         } PART_END(H5Olink_invalid_name);
 
-        PART_BEGIN(H5Olink_invalid_plist) {
-            TESTING_2("H5Olink with invalid property list")
+        PART_BEGIN(H5Olink_invalid_lcpl) {
+            TESTING_2("H5Olink with an invalid LCPL")
 
             H5E_BEGIN_TRY {
                 status = H5Olink(group_id2, group_id, OBJECT_LINK_TEST_GROUP_NAME2, H5I_INVALID_HID, H5P_DEFAULT);
@@ -1379,22 +1383,32 @@ test_link_object_invalid_params(void)
 
             if (status >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Olink linked to invalid property list\n");
-                PART_ERROR(H5Olink_invalid_plist);
+                HDprintf("    H5Olink succeeded with an invalid LCPL!\n");
+                PART_ERROR(H5Olink_invalid_lcpl);
             }
 
+            PASSED();
+        } PART_END(H5Olink_invalid_lcpl);
+
+        PART_BEGIN(H5Olink_invalid_lapl) {
+            TESTING_2("H5Olink with an invalid LAPL")
+#ifndef NO_INVALID_PROPERTY_LIST_TESTS
             H5E_BEGIN_TRY {
                 status = H5Olink(group_id2, group_id, OBJECT_LINK_TEST_GROUP_NAME2, H5P_DEFAULT, H5I_INVALID_HID);
             } H5E_END_TRY;
 
             if (status >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Olink linked to invalid property list\n");
-                PART_ERROR(H5Olink_invalid_plist);
+                HDprintf("    H5Olink succeeded with an invalid LAPL!\n");
+                PART_ERROR(H5Olink_invalid_lapl);
             }
 
             PASSED();
-        } PART_END(H5Olink_invalid_plist);
+#else
+            SKIPPED();
+            PART_EMPTY(H5Olink_invalid_lapl);
+#endif
+        } PART_END(H5Olink_invalid_lapl);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -1430,7 +1444,9 @@ error:
 static int
 test_incr_decr_object_refcount(void)
 {
+#ifndef NO_REF_COUNT
     H5O_info_t oinfo;                      /* Object info struct */
+#endif
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t      group_id2 = H5I_INVALID_HID;
@@ -1472,7 +1488,7 @@ test_incr_decr_object_refcount(void)
     BEGIN_MULTIPART {
         PART_BEGIN(H5Oincr_decr_refcount_group) {
             TESTING_2("H5Oincr_refcount/H5Odecr_refcount on a group")
-
+#ifndef NO_REF_COUNT
             if ((group_id2 = H5Gcreate2(group_id, OBJECT_REF_COUNT_TEST_GRP_NAME,
                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -1527,11 +1543,15 @@ test_incr_decr_object_refcount(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Oincr_decr_refcount_group);
+#endif
         } PART_END(H5Oincr_decr_refcount_group);
 
         PART_BEGIN(H5Oincr_decr_refcount_dset) {
             TESTING_2("H5Oincr_refcount/H5Odecr_refcount on a dataset")
-
+#ifndef NO_REF_COUNT
             if ((dset_id = H5Dcreate2(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, dset_dtype, fspace_id,
                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -1586,11 +1606,15 @@ test_incr_decr_object_refcount(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Oincr_decr_refcount_dset);
+#endif
         } PART_END(H5Oincr_decr_refcount_dset);
 
         PART_BEGIN(H5Oincr/decr_refcount_dtype) {
             TESTING_2("H5Oincr_refcount/H5Odecr_refcount on a committed datatype")
-
+#ifndef NO_REF_COUNT
             if (H5Tcommit2(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, dset_dtype,
                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -1645,6 +1669,10 @@ test_incr_decr_object_refcount(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Oincr_decr_refcount_dtype);
+#endif
         } PART_END(H5Oincr_decr_refcount_dtype);
     } END_MULTIPART;
 
@@ -2108,7 +2136,7 @@ test_object_copy_basic(void)
 
         PART_BEGIN(H5Ocopy_dtype) {
             TESTING_2("H5Ocopy on a committed datatype (default copy options)")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ocopy(group_id, OBJECT_COPY_BASIC_TEST_DTYPE_NAME, group_id, OBJECT_COPY_BASIC_TEST_NEW_DTYPE_NAME,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -2170,6 +2198,10 @@ test_object_copy_basic(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ocopy_dtype);
+#endif
         } PART_END(H5Ocopy_dtype);
 
         if (tmp_dtype_id >= 0) {
@@ -2920,7 +2952,7 @@ test_object_copy_no_attributes(void)
 
         PART_BEGIN(H5Ocopy_dtype_no_attributes) {
             TESTING_2("H5Ocopy on a committed datatype (without attributes)")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if ((ocpypl_id = H5Pcreate(H5P_OBJECT_COPY)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't create OCopyPL\n");
@@ -2992,6 +3024,10 @@ test_object_copy_no_attributes(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ocopy_dtype_no_attributes);
+#endif
         } PART_END(H5Ocopy_dtype_no_attributes);
 
         if (ocpypl_id >= 0) {
@@ -4009,7 +4045,7 @@ test_object_copy_between_files(void)
 
         PART_BEGIN(H5Ocopy_dtype_between_files) {
             TESTING_2("H5Ocopy on committed datatype between different files")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ocopy(group_id, OBJECT_COPY_BETWEEN_FILES_TEST_DTYPE_NAME, file_id2, OBJECT_COPY_BETWEEN_FILES_TEST_NEW_DTYPE_NAME,
                     H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4071,6 +4107,10 @@ test_object_copy_between_files(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ocopy_dtype_between_files);
+#endif
         } PART_END(H5Ocopy_dtype_between_files);
 
         if (tmp_dtype_id >= 0) {
@@ -4361,7 +4401,9 @@ test_object_comments_invalid_params(void)
 static int
 test_object_visit(void)
 {
+#ifndef NO_WRAP_COMMITTED_TYPES
     size_t i;
+#endif
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  group_id2 = H5I_INVALID_HID;
@@ -4448,11 +4490,13 @@ test_object_visit(void)
          * iterations. This is to try and check that the objects are indeed being
          * returned in the correct order.
          */
+#ifndef NO_WRAP_COMMITTED_TYPES
         i = 0;
+#endif
 
         PART_BEGIN(H5Ovisit_obj_name_increasing) {
             TESTING_2("H5Ovisit by object name in increasing order")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in increasing order failed\n");
@@ -4460,11 +4504,15 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_obj_name_increasing);
+#endif
         } PART_END(H5Ovisit_obj_name_increasing);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /* Reset the counter to the appropriate value for the next test */
         i = OBJECT_VISIT_TEST_NUM_OBJS;
-
+#endif
         PART_BEGIN(H5Ovisit_obj_name_decreasing) {
             TESTING_2("H5Ovisit by object name in decreasing order")
 #ifndef NO_DECREASING_ALPHA_ITER_ORDER
@@ -4480,13 +4528,13 @@ test_object_visit(void)
             PART_EMPTY(H5Ovisit_obj_name_decreasing);
 #endif
         } PART_END(H5Ovisit_obj_name_decreasing);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /* Reset the counter to the appropriate value for the next test */
         i = 2 * OBJECT_VISIT_TEST_NUM_OBJS;
-
+#endif
         PART_BEGIN(H5Ovisit_create_order_increasing) {
             TESTING_2("H5Ovisit by creation order in increasing order")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in increasing order failed\n");
@@ -4494,14 +4542,18 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_create_order_increasing);
+#endif
         } PART_END(H5Ovisit_create_order_increasing);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /* Reset the counter to the appropriate value for the next test */
         i = 3 * OBJECT_VISIT_TEST_NUM_OBJS;
-
+#endif
         PART_BEGIN(H5Ovisit_create_order_decreasing) {
             TESTING_2("H5Ovisit by creation order in decreasing order")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
@@ -4509,6 +4561,10 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_create_order_decreasing);
+#endif
         } PART_END(H5Ovisit_create_order_decreasing);
 
         PART_BEGIN(H5Ovisit_file) {
@@ -4536,7 +4592,7 @@ test_object_visit(void)
 
         PART_BEGIN(H5Ovisit_dtype) {
             TESTING_2("H5Ovisit on a committed datatype ID")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ovisit2(type_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dtype_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit failed\n");
@@ -4544,16 +4600,20 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_dtype);
+#endif
         } PART_END(H5Ovisit_dtype);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /*
          * Make sure to reset the special counter.
          */
         i = 0;
-
+#endif
         PART_BEGIN(H5Ovisit_by_name_obj_name_increasing) {
             TESTING_2("H5Ovisit_by_name by object name in increasing order")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4571,11 +4631,15 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_obj_name_increasing);
+#endif
         } PART_END(H5Ovisit_by_name_obj_name_increasing);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /* Reset the counter to the appropriate value for the next test */
         i = OBJECT_VISIT_TEST_NUM_OBJS;
-
+#endif
         PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
             TESTING_2("H5Ovisit_by_name by object name in decreasing order")
 #ifndef NO_DECREASING_ALPHA_ITER_ORDER
@@ -4601,13 +4665,13 @@ test_object_visit(void)
             PART_EMPTY(H5Ovisit_by_name_obj_name_decreasing);
 #endif
         } PART_END(H5Ovisit_by_name_obj_name_decreasing);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /* Reset the counter to the appropriate value for the next test */
         i = 2 * OBJECT_VISIT_TEST_NUM_OBJS;
-
+#endif
         PART_BEGIN(H5Ovisit_by_name_create_order_increasing) {
             TESTING_2("H5Ovisit_by_name by creation order in increasing order")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4625,14 +4689,18 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_create_order_increasing);
+#endif
         } PART_END(H5Ovisit_by_name_create_order_increasing);
-
+#ifndef NO_WRAP_COMMITTED_TYPES
         /* Reset the counter to the appropriate value for the next test */
         i = 3 * OBJECT_VISIT_TEST_NUM_OBJS;
-
+#endif
         PART_BEGIN(H5Ovisit_by_name_create_order_decreasing) {
             TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             /* First, test visiting using "." for the object name */
             if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -4650,6 +4718,10 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_create_order_decreasing);
+#endif
         } PART_END(H5Ovisit_by_name_create_order_decreasing);
 
         PART_BEGIN(H5Ovisit_by_name_file) {
@@ -4677,7 +4749,7 @@ test_object_visit(void)
 
         PART_BEGIN(H5Ovisit_by_name_dtype) {
             TESTING_2("H5Ovisit_by_name on a committed datatype ID")
-
+#ifndef NO_WRAP_COMMITTED_TYPES
             if (H5Ovisit_by_name2(group_id, OBJECT_VISIT_TEST_TYPE_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_dtype_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name failed\n");
@@ -4685,6 +4757,10 @@ test_object_visit(void)
             }
 
             PASSED();
+#else
+            SKIPPED();
+            PART_EMPTY(H5Ovisit_by_name_dtype);
+#endif
         } PART_END(H5Ovisit_by_name_dtype);
     } END_MULTIPART;
 
@@ -5784,7 +5860,7 @@ done:
 
     return ret_value;
 }
-
+#ifndef NO_WRAP_COMMITTED_TYPES
 /*
  * H5Ovisit callback to simply iterate recursively through all of the objects in a
  * group and check to make sure their names match what is expected.
@@ -5836,7 +5912,7 @@ done:
 
     return ret_val;
 }
-
+#endif
 /*
  * H5Ovisit callback for visiting a singular dataset.
  */
@@ -5860,7 +5936,7 @@ object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *objec
 
     return ret_val;
 }
-
+#ifndef NO_WRAP_COMMITTED_TYPES
 /*
  * H5Ovisit callback for visiting a singular committed datatype.
  */
@@ -5884,7 +5960,7 @@ object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *obje
 
     return ret_val;
 }
-
+#endif
 /*
  * H5Ovisit callback for testing visiting of dangling soft links.
  */
