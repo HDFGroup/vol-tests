@@ -121,6 +121,10 @@ else()
   endif()
 endif()
 
+# HDF5 tests in separate tests
+option(HDF5_VOL_TEST_ENABLE_PART
+  "Enable testing in separate tests." OFF)
+
 # Parallel HDF5 tests
 option(HDF5_VOL_TEST_ENABLE_PARALLEL
   "Enable testing in parallel (requires MPI)." OFF)
@@ -278,9 +282,17 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
 endif()
 
 if(NOT HDF5_VOL_TEST_SERVER)
-  add_test(NAME "h5vl_test"
-    COMMAND $<TARGET_FILE:h5vl_test>
-  )
+  if(NOT HDF5_VOL_TEST_ENABLE_PART)
+    add_test(NAME "h5vl_test"
+      COMMAND $<TARGET_FILE:h5vl_test>
+    )
+  else()
+    foreach(vol_test ${vol_tests})
+      add_test(NAME "h5vl_test_${vol_test}"
+        COMMAND $<TARGET_FILE:h5vl_test> ${vol_test}
+      )
+      endforeach()
+  endif()
   foreach(hdf5_test ${hdf5_tests})
     add_test(NAME "h5_test_${hdf5_test}"
       COMMAND $<TARGET_FILE:h5_test_${hdf5_test}>
@@ -305,13 +317,25 @@ else()
     set(HDF5_VOL_TEST_CLIENT_HELPER_CMD --client_helper ${HDF5_VOL_TEST_CLIENT_HELPER})
   endif()
   # Serial dynamic client/server test
-  add_test(NAME "h5vl_test"
-    COMMAND $<TARGET_FILE:h5vl_test_driver>
-    --server ${HDF5_VOL_TEST_SERVER}
-    --client $<TARGET_FILE:h5vl_test>
-    --serial
-    ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-  )
+  if(NOT HDF5_VOL_TEST_ENABLE_PART)
+    add_test(NAME "h5vl_test"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:h5vl_test>
+      --serial
+      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
+    )
+  else()
+    foreach(vol_test ${vol_tests})
+      add_test(NAME "h5vl_test_${vol_test}"
+        COMMAND $<TARGET_FILE:h5vl_test_driver>
+        --server ${HDF5_VOL_TEST_SERVER}
+        --client $<TARGET_FILE:h5vl_test> ${vol_test}
+        --serial
+        ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
+      )
+    endforeach()
+  endif()
   foreach(hdf5_test ${hdf5_tests})
     add_test(NAME "h5_test_${hdf5_test}"
       COMMAND $<TARGET_FILE:h5vl_test_driver>

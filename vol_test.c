@@ -43,12 +43,74 @@ size_t n_tests_passed_g;
 size_t n_tests_failed_g;
 size_t n_tests_skipped_g;
 
+/* X-macro to define the following for each test:
+ * - enum type
+ * - name
+ * - test function
+ * - enabled by default
+ */
+#define VOL_TESTS                                               \
+    X(VOL_TEST_NULL,       "",         NULL,               0)   \
+    X(VOL_TEST_FILE,      "file",      vol_file_test,      1)   \
+    X(VOL_TEST_GROUP,     "group",     vol_group_test,     1)   \
+    X(VOL_TEST_DATASET,   "dataset",   vol_dataset_test,   1)   \
+    X(VOL_TEST_DATATYPE,  "datatype",  vol_datatype_test,  1)   \
+    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test, 1)   \
+    X(VOL_TEST_LINK,      "link",      vol_link_test,      1)   \
+    X(VOL_TEST_OBJECT,    "object",    vol_object_test,    1)   \
+    X(VOL_TEST_MISC,      "misc",      vol_misc_test,      1)   \
+    X(VOL_TEST_MAX,       "",          NULL,               0)
+
+#define X(a, b, c, d) a,
+enum vol_test_type { VOL_TESTS };
+#undef X
+#define X(a, b, c, d) b,
+static char * const vol_test_name[] = { VOL_TESTS };
+#undef X
+#define X(a, b, c, d) c,
+static int (*vol_test_func[])(void) = { VOL_TESTS };
+#undef X
+#define X(a, b, c, d) d,
+static int vol_test_enabled[] = { VOL_TESTS };
+#undef X
+
+static enum vol_test_type
+vol_test_name_to_type(const char *test_name)
+{
+    enum vol_test_type i = 0;
+
+    while(strcmp(vol_test_name[i], test_name) && i != VOL_TEST_MAX)
+        i++;
+
+    return((i == VOL_TEST_MAX) ? VOL_TEST_NULL : i);
+}
+
+static void
+vol_test_run(void)
+{
+    enum vol_test_type i;
+
+    for (i = VOL_TEST_FILE; i < VOL_TEST_MAX; i++)
+        if (vol_test_enabled[i])
+            (void)vol_test_func[i]();
+}
+
 /******************************************************************************/
 
 int main(int argc, char **argv)
 {
     char *vol_connector_name;
     hbool_t err_occurred = FALSE;
+
+    /* Simple argument checking, TODO can improve that later */
+    if (argc > 1) {
+        enum vol_test_type i = vol_test_name_to_type(argv[1]);
+        if (i != VOL_TEST_NULL) {
+            /* Run only specific VOL test */
+            memset(vol_test_enabled, 0, sizeof(vol_test_enabled));
+            vol_test_enabled[i] = 1;
+        }
+    }
 
 #ifdef H5_HAVE_PARALLEL
     /* If HDF5 was built with parallel enabled, go ahead and call MPI_Init before
@@ -90,14 +152,8 @@ int main(int argc, char **argv)
         goto done;
     }
 
-    (void)vol_file_test();
-    (void)vol_group_test();
-    (void)vol_dataset_test();
-    (void)vol_datatype_test();
-    (void)vol_attribute_test();
-    (void)vol_link_test();
-    (void)vol_object_test();
-    (void)vol_misc_test();
+    /* Run all the tests that are enabled */
+    vol_test_run();
 
     HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n",
             (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / n_tests_run_g * 100.0), vol_connector_name);

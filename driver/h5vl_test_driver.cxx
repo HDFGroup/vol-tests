@@ -491,7 +491,7 @@ H5VLTestDriver::Main(int argc, char* argv[])
         }
         // If client has died, we wait for output from the server processess
         // for this->ServerExitTimeOut, then we'll kill the servers, if needed.
-        double timeout = (clientPipe) ? 0.1 : this->ServerExitTimeOut;
+        double timeout = (clientPipe) ? 0 : this->ServerExitTimeOut;
         output = "";
         this->WaitForAndPrintLine("server", server, output, timeout,
             ServerStdOut, ServerStdErr, 0);
