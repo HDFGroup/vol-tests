@@ -8,9 +8,6 @@ const char *FILENAME[3]={ "bigio_test.h5",
                            NULL
                         };
 
-/* Skip certain tests until non-shape same support is added for chunked datasets */
-#define NON_SHAPE_SAME_NOT_SUPPORTED
-
 /* Constants definitions */
 #define MAX_ERR_REPORT  10      /* Maximum number of errors reported */
 
@@ -1860,17 +1857,12 @@ int main(int argc, char **argv)
           HDprintf("***Express test mode on.  Several tests are skipped\n");
     }
     else {
-#ifdef NON_SHAPE_SAME_NOT_SUPPORTED
-      if (MAINPROCESS)
-          HDprintf(" - SKIPPING collective chunk tests until non-shapesame selections are supported -\n");
-#else
       coll_chunk1();
       MPI_Barrier(MPI_COMM_WORLD);
       coll_chunk2();
       MPI_Barrier(MPI_COMM_WORLD);
       coll_chunk3();
       MPI_Barrier(MPI_COMM_WORLD);
-#endif
       single_rank_independent_io();
     }
 

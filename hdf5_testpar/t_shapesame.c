@@ -36,9 +36,6 @@ const char *FILENAME[NFILENAME]={
 char    filenames[NFILENAME][PATH_MAX];
 hid_t    fapl;                /* file access property list */
 
-/* Skip certain tests until non-shape same support is added for chunked datasets */
-#define NON_SHAPE_SAME_NOT_SUPPORTED
-
 /* On Lustre (and perhaps other parallel file systems?), we have severe
  * slow downs if two or more processes attempt to access the same file system
  * block.  To minimize this problem, we set alignment in the shape same tests
@@ -4901,7 +4898,7 @@ sscontig2(void)
 {
     contig_hs_dr_pio_test(COL_CONTIG);
 }
-#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
+
 /* Shape Same test using contigous hyperslab using independent IO on chunked datasets */
 static void
 sscontig3(void)
@@ -4915,7 +4912,7 @@ sscontig4(void)
 {
     contig_hs_dr_pio_test(COL_CHUNKED);
 }
-#endif
+
 
 /* Shape Same test using checker hyperslab using independent IO on contigous datasets */
 static void
@@ -4930,7 +4927,7 @@ sschecker2(void)
 {
     ckrbrd_hs_dr_pio_test(COL_CONTIG);
 }
-#ifndef NON_SHAPE_SAME_NOT_SUPPORTED
+
 /* Shape Same test using checker hyperslab using independent IO on chunked datasets */
 static void
 sschecker3(void)
@@ -4944,7 +4941,7 @@ sschecker4(void)
 {
     ckrbrd_hs_dr_pio_test(COL_CHUNKED);
 }
-#endif
+
 
 int main(int argc, char **argv)
 {
@@ -5018,15 +5015,15 @@ int main(int argc, char **argv)
     }
     sscontig2();
     if (MAINPROCESS) {
-        printf("Cntg hslab, ind IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        printf("Cntg hslab, ind IO, chnk dsets\n");
         fflush(stdout);
     }
-    /* sscontig3(); */
+    sscontig3();
     if (MAINPROCESS) {
-        printf("Cntg hslab, col IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        printf("Cntg hslab, col IO, chnk dsets\n");
         fflush(stdout);
     }
-    /* sscontig4(); */
+    sscontig4();
 
     /* Shape Same tests using checker board hyperslab */
 #if 0
@@ -5050,15 +5047,15 @@ int main(int argc, char **argv)
     }
     sschecker2();
     if (MAINPROCESS) {
-        printf("Check hslab, ind IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        printf("Check hslab, ind IO, chnk dsets\n");
         fflush(stdout);
     }
-    /* sschecker3(); */
+    sschecker3();
     if (MAINPROCESS) {
-        printf("Check hslab, col IO, chnk dsets - SKIPPED currently until non-shapesame selections are supported\n");
+        printf("Check hslab, col IO, chnk dsets\n");
         fflush(stdout);
     }
-    /* sschecker4(); */
+    sschecker4();
 
     /* Display testing information */
     /* TestInfo(argv[0]); */
