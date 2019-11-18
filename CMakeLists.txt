@@ -183,7 +183,7 @@ set(vol_tests
 
 # Ported HDF5 tests
 set(hdf5_tests
-
+  testhdf5
 )
 if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   set(hdf5_partests
@@ -238,7 +238,32 @@ endif()
 
 # Include the ported HDF5 tests
 foreach(hdf5_test ${hdf5_tests})
-  add_executable(h5_test_${hdf5_test} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/${hdf5_test}.c)
+  if(${hdf5_test} STREQUAL "testhdf5")
+    add_executable(h5_test_${hdf5_test}
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/${hdf5_test}.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tarray.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tattr.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tchecksum.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tconfig.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tcoords.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tfile.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tgenprop.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/th5o.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/th5s.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tid.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/titerate.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tmisc.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/trefer_deprec.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/trefer.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tselect.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/ttime.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tunicode.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tvlstr.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tvltypes.c
+    )
+  else()
+    add_executable(h5_test_${hdf5_test} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/${hdf5_test}.c)
+  endif()
 
   target_include_directories(h5_test_${hdf5_test}
     SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
