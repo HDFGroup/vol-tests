@@ -49,6 +49,7 @@ static int test_get_dataset_offset_invalid_params(void);
 static int test_read_dataset_small_all(void);
 static int test_read_dataset_small_hyperslab(void);
 static int test_read_dataset_small_point_selection(void);
+static int test_dataset_io_point_selections(void);
 #ifndef NO_LARGE_TESTS
 static int test_read_dataset_large_all(void);
 static int test_read_dataset_large_hyperslab(void);
@@ -126,6 +127,7 @@ static int (*dataset_tests[])(void) = {
         test_read_dataset_small_all,
         test_read_dataset_small_hyperslab,
         test_read_dataset_small_point_selection,
+        test_dataset_io_point_selections,
 #ifndef NO_LARGE_TESTS
         test_read_dataset_large_all,
         test_read_dataset_large_hyperslab,
@@ -3879,6 +3881,478 @@ error:
 
     return 1;
 }
+
+/*
+ * Tests point selection I/O with different patterns
+ */
+#define DATASET_IO_POINT_DIM_0      6
+#define DATASET_IO_POINT_DIM_1      9
+#define DATASET_IO_POINT_CDIM_0     4
+#define DATASET_IO_POINT_CDIM_1     3
+#define DATASET_IO_POINT_NPOINTS    10
+#define DATASET_IO_POINT_GEN_POINTS(POINTS, I, J) \
+{ \
+    for((I) = 0; (I) < DATASET_IO_POINT_NPOINTS; (I)++) \
+        do { \
+            (POINTS)[2 * (I)] = rand() % DATASET_IO_POINT_DIM_0; \
+            (POINTS)[2 * (I) + 1] = rand() % DATASET_IO_POINT_DIM_1; \
+            for((J) = 0; ((J) < (I)) \
+                    && (((POINTS)[2 * (I)] != (POINTS)[2 * (J)]) \
+                    || ((POINTS)[2 * (I) + 1] != (POINTS)[2 * (J) + 1])); \
+                    (J)++); \
+        } while((J) < (I)); \
+}
+static int
+test_dataset_io_point_selections(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t mspace_id_full = H5I_INVALID_HID, mspace_id_all = H5I_INVALID_HID, fspace_id = H5I_INVALID_HID;
+    hid_t dcpl_id_chunk = H5I_INVALID_HID;
+    hsize_t dims[2] = {DATASET_IO_POINT_DIM_0, DATASET_IO_POINT_DIM_1};
+    hsize_t cdims[2] = {DATASET_IO_POINT_CDIM_0, DATASET_IO_POINT_CDIM_1};
+    hsize_t points[DATASET_IO_POINT_NPOINTS * 2];
+    hsize_t points2[DATASET_IO_POINT_NPOINTS * 2];
+    hsize_t npoints = DATASET_IO_POINT_NPOINTS;
+    hsize_t start[2] = {1, 2};
+    hsize_t stride[2] = {2, 5};
+    hsize_t count[2] = {2, 1};
+    hsize_t block[2] = {1, 5};
+    int buf_all[DATASET_IO_POINT_DIM_0][DATASET_IO_POINT_DIM_1];
+    int file_state[DATASET_IO_POINT_DIM_0][DATASET_IO_POINT_DIM_1];
+    int erbuf[DATASET_IO_POINT_DIM_0][DATASET_IO_POINT_DIM_1];
+    int buf_point[DATASET_IO_POINT_NPOINTS];
+    hbool_t do_chunk;
+    int i, j;
+
+    TESTING("point selection I/O with all selection in memory and points in file")
+
+    /* Create dataspaces and DCPL */
+    if((mspace_id_full = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+    if((mspace_id_all = H5Screate_simple(1, &npoints, NULL)) < 0)
+        TEST_ERROR
+    if((fspace_id = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+    if((dcpl_id_chunk = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    /* Enable chunking on chunk DCPL */
+    if(H5Pset_chunk(dcpl_id_chunk, 2, cdims) < 0)
+        TEST_ERROR
+
+    /* Open file */
+    if((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Open container group */
+    if((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Create group */
+    if((group_id = H5Gcreate2(container_group, DATASET_IO_POINT_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Perform with and without chunking */
+    for(do_chunk = FALSE; ; do_chunk = TRUE) {
+        if(do_chunk) {
+            TESTING("point selection I/O with all selection in memory and points in file with chunking")
+
+            /* Create chunked dataset */
+            if((dset_id = H5Dcreate2(group_id, DATASET_IO_POINT_DSET_NAME_CHUNK, H5T_NATIVE_INT, fspace_id, H5P_DEFAULT, dcpl_id_chunk, H5P_DEFAULT)) < 0)
+                TEST_ERROR
+        } /* end if */
+        else
+            /* Create non-chunked dataset */
+            if((dset_id = H5Dcreate2(group_id, DATASET_IO_POINT_DSET_NAME_NOCHUNK, H5T_NATIVE_INT, fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0)
+                TEST_ERROR
+
+        /* Fill write buffer */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                buf_all[i][j] = rand();
+
+        /* Write data */
+        if(H5Dwrite(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to write entire dataset")
+
+        /* Update file_state */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                file_state[i][j] = buf_all[i][j];
+
+        /* Generate points to read */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Wipe read buffer */
+        memset(buf_point, 0, sizeof(buf_point));
+
+        /* Read points to "all" memory buffer */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, mspace_id_all, fspace_id, H5P_DEFAULT, buf_point) < 0)
+            FAIL_PUTS_ERROR("Failed to read points from dataset to all memory buffer")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            if(buf_point[i] != file_state[points[2 * i]][points[2 * i + 1]])
+                FAIL_PUTS_ERROR("Incorrect data read from points to all memory buffer")
+
+        /* Generate points to write */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Fill write buffer */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            buf_point[i] = rand();
+
+        /* Write points from "all" memory buffer */
+        if(H5Dwrite(dset_id, H5T_NATIVE_INT, mspace_id_all, fspace_id, H5P_DEFAULT, buf_point) < 0)
+            FAIL_PUTS_ERROR("Failed to write points to dataset from all memory buffer")
+
+        /* Update file state */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            file_state[points[2 * i]][points[2 * i + 1]] = buf_point[i];
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Read entire dataset */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read entire dataset")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != file_state[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after writing from all memory buffer to points")
+
+        PASSED()
+
+        if(do_chunk)
+            TESTING("point selection I/O with points in memory and file (same shape) with chunking")
+        else
+            TESTING("point selection I/O with points in memory and file (same shape)")
+
+        /* Generate points to read */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Generate expected read buffer */
+        memset(erbuf, 0, sizeof(erbuf));
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            erbuf[points[2 * i]][points[2 * i + 1]] = file_state[points[2 * i]][points[2 * i + 1]];
+
+        /* Read data points->points */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, fspace_id, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read points from dataset to points in memory buffer")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != erbuf[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found read from points in file to points in memory")
+
+        /* Generate points to write */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Fill write buffer */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                buf_all[i][j] = rand();
+
+        /* Write data points->points */
+        if(H5Dwrite(dset_id, H5T_NATIVE_INT, fspace_id, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to write from in memory to points in dataset")
+
+        /* Update file_state */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            file_state[points[2 * i]][points[2 * i + 1]] = buf_all[points[2 * i]][points[2 * i + 1]];
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Read entire dataset */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read entire dataset")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != file_state[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after writing from points in memory to points in dataset")
+
+        PASSED()
+
+        if(do_chunk)
+            TESTING("point selection I/O with points in memory and file (different shape) with chunking")
+        else
+            TESTING("point selection I/O with points in memory and file (different shape)")
+
+        /* Generate points to read */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+        DATASET_IO_POINT_GEN_POINTS(points2, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+        if(H5Sselect_elements(mspace_id_full, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points2) < 0)
+            TEST_ERROR
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Generate expected read buffer */
+        memset(erbuf, 0, sizeof(erbuf));
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            erbuf[points2[2 * i]][points2[2 * i + 1]] = file_state[points[2 * i]][points[2 * i + 1]];
+
+        /* Read data points->points */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read points from dataset to points in memory buffer")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != erbuf[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after reading from points in file to points in memory")
+
+        /* Generate points to write */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+        DATASET_IO_POINT_GEN_POINTS(points2, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+        if(H5Sselect_elements(mspace_id_full, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points2) < 0)
+            TEST_ERROR
+
+        /* Fill write buffer */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                buf_all[i][j] = rand();
+
+        /* Write data points->points */
+        if(H5Dwrite(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to write from points in memory to points in dataset")
+
+        /* Update file_state */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            file_state[points[2 * i]][points[2 * i + 1]] = buf_all[points2[2 * i]][points2[2 * i + 1]];
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Read entire dataset */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read entire dataset")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != file_state[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after writing from points in memory to points in dataset")
+
+        PASSED()
+
+        if(do_chunk)
+            TESTING("point selection I/O with hyperslab in memory and points in file with chunking")
+        else
+            TESTING("point selection I/O with hyperslab in memory and points in file")
+
+        /* Generate points to read */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Select hyperslab */
+        if(H5Sselect_hyperslab(mspace_id_full, H5S_SELECT_SET, start, stride, count, block) < 0)
+            TEST_ERROR
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Generate expected read buffer */
+        memset(erbuf, 0, sizeof(erbuf));
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            erbuf[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])] = file_state[points[2 * i]][points[2 * i + 1]];
+
+        /* Read data points->hslab */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read points from dataset to hyperslab in memory buffer")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != erbuf[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after reading from points in file to hyperslab in memory")
+
+        /* Generate points to write */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(fspace_id, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Fill write buffer */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                buf_all[i][j] = rand();
+
+        /* Write data hlsab->points */
+        if(H5Dwrite(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to write from hyperslab in memory to points in dataset")
+
+        /* Update file_state */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            file_state[points[2 * i]][points[2 * i + 1]] = buf_all[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])];
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Read entire dataset */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read entire dataset")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != file_state[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after writing from hyperslab in memory to points in dataset")
+
+        PASSED()
+
+        if(do_chunk)
+            TESTING("point selection I/O with points in memory and hyperslab in file with chunking")
+        else
+            TESTING("point selection I/O with points in memory and hyperslab in file")
+
+        /* Generate points to read */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(mspace_id_full, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Select hyperslab */
+        if(H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, stride, count, block) < 0)
+            TEST_ERROR
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Generate expected read buffer */
+        memset(erbuf, 0, sizeof(erbuf));
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            erbuf[points[2 * i]][points[2 * i + 1]] = file_state[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])];
+
+        /* Read data hslab->points */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read hyperslab from dataset to points in memory buffer")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != erbuf[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after reading from hyperslab in file to points in memory")
+
+        /* Generate points to write */
+        DATASET_IO_POINT_GEN_POINTS(points, i, j);
+
+        /* Select points */
+        if(H5Sselect_elements(mspace_id_full, H5S_SELECT_SET, DATASET_IO_POINT_NPOINTS, points) < 0)
+            TEST_ERROR
+
+        /* Fill write buffer */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                buf_all[i][j] = rand();
+
+        /* Write data points->hslab */
+        if(H5Dwrite(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to write from points in memory to hyperslab in dataset")
+
+        /* Update file_state */
+        for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
+            file_state[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])] = buf_all[points[2 * i]][points[2 * i + 1]];
+
+        /* Wipe read buffer */
+        memset(buf_all, 0, sizeof(buf_all));
+
+        /* Read entire dataset */
+        if(H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf_all) < 0)
+            FAIL_PUTS_ERROR("Failed to read entire dataset")
+
+        /* Verify data */
+        for(i = 0; i < DATASET_IO_POINT_DIM_0; i++)
+            for(j = 0; j < DATASET_IO_POINT_DIM_1; j++)
+                if(buf_all[i][j] != file_state[i][j])
+                    FAIL_PUTS_ERROR("Incorrect data found after writing from points in memory to hyperslab in dataset")
+
+        if(!do_chunk)
+            PASSED()
+
+        /* Close dataset */
+        if(H5Dclose(dset_id) < 0)
+            TEST_ERROR
+
+        /* Exit after chunked run */
+        if(do_chunk)
+            break;
+    } /* end for */
+
+    /* Close */
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    if(H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if(H5Fclose(file_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(dcpl_id_chunk) < 0)
+        TEST_ERROR
+    if(H5Sclose(mspace_id_full) < 0)
+        TEST_ERROR
+    if(H5Sclose(mspace_id_all) < 0)
+        TEST_ERROR
+    if(H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+
+    PASSED()
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(fspace_id);
+        H5Sclose(mspace_id_full);
+        H5Sclose(mspace_id_all);
+        H5Pclose(dcpl_id_chunk);
+        H5Dclose(dset_id);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_dataset_io_point_selections() */
 
 #ifndef NO_LARGE_TESTS
 /*
