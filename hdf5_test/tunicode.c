@@ -463,12 +463,13 @@ void test_objnames(hid_t fid, const char* string)
   /* Ensure that we can open named datatype using object reference */
   type_id = H5Rdereference2(dset_id, H5P_DEFAULT, H5R_OBJECT, &obj_ref);
   CHECK(type_id, FAIL, "H5Rdereference2");
-#endif
+
   ret = H5Tcommitted(type_id);
   VERIFY(ret, 1, "H5Tcommitted");
 
   ret = H5Tclose(type_id);
   CHECK(type_id, FAIL, "H5Tclose");
+#endif
   ret = H5Dclose(dset_id);
   CHECK(ret, FAIL, "H5Dclose");
   ret = H5Sclose(space_id);

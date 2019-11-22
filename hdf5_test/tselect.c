@@ -191,7 +191,9 @@ static herr_t test_select_hyper_iter1(void *elem,hid_t type_id, unsigned ndim, c
 static herr_t test_select_point_iter1(void *elem,hid_t type_id, unsigned ndim, const hsize_t *point, void *operator_data);
 static herr_t test_select_all_iter1(void *elem,hid_t type_id, unsigned ndim, const hsize_t *point, void *operator_data);
 static herr_t test_select_none_iter1(void *elem,hid_t type_id, unsigned ndim, const hsize_t *point, void *operator_data);
+#if 0
 static herr_t test_select_hyper_iter2(void *_elem, hid_t type_id, unsigned ndim, const hsize_t *point, void *_operator_data);
+#endif
 static herr_t test_select_hyper_iter3(void *elem,hid_t type_id, unsigned ndim, const hsize_t *point, void *operator_data);
 
 /****************************************************************
@@ -1613,6 +1615,7 @@ test_select_hyper_contig3(hid_t dset_type, hid_t xfer_plist)
 **      test_select_hyper_contig_dr__run_test()
 **
 ****************************************************************/
+#if 0
 static void
 verify_select_hyper_contig_dr__run_test(const uint16_t *cube_buf,
     size_t cube_size, unsigned edge_size, unsigned cube_rank)
@@ -1666,7 +1669,7 @@ verify_select_hyper_contig_dr__run_test(const uint16_t *cube_buf,
     if(mis_match)
         TestErrPrintf("Initial cube data don't match! Line = %d\n", __LINE__);
 }   /* verify_select_hyper_contig_dr__run_test() */
-
+#endif
 
 /****************************************************************
 **
@@ -1677,6 +1680,7 @@ verify_select_hyper_contig_dr__run_test(const uint16_t *cube_buf,
 **    I/O.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_contig_dr__run_test(int test_num, const uint16_t *cube_buf,
     const uint16_t *zero_buf, unsigned edge_size, unsigned chunk_edge_size,
@@ -2309,7 +2313,7 @@ test_select_hyper_contig_dr__run_test(int test_num, const uint16_t *cube_buf,
     HDfree(large_cube_buf_1);
 
 }   /* test_select_hyper_contig_dr__run_test() */
-
+#endif
 
 /****************************************************************
 **
@@ -2320,6 +2324,7 @@ test_select_hyper_contig_dr__run_test(int test_num, const uint16_t *cube_buf,
 **    I/O.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_contig_dr(hid_t dset_type, hid_t xfer_plist)
 {
@@ -2377,7 +2382,7 @@ test_select_hyper_contig_dr(hid_t dset_type, hid_t xfer_plist)
     HDfree(zero_buf);
 
 }   /* test_select_hyper_contig_dr() */
-
+#endif
 
 /****************************************************************
 **
@@ -2399,6 +2404,7 @@ test_select_hyper_contig_dr(hid_t dset_type, hid_t xfer_plist)
 **                    JRM -- 9/9/09
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_checker_board_dr__select_checker_board(hid_t tgt_n_cube_sid,
     unsigned tgt_n_cube_rank, unsigned edge_size, unsigned checker_edge_size,
@@ -2588,7 +2594,7 @@ test_select_hyper_checker_board_dr__select_checker_board(hid_t tgt_n_cube_sid,
     ret = H5Sselect_hyperslab(tgt_n_cube_sid, H5S_SELECT_AND, start, stride, count, block);
     CHECK(ret, FAIL, "H5Sselect_hyperslab");
 } /* test_select_hyper_checker_board_dr__select_checker_board() */
-
+#endif
 
 /****************************************************************
 **
@@ -2632,6 +2638,7 @@ test_select_hyper_checker_board_dr__select_checker_board(hid_t tgt_n_cube_sid,
 **    a selected or an unselected checker.
 **
 ****************************************************************/
+#if 0
 H5_ATTR_PURE static hbool_t
 test_select_hyper_checker_board_dr__verify_data(uint16_t * buf_ptr,
     unsigned rank, unsigned edge_size, unsigned checker_edge_size,
@@ -2732,7 +2739,7 @@ test_select_hyper_checker_board_dr__verify_data(uint16_t * buf_ptr,
 
     return(good_data);
 } /* test_select_hyper_checker_board_dr__verify_data() */
-
+#endif
 
 /****************************************************************
 **
@@ -2743,6 +2750,7 @@ test_select_hyper_checker_board_dr__verify_data(uint16_t * buf_ptr,
 **    isolation, so now we try to do I/O.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_checker_board_dr__run_test(int test_num, const uint16_t *cube_buf,
     const uint16_t *zero_buf, unsigned edge_size, unsigned checker_edge_size,
@@ -3533,7 +3541,7 @@ test_select_hyper_checker_board_dr__run_test(int test_num, const uint16_t *cube_
     HDfree(large_cube_buf_1);
 
 }   /* test_select_hyper_checker_board_dr__run_test() */
-
+#endif
 
 /****************************************************************
 **
@@ -3547,6 +3555,7 @@ test_select_hyper_checker_board_dr__run_test(int test_num, const uint16_t *cube_
 **    with a slice through a cube only.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_checker_board_dr(hid_t dset_type, hid_t xfer_plist)
 {
@@ -3618,7 +3627,7 @@ test_select_hyper_checker_board_dr(hid_t dset_type, hid_t xfer_plist)
     HDfree(zero_buf);
 
 }   /* test_select_hyper_checker_board_dr() */
-
+#endif
 
 /****************************************************************
 **
@@ -5305,7 +5314,7 @@ test_select_hyper_valid_combination(void)
     herr_t    ret;        /* Generic return value    */
 
     /* Output message about test being performed */
-    MESSAGE(6, ("Testing Selection Combination Validity\n"));
+    MESSAGE(5, ("Testing Selection Combination Validity\n"));
     assert(SPACE9_DIM2>=POINT1_NPOINTS);
 
     /* Create dataspace for single point selection */
@@ -5345,31 +5354,47 @@ test_select_hyper_valid_combination(void)
     /* Test all the selections created */
 
     /* Test the invalid combinations between point and hyperslab */
-    tmp_sid = H5Scombine_select(single_pt_sid, H5S_SELECT_AND, single_hyper_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Scombine_select(single_pt_sid, H5S_SELECT_AND, single_hyper_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Scombine_select");
 
-    tmp_sid = H5Smodify_select(single_pt_sid, H5S_SELECT_AND, single_hyper_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Smodify_select(single_pt_sid, H5S_SELECT_AND, single_hyper_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Smodify_select");
 
     /* Test the invalid combination between two hyperslab but of different dimension size */
-    tmp_sid = H5Scombine_select(single_hyper_sid, H5S_SELECT_AND, regular_hyper_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Scombine_select(single_hyper_sid, H5S_SELECT_AND, regular_hyper_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Scombine_select");
 
-    tmp_sid = H5Smodify_select(single_hyper_sid, H5S_SELECT_AND, regular_hyper_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Smodify_select(single_hyper_sid, H5S_SELECT_AND, regular_hyper_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Smodify_select");
 
     /* Test invalid operation inputs to the two functions */
-    tmp_sid = H5Scombine_select(single_hyper_sid, H5S_SELECT_SET, single_hyper_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Scombine_select(single_hyper_sid, H5S_SELECT_SET, single_hyper_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Scombine_select");
 
-    tmp_sid = H5Smodify_select(single_hyper_sid, H5S_SELECT_SET, single_hyper_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Smodify_select(single_hyper_sid, H5S_SELECT_SET, single_hyper_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Smodify_select");
 
     /* Test inputs in case of non-existent space ids */
-    tmp_sid = H5Scombine_select(single_hyper_sid, H5S_SELECT_AND, non_existent_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Scombine_select(single_hyper_sid, H5S_SELECT_AND, non_existent_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Scombine_select");
 
-    tmp_sid = H5Smodify_select(single_hyper_sid, H5S_SELECT_AND, non_existent_sid);
+    H5E_BEGIN_TRY
+        tmp_sid = H5Smodify_select(single_hyper_sid, H5S_SELECT_AND, non_existent_sid);
+    H5E_END_TRY;
     VERIFY(tmp_sid, FAIL, "H5Smodify_select");
 
     /* Close dataspaces */
@@ -5907,6 +5932,7 @@ test_select_hyper_nota_2d(void)
 **  test_select_hyper_iter2(): Iterator for checking hyperslab iteration
 **
 ****************************************************************/
+#if 0
 static herr_t
 test_select_hyper_iter2(void *_elem, hid_t H5_ATTR_UNUSED type_id, unsigned ndim, const hsize_t *point, void *_operator_data)
 {
@@ -5931,6 +5957,7 @@ test_select_hyper_iter2(void *_elem, hid_t H5_ATTR_UNUSED type_id, unsigned ndim
         return(0);
     }
 }   /* end test_select_hyper_iter2() */
+#endif
 
 /****************************************************************
 **
@@ -5938,6 +5965,7 @@ test_select_hyper_iter2(void *_elem, hid_t H5_ATTR_UNUSED type_id, unsigned ndim
 **      Tests random unions of 5-D hyperslabs
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_union_random_5d(hid_t read_plist)
 {
@@ -6074,6 +6102,7 @@ test_select_hyper_union_random_5d(hid_t read_plist)
     HDfree(wbuf);
     HDfree(rbuf);
 }   /* test_select_hyper_union_random_5d() */
+#endif
 
 /****************************************************************
 **
@@ -6314,6 +6343,7 @@ test_select_hyper_chunk(hid_t fapl_plist, hid_t xfer_plist)
 **      chunked datasets.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_point_chunk(void)
 {
@@ -6500,6 +6530,7 @@ test_select_point_chunk(void)
     HDfree(data);
     HDfree (data_out);
 }   /* test_select_point_chunk() */
+#endif
 
 /****************************************************************
 **
@@ -6507,6 +6538,7 @@ test_select_point_chunk(void)
 **      Tests using a scalar dataspace (in memory) to access chunked datasets.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_scalar_chunk(void)
 {
@@ -6566,6 +6598,7 @@ test_select_scalar_chunk(void)
     ret = H5Fclose (file_id);
     CHECK(ret, FAIL, "H5Fclose");
 }   /* test_select_scalar_chunk() */
+#endif
 
 /****************************************************************
 **
@@ -6590,10 +6623,14 @@ test_select_valid(void)
     MESSAGE(8, ( "Case 1 : sub_space is not a valid dataspace\n"));
     dims[0] = dims[1] = H5S_UNLIMITED;
 
-    sub_space = H5Screate_simple(2,dims,NULL);
+    H5E_BEGIN_TRY
+        sub_space = H5Screate_simple(2,dims,NULL);
+    H5E_END_TRY;
     VERIFY(sub_space, FAIL, "H5Screate_simple");
 
-    valid=H5Sselect_valid(sub_space);
+    H5E_BEGIN_TRY
+        valid = H5Sselect_valid(sub_space);
+    H5E_END_TRY;
     VERIFY(valid, FAIL, "H5Sselect_valid");
 
     /* Set arrays and dataspace for the rest of the cases */
@@ -6610,7 +6647,9 @@ test_select_valid(void)
     error=H5Sclose(sub_space);
     CHECK(error, FAIL, "H5Sclose");
 
-    valid=H5Sselect_valid(sub_space);
+    H5E_BEGIN_TRY
+        valid=H5Sselect_valid(sub_space);
+    H5E_END_TRY;
     VERIFY(valid, FAIL, "H5Sselect_valid");
 
     MESSAGE(8, ( "Case 3 : in the dimensions\nTry offset (4,4) and size(6,6), the original space is of size (10,10)\n"));
@@ -11918,7 +11957,7 @@ static void
 test_shape_same_dr(void)
 {
     /* Output message about test being performed */
-    MESSAGE(6, ("Testing Same Shape/Different Rank Comparisons\n"));
+    MESSAGE(5, ("Testing Same Shape/Different Rank Comparisons\n"));
 
     /* first run some smoke checks */
     test_shape_same_dr__smoke_check_1();
@@ -13465,6 +13504,7 @@ test_space_update_diminfo(void)
 **      chunked datasets.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_chunk_offset(void)
 {
@@ -13672,6 +13712,7 @@ test_select_hyper_chunk_offset(void)
     HDfree(wbuf);
     HDfree(rbuf);
 }   /* test_select_hyper_chunk_offset() */
+#endif
 
 /****************************************************************
 **
@@ -13680,6 +13721,7 @@ test_select_hyper_chunk_offset(void)
 **      working in chunked datasets.
 **
 ****************************************************************/
+#if 0
 static void
 test_select_hyper_chunk_offset2(void)
 {
@@ -13774,6 +13816,7 @@ test_select_hyper_chunk_offset2(void)
     status = H5Fclose(file);
     CHECK(status, FAIL, "H5Fclose");
 }   /* test_select_hyper_chunk_offset2() */
+#endif
 
 /****************************************************************
 **
@@ -13837,7 +13880,7 @@ test_select_bounds(void)
     H5E_BEGIN_TRY {
         ret = H5Sget_select_bounds(sid, low_bounds, high_bounds);
     } H5E_END_TRY;
-    VERIFY(ret, FAIL, "H5Sget_select_bo unds");
+    VERIFY(ret, FAIL, "H5Sget_select_bounds");
 
     /* Set point selection */
     coord[0][0] =  3; coord[0][1] =  3;

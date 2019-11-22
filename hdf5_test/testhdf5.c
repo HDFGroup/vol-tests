@@ -789,17 +789,14 @@ main(int argc, char *argv[])
 
         H5E_BEGIN_TRY
             cleanup_configure();
-            /* cleanup_metadata(); */
             cleanup_checksum();
             cleanup_file();
             cleanup_h5o();
             cleanup_h5s();
             cleanup_coords();
-            /* cleanup_sohm(); */
             cleanup_attr();
             cleanup_select();
             cleanup_time();
-            cleanup_reference_deprec();
             cleanup_reference();
             cleanup_vltypes();
             cleanup_vlstrings();

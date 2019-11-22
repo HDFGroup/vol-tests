@@ -127,11 +127,11 @@ test_reference_params(void)
     /* Create a group */
     group = H5Gcreate2(fid1, "Group1", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(group, H5I_INVALID_HID, "H5Gcreate2");
-
+#if 0
     /* Set group's comment */
     ret = H5Oset_comment(group, write_comment);
     CHECK(ret, FAIL, "H5Oset_comment");
-
+#endif
     /* Create a dataset (inside Group1) */
     dataset = H5Dcreate2(group, "Dataset1", H5T_NATIVE_UINT, sid1, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(dataset, H5I_INVALID_HID, "H5Dcreate2");
@@ -194,85 +194,87 @@ test_reference_params(void)
     dataset = H5Dcreate2(fid1, "Dataset3", H5T_STD_REF, sid1, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(ret, H5I_INVALID_HID, "H5Dcreate2");
 
-    /* Test parameters to H5Rcreate_object */
-    ret = H5Rcreate_object(fid1, "/Group1/Dataset1", NULL);
-    VERIFY(ret, FAIL, "H5Rcreate_object ref");
-    ret = H5Rcreate_object(H5I_INVALID_HID, "/Group1/Dataset1", &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_object loc_id");
-    ret = H5Rcreate_object(fid1, NULL, &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_object name");
-    ret = H5Rcreate_object(fid1, "", &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_object null name");
+    H5E_BEGIN_TRY
+        /* Test parameters to H5Rcreate_object */
+        ret = H5Rcreate_object(fid1, "/Group1/Dataset1", NULL);
+        VERIFY(ret, FAIL, "H5Rcreate_object ref");
+        ret = H5Rcreate_object(H5I_INVALID_HID, "/Group1/Dataset1", &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_object loc_id");
+        ret = H5Rcreate_object(fid1, NULL, &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_object name");
+        ret = H5Rcreate_object(fid1, "", &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_object null name");
 
-    /* Test parameters to H5Rcreate_region */
-    ret = H5Rcreate_region(fid1, "/Group1/Dataset1", sid1, NULL);
-    VERIFY(ret, FAIL, "H5Rcreate_region ref");
-    ret = H5Rcreate_region(H5I_INVALID_HID, "/Group1/Dataset1", sid1, &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_region loc_id");
-    ret = H5Rcreate_region(fid1, NULL, sid1, &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_region name");
-    ret = H5Rcreate_region(fid1, "/Group1/Dataset1", H5I_INVALID_HID, &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_region dataspace");
+        /* Test parameters to H5Rcreate_region */
+        ret = H5Rcreate_region(fid1, "/Group1/Dataset1", sid1, NULL);
+        VERIFY(ret, FAIL, "H5Rcreate_region ref");
+        ret = H5Rcreate_region(H5I_INVALID_HID, "/Group1/Dataset1", sid1, &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_region loc_id");
+        ret = H5Rcreate_region(fid1, NULL, sid1, &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_region name");
+        ret = H5Rcreate_region(fid1, "/Group1/Dataset1", H5I_INVALID_HID, &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_region dataspace");
 
-    /* Test parameters to H5Rcreate_attr */
-    ret = H5Rcreate_attr(fid1, "/Group1/Dataset2", "Attr", NULL);
-    VERIFY(ret, FAIL, "H5Rcreate_attr ref");
-    ret = H5Rcreate_attr(H5I_INVALID_HID, "/Group1/Dataset2", "Attr", &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_attr loc_id");
-    ret = H5Rcreate_attr(fid1, NULL, "Attr", &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_attr name");
-    ret = H5Rcreate_attr(fid1, "/Group1/Dataset2", NULL, &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcreate_attr attr_name");
+        /* Test parameters to H5Rcreate_attr */
+        ret = H5Rcreate_attr(fid1, "/Group1/Dataset2", "Attr", NULL);
+        VERIFY(ret, FAIL, "H5Rcreate_attr ref");
+        ret = H5Rcreate_attr(H5I_INVALID_HID, "/Group1/Dataset2", "Attr", &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_attr loc_id");
+        ret = H5Rcreate_attr(fid1, NULL, "Attr", &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_attr name");
+        ret = H5Rcreate_attr(fid1, "/Group1/Dataset2", NULL, &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcreate_attr attr_name");
 
-    /* Test parameters to H5Rdestroy */
-    ret = H5Rdestroy(NULL);
-    VERIFY(ret, FAIL, "H5Rdestroy");
+        /* Test parameters to H5Rdestroy */
+        ret = H5Rdestroy(NULL);
+        VERIFY(ret, FAIL, "H5Rdestroy");
 
-    /* Test parameters to H5Rget_type */
-    type = H5Rget_type(NULL);
-    VERIFY(type, H5R_BADTYPE, "H5Rget_type ref");
+        /* Test parameters to H5Rget_type */
+        type = H5Rget_type(NULL);
+        VERIFY(type, H5R_BADTYPE, "H5Rget_type ref");
 
-    /* Test parameters to H5Requal */
-    ret = H5Requal(NULL, (const H5R_ref_t *)&rbuf[0]);
-    VERIFY(ret, FAIL, "H5Requal ref1");
-    ret = H5Requal((const H5R_ref_t *)&rbuf[0], NULL);
-    VERIFY(ret, FAIL, "H5Requal ref2");
+        /* Test parameters to H5Requal */
+        ret = H5Requal(NULL, (const H5R_ref_t *)&rbuf[0]);
+        VERIFY(ret, FAIL, "H5Requal ref1");
+        ret = H5Requal((const H5R_ref_t *)&rbuf[0], NULL);
+        VERIFY(ret, FAIL, "H5Requal ref2");
 
-    /* Test parameters to H5Rcopy */
-    ret = H5Rcopy(NULL, &wbuf[0]);
-    VERIFY(ret, FAIL, "H5Rcopy src_ref");
-    ret = H5Rcopy((const H5R_ref_t *)&rbuf[0], NULL);
-    VERIFY(ret, FAIL, "H5Rcopy dest_ref");
+        /* Test parameters to H5Rcopy */
+        ret = H5Rcopy(NULL, &wbuf[0]);
+        VERIFY(ret, FAIL, "H5Rcopy src_ref");
+        ret = H5Rcopy((const H5R_ref_t *)&rbuf[0], NULL);
+        VERIFY(ret, FAIL, "H5Rcopy dest_ref");
 
-    /* Test parameters to H5Ropen_object */
-    dset2 = H5Ropen_object((const H5R_ref_t *)&rbuf[0], H5I_INVALID_HID, H5I_INVALID_HID);
-    VERIFY(dset2, FAIL, "H5Ropen_object oapl_id");
-    dset2 = H5Ropen_object(NULL, H5P_DEFAULT, dapl_id);
-    VERIFY(dset2, FAIL, "H5Ropen_object ref");
+        /* Test parameters to H5Ropen_object */
+        dset2 = H5Ropen_object((const H5R_ref_t *)&rbuf[0], H5I_INVALID_HID, H5I_INVALID_HID);
+        VERIFY(dset2, FAIL, "H5Ropen_object oapl_id");
+        dset2 = H5Ropen_object(NULL, H5P_DEFAULT, dapl_id);
+        VERIFY(dset2, FAIL, "H5Ropen_object ref");
 
-    /* Test parameters to H5Ropen_region */
-    ret_id = H5Ropen_region(NULL, H5I_INVALID_HID, H5I_INVALID_HID);
-    VERIFY(ret_id, H5I_INVALID_HID, "H5Ropen_region ref");
+        /* Test parameters to H5Ropen_region */
+        ret_id = H5Ropen_region(NULL, H5I_INVALID_HID, H5I_INVALID_HID);
+        VERIFY(ret_id, H5I_INVALID_HID, "H5Ropen_region ref");
 
-    /* Test parameters to H5Ropen_attr */
-    ret_id = H5Ropen_attr(NULL, H5P_DEFAULT, aapl_id);
-    VERIFY(ret_id, H5I_INVALID_HID, "H5Ropen_attr ref");
+        /* Test parameters to H5Ropen_attr */
+        ret_id = H5Ropen_attr(NULL, H5P_DEFAULT, aapl_id);
+        VERIFY(ret_id, H5I_INVALID_HID, "H5Ropen_attr ref");
 
-    /* Test parameters to H5Rget_obj_type3 */
-    ret = H5Rget_obj_type3(NULL, H5P_DEFAULT, NULL);
-    VERIFY(ret, FAIL, "H5Rget_obj_type3 ref");
+        /* Test parameters to H5Rget_obj_type3 */
+        ret = H5Rget_obj_type3(NULL, H5P_DEFAULT, NULL);
+        VERIFY(ret, FAIL, "H5Rget_obj_type3 ref");
 
-    /* Test parameters to H5Rget_file_name */
-    name_size = H5Rget_file_name(NULL, NULL, 0);
-    VERIFY(name_size, (-1), "H5Rget_file_name ref");
+        /* Test parameters to H5Rget_file_name */
+        name_size = H5Rget_file_name(NULL, NULL, 0);
+        VERIFY(name_size, (-1), "H5Rget_file_name ref");
 
-    /* Test parameters to H5Rget_obj_name */
-    name_size = H5Rget_obj_name(NULL, H5P_DEFAULT, NULL, 0);
-    VERIFY(name_size, (-1), "H5Rget_obj_name ref");
+        /* Test parameters to H5Rget_obj_name */
+        name_size = H5Rget_obj_name(NULL, H5P_DEFAULT, NULL, 0);
+        VERIFY(name_size, (-1), "H5Rget_obj_name ref");
 
-    /* Test parameters to H5Rget_attr_name */
-    name_size = H5Rget_attr_name(NULL, NULL, 0);
-    VERIFY(name_size, (-1), "H5Rget_attr_name ref");
+        /* Test parameters to H5Rget_attr_name */
+        name_size = H5Rget_attr_name(NULL, NULL, 0);
+        VERIFY(name_size, (-1), "H5Rget_attr_name ref");
+    H5E_END_TRY;
 
     /* Close disk dataspace */
     ret = H5Sclose(sid1);
@@ -1354,7 +1356,9 @@ test_reference_obj_deleted(void)
     CHECK(ret, FAIL, "H5Dread");
 
     /* Open deleted dataset object */
-    dset2 = H5Ropen_object((const H5R_ref_t *)&oref, H5P_DEFAULT, H5P_DEFAULT);
+    H5E_BEGIN_TRY
+        dset2 = H5Ropen_object((const H5R_ref_t *)&oref, H5P_DEFAULT, H5P_DEFAULT);
+    H5E_END_TRY;
     VERIFY(dset2, H5I_INVALID_HID, "H5Ropen_object");
 
     /* Close Dataset */
