@@ -730,7 +730,7 @@ main(int argc, char *argv[])
 
     /* AddTest("ref", test_reference, cleanup_reference,  "References", NULL); */
     HDprintf("** References **\n");
-#if 0
+#ifndef NO_REFERENCE_SUPPORT
     test_reference();
 #else
     HDprintf("** SKIPPED due to no reference support currently\n");

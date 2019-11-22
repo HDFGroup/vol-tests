@@ -23,6 +23,12 @@
 #include "hdf5.h"
 #include "H5private.h"
 
+/* Temporarily disable tests until fill values are supported */
+#define NO_FILL_VALUE_SUPPORT
+
+/* Temporarily disable tests until references are supported */
+#define NO_REFERENCE_SUPPORT
+
 #define VERBO_NONE 0     /* None    */
 #define VERBO_DEF  3     /* Default */
 #define VERBO_LO   5     /* Low     */
