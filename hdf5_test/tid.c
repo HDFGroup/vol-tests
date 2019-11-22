@@ -159,10 +159,12 @@ static int basic_id_test(void)
         goto out;
 
     H5E_BEGIN_TRY
-        VERIFY(H5Inmembers(myType, NULL), -1, "H5Inmembers");
-        if(H5Inmembers(myType, NULL) != -1)
-            goto out;
+        err = H5Inmembers(myType, NULL);
     H5E_END_TRY
+
+    VERIFY(err, -1, "H5Inmembers");
+    if(err != -1)
+        goto out;
 
     /* Register another type and another object in that type */
     myType = H5Iregister_type((size_t)64, 0, (H5I_free_t) free );
@@ -388,13 +390,13 @@ static int test_is_valid(void)
     CHECK(ret, FAIL, "H5I_dec_ref");
     if (ret < 0)
         goto out;
-#endif
+
     /* Check that dtype is invalid */
     tri_ret = H5Iis_valid(dtype);
     VERIFY(tri_ret, FALSE, "H5Iis_valid");
     if (tri_ret != FALSE)
         goto out;
-
+#endif
     /* Close dtype and verify that it has been closed */
     CHECK(H5Inmembers(H5I_DATATYPE, (hsize_t *)&nmembs1), FAIL, "H5Inmembers");
     if (nmembs1 < 0)

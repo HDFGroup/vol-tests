@@ -1224,6 +1224,7 @@ test_misc7(void)
 **      storage methods.
 **
 ****************************************************************/
+#if 0
 static void
 test_misc8(void)
 {
@@ -1388,7 +1389,9 @@ test_misc8(void)
 
     /* Create a contiguous dataset, with space allocation late */
     /* Should fail */
-    did = H5Dcreate2(fid, MISC8_DSETNAME4, H5T_NATIVE_INT, sid, H5P_DEFAULT, dcpl, H5P_DEFAULT);
+    H5E_BEGIN_TRY
+        did = H5Dcreate2(fid, MISC8_DSETNAME4, H5T_NATIVE_INT, sid, H5P_DEFAULT, dcpl, H5P_DEFAULT);
+    H5E_END_TRY;
     VERIFY(did, FAIL, "H5Dcreate2");
 
     /* Set the space allocation time to incremental */
@@ -1397,7 +1400,9 @@ test_misc8(void)
 
     /* Create a contiguous dataset, with space allocation incremental */
     /* Should fail */
-    did = H5Dcreate2(fid, MISC8_DSETNAME4, H5T_NATIVE_INT, sid, H5P_DEFAULT, dcpl, H5P_DEFAULT);
+    H5E_BEGIN_TRY
+        did = H5Dcreate2(fid, MISC8_DSETNAME4, H5T_NATIVE_INT, sid, H5P_DEFAULT, dcpl, H5P_DEFAULT);
+    H5E_END_TRY;
     VERIFY(did, FAIL, "H5Dcreate2");
 
     /* Set the space allocation time to early */
@@ -1699,6 +1704,7 @@ test_misc8(void)
     HDfree(rdata);
 #endif /* VERIFY_DATA */
 } /* end test_misc8() */
+#endif
 
 /****************************************************************
 **
@@ -1721,7 +1727,9 @@ test_misc9(void)
     ret = H5Pset_fapl_core(fapl, (size_t)1024, 0);
     CHECK(ret, FAIL, "H5Pset_fapl_core");
 
-    fid = H5Fopen(MISC9_FILE, H5F_ACC_RDWR, fapl);
+    H5E_BEGIN_TRY
+        fid = H5Fopen(MISC9_FILE, H5F_ACC_RDWR, fapl);
+    H5E_END_TRY;
     VERIFY(fid,FAIL,"H5Fopen");
 
     ret=H5Pclose(fapl);
@@ -1820,7 +1828,9 @@ test_misc11(void)
     unsigned    istore_ik;      /* Indexed storage B-tree initial 'K' value */
     unsigned    sym_lk;         /* Symbol table B-tree leaf 'K' value */
     unsigned     nindexes;       /* Shared message number of indexes */
+#if 0
     H5F_info2_t finfo;          /* global information about file */
+#endif
     H5F_fspace_strategy_t strategy;  /* File space strategy */
     hsize_t      threshold;      /* Free-space section threshold */
     hbool_t    persist;    /* To persist free-space or not */
@@ -1836,14 +1846,14 @@ test_misc11(void)
     /* Create file with default file creation property list */
     file= H5Fcreate(MISC11_FILE, H5F_ACC_TRUNC , H5P_DEFAULT, H5P_DEFAULT);
     CHECK(file, FAIL, "H5Fcreate");
-
+#if 0
     /* Get the file's version information */
     ret = H5Fget_info2(file, &finfo);
     CHECK(ret, FAIL, "H5Fget_info2");
     VERIFY(finfo.super.version, 0,"H5Fget_info2");
     VERIFY(finfo.free.version, 0,"H5Fget_info2");
     VERIFY(finfo.sohm.version, 0,"H5Fget_info2");
-
+#endif
     /* Close file */
     ret=H5Fclose(file);
     CHECK(ret, FAIL, "H5Fclose");
@@ -1895,14 +1905,14 @@ test_misc11(void)
     /* Close FCPL */
     ret=H5Pclose(fcpl);
     CHECK(ret, FAIL, "H5Pclose");
-
+#if 0
     /* Get the file's version information */
     ret = H5Fget_info2(file, &finfo);
     CHECK(ret, FAIL, "H5Fget_info2");
     VERIFY(finfo.super.version, 2,"H5Fget_info2");
     VERIFY(finfo.free.version, 0,"H5Fget_info2");
     VERIFY(finfo.sohm.version, 0,"H5Fget_info2");
-
+#endif
     /* Close file */
     ret=H5Fclose(file);
     CHECK(ret, FAIL, "H5Fclose");
@@ -1914,14 +1924,14 @@ test_misc11(void)
     /* Get the file's creation property list */
     fcpl =  H5Fget_create_plist(file);
     CHECK(fcpl, FAIL, "H5Fget_create_plist");
-
+#if 0
     /* Get the file's version information */
     ret = H5Fget_info2(file, &finfo);
     CHECK(ret, FAIL, "H5Fget_info2");
     VERIFY(finfo.super.version, 2,"H5Fget_info2");
     VERIFY(finfo.free.version, 0,"H5Fget_info2");
     VERIFY(finfo.sohm.version, 0,"H5Fget_info2");
-
+#endif
     /* Retrieve all the property values & check them */
     ret=H5Pget_userblock(fcpl,&userblock);
     CHECK(ret, FAIL, "H5Pget_userblock");
@@ -5289,6 +5299,7 @@ test_misc29(void)
 } /* end test_misc29() */
 #endif
 
+#if 0
 static int
 test_misc30_get_info_cb(hid_t loc_id, const char *name, const H5L_info_t H5_ATTR_UNUSED *info,
     void H5_ATTR_UNUSED *op_data)
@@ -5303,7 +5314,7 @@ test_misc30_get_info(hid_t loc_id)
 {
     return H5Literate(loc_id, H5_INDEX_NAME, H5_ITER_INC, NULL, test_misc30_get_info_cb, NULL);
 }
-
+#endif
 
 /****************************************************************
 **
@@ -5312,6 +5323,7 @@ test_misc30_get_info(hid_t loc_id)
 **                 block information to get lost.
 **
 ****************************************************************/
+#if 0
 static void
 test_misc30(void)
 {
@@ -5368,7 +5380,7 @@ test_misc30(void)
 
     VERIFY(file_size[0], file_size[1], "test_misc30");
 } /* end test_misc30() */
-
+#endif
 
 /****************************************************************
 **
@@ -5665,8 +5677,8 @@ test_misc(void)
     test_misc6();       /* Test object header continuation code */
 #if 0
     test_misc7();       /* Test for sensible datatypes stored on disk */
-#endif
     test_misc8();       /* Test storage sizes of various types of dataset storage */
+#endif
     test_misc9();       /* Test for opening (not creating) core files */
 #if 0
     test_misc10();      /* Test for using dataset creation property lists from old files */
@@ -5707,9 +5719,7 @@ test_misc(void)
     test_misc28();      /* Test that chunks are cached appropriately */
 #if 0
     test_misc29();      /* Test that speculative metadata reads are handled correctly */
-#endif
     test_misc30();      /* Exercise local heap loading bug where free lists were getting dropped */
-#if 0
     test_misc31();      /* Test Reentering library through deprecated routines after H5close() */
 #endif
     test_misc32();      /* Test filter memory allocation functions */

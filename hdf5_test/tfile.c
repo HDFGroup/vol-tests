@@ -1816,6 +1816,7 @@ test_file_is_accessible(const char *env_h5_drvr)
 **      correctly in variuous situations.
 **
 *****************************************************************/
+#if 0
 #ifndef H5_NO_DEPRECATED_SYMBOLS
 static void
 test_file_ishdf5(const char *env_h5_drvr)
@@ -1937,7 +1938,7 @@ test_file_ishdf5(const char *env_h5_drvr)
 
 } /* end test_file_ishdf5() */
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
-
+#endif
 
 /****************************************************************
 **
@@ -7784,6 +7785,7 @@ test_min_dset_ohdr(void)
 **    Test deprecated functionality.
 **
 ****************************************************************/
+#if 0
 #ifndef H5_NO_DEPRECATED_SYMBOLS
 static void
 test_deprec(void)
@@ -8008,6 +8010,7 @@ test_deprec(void)
 
 } /* test_deprec */
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
+#endif
 
 /****************************************************************
 **
@@ -8087,10 +8090,6 @@ test_file(void)
     test_incr_filesize();                       /* Test H5Fincrement_filesize() and H5Fget_eoa() */
     test_min_dset_ohdr();                       /* Test datset object header minimization */
 #endif
-#ifndef H5_NO_DEPRECATED_SYMBOLS
-    test_file_ishdf5(env_h5_drvr);              /* Test detecting HDF5 files correctly */
-    test_deprec();                              /* Test deprecated routines */
-#endif /* H5_NO_DEPRECATED_SYMBOLS */
 
     ret = H5Pclose(fapl_id);
     CHECK(ret, FAIL, "H5Pclose");

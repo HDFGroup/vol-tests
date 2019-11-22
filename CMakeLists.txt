@@ -253,7 +253,6 @@ foreach(hdf5_test ${hdf5_tests})
       ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tid.c
       ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/titerate.c
       ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tmisc.c
-      ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/trefer_deprec.c
       ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/trefer.c
       ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/tselect.c
       ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_test/ttime.c
