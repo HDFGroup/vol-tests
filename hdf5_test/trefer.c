@@ -92,7 +92,9 @@ test_reference_params(void)
     H5R_type_t  type;       /* Reference type                   */
     unsigned   *tu32;       /* Temporary pointer to uint32 data */
     int         i;          /* Counters                         */
+#if 0
     const char *write_comment = "Foo!"; /* Comments for group   */
+#endif
     hid_t       ret_id;     /* Generic hid_t return value       */
     ssize_t     name_size;  /* Size of reference name           */
     herr_t      ret;        /* Generic return value             */

@@ -279,7 +279,7 @@ test_vlstrings_special(void)
     /* Create a dataset */
     dataset = H5Dcreate2(fid1, "Dataset3", tid1, sid1, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(dataset, FAIL, "H5Dcreate2");
-
+#ifndef NO_FILL_VALUE_SUPPORT
     /* Read from dataset before writing data */
     ret = H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
     CHECK(ret, FAIL, "H5Dread");
@@ -288,7 +288,9 @@ test_vlstrings_special(void)
     for(i = 0; i < SPACE1_DIM1; i++)
         if(rdata[i] != NULL)
             TestErrPrintf("VL doesn't match!, rdata[%d]=%p\n",(int)i,rdata[i]);
-
+#else
+    HDprintf("** SKIPPED dataset pre-read temporarily until fill values supported **\n");
+#endif
     /* Write dataset to disk */
     ret = H5Dwrite(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata);
     CHECK(ret, FAIL, "H5Dwrite");
@@ -336,7 +338,7 @@ test_vlstrings_special(void)
     /* Close dataset creation property list */
     ret = H5Pclose(dcpl);
     CHECK(ret, FAIL, "H5Pclose");
-
+#ifndef NO_FILL_VALUE_SUPPORT
     /* Read from dataset before writing data */
     ret = H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
     CHECK(ret, FAIL, "H5Dread");
@@ -345,7 +347,9 @@ test_vlstrings_special(void)
     for(i = 0; i < SPACE1_DIM1; i++)
         if(rdata[i] != NULL)
             TestErrPrintf("VL doesn't match!, rdata[%d]=%p\n",(int)i,rdata[i]);
-
+#else
+    HDprintf("** SKIPPED dataset pre-read temporarily until fill values supported **\n");
+#endif
     /* Try to write nil strings to disk. */
     ret = H5Dwrite(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata2);
     CHECK(ret, FAIL, "H5Dwrite");
