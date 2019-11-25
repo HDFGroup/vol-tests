@@ -415,6 +415,8 @@ test_attr_basic_read(hid_t fapl)
     int         read_data2[ATTR2_DIM1][ATTR2_DIM2] = {{0}}; /* Buffer for reading 2nd attribute */
     int         i, j;       /* Local index variables        */
     herr_t      ret;        /* Generic return value        */
+#else
+    (void)fapl;
 #endif
 
     /* Output message about test being performed */
@@ -1541,6 +1543,8 @@ test_attr_delete(hid_t fapl)
     ssize_t name_len;   /* Length of attribute name     */
     H5O_info_t oinfo;   /* Object info                  */
     herr_t  ret;        /* Generic return value        */
+#else
+    (void)fapl;
 #endif
 
     /* Output message about test being performed */
@@ -2665,6 +2669,9 @@ test_attr_dense_rename(hid_t fcpl, hid_t fapl)
     int         use_min_dset_oh = (dcpl_g != H5P_DEFAULT);
     unsigned    use_corder;     /* Track creation order or not */
     herr_t      ret;            /* Generic return value        */
+#else
+    (void)fcpl;
+    (void)fapl;
 #endif
     /* Output message about test being performed */
     MESSAGE(5, ("Testing Renaming Attributes in Dense Storage - SKIPPED temporarily until DAOS update\n"));
@@ -3184,6 +3191,9 @@ test_attr_dense_dup_ids(hid_t fcpl, hid_t fapl)
 #endif
     unsigned    u, i;           /* Local index variable */
     herr_t      ret;            /* Generic return value        */
+#else
+    (void)fcpl;
+    (void)fapl;
 #endif
 
     /* Output message about test being performed */
@@ -5876,7 +5886,7 @@ attr_info_by_idx_check(hid_t obj_id, const char *attrname, hsize_t n,
      *  a good way to easily predict the order of the links in the name index.
      */
 
-
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
     /* Verify the information for first attribute, in decreasing name order */
     HDmemset(&ainfo, 0, sizeof(ainfo));
     ret = H5Aget_info_by_idx(obj_id, ".", H5_INDEX_NAME, H5_ITER_DEC, n, &ainfo, H5P_DEFAULT);
@@ -5895,7 +5905,7 @@ attr_info_by_idx_check(hid_t obj_id, const char *attrname, hsize_t n,
     CHECK(ret, FAIL, "H5Aget_name_by_idx");
     if(HDstrcmp(attrname, tmpname))
         TestErrPrintf("Line %d: attribute name size wrong!\n", __LINE__);
-
+#endif
     /* Retrieve current # of errors */
     if(old_nerrs == nerrors)
         return(0);
@@ -6375,6 +6385,10 @@ test_attr_delete_by_idx(hbool_t new_format, hid_t fcpl, hid_t fapl)
     unsigned    curr_dset;      /* Current dataset to work on */
     unsigned    u;              /* Local index variable */
     herr_t    ret;        /* Generic return value        */
+#else
+    (void)new_format;
+    (void)fcpl;
+    (void)fapl;
 #endif
 
     MESSAGE(5, ("Testing Deleting Attribute By Index - SKIPPED temporarily until DAOS update\n"))
@@ -6425,10 +6439,14 @@ test_attr_delete_by_idx(hbool_t new_format, hid_t fcpl, hid_t fapl)
                             MESSAGE(5, ("Testing Deleting Attribute By Name Index in Increasing Order w/o Creation Order Index\n"))
                     } /* end if */
                     else {
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
                         if(use_index)
                             MESSAGE(5, ("Testing Deleting Attribute By Name Index in Decreasing Order w/Creation Order Index\n"))
                         else
                             MESSAGE(5, ("Testing Deleting Attribute By Name Index in Decreasing Order w/o Creation Order Index\n"))
+#else
+                            continue;
+#endif
                     } /* end else */
                 } /* end else */
 
@@ -7401,10 +7419,14 @@ test_attr_iterate2(hbool_t new_format, hid_t fcpl, hid_t fapl)
                             MESSAGE(5, ("Testing Iterating over Attributes By Name Index in Increasing Order w/o Creation Order Index\n"))
                     } /* end if */
                     else {
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
                         if(use_index)
                             MESSAGE(5, ("Testing Iterating over Attributes By Name Index in Decreasing Order w/Creation Order Index\n"))
                         else
                             MESSAGE(5, ("Testing Iterating over Attributes By Name Index in Decreasing Order w/o Creation Order Index\n"))
+#else
+                            continue;
+#endif
                     } /* end else */
                 } /* end else */
 
@@ -7777,10 +7799,14 @@ test_attr_open_by_idx(hbool_t new_format, hid_t fcpl, hid_t fapl)
                             MESSAGE(5, ("Testing Opening Attributes By Name Index in Increasing Order w/o Creation Order Index\n"))
                     } /* end if */
                     else {
+#ifndef NO_DECREASING_ALPHA_ITER_ORDER
                         if(use_index)
                             MESSAGE(5, ("Testing Opening Attributes By Name Index in Decreasing Order w/Creation Order Index\n"))
                         else
                             MESSAGE(5, ("Testing Opening Attributes By Name Index in Decreasing Order w/o Creation Order Index\n"))
+#else
+                            continue;
+#endif
                     } /* end else */
                 } /* end else */
 
@@ -11401,9 +11427,7 @@ test_attr(void)
 {
     hid_t    fapl = (-1), fapl2 = (-1);    /* File access property lists */
     hid_t    fcpl = (-1), fcpl2 = (-1);    /* File creation property lists */
-#if 0
     hid_t    dcpl = -1;         /* Dataset creation property list */
-#endif
     unsigned new_format = FALSE;        /* Whether to use the new format or not */
     unsigned use_shared;        /* Whether to use shared attributes or not */
 #if 0
@@ -11433,6 +11457,15 @@ test_attr(void)
     CHECK_I(ret, "H5Pset_shared_mesg_nindexes");
     ret = H5Pset_shared_mesg_index(fcpl2, (unsigned)0, H5O_SHMESG_ATTR_FLAG, (unsigned)1);
     CHECK_I(ret, "H5Pset_shared_mesg_index");
+
+    dcpl = H5Pcreate(H5P_DATASET_CREATE);
+    CHECK(dcpl, H5I_INVALID_HID, "H5Pcreate");
+
+    ret = H5Pset_attr_creation_order(dcpl, H5P_CRT_ORDER_TRACKED);
+    CHECK(ret, FAIL, "");
+
+    dcpl_g = dcpl;
+
 #if 0
     for(minimize_dset_oh = 0; minimize_dset_oh <= 1; minimize_dset_oh++) {
         if(minimize_dset_oh == 0) {
@@ -11574,6 +11607,9 @@ test_attr(void)
 
     } /* for default/minimized dataset object headers */
 #endif
+    ret = H5Pclose(dcpl);
+    CHECK(ret, FAIL, "H5Pclose");
+
     /* Close  FCPLs */
     ret = H5Pclose(fcpl);
     CHECK(ret, FAIL, "H5Pclose");

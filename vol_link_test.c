@@ -15096,7 +15096,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_increasing);
@@ -15117,7 +15117,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_increasing);
@@ -15138,7 +15138,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_increasing);
@@ -15240,7 +15240,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_decreasing);
@@ -15261,7 +15261,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_decreasing);
@@ -15282,7 +15282,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_crt_order_decreasing);
@@ -15384,7 +15384,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_increasing);
@@ -15405,7 +15405,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_increasing);
@@ -15426,7 +15426,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_increasing);
@@ -15528,7 +15528,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_decreasing);
@@ -15549,7 +15549,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_decreasing);
@@ -15570,7 +15570,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_hard_name_order_decreasing);
@@ -15679,7 +15679,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_increasing);
@@ -15700,7 +15700,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_increasing);
@@ -15721,7 +15721,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_increasing);
@@ -15826,7 +15826,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_decreasing);
@@ -15847,7 +15847,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_decreasing);
@@ -15868,7 +15868,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_crt_order_decreasing);
@@ -15973,7 +15973,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_increasing);
@@ -15994,7 +15994,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_increasing);
@@ -16015,7 +16015,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_increasing);
@@ -16120,7 +16120,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_decreasing);
@@ -16141,7 +16141,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_decreasing);
@@ -16162,7 +16162,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_soft_name_order_decreasing);
@@ -16286,7 +16286,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_increasing);
@@ -16307,7 +16307,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_increasing);
@@ -16328,7 +16328,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_increasing);
@@ -16453,7 +16453,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_decreasing);
@@ -16474,7 +16474,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_decreasing);
@@ -16495,7 +16495,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_crt_order_decreasing);
@@ -16620,7 +16620,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_increasing);
@@ -16641,7 +16641,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_increasing);
@@ -16662,7 +16662,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_increasing);
@@ -16787,7 +16787,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    0, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    0, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_decreasing);
@@ -16808,7 +16808,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    1, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    1, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_decreasing);
@@ -16829,7 +16829,7 @@ test_get_link_name(void)
             }
 
             if (H5Lget_name_by_idx(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC,
-                    2, link_name_buf, link_name_buf_size + 1, H5P_DEFAULT) < 0) {
+                    2, link_name_buf, (size_t) link_name_buf_size + 1, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve link name\n");
                 PART_ERROR(H5Lget_name_by_idx_external_name_order_decreasing);

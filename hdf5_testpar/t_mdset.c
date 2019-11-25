@@ -158,7 +158,7 @@ void multiple_dset_write(void)
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    outme = HDmalloc((size_t)(size * size * sizeof(double)));
+    outme = HDmalloc((size_t)((size_t) (size * size) * sizeof(double)));
     VRFY((outme != NULL), "HDmalloc succeeded for outme");
 
     plist = create_faccess_plist(MPI_COMM_WORLD, MPI_INFO_NULL, facc_type);
@@ -235,15 +235,15 @@ void compact_dataset(void)
     size = get_size();
 
     for(i = 0; i < DIM; i++ )
-        file_dims[i] = size;
+        file_dims[i] = (hsize_t) size;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    outme = HDmalloc((size_t)(size * size * sizeof(double)));
+    outme = HDmalloc((size_t)((size_t) (size * size) * sizeof(double)));
     VRFY((outme != NULL), "HDmalloc succeeded for outme");
 
-    inme = HDmalloc((size_t)(size * size * sizeof(double)));
+    inme = HDmalloc((size_t)((size_t) (size * size) * sizeof(double)));
     VRFY((outme != NULL), "HDmalloc succeeded for inme");
 
     filename = PARATESTFILE /* GetTestParameters() */;
@@ -345,7 +345,7 @@ void null_dataset(void)
     hid_t    iof, plist, dxpl, dataset, attr, sid;
     unsigned uval=2;    /* Buffer for writing to dataset */
     int      val=1;          /* Buffer for writing to attribute */
-    int      nelem;
+    hssize_t nelem;
     char     dname[]="dataset";
     char     attr_name[]="attribute";
     herr_t   ret;
@@ -615,7 +615,7 @@ void dataset_fillvalue(void)
 
     /* Set the dataset dimension to be one row more than number of processes */
     /* and calculate the actual dataset size. */
-    dset_dims[0]=mpi_size+1;
+    dset_dims[0]=(hsize_t) (mpi_size+1);
     dset_size=dset_dims[0]*dset_dims[1]*dset_dims[2]*dset_dims[3];
 
     /* Allocate space for the buffers */
@@ -690,7 +690,7 @@ void dataset_fillvalue(void)
      * Each process writes 1 row of data. Thus last row is not written.
      */
     /* Create hyperslabs in memory and file dataspaces */
-    req_start[0]=mpi_rank;
+    req_start[0]=(hsize_t) mpi_rank;
     ret = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, req_start, NULL, req_count, NULL);
     VRFY((ret >= 0), "H5Sselect_hyperslab succeeded on memory dataspace");
     ret = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, req_start, NULL, req_count, NULL);
@@ -830,7 +830,7 @@ void collective_group_write(void)
     chunk_size[0] =(hsize_t)(size / 2);
     chunk_size[1] =(hsize_t)(size / 2);
 
-    outme = HDmalloc((size_t)(size * size * sizeof(DATATYPE)));
+    outme = HDmalloc((size_t) (size * size) * sizeof(DATATYPE));
     VRFY((outme != NULL), "HDmalloc succeeded for outme");
 
     plist = create_faccess_plist(MPI_COMM_WORLD, MPI_INFO_NULL, facc_type);
@@ -952,10 +952,10 @@ group_dataset_read(hid_t fid, int mpi_rank, int m)
 
     size = get_size();
 
-    indata =(DATATYPE*)HDmalloc((size_t)(size * size * sizeof(DATATYPE)));
+    indata =(DATATYPE*)HDmalloc((size_t) (size * size) * sizeof(DATATYPE));
     VRFY((indata != NULL), "HDmalloc succeeded for indata");
 
-    outdata =(DATATYPE*)HDmalloc((size_t)(size * size * sizeof(DATATYPE)));
+    outdata =(DATATYPE*)HDmalloc((size_t) (size * size) * sizeof(DATATYPE));
     VRFY((outdata != NULL), "HDmalloc succeeded for outdata");
 
     /* open every group under root group. */
@@ -1121,7 +1121,7 @@ write_dataset(hid_t memspace, hid_t filespace, hid_t gid)
 
     size = get_size();
 
-    outme = HDmalloc((size_t)(size * size * sizeof(double)));
+    outme = HDmalloc((size_t) (size * size) * sizeof(double));
     VRFY((outme != NULL), "HDmalloc succeeded for outme");
 
     for(n = 0; n < NDATASET; n++) {
@@ -1279,10 +1279,10 @@ read_dataset(hid_t memspace, hid_t filespace, hid_t gid)
 
     size = get_size();
 
-    indata =(DATATYPE*)HDmalloc((size_t)(size * size * sizeof(DATATYPE)));
+    indata =(DATATYPE*)HDmalloc((size_t) (size * size) * sizeof(DATATYPE));
     VRFY((indata != NULL), "HDmalloc succeeded for indata");
 
-    outdata =(DATATYPE*)HDmalloc((size_t)(size * size * sizeof(DATATYPE)));
+    outdata =(DATATYPE*)HDmalloc((size_t) (size * size) * sizeof(DATATYPE));
     VRFY((outdata != NULL), "HDmalloc succeeded for outdata");
 
     for(n=0; n<NDATASET; n++) {
@@ -1436,8 +1436,8 @@ check_value(DATATYPE *indata, DATATYPE *outdata, int size)
 
     get_slab(chunk_origin, chunk_dims, count, NULL, size);
 
-    indata += chunk_origin[0]*size;
-    outdata += chunk_origin[0]*size;
+    indata += chunk_origin[0]*(hsize_t)size;
+    outdata += chunk_origin[0]*(hsize_t)size;
     for(i=chunk_origin[0]; i<(chunk_origin[0]+chunk_dims[0]); i++)
         for(j=chunk_origin[1]; j<(chunk_origin[1]+chunk_dims[1]); j++) {
             if(*indata != *outdata )
@@ -1470,15 +1470,15 @@ get_slab(hsize_t chunk_origin[], hsize_t chunk_dims[], hsize_t count[],
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
     if(chunk_origin != NULL) {
-        chunk_origin[0] = mpi_rank *(size/mpi_size);
+        chunk_origin[0] = (hsize_t) (mpi_rank * (size / mpi_size));
         chunk_origin[1] = 0;
     }
     if(chunk_dims != NULL) {
-        chunk_dims[0]   = size/mpi_size;
-        chunk_dims[1]   = size;
+        chunk_dims[0]   = (hsize_t) (size / mpi_size);
+        chunk_dims[1]   = (hsize_t) size;
     }
     if(file_dims != NULL)
-        file_dims[0] = file_dims[1] = size;
+        file_dims[0] = file_dims[1] = (hsize_t) size;
     if(count != NULL)
         count[0] = count[1] = 1;
 }

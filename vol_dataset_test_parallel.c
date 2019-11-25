@@ -358,7 +358,7 @@ test_write_dataset_data_verification(void)
              */
             for (i = 0; i < DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK; i++) {
                 if (i == 0) {
-                    start[i] = mpi_rank;
+                    start[i] = (hsize_t)mpi_rank;
                     block[i] = 1;
                 }
                 else {
@@ -566,13 +566,13 @@ test_write_dataset_data_verification(void)
              * selections from all MPI ranks spans the first dimension.
              */
             for (i = 0; i < data_size / DATASET_WRITE_DATA_VERIFY_TEST_DTYPE_SIZE; i++) {
-                int j;
+                size_t j;
 
                 for (j = 0; j < DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK; j++) {
-                    int idx = (i * DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK) + j;
+                    size_t idx = (i * DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK) + j;
 
                     if (j == 0)
-                        points[idx] = mpi_rank;
+                        points[idx] = (hsize_t)mpi_rank;
                     else if (j != DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK - 1)
                         points[idx] = i / dims[j + 1];
                     else
@@ -901,7 +901,7 @@ test_write_dataset_independent(void)
 
     for (i = 0; i < DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = 1;
         }
         else {
@@ -1203,7 +1203,7 @@ test_write_dataset_one_proc_0_selection(void)
 
     for (i = 0; i < DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = MAINPROCESS ? 0 : 1;
         }
         else {
@@ -1470,7 +1470,7 @@ test_write_dataset_one_proc_none_selection(void)
 
     for (i = 0; i < DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = 1;
         }
         else {
@@ -1739,7 +1739,7 @@ test_write_dataset_one_proc_all_selection(void)
             }
 
             for (i = 0; i < data_size / DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DTYPE_SIZE; i++)
-                ((int *) write_buf)[i] = i;
+                ((int *) write_buf)[i] = (int)i;
         }
     } END_INDEPENDENT_OP(write_buf_alloc);
 
@@ -2252,7 +2252,7 @@ test_write_dataset_all_file_hyper_mem(void)
             for (i = 0; i < 2 * (data_size / DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_DTYPE_SIZE); i++) {
                 /* Write actual data to even indices */
                 if (i % 2 == 0)
-                    ((int *) write_buf)[i] = (i / 2) + (i % 2);
+                    ((int *) write_buf)[i] = (int) ((i / 2) + (i % 2));
                 else
                     ((int *) write_buf)[i] = 0;
             }
@@ -2528,7 +2528,7 @@ test_write_dataset_all_file_point_mem(void)
             for (i = 0; i < 2 * (data_size / DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_DTYPE_SIZE); i++) {
                 /* Write actual data to even indices */
                 if (i % 2 == 0)
-                    ((int *) write_buf)[i] = (i / 2) + (i % 2);
+                    ((int *) write_buf)[i] = (int) ((i / 2) + (i % 2));
                 else
                     ((int *) write_buf)[i] = 0;
             }
@@ -2812,7 +2812,7 @@ test_write_dataset_hyper_file_point_mem(void)
 
     for (i = 0; i < DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = 1;
         }
         else {
@@ -3105,14 +3105,14 @@ test_write_dataset_point_file_hyper_mem(void)
     }
 
     for (i = 0; i < data_size / DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_DTYPE_SIZE; i++) {
-        int j;
+        size_t j;
 
         for (j = 0; j < DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK; j++) {
-            int idx = (i * DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK) + j;
+            size_t idx = (i * (size_t)DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK) + j;
 
             if (j == 0)
-                points[idx] = mpi_rank;
-            else if (j != DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK - 1)
+                points[idx] = (hsize_t)mpi_rank;
+            else if (j != (size_t)DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK - 1)
                 points[idx] = i / dims[j + 1];
             else
                 points[idx] = i % dims[j];
@@ -3383,9 +3383,9 @@ test_read_dataset_one_proc_0_selection(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_ONE_PROC_0_SEL_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (size_t) i;
                 }
             }
 
@@ -3490,7 +3490,7 @@ test_read_dataset_one_proc_0_selection(void)
 
     BEGIN_INDEPENDENT_OP(read_buf_alloc) {
         if (!MAINPROCESS) {
-            if (NULL == (read_buf = HDmalloc(((hsize_t) space_npoints / (size_t) mpi_size) * DATASET_READ_ONE_PROC_0_SEL_TEST_DTYPE_SIZE))) {
+            if (NULL == (read_buf = HDmalloc(((hsize_t) space_npoints / (size_t) mpi_size) * (size_t) DATASET_READ_ONE_PROC_0_SEL_TEST_DTYPE_SIZE))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(read_buf_alloc);
@@ -3499,7 +3499,7 @@ test_read_dataset_one_proc_0_selection(void)
     } END_INDEPENDENT_OP(read_buf_alloc);
 
     {
-        hsize_t mdims[] = { space_npoints / mpi_size };
+        hsize_t mdims[] = { (hsize_t) space_npoints / (hsize_t) mpi_size };
 
         if (MAINPROCESS)
             mdims[0] = 0;
@@ -3513,7 +3513,7 @@ test_read_dataset_one_proc_0_selection(void)
 
     for (i = 0; i < DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = MAINPROCESS ? 0 : 1;
         }
         else {
@@ -3541,7 +3541,7 @@ test_read_dataset_one_proc_0_selection(void)
 
     BEGIN_INDEPENDENT_OP(data_verify) {
         if (!MAINPROCESS) {
-            for (i = 0; i < (size_t) space_npoints / mpi_size; i++) {
+            for (i = 0; i < (size_t) space_npoints / (size_t) mpi_size; i++) {
                 if (((int *) read_buf)[i] != mpi_rank) {
                     H5_FAILED();
                     HDprintf("    data verification failed\n");
@@ -3681,9 +3681,9 @@ test_read_dataset_one_proc_none_selection(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (int)i;
                 }
             }
 
@@ -3788,7 +3788,7 @@ test_read_dataset_one_proc_none_selection(void)
 
     BEGIN_INDEPENDENT_OP(read_buf_alloc) {
         if (!MAINPROCESS) {
-            if (NULL == (read_buf = HDmalloc(((hsize_t) space_npoints / (size_t) mpi_size) * DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE))) {
+            if (NULL == (read_buf = HDmalloc(((hsize_t) space_npoints / (size_t) mpi_size) * (size_t) DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(read_buf_alloc);
@@ -3797,7 +3797,7 @@ test_read_dataset_one_proc_none_selection(void)
     } END_INDEPENDENT_OP(read_buf_alloc);
 
     {
-        hsize_t mdims[] = { space_npoints / mpi_size };
+        hsize_t mdims[] = { (hsize_t) space_npoints / (hsize_t) mpi_size };
 
         if (MAINPROCESS)
             mdims[0] = 0;
@@ -3811,7 +3811,7 @@ test_read_dataset_one_proc_none_selection(void)
 
     for (i = 0; i < DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = 1;
         }
         else {
@@ -3850,7 +3850,7 @@ test_read_dataset_one_proc_none_selection(void)
 
     BEGIN_INDEPENDENT_OP(data_verify) {
         if (!MAINPROCESS) {
-            for (i = 0; i < (size_t) space_npoints / mpi_size; i++) {
+            for (i = 0; i < (size_t) space_npoints / (size_t) mpi_size; i++) {
                 if (((int *) read_buf)[i] != mpi_rank) {
                     H5_FAILED();
                     HDprintf("    data verification failed\n");
@@ -3987,9 +3987,9 @@ test_read_dataset_one_proc_all_selection(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_ONE_PROC_ALL_SEL_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (int)i;
                 }
             }
 
@@ -4094,7 +4094,7 @@ test_read_dataset_one_proc_all_selection(void)
 
     BEGIN_INDEPENDENT_OP(read_buf_alloc) {
         if (MAINPROCESS) {
-            if (NULL == (read_buf = HDmalloc(space_npoints * DATASET_READ_ONE_PROC_ALL_SEL_TEST_DTYPE_SIZE))) {
+            if (NULL == (read_buf = HDmalloc((size_t) (space_npoints * DATASET_READ_ONE_PROC_ALL_SEL_TEST_DTYPE_SIZE)))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(read_buf_alloc);
@@ -4103,7 +4103,7 @@ test_read_dataset_one_proc_all_selection(void)
     } END_INDEPENDENT_OP(read_buf_alloc);
 
     {
-        hsize_t mdims[] = { space_npoints };
+        hsize_t mdims[] = { (hsize_t) space_npoints };
 
         if (!MAINPROCESS)
             mdims[0] = 0;
@@ -4144,7 +4144,7 @@ test_read_dataset_one_proc_all_selection(void)
         if (MAINPROCESS) {
             for (i = 0; i < (size_t) mpi_size; i++) {
                 size_t j;
-                size_t elem_per_proc = space_npoints / mpi_size;
+                size_t elem_per_proc = (size_t) (space_npoints / mpi_size);
 
                 for (j = 0; j < elem_per_proc; j++) {
                     int idx = (i * elem_per_proc) + j;
@@ -4301,9 +4301,9 @@ test_read_dataset_all_file_hyper_mem(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_ALL_FILE_HYPER_MEM_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (int)i;
                 }
             }
 
@@ -4423,7 +4423,7 @@ test_read_dataset_all_file_hyper_mem(void)
              * buffer in order to prove that the mapping from all selection <-> hyperslab
              * selection works correctly.
              */
-            if (NULL == (read_buf = HDcalloc(1, 2 * space_npoints * DATASET_READ_ALL_FILE_HYPER_MEM_TEST_DTYPE_SIZE))) {
+            if (NULL == (read_buf = HDcalloc(1, (size_t) (2 * space_npoints * DATASET_READ_ALL_FILE_HYPER_MEM_TEST_DTYPE_SIZE)))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(dset_read);
@@ -4449,10 +4449,10 @@ test_read_dataset_all_file_hyper_mem(void)
 
             for (i = 0; i < (size_t) mpi_size; i++) {
                 size_t j;
-                size_t elem_per_proc = space_npoints / mpi_size;
+                size_t elem_per_proc = (size_t) (space_npoints / mpi_size);
 
                 for (j = 0; j < 2 * elem_per_proc; j++) {
-                    int idx = (i * 2 * elem_per_proc) + j;
+                    size_t idx = (i * 2 * elem_per_proc) + j;
 
                     if (j % 2 == 0) {
                         if (((int *) read_buf)[idx] != (int) i) {
@@ -4614,9 +4614,9 @@ test_read_dataset_all_file_point_mem(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_ALL_FILE_POINT_MEM_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (int)i;
                 }
             }
 
@@ -4733,7 +4733,7 @@ test_read_dataset_all_file_point_mem(void)
              * buffer in order to prove that the mapping from all selection <-> point
              * selection works correctly.
              */
-            if (NULL == (read_buf = HDcalloc(1, 2 * space_npoints * DATASET_READ_ALL_FILE_POINT_MEM_TEST_DTYPE_SIZE))) {
+            if (NULL == (read_buf = HDcalloc(1, (size_t) (2 * space_npoints * DATASET_READ_ALL_FILE_POINT_MEM_TEST_DTYPE_SIZE)))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(dset_read);
@@ -4745,7 +4745,7 @@ test_read_dataset_all_file_point_mem(void)
                 INDEPENDENT_OP_ERROR(dset_read);
             }
 
-            if (NULL == (points = HDmalloc(space_npoints * sizeof(hsize_t)))) {
+            if (NULL == (points = HDmalloc((size_t) space_npoints * sizeof(hsize_t)))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for point selection\n");
                 INDEPENDENT_OP_ERROR(dset_read);
@@ -4757,7 +4757,7 @@ test_read_dataset_all_file_point_mem(void)
                     points[j++] = (hsize_t) i;
             }
 
-            if (H5Sselect_elements(mspace_id, H5S_SELECT_SET, space_npoints, points) < 0) {
+            if (H5Sselect_elements(mspace_id, H5S_SELECT_SET, (size_t) space_npoints, points) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't set point selection for dataset read\n");
                 INDEPENDENT_OP_ERROR(dset_read);
@@ -4770,10 +4770,10 @@ test_read_dataset_all_file_point_mem(void)
             }
 
             for (i = 0; i < (size_t) mpi_size; i++) {
-                size_t elem_per_proc = space_npoints / mpi_size;
+                size_t elem_per_proc = (size_t) (space_npoints / mpi_size);
 
                 for (j = 0; j < 2 * elem_per_proc; j++) {
-                    int idx = (i * 2 * elem_per_proc) + j;
+                    size_t idx = (i * 2 * elem_per_proc) + j;
 
                     if (j % 2 == 0) {
                         if (((int *) read_buf)[idx] != (int) i) {
@@ -4930,9 +4930,9 @@ test_read_dataset_hyper_file_point_mem(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_HYPER_FILE_POINT_MEM_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (int)i;
                 }
             }
 
@@ -5040,7 +5040,7 @@ test_read_dataset_hyper_file_point_mem(void)
      * buffer in order to prove that the mapping from hyperslab selection <-> point
      * selection works correctly.
      */
-    if (NULL == (read_buf = HDcalloc(1, 2 * ((hsize_t) space_npoints / (size_t) mpi_size) * DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE))) {
+    if (NULL == (read_buf = HDcalloc(1, 2 * ((hsize_t) space_npoints / (size_t) mpi_size) * (size_t) DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for dataset read\n");
         goto error;
@@ -5048,7 +5048,7 @@ test_read_dataset_hyper_file_point_mem(void)
 
     for (i = 0; i < DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK; i++) {
         if (i == 0) {
-            start[i] = mpi_rank;
+            start[i] = (hsize_t)mpi_rank;
             block[i] = 1;
         }
         else {
@@ -5076,19 +5076,19 @@ test_read_dataset_hyper_file_point_mem(void)
             goto error;
         }
 
-        if (NULL == (points = HDmalloc((space_npoints / mpi_size) * sizeof(hsize_t)))) {
+        if (NULL == (points = HDmalloc((size_t) (space_npoints / mpi_size) * sizeof(hsize_t)))) {
             H5_FAILED();
             HDprintf("    couldn't allocate buffer for point selection\n");
             goto error;
         }
 
         /* Select every other point in the 1-dimensional memory dataspace */
-        for (i = 0, j = 0; i < 2 * ((size_t) space_npoints / mpi_size); i++) {
+        for (i = 0, j = 0; i < (size_t) (2 * (space_npoints / mpi_size)); i++) {
             if (i % 2 == 0)
                 points[j++] = (hsize_t) i;
         }
 
-        if (H5Sselect_elements(mspace_id, H5S_SELECT_SET, space_npoints / mpi_size, points) < 0) {
+        if (H5Sselect_elements(mspace_id, H5S_SELECT_SET, (size_t) (space_npoints / mpi_size), points) < 0) {
             H5_FAILED();
             HDprintf("    couldn't set point selection for dataset read\n");
             goto error;
@@ -5101,7 +5101,7 @@ test_read_dataset_hyper_file_point_mem(void)
         goto error;
     }
 
-    for (i = 0; i < 2 * ((size_t) space_npoints / mpi_size); i++) {
+    for (i = 0; i < (size_t) (2 * (space_npoints / mpi_size)); i++) {
         if (i % 2 == 0) {
             if (((int *) read_buf)[i] != (int) mpi_rank) {
                 H5_FAILED();
@@ -5250,9 +5250,9 @@ test_read_dataset_point_file_hyper_mem(void)
                 size_t elem_per_proc = (data_size / DATASET_READ_POINT_FILE_HYPER_MEM_TEST_DTYPE_SIZE) / dims[0];
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = i;
+                    ((int *) write_buf)[idx] = (int) i;
                 }
             }
 
@@ -5360,26 +5360,26 @@ test_read_dataset_point_file_hyper_mem(void)
      * buffer in order to prove that the mapping from point selection <-> hyperslab
      * selection works correctly.
      */
-    if (NULL == (read_buf = HDcalloc(1, 2 * ((hsize_t) space_npoints / (size_t) mpi_size) * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_DTYPE_SIZE))) {
+    if (NULL == (read_buf = HDcalloc(1, (size_t) (2 * (space_npoints / mpi_size) * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_DTYPE_SIZE)))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for dataset read\n");
         goto error;
     }
 
-    if (NULL == (points = HDmalloc((space_npoints / mpi_size) * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK * sizeof(hsize_t)))) {
+    if (NULL == (points = HDmalloc((size_t) ((space_npoints / mpi_size) * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK) * sizeof(hsize_t)))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for point selection\n");
         goto error;
     }
 
-    for (i = 0; i < (size_t) space_npoints / mpi_size; i++) {
-        int j;
+    for (i = 0; i < (size_t) (space_npoints / mpi_size); i++) {
+        size_t j;
 
         for (j = 0; j < DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK; j++) {
-            int idx = (i * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK) + j;
+            size_t idx = (i * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK) + j;
 
             if (j == 0)
-                points[idx] = mpi_rank;
+                points[idx] = (hsize_t)mpi_rank;
             else if (j != DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK - 1)
                 points[idx] = i / dims[j + 1];
             else
@@ -5387,7 +5387,7 @@ test_read_dataset_point_file_hyper_mem(void)
         }
     }
 
-    if (H5Sselect_elements(fspace_id, H5S_SELECT_SET, space_npoints / mpi_size, points) < 0) {
+    if (H5Sselect_elements(fspace_id, H5S_SELECT_SET, (size_t) (space_npoints / mpi_size), points) < 0) {
         H5_FAILED();
         HDprintf("    couldn't set point selection for dataset read\n");
         goto error;
@@ -5396,9 +5396,9 @@ test_read_dataset_point_file_hyper_mem(void)
     {
         hsize_t start[1] = { 0 };
         hsize_t stride[1] = { 2 };
-        hsize_t count[1] = { space_npoints / mpi_size };
+        hsize_t count[1] = { (hsize_t) (space_npoints / mpi_size) };
         hsize_t block[1] = { 1 };
-        hsize_t mdims[] = { 2 * (space_npoints / mpi_size) };
+        hsize_t mdims[] = { (hsize_t) (2 * (space_npoints / mpi_size)) };
 
         if ((mspace_id = H5Screate_simple(1, mdims, NULL)) < 0) {
             H5_FAILED();
@@ -5419,7 +5419,7 @@ test_read_dataset_point_file_hyper_mem(void)
         goto error;
     }
 
-    for (i = 0; i < 2 * ((size_t) space_npoints / mpi_size); i++) {
+    for (i = 0; i < (size_t) (2 * (space_npoints / mpi_size)); i++) {
         if (i % 2 == 0) {
             if (((int *) read_buf)[i] != (int) mpi_rank) {
                 H5_FAILED();
@@ -5537,7 +5537,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
 
     for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         if (i == 0) {
-            dims[i] = mpi_size;
+            dims[i] = (hsize_t)mpi_size;
             chunk_dims[i] = 1;
         }
         else {
@@ -5812,7 +5812,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
 
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (j == 0)
-                start[j] = mpi_rank;
+                start[j] = (hsize_t)mpi_rank;
             else if (j == (DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
                 /* Fastest changing dimension */
                 start[j] = (i * chunk_dims[j]) % dims[j];
@@ -5842,7 +5842,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
         for (j = 0; j < chunk_dims[0]; j++) {
             for (k = 0; k < chunk_dims[1]; k++) {
                 size_t val = ((j * chunk_dims[0]) + k + i)
-                           + (mpi_rank * n_chunks_per_rank); /* Additional value offset for each rank */
+                           + ((hsize_t)mpi_rank * n_chunks_per_rank); /* Additional value offset for each rank */
                 if (read_buf[j][k] != (int) val) {
                     H5_FAILED();
                     HDprintf("    data verification failed for chunk %lld\n", (long long) i);
@@ -5949,7 +5949,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
 
     for (i = 0; i < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         if (i == 0) {
-            dims[i] = mpi_size;
+            dims[i] = (hsize_t)mpi_size;
             chunk_dims[i] = 1;
         }
         else {
@@ -6224,7 +6224,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
 
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (j == 0)
-                start[j] = mpi_rank;
+                start[j] = (hsize_t)mpi_rank;
             else if (j == (DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
                 /* Fastest changing dimension */
                 start[j] = (i * chunk_dims[j]) % dims[j];
@@ -6254,7 +6254,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; j++) {
             for (k = 0; k < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; k++) {
                 size_t val = ((j * DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE) + k + i)
-                           + (mpi_rank * n_chunks_per_rank);
+                           + ((hsize_t)mpi_rank * n_chunks_per_rank);
 
                 if (read_buf[j][k] != (int) val) {
                     H5_FAILED();
@@ -6364,7 +6364,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
 
     for (i = 0; i < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         if (i == 0) {
-            dims[i] = mpi_size;
+            dims[i] = (hsize_t)mpi_size;
             chunk_dims[i] = 1;
         }
         else {
@@ -6658,7 +6658,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
 
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
                 if (j == 0)
-                    start[j] = mpi_rank;
+                    start[j] = (hsize_t)mpi_rank;
                 else if (j == (DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
                     /* Fastest changing dimension */
                     start[j] = (i * chunk_dims[j]) % dims[j];
@@ -6688,7 +6688,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
             for (j = 0; j < chunk_dims[0]; j++) {
                 for (k = 0; k < chunk_dims[1]; k++) {
                     size_t val = ((j * chunk_dims[0]) + k + i)
-                               + (mpi_rank * n_chunks_per_rank) /* Additional value offset for each rank */
+                               + ((hsize_t)mpi_rank * n_chunks_per_rank) /* Additional value offset for each rank */
                                + niter;
                     if (read_buf[j][k] != (int) val) {
                         H5_FAILED();
@@ -6814,7 +6814,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
 
     for (i = 0; i < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; i++) {
         if (i == 0) {
-            dims[i] = mpi_size;
+            dims[i] = (hsize_t)mpi_size;
             chunk_dims[i] = 1;
         }
         else {
@@ -7108,7 +7108,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
 
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
                 if (j == 0)
-                    start[j] = mpi_rank;
+                    start[j] = (hsize_t)mpi_rank;
                 else if (j == (DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK - 1))
                     /* Fastest changing dimension */
                     start[j] = (i * chunk_dims[j]) % dims[j];
@@ -7138,7 +7138,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; j++) {
                 for (k = 0; k < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE; k++) {
                     size_t val = ((j * DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE) + k + i)
-                               + (mpi_rank * n_chunks_per_rank)
+                               + ((hsize_t)mpi_rank * n_chunks_per_rank)
                                + niter;
 
                     if (read_buf[j][k] != (int) val) {

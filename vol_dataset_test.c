@@ -3304,7 +3304,7 @@ test_dataset_property_lists(void)
                     PART_ERROR(H5Dget_access_plist);
                 }
 
-                if (HDstrncmp(tmp_prefix, path_prefix, buf_size + 1)) {
+                if (HDstrncmp(tmp_prefix, path_prefix, (size_t) buf_size + 1)) {
                     H5_FAILED();
                     HDprintf("    DAPL values were incorrect!\n");
                     PART_ERROR(H5Dget_access_plist);
@@ -3318,7 +3318,7 @@ test_dataset_property_lists(void)
                     PART_ERROR(H5Dget_access_plist);
                 }
 
-                if (!HDstrncmp(tmp_prefix, path_prefix, buf_size + 1)) {
+                if (!HDstrncmp(tmp_prefix, path_prefix, (size_t) buf_size + 1)) {
                     H5_FAILED();
                     HDprintf("    DAPL property value was set!\n");
                     PART_ERROR(H5Dget_access_plist);
@@ -3894,8 +3894,8 @@ error:
 { \
     for((I) = 0; (I) < DATASET_IO_POINT_NPOINTS; (I)++) \
         do { \
-            (POINTS)[2 * (I)] = rand() % DATASET_IO_POINT_DIM_0; \
-            (POINTS)[2 * (I) + 1] = rand() % DATASET_IO_POINT_DIM_1; \
+            (POINTS)[2 * (I)] = (hsize_t) (rand() % DATASET_IO_POINT_DIM_0); \
+            (POINTS)[2 * (I) + 1] = (hsize_t) (rand() % DATASET_IO_POINT_DIM_1); \
             for((J) = 0; ((J) < (I)) \
                     && (((POINTS)[2 * (I)] != (POINTS)[2 * (J)]) \
                     || ((POINTS)[2 * (I) + 1] != (POINTS)[2 * (J) + 1])); \
@@ -4193,7 +4193,7 @@ test_dataset_io_point_selections(void)
         /* Generate expected read buffer */
         memset(erbuf, 0, sizeof(erbuf));
         for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
-            erbuf[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])] = file_state[points[2 * i]][points[2 * i + 1]];
+            erbuf[start[0] + (stride[0] * ((hsize_t)i / block[1]))][start[1] + ((hsize_t)i % block[1])] = file_state[points[2 * i]][points[2 * i + 1]];
 
         /* Read data points->hslab */
         if(H5Dread(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
@@ -4223,7 +4223,7 @@ test_dataset_io_point_selections(void)
 
         /* Update file_state */
         for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
-            file_state[points[2 * i]][points[2 * i + 1]] = buf_all[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])];
+            file_state[points[2 * i]][points[2 * i + 1]] = buf_all[start[0] + (stride[0] * ((hsize_t)i / block[1]))][start[1] + ((hsize_t)i % block[1])];
 
         /* Wipe read buffer */
         memset(buf_all, 0, sizeof(buf_all));
@@ -4262,7 +4262,7 @@ test_dataset_io_point_selections(void)
         /* Generate expected read buffer */
         memset(erbuf, 0, sizeof(erbuf));
         for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
-            erbuf[points[2 * i]][points[2 * i + 1]] = file_state[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])];
+            erbuf[points[2 * i]][points[2 * i + 1]] = file_state[start[0] + (stride[0] * ((hsize_t)i / block[1]))][start[1] + ((hsize_t)i % block[1])];
 
         /* Read data hslab->points */
         if(H5Dread(dset_id, H5T_NATIVE_INT, mspace_id_full, fspace_id, H5P_DEFAULT, buf_all) < 0)
@@ -4292,7 +4292,7 @@ test_dataset_io_point_selections(void)
 
         /* Update file_state */
         for(i = 0; i < DATASET_IO_POINT_NPOINTS; i++)
-            file_state[start[0] + (stride[0] * (i / block[1]))][start[1] + (i % block[1])] = buf_all[points[2 * i]][points[2 * i + 1]];
+            file_state[start[0] + (stride[0] * ((hsize_t)i / block[1]))][start[1] + ((hsize_t)i % block[1])] = buf_all[points[2 * i]][points[2 * i + 1]];
 
         /* Wipe read buffer */
         memset(buf_all, 0, sizeof(buf_all));
@@ -9144,7 +9144,7 @@ test_read_partial_chunk_all_selection(void)
 
     for (i = 0; i < FIXED_DIMSIZE; i++)
         for (j = 0; j < FIXED_DIMSIZE; j++)
-            write_buf[i][j] = (i * FIXED_DIMSIZE) + j;
+            write_buf[i][j] = (DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_CTYPE) ((i * FIXED_DIMSIZE) + j);
 
     for (i = 0; i < FIXED_DIMSIZE; i++)
         for (j = 0; j < FIXED_DIMSIZE; j++)
@@ -9310,7 +9310,7 @@ test_read_partial_chunk_hyperslab_selection(void)
 
     for (i = 0; i < FIXED_CHUNK_DIMSIZE; i++)
         for (j = 0; j < FIXED_CHUNK_DIMSIZE; j++)
-            write_buf[i][j] = (i * FIXED_CHUNK_DIMSIZE) + j;
+            write_buf[i][j] = (DATASET_PARTIAL_CHUNK_READ_ALL_SEL_TEST_DSET_CTYPE) ((i * FIXED_CHUNK_DIMSIZE) + j);
 
     for (i = 0; i < FIXED_CHUNK_DIMSIZE; i++)
         for (j = 0; j < FIXED_CHUNK_DIMSIZE; j++)

@@ -2917,6 +2917,7 @@ test_file_double_datatype_open(void)
 **      differ exactly by the userblock size.
 **
 *****************************************************************/
+#if 0
 static void
 test_userblock_file_size(void)
 {
@@ -3033,6 +3034,7 @@ test_userblock_file_size(void)
     ret = H5Fclose(file2_id);
     CHECK(ret, FAIL, "H5Fclose");
 } /* end test_userblock_file_size() */
+#endif
 
 /****************************************************************
 **
@@ -3043,6 +3045,7 @@ test_userblock_file_size(void)
 **      compatibility with versions from 1.3.0 to 1.6.3.
 **
 *****************************************************************/
+#if 0
 static void
 test_cached_stab_info(void)
 {
@@ -3079,6 +3082,7 @@ test_cached_stab_info(void)
     ret = H5Fclose(file_id);
     CHECK(ret, FAIL, "H5Fclose");
 } /* end test_cached_stab_info() */
+#endif
 
 #if 0
 /*
@@ -3955,6 +3959,7 @@ test_userblock_alignment_paged(void)
 **          Retrieve and set the page size for paged aggregation
 **
 ****************************************************************/
+#if 0
 static void
 test_filespace_info(const char *env_h5_drvr)
 {
@@ -4298,6 +4303,7 @@ test_filespace_info(const char *env_h5_drvr)
     } /* end for new_format */
 
 }  /* test_filespace_info() */
+#endif
 
 /****************************************************************
 **
@@ -8059,17 +8065,15 @@ test_file(void)
     test_file_double_datatype_open();           /* Test opening same named datatype from two files works properly */
     test_file_double_file_dataset_open(TRUE);
     test_file_double_file_dataset_open(FALSE);
+#if 0
     test_userblock_file_size();                 /* Tests that files created with a userblock have the correct size */
     test_cached_stab_info();                    /* Tests that files are created with cached stab info in the superblock */
-#if 0
     test_rw_noupdate();                         /* Test to ensure that RW permissions don't write the file unless dirtied */
     test_userblock_alignment();                 /* Tests that files created with a userblock and alignment interact properly */
     test_userblock_alignment_paged();           /* Tests files created with a userblock and alignment (via paged aggregation) interact properly */
-#endif
     test_filespace_info(env_h5_drvr);           /* Test file creation public routines: */
                                                 /* H5Pget/set_file_space_strategy() & H5Pget/set_file_space_page_size() */
                                                 /* Skipped testing for multi/split drivers */
-#if 0
     test_file_freespace(env_h5_drvr);           /* Test file public routine H5Fget_freespace() */
                                                 /* Skipped testing for multi/split drivers */
                                                 /* Setup for multi/split drivers are there already */

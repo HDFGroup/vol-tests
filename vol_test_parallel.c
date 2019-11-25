@@ -63,14 +63,14 @@ generate_random_parallel_dimensions(int space_rank, hsize_t **dims_out)
     if (space_rank <= 0)
         goto error;
 
-    if (NULL == (dims = HDmalloc(space_rank * sizeof(hsize_t))))
+    if (NULL == (dims = HDmalloc((size_t) space_rank * sizeof(hsize_t))))
         goto error;
     if (MAINPROCESS) {
         for (i = 0; i < (size_t) space_rank; i++) {
             if (i == 0)
-                dims[i] = mpi_size;
+                dims[i] = (hsize_t) mpi_size;
             else
-                dims[i] = (rand() % MAX_DIM_SIZE) + 1;
+                dims[i] = (hsize_t) ((rand() % MAX_DIM_SIZE) + 1);
         }
     }
 
@@ -163,7 +163,7 @@ main(int argc, char **argv)
     if (MAINPROCESS)
         HDprintf("%s%ld/%ld (%.2f%%) VOL tests passed across all ranks with VOL connector '%s'\n",
                 n_tests_passed_g > 0 ? "At least " : "",
-                (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / n_tests_run_g * 100.0), vol_connector_name);
+                (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / (float) n_tests_run_g * 100.0), vol_connector_name);
 
     if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &n_tests_failed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN, MPI_COMM_WORLD)) {
         if (MAINPROCESS)
@@ -173,10 +173,10 @@ main(int argc, char **argv)
     if (MAINPROCESS) {
         HDprintf("%s%ld/%ld (%.2f%%) VOL tests did not pass across all ranks with VOL connector '%s'\n",
                 n_tests_failed_g > 0 ? "At least " : "",
-                (long) n_tests_failed_g, (long) n_tests_run_g, ((float) n_tests_failed_g / n_tests_run_g * 100.0), vol_connector_name);
+                (long) n_tests_failed_g, (long) n_tests_run_g, ((float) n_tests_failed_g / (float) n_tests_run_g * 100.0), vol_connector_name);
 
         HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n",
-                (long) n_tests_skipped_g, (long) n_tests_run_g, ((float) n_tests_skipped_g / n_tests_run_g * 100.0), vol_connector_name);
+                (long) n_tests_skipped_g, (long) n_tests_run_g, ((float) n_tests_skipped_g / (float) n_tests_run_g * 100.0), vol_connector_name);
     }
 
     H5close();

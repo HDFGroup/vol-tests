@@ -53,7 +53,8 @@ test_encode_decode(hid_t orig_pl, int mpi_rank, int recv_proc)
         void *rbuf;
 
         MPI_Recv(&recv_size, 1, MPI_INT, 0, 123, MPI_COMM_WORLD, &status);
-        buf_size = recv_size;
+        VRFY((recv_size >= 0), "MPI_Recv succeeded");
+        buf_size = (size_t)recv_size;
         rbuf = (uint8_t *)HDmalloc(buf_size);
         MPI_Recv(rbuf, recv_size, MPI_BYTE, 0, 124, MPI_COMM_WORLD, &status);
 

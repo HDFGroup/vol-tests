@@ -29,6 +29,8 @@
 /* Temporarily disable tests until references are supported */
 #define NO_REFERENCE_SUPPORT
 
+#define NO_DECREASING_ALPHA_ITER_ORDER
+
 #define VERBO_NONE 0     /* None    */
 #define VERBO_DEF  3     /* Default */
 #define VERBO_LO   5     /* Low     */
@@ -220,6 +222,10 @@ herr_t h5_get_vfd_fapl(hid_t fapl_id);
 herr_t h5_get_libver_fapl(hid_t fapl_id);
 char *h5_fixname(const char *base_name, hid_t fapl, char *fullname, size_t size);
 char *h5_fixname_superblock(const char *base_name, hid_t fapl, char *fullname, size_t size);
+
+#ifdef H5_HAVE_PARALLEL
+char* getenv_all(MPI_Comm comm, int root, const char* name);
+#endif
 
 /* Prototypes for the test routines */
 void test_metadata(void);

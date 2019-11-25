@@ -2098,6 +2098,7 @@ test_reference_external(void)
 **      Tests deprecated API routines and type conversion.
 **
 ****************************************************************/
+#if 0
 static void
 test_reference_compat_conv(void)
 {
@@ -2393,6 +2394,7 @@ test_reference_compat_conv(void)
     HDfree(wbuf_reg);
     HDfree(rbuf_reg);
 }   /* test_reference_compat() */
+#endif
 
 /****************************************************************
 **
@@ -2830,7 +2832,9 @@ test_reference(void)
     test_reference_group();         /* Test operations on dereferenced groups */
     test_reference_attr();          /* Test attribute references */
     test_reference_external();      /* Test external references */
+#if 0
     test_reference_compat_conv();   /* Test operations with old types */
+#endif
 
     test_reference_perf();
 

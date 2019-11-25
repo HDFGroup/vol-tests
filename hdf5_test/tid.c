@@ -21,6 +21,15 @@
 #include "H5Ipkg.h"
 #endif
 
+static herr_t id_free_func(void *mem);
+
+static herr_t
+id_free_func(void *mem)
+{
+    free(mem);
+    return (herr_t)0;
+}
+
 /* Test basic functionality of registering and deleting types and IDs */
 static int basic_id_test(void)
 {
@@ -71,7 +80,7 @@ static int basic_id_test(void)
         goto out;
 
     /* Register a type */
-    myType = H5Iregister_type((size_t)64, 0, (H5I_free_t) free );
+    myType = H5Iregister_type((size_t)64, 0, (H5I_free_t) id_free_func );
 
     CHECK(myType, H5I_BADID, "H5Iregister_type");
     if(myType == H5I_BADID)
@@ -167,7 +176,7 @@ static int basic_id_test(void)
         goto out;
 
     /* Register another type and another object in that type */
-    myType = H5Iregister_type((size_t)64, 0, (H5I_free_t) free );
+    myType = H5Iregister_type((size_t)64, 0, (H5I_free_t) id_free_func );
 
     CHECK(myType, H5I_BADID, "H5Iregister_type");
     if(myType == H5I_BADID)
@@ -242,7 +251,7 @@ out:
 
 
     /* A dummy search function for the next test */
-static int test_search_func(void H5_ATTR_UNUSED * ptr1, void H5_ATTR_UNUSED * ptr2) { return 0; }
+static int test_search_func(void H5_ATTR_UNUSED * ptr1, hid_t H5_ATTR_UNUSED id, void H5_ATTR_UNUSED * ptr2) { return 0; }
 
     /* Ensure that public functions cannot access "predefined" ID types */
 static int id_predefined_test(void )
@@ -495,7 +504,7 @@ static int test_id_type_list(void)
     H5I_type_t testType;
     int i;    /* Just a counter variable */
 
-    startType = H5Iregister_type((size_t)8, 0, (H5I_free_t) free );
+    startType = H5Iregister_type((size_t)8, 0, (H5I_free_t) id_free_func );
     CHECK(startType, H5I_BADID, "H5Iregister_type");
     if(startType == H5I_BADID)
         goto out;
@@ -510,7 +519,7 @@ static int test_id_type_list(void)
     /* Create types up to H5I_MAX_NUM_TYPES */
     for(i = startType + 1; i < H5I_MAX_NUM_TYPES; i++)
     {
-        currentType = H5Iregister_type((size_t)8, 0, (H5I_free_t) free );
+        currentType = H5Iregister_type((size_t)8, 0, (H5I_free_t) id_free_func );
         CHECK(currentType, H5I_BADID, "H5Iregister_type");
         if(currentType == H5I_BADID)
             goto out;
@@ -519,7 +528,7 @@ static int test_id_type_list(void)
     /* Wrap around to low type ID numbers */
     for(i = H5I_NTYPES; i < startType; i++)
     {
-        currentType = H5Iregister_type((size_t)8, 0, (H5I_free_t) free );
+        currentType = H5Iregister_type((size_t)8, 0, (H5I_free_t) id_free_func );
         CHECK(currentType, H5I_BADID, "H5Iregister_type");
         if(currentType == H5I_BADID)
             goto out;
@@ -527,7 +536,7 @@ static int test_id_type_list(void)
 
     /* There should be no room at the inn for a new ID type*/
     H5E_BEGIN_TRY
-        testType = H5Iregister_type((size_t)8, 0, (H5I_free_t) free );
+        testType = H5Iregister_type((size_t)8, 0, (H5I_free_t) id_free_func );
     H5E_END_TRY
 
     VERIFY(testType, H5I_BADID, "H5Iregister_type");
@@ -536,7 +545,7 @@ static int test_id_type_list(void)
 
     /* Now delete a type and try to insert again */
     H5Idestroy_type(H5I_NTYPES);
-    testType = H5Iregister_type((size_t)8, 0, (H5I_free_t) free );
+    testType = H5Iregister_type((size_t)8, 0, (H5I_free_t) id_free_func );
 
     VERIFY(testType, H5I_NTYPES, "H5Iregister_type");
     if(testType != H5I_NTYPES)

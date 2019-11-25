@@ -1729,7 +1729,7 @@ test_get_file_name(void)
         PART_BEGIN(H5Fget_name_file_id) {
             TESTING_2("H5Fget_name using file ID")
 
-            memset(file_name_buf, 0, file_name_buf_len);
+            memset(file_name_buf, 0, (size_t) file_name_buf_len);
 
             /* Retrieve the actual file name */
             if (H5Fget_name(file_id, file_name_buf, (size_t) file_name_buf_len + 1) < 0) {
@@ -1751,7 +1751,7 @@ test_get_file_name(void)
             TESTING_2("H5Fget_name using non-root group ID")
 
             /* Attempt to retrieve the name of the file from an object that isn't the root group */
-            memset(file_name_buf, 0, file_name_buf_len);
+            memset(file_name_buf, 0, (size_t) file_name_buf_len);
 
             if ((group_id = H5Gcreate2(file_id, GET_FILE_NAME_TEST_GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
