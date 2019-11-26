@@ -860,6 +860,7 @@ static void test_vl_rewrite(void)
  **      H5Sselect_element.
  **
  ****************************************************************/
+#ifndef NO_WRITE_SAME_ELEMENT_TWICE
 static void test_write_same_element(void)
 {
     hid_t   file1, dataset1;
@@ -947,6 +948,7 @@ static void test_write_same_element(void)
     ret = H5Fclose(file1);
     CHECK(ret, FAIL, "H5Fclose");
 } /* test_write_same_element */
+#endif
 
 /****************************************************************
 **
@@ -972,8 +974,10 @@ test_vlstrings(void)
 
     /* Test writing VL datasets in files with lots of unlinking */
     test_vl_rewrite();
+#ifndef NO_WRITE_SAME_ELEMENT_TWICE
     /* Test writing to the same element more than once using H5Sselect_elements */
     test_write_same_element();
+#endif
 }   /* test_vlstrings() */
 
 /*-------------------------------------------------------------------------
