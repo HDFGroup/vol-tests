@@ -1682,14 +1682,20 @@ test_file_is_accessible(const char *env_h5_drvr)
     hid_t           fid = H5I_INVALID_HID;          /* File opened with read-write permission */
     hid_t           fcpl_id = H5I_INVALID_HID;      /* File creation property list */
     hid_t           fapl_id = H5I_INVALID_HID;      /* File access property list */
+#if 0
     int             fd;                             /* POSIX file descriptor */
+#endif
     char filename[FILENAME_LEN];                    /* Filename to use */
     char sb_filename[FILENAME_LEN];                 /* Name of file w/ superblock */
+#if 0
     ssize_t         nbytes;                         /* Number of bytes written */
     unsigned        u;                              /* Local index variable */
     unsigned char   buf[1024];                      /* Buffer of data to write */
+#endif
     htri_t          is_hdf5;                        /* Whether a file is an HDF5 file */
+#if 0
     int             posix_ret;                      /* Return value from POSIX calls */
+#endif
     herr_t          ret;                            /* Return value from HDF5 calls */
 
     /* Output message about test being performed */
@@ -1754,7 +1760,7 @@ test_file_is_accessible(const char *env_h5_drvr)
         is_hdf5 = H5Fis_accessible(filename, fapl_id);
         VERIFY(is_hdf5, TRUE, "H5Fis_accessible");
     } /* end if */
-
+#if 0
     /***********************/
     /* EMPTY non-HDF5 file */
     /***********************/
@@ -1797,7 +1803,6 @@ test_file_is_accessible(const char *env_h5_drvr)
 
 
     /* Clean up files */
-#if 0
     h5_delete_test_file(filename, fapl_id);
 #endif
     H5Fdelete(filename, fapl_id);
@@ -1953,8 +1958,10 @@ test_file_delete(hid_t fapl_id)
     hid_t       fid = H5I_INVALID_HID;  /* File to be deleted */
     char        filename[FILENAME_LEN]; /* Filename to use */
     htri_t      is_hdf5;                /* Whether a file is an HDF5 file */
+#if 0
     int         fd;                     /* POSIX file descriptor */
     int         iret;
+#endif
     herr_t      ret;
 
     /* Output message about test being performed */
@@ -1993,7 +2000,6 @@ test_file_delete(hid_t fapl_id)
 
     /* Actually delete the test file */
     h5_delete_test_file(FILE_DELETE, fapl_id);
-#endif
 
     /*****************/
     /* NON-HDF5 FILE */
@@ -2030,7 +2036,7 @@ test_file_delete(hid_t fapl_id)
     /* Delete the file */
     iret = H5Fdelete(filename, H5P_DEFAULT);
     VERIFY(iret, 0, "H5Fdelete");
-
+#endif
 } /* end test_file_delete() */
 
 

@@ -4273,7 +4273,7 @@ test_attr_deprec(hid_t fcpl, hid_t fapl)
     dataset = H5Dopen2(fid, DSET1_NAME, H5P_DEFAULT);
     CHECK(dataset, FAIL, "H5Dopen2");
 
-
+#if 0
     /* Get number of attributes with bad ID */
     H5E_BEGIN_TRY
         ret = H5Aget_num_attrs((hid_t)-1);
@@ -4283,7 +4283,7 @@ test_attr_deprec(hid_t fcpl, hid_t fapl)
     /* Get number of attributes */
     ret = H5Aget_num_attrs(dataset);
     VERIFY(ret, 1, "H5Aget_num_attrs");
-
+#endif
     /* Open the attribute by index */
     attr = H5Aopen_idx(dataset, 0);
     CHECK(attr, FAIL, "H5Aopen_idx");
@@ -6995,13 +6995,14 @@ HDfprintf(stderr, "op_data->curr = %Hd\n", op_data->curr);
 **  attr_iterate1_cb(): Attribute operator
 **
 ****************************************************************/
+#if 0
 static herr_t
 attr_iterate1_cb(hid_t loc_id, const char *attr_name, void *_op_data)
 {
     return(attr_iterate2_cb(loc_id, attr_name, NULL, _op_data));
 } /* end attr_iterate1_cb() */
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
-
+#endif
 
 /*-------------------------------------------------------------------------
  * Function:    attr_iterate2_fail_cb
@@ -7045,9 +7046,11 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
 {
     unsigned    v;              /* Local index variable */
     hsize_t     skip;           /* # of attributes to skip on object */
+#if 0
 #ifndef H5_NO_DEPRECATED_SYMBOLS
     unsigned    oskip;          /* # of attributes to skip on object, with H5Aiterate1 */
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
+#endif
     int         old_nerrs;      /* Number of errors when entering this check */
     herr_t      ret;            /* Generic return value */
 
@@ -7101,7 +7104,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
     for(v = 0; v < max_attrs; v++)
         VERIFY(iter_info->visited[v], TRUE, "H5Aiterate_by_name");
 
-
+#if 0
 #ifndef H5_NO_DEPRECATED_SYMBOLS
     /* Iterate over attributes on object, with H5Aiterate1 */
     iter_info->nskipped = oskip = 0;
@@ -7118,7 +7121,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
     for(v = 0; v < max_attrs; v++)
         VERIFY(iter_info->visited[v], TRUE, "H5Aiterate1");
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
-
+#endif
 
     /* Skip over some attributes on object */
     iter_info->nskipped = (unsigned)(skip = max_attrs / 2);
@@ -7215,7 +7218,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
         VERIFY(skip, (max_attrs / 2), "H5Aiterate_by_name");
     } /* end else */
 
-
+#if 0
 #ifndef H5_NO_DEPRECATED_SYMBOLS
     /* Skip over some attributes on object, with H5Aiterate1 */
     iter_info->nskipped = oskip = max_attrs / 2;
@@ -7248,7 +7251,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
         VERIFY(skip, (max_attrs / 2), "H5Aiterate1");
     } /* end else */
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
-
+#endif
 
     /* Iterate over attributes on object, stopping in the middle */
     iter_info->nskipped = (unsigned)(skip = 0);
@@ -7288,7 +7291,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
     VERIFY(ret, CORDER_ITER_STOP, "H5Aiterate_by_name");
     VERIFY(iter_info->ncalled, 3, "H5Aiterate_by_name");
 
-
+#if 0
 #ifndef H5_NO_DEPRECATED_SYMBOLS
     /* Iterate over attributes on object, stopping in the middle, with H5Aiterate1() */
     iter_info->nskipped = oskip = 0;
@@ -7302,7 +7305,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
     VERIFY(ret, CORDER_ITER_STOP, "H5Aiterate1");
     VERIFY(iter_info->ncalled, 3, "H5Aiterate1");
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
-
+#endif
 
     /* Check for iteration routine indicating failure */
     skip = 0;
