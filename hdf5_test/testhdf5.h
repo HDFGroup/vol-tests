@@ -31,6 +31,9 @@
 
 #define NO_DECREASING_ALPHA_ITER_ORDER
 
+/* Disable edge case test */
+#define NO_WRITE_SAME_ELEMENT_TWICE
+
 #define VERBO_NONE 0     /* None    */
 #define VERBO_DEF  3     /* Default */
 #define VERBO_LO   5     /* Low     */
