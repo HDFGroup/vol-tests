@@ -477,12 +477,10 @@ int main(int argc, char **argv)
     }
     none_selection_chunk();
     if (MAINPROCESS) {
-        printf("parallel extend Chunked allocation on serial file - SKIPPED currently until fill values are supported\n");
+        printf("parallel extend Chunked allocation on serial file\n");
         fflush(stdout);
     }
-#ifndef NO_FILL_VALUE_SUPPORT
     test_chunk_alloc();
-#endif
     if (MAINPROCESS) {
         printf("parallel read of dataset written serially with filters\n");
         fflush(stdout);
@@ -592,9 +590,7 @@ int main(int argc, char **argv)
         printf("dataset fill value - SKIPPED currently until fill values are supported\n");
         fflush(stdout);
     }
-#ifndef NO_FILL_VALUE_SUPPORT
     dataset_fillvalue();
-#endif
 
 #if 0
     AddTest("cchunk1",

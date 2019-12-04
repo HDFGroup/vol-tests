@@ -7678,13 +7678,11 @@ test_select_none(void)
 
     ret = H5Sselect_none(sid2);
     CHECK(ret, FAIL, "H5Sselect_none");
-#ifndef NO_FILL_VALUE_SUPPORT
+
     /* Attempt to read "nothing" from disk (before space is allocated) */
     ret=H5Dread(dataset,H5T_NATIVE_UCHAR,sid2,sid1,H5P_DEFAULT,rbuf);
     CHECK(ret, FAIL, "H5Dread");
-#else
-    HDprintf("** SKIPPED dataset pre-read temporarily until fill values supported **\n");
-#endif
+
     /* Write "nothing" to disk */
     ret=H5Dwrite(dataset,H5T_NATIVE_UCHAR,sid2,sid1,H5P_DEFAULT,wbuf);
     CHECK(ret, FAIL, "H5Dwrite");

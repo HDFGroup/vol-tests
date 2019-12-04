@@ -730,11 +730,7 @@ main(int argc, char *argv[])
 
     /* AddTest("ref", test_reference, cleanup_reference,  "References", NULL); */
     HDprintf("** References **\n");
-#ifndef NO_REFERENCE_SUPPORT
     test_reference();
-#else
-    HDprintf("** SKIPPED due to no reference support currently\n");
-#endif
 
     /* AddTest("vltypes", test_vltypes, cleanup_vltypes,  "Variable-Length Datatypes", NULL); */
     HDprintf("** Variable-Length Datatypes **\n");

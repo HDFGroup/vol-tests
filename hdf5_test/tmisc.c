@@ -579,7 +579,6 @@ test_misc2(void)
 **      fill value
 **
 ****************************************************************/
-#ifndef NO_FILL_VALUE_SUPPORT
 static void
 test_misc3(void)
 {
@@ -639,7 +638,6 @@ test_misc3(void)
     ret = H5Fclose(file);
     CHECK(ret, FAIL, "H5Fclose");
 } /* end test_misc3() */
-#endif
 
 /****************************************************************
 **
@@ -5673,11 +5671,7 @@ test_misc(void)
 
     test_misc1();       /* Test unlinking a dataset & immediately re-using name */
     test_misc2();       /* Test storing a VL-derived datatype in two different files */
-#ifndef NO_FILL_VALUE_SUPPORT
     test_misc3();       /* Test reading from chunked dataset with non-zero fill value */
-#else
-    HDprintf("** SKIPPED a test until fill values supported **\n");
-#endif
     test_misc4();       /* Test retrieving the fileno for various objects with H5Oget_info() */
     test_misc5();       /* Test several level deep nested compound & VL datatypes */
     test_misc6();       /* Test object header continuation code */

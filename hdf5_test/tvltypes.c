@@ -26,7 +26,7 @@
 #define FILENAME   "tvltypes.h5"
 
 /* Default temporary buffer size */
-#define H5D_TEMP_BUF_SIZE       (1024 * 1024)
+#define H5D_TEMP_BUF_SIZE       (64 * 1024)
 
 /* 1-D dataset with fixed dimensions */
 #define SPACE1_RANK    1
@@ -274,7 +274,7 @@ test_vltypes_vlen_atomic(void)
     /* Create a dataset */
     dataset = H5Dcreate2(fid1, "Dataset1", tid1, sid1, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(dataset, FAIL, "H5Dcreate2");
-#ifndef NO_FILL_VALUE_SUPPORT
+
     /* Read from dataset before writing data */
     ret = H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
     CHECK(ret, FAIL, "H5Dread");
@@ -283,9 +283,7 @@ test_vltypes_vlen_atomic(void)
     for(i = 0; i < SPACE1_DIM1; i++)
         if(rdata[i].len != 0 || rdata[i].p != NULL)
             TestErrPrintf("VL doesn't match!, rdata[%d].len=%u, rdata[%d].p=%p\n",(int)i,(unsigned)rdata[i].len,(int)i,rdata[i].p);
-#else
-    HDprintf("** SKIPPED dataset pre-read temporarily until fill values supported **\n");
-#endif
+
     /* Write "nil" data to disk */
     ret = H5Dwrite(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata2);
     CHECK(ret, FAIL, "H5Dwrite");
@@ -323,7 +321,7 @@ test_vltypes_vlen_atomic(void)
     /* Close dataset creation property list */
     ret = H5Pclose(dcpl_pid);
     CHECK(ret, FAIL, "H5Pclose");
-#ifndef NO_FILL_VALUE_SUPPORT
+
     /* Read from dataset before writing data */
     ret = H5Dread(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
     CHECK(ret, FAIL, "H5Dread");
@@ -332,9 +330,7 @@ test_vltypes_vlen_atomic(void)
     for(i = 0; i < SPACE1_DIM1; i++)
         if(rdata[i].len != 0 || rdata[i].p != NULL)
             TestErrPrintf("VL doesn't match!, rdata[%d].len=%u, rdata[%d].p=%p\n",(int)i,(unsigned)rdata[i].len,(int)i,rdata[i].p);
-#else
-    HDprintf("** SKIPPED dataset pre-read temporarily until fill values supported **\n");
-#endif
+
     /* Write "nil" data to disk */
     ret = H5Dwrite(dataset, tid1, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata2);
     CHECK(ret, FAIL, "H5Dwrite");
@@ -1600,7 +1596,7 @@ test_vltypes_compound_vlen_atomic(void)
     /* Close dataset creation property list */
     ret = H5Pclose(dcpl_pid);
     CHECK(ret, FAIL, "H5Pclose");
-#ifndef NO_FILL_VALUE_SUPPORT
+
     /* Read from dataset before writing data */
     ret = H5Dread(dataset, tid2, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
     CHECK(ret, FAIL, "H5Dread");
@@ -1609,9 +1605,7 @@ test_vltypes_compound_vlen_atomic(void)
     for(i = 0; i < SPACE1_DIM1; i++)
         if(rdata[i].i != 0 || !H5_FLT_ABS_EQUAL(rdata[i].f, 0.0F) || rdata[i].v.len != 0 || rdata[i].v.p != NULL)
             TestErrPrintf("VL doesn't match!, rdata[%d].i=%d, rdata[%d].f=%f, rdata[%d].v.len=%u, rdata[%d].v.p=%p\n",(int)i,rdata[i].i,(int)i,(double)rdata[i].f,(int)i,(unsigned)rdata[i].v.len,(int)i,rdata[i].v.p);
-#else
-    HDprintf("** SKIPPED dataset pre-read temporarily until fill values supported **\n");
-#endif
+
     /* Write dataset to disk */
     ret = H5Dwrite(dataset, tid2, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata);
     CHECK(ret, FAIL, "H5Dwrite");
@@ -2401,7 +2395,6 @@ rewrite_shorter_vltypes_vlen_vlen_atomic(void)
 **  space is allocated.
 **
 ****************************************************************/
-#ifndef NO_FILL_VALUE_SUPPORT
 static void
 test_vltypes_fill_value(void)
 {
@@ -3166,7 +3159,7 @@ test_vltypes_fill_value(void)
     /* Release buffer */
     HDfree(rbuf);
 } /* end test_vltypes_fill_value() */
-#endif
+
 
 /****************************************************************
 **
@@ -3194,11 +3187,7 @@ test_vltypes(void)
     rewrite_shorter_vltypes_vlen_vlen_atomic();  /*overwrite with VL data of shorted sequence*/
     test_vltypes_compound_vlen_vlen();/* Test compound datatypes with VL atomic components */
     test_vltypes_compound_vlstr();    /* Test data rewritten of nested VL data */
-#ifndef NO_FILL_VALUE_SUPPORT
     test_vltypes_fill_value();        /* Test fill value for VL data */
-#else
-    HDprintf("** SKIPPED fill value test until fill values are supported **\n");
-#endif
 }   /* test_vltypes() */
 
 

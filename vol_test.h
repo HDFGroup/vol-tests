@@ -139,7 +139,7 @@ extern char vol_test_filename[];
 #define NO_USER_DEFINED_LINKS
 #define NO_EXTERNAL_LINKS
 #define NO_FILE_MOUNTS
-#define NO_FILL_VALUES
+#define NO_CLEAR_ON_SHRINK
 #define NO_DOUBLE_OBJECT_OPENS
 #define NO_OBJECT_GET_NAME
 #define NO_WRAP_COMMITTED_TYPES /* bug in HDF5 */

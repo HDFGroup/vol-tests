@@ -19,9 +19,6 @@
 #include "H5private.h"
 #include "testpar.h"
 
-/* Temporarily disable tests until fill values are supported */
-#define NO_FILL_VALUE_SUPPORT
-
 /*
  * Define parameters for various tests since we do not have access to
  * passing parameters to tests via the testphdf5 test framework.

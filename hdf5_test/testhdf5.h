@@ -23,11 +23,11 @@
 #include "hdf5.h"
 #include "H5private.h"
 
-/* Temporarily disable tests until fill values are supported */
-#define NO_FILL_VALUE_SUPPORT
+/* Temporarily disable tests until object reference counts are supported */
+#define NO_REF_COUNT
 
-/* Temporarily disable tests until references are supported */
-#define NO_REFERENCE_SUPPORT
+/* Temporarily disable tests until attribute (0) fill values are supported */
+#define NO_ATTR_FILL_VALUE_SUPPORT
 
 #define NO_DECREASING_ALPHA_ITER_ORDER
 

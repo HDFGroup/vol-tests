@@ -524,7 +524,7 @@ test_attr_flush(hid_t fapl)
 
     att = H5Acreate2(set, ATTR1_NAME, H5T_NATIVE_DOUBLE, spc, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(att, FAIL, "H5Acreate2");
-#ifndef NO_FILL_VALUE_SUPPORT
+#ifndef NO_ATTR_FILL_VALUE_SUPPORT
     ret=H5Aread(att, H5T_NATIVE_DOUBLE, &rdata);
     CHECK(ret, FAIL, "H5Aread");
 
@@ -540,7 +540,7 @@ test_attr_flush(hid_t fapl)
     if(!H5_DBL_ABS_EQUAL(rdata, H5_DOUBLE(0.0)))
         TestErrPrintf("attribute value wrong: rdata=%f, should be %f\n",rdata,(double)0.0F);
 #else
-    HDprintf("** SKIPPED attribute pre-read temporarily until fill values supported **\n");
+    HDprintf("** SKIPPED attribute pre-read temporarily until attribute fill values supported **\n");
 #endif
     ret=H5Awrite(att, H5T_NATIVE_DOUBLE, &wdata);
     CHECK(ret, FAIL, "H5Awrite");
