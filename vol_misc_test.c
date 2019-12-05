@@ -591,9 +591,7 @@ test_dot_for_object_name(void)
     hid_t group_id = H5I_INVALID_HID;
     hid_t dtype_id = H5I_INVALID_HID;
     hid_t attr_id = H5I_INVALID_HID;
-#ifndef NO_PREVENT_DOT_FOR_NAME
     herr_t ret = -1;
-#endif
 
     TESTING_MULTIPART("creating objects with \".\" as the name");
 
@@ -629,7 +627,7 @@ test_dot_for_object_name(void)
     BEGIN_MULTIPART {
         PART_BEGIN(H5Gcreate_dot_as_name) {
             TESTING_2("invalid creation of group with '.' as name")
-#ifndef NO_PREVENT_DOT_FOR_NAME
+
             /* Create a group with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY {
                 group_id = H5Gcreate2(subgroup_id, ".", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -642,15 +640,11 @@ test_dot_for_object_name(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Gcreate_dot_as_name);
-#endif
         } PART_END(H5Gcreate_dot_as_name);
 
         PART_BEGIN(H5Dcreate_dot_as_name) {
             TESTING_2("invalid creation of dataset with '.' as name")
-#ifndef NO_PREVENT_DOT_FOR_NAME
+
             /* Create a dataset with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY {
                 dset_id = H5Dcreate2(subgroup_id, ".", H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -663,36 +657,11 @@ test_dot_for_object_name(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Dcreate_dot_as_name);
-#endif
         } PART_END(H5Dcreate_dot_as_name);
-
-        PART_BEGIN(H5Acreate_dot_as_name) {
-            TESTING_2("invalid creation of attribute with '.' as name")
-#ifndef NO_PREVENT_DOT_FOR_NAME
-            /* Create an attribute with "." as the name. It should fail. */
-            H5E_BEGIN_TRY {
-                attr_id = H5Acreate2(subgroup_id, ".", H5T_NATIVE_INT, dspace_id, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
-
-            if (attr_id >= 0) {
-                H5_FAILED();
-                HDprintf("    an attribute was created with '.' as the name!\n");
-                PART_ERROR(H5Acreate_dot_as_name);
-            }
-
-            PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Acreate_dot_as_name);
-#endif
-        } PART_END(H5Acreate_dot_as_name);
 
         PART_BEGIN(H5Tcommit_dot_as_name) {
             TESTING_2("invalid creation of committed datatype with '.' as name")
-#ifndef NO_PREVENT_DOT_FOR_NAME
+
             if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't copy a native datatype\n");
@@ -717,10 +686,6 @@ test_dot_for_object_name(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Tcommit_dot_as_name);
-#endif
         } PART_END(H5Tcommit_dot_as_name);
     } END_MULTIPART;
 

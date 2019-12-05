@@ -342,63 +342,6 @@ test_open_object(void)
             } H5E_END_TRY;
             type_id = H5I_INVALID_HID;
         }
-
-#ifndef NO_OPEN_BY_ADDR
-        PART_BEGIN(H5Oopen_by_addr_group) {
-            TESTING_2("H5Oopen_by_addr on a group")
-
-            if ((group_id2 = H5Oopen_by_addr(file_id, 0)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't open group '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_GRP_NAME);
-                PART_ERROR(H5Oopen_by_addr_group);
-            }
-
-            PASSED();
-        } PART_END(H5Oopen_by_addr_group);
-
-        PART_BEGIN(H5Oopen_by_addr_dset) {
-            TESTING_2("H5Oopen_by_addr on a dataset")
-
-            if ((dset_id = H5Oopen_by_addr(file_id, 0)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't open dataset '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_DSET_NAME);
-                PART_ERROR(H5Oopen_by_addr_dset);
-            }
-
-            PASSED();
-        } PART_END(H5Oopen_by_addr_dset);
-
-        PART_BEGIN(H5Oopen_by_addr_dtype) {
-            TESTING_2("H5Oopen_by_addr on a committed datatype")
-
-            if ((type_id = H5Oopen_by_addr(file_id, 0)) < 0) {
-                H5_FAILED();
-                HDprintf("    couldn't open committed datatype '%s' with H5Oopen_by_addr\n", OBJECT_OPEN_TEST_TYPE_NAME);
-                PART_ERROR(H5Oopen_by_addr_dtype);
-            }
-
-            PASSED();
-        } PART_END(H5Oopen_by_addr_dtype);
-
-        if (group_id2 >= 0) {
-            H5E_BEGIN_TRY {
-                H5Gclose(group_id2);
-            } H5E_END_TRY;
-            group_id2 = H5I_INVALID_HID;
-        }
-        if (dset_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Dclose(dset_id);
-            } H5E_END_TRY;
-            dset_id = H5I_INVALID_HID;
-        }
-        if (type_id >= 0) {
-            H5E_BEGIN_TRY {
-                H5Tclose(type_id);
-            } H5E_END_TRY;
-            type_id = H5I_INVALID_HID;
-        }
-#endif
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -679,40 +622,6 @@ test_open_object_invalid_params(void)
 
             PASSED();
         } PART_END(H5Oopen_by_idx_invalid_lapl);
-
-        PART_BEGIN(H5Oopen_by_addr_invalid_loc_id) {
-            TESTING_2("H5Oopen_by_addr with an invalid location ID")
-
-            H5E_BEGIN_TRY {
-                group_id2 = H5Oopen_by_addr(H5I_INVALID_HID, 0);
-            } H5E_END_TRY;
-
-            if (group_id2 >= 0) {
-                H5_FAILED();
-                HDprintf("    H5Oopen_by_addr succeeded with an invalid location ID!\n");
-                H5Gclose(group_id2);
-                PART_ERROR(H5Oopen_by_addr_invalid_loc_id);
-            }
-
-            PASSED();
-        } PART_END(H5Oopen_by_addr_invalid_loc_id);
-
-        PART_BEGIN(H5Oopen_by_addr_invalid_addr) {
-            TESTING_2("H5Oopen_by_addr with an invalid address")
-
-            H5E_BEGIN_TRY {
-                group_id2 = H5Oopen_by_addr(file_id, 0);
-            } H5E_END_TRY;
-
-            if (group_id2 >= 0) {
-                H5_FAILED();
-                HDprintf("    H5Oopen_by_addr succeeded with an invalid address!\n");
-                H5Gclose(group_id2);
-                PART_ERROR(H5Oopen_by_addr_invalid_addr);
-            }
-
-            PASSED();
-        } PART_END(H5Oopen_by_addr_invalid_addr);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
