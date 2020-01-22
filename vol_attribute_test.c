@@ -9102,7 +9102,7 @@ error:
 static int
 test_get_number_attributes(void)
 {
-    H5O_info_t obj_info;
+    H5O_info2_t obj_info;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -9166,9 +9166,9 @@ test_get_number_attributes(void)
             TESTING_2("H5Oget_info")
 
             /* Now get the number of attributes from the group */
-            if (H5Oget_info2(group_id, &obj_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(group_id, &obj_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve group info using H5Oget_info2\n");
+                HDprintf("    couldn't retrieve group info using H5Oget_info3\n");
                 PART_ERROR(H5Oget_info);
             }
 
@@ -9184,9 +9184,9 @@ test_get_number_attributes(void)
         PART_BEGIN(H5Oget_info_by_name) {
             TESTING_2("H5Oget_info_by_name")
 
-            if (H5Oget_info_by_name2(container_group, ATTRIBUTE_GET_NUM_ATTRS_TEST_GRP_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(container_group, ATTRIBUTE_GET_NUM_ATTRS_TEST_GRP_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve group info using H5Oget_info_by_name2\n");
+                HDprintf("    couldn't retrieve group info using H5Oget_info_by_name3\n");
                 PART_ERROR(H5Oget_info_by_name);
             }
 
@@ -9202,9 +9202,9 @@ test_get_number_attributes(void)
         PART_BEGIN(H5Oget_info_by_idx) {
             TESTING_2("H5Oget_info_by_idx")
 
-            if (H5Oget_info_by_idx2(container_group, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_idx3(container_group, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve group info using H5Oget_info_by_idx2\n");
+                HDprintf("    couldn't retrieve group info using H5Oget_info_by_idx3\n");
                 PART_ERROR(H5Oget_info_by_idx);
             }
 
@@ -9260,7 +9260,7 @@ static int
 test_attr_shared_dtype(void)
 {
 #ifndef NO_SHARED_DATATYPES
-    H5O_info_t obj_info;
+    H5O_info2_t obj_info;
     htri_t     attr_exists;
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID;
@@ -9304,9 +9304,9 @@ test_attr_shared_dtype(void)
         goto error;
     }
 
-    if (H5Oget_info_by_name2(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+    if (H5Oget_info_by_name3(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name2\n");
+        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name3\n");
         goto error;
     }
 
@@ -9336,9 +9336,9 @@ test_attr_shared_dtype(void)
         goto error;
     }
 
-    if (H5Oget_info_by_name2(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+    if (H5Oget_info_by_name3(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name2\n");
+        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name3\n");
         goto error;
     }
 
@@ -9354,9 +9354,9 @@ test_attr_shared_dtype(void)
         goto error;
     }
 
-    if (H5Oget_info_by_name2(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+    if (H5Oget_info_by_name3(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, &obj_info, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name2\n");
+        HDprintf("    couldn't retrieve root group info using H5Oget_info_by_name3\n");
         goto error;
     }
 

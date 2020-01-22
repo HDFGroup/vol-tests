@@ -410,7 +410,7 @@ test_attr_basic_read(hid_t fapl)
     hid_t       dataset;     /* Dataset ID            */
     hid_t       group;       /* Group ID            */
     hid_t       attr;        /* Attribute ID            */
-    H5O_info_t  oinfo;       /* Object info                  */
+    H5O_info2_t  oinfo;       /* Object info                  */
     int         read_data1[ATTR1_DIM1] = {0}; /* Buffer for reading 1st attribute */
     int         read_data2[ATTR2_DIM1][ATTR2_DIM2] = {{0}}; /* Buffer for reading 2nd attribute */
     int         i, j;       /* Local index variables        */
@@ -431,7 +431,7 @@ test_attr_basic_read(hid_t fapl)
     CHECK(dataset, FAIL, "H5Dopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 2, "H5Oget_info");
 
@@ -460,7 +460,7 @@ test_attr_basic_read(hid_t fapl)
     CHECK(group, FAIL, "H5Gopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(group, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(group, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 1, "H5Oget_info");
 
@@ -802,7 +802,7 @@ test_attr_compound_read(hid_t fapl)
     hid_t   field;      /* Attribute field datatype */
     struct attr4_struct read_data4[ATTR4_DIM1][ATTR4_DIM2]; /* Buffer for reading 4th attribute */
     ssize_t  name_len;  /* Length of attribute name */
-    H5O_info_t oinfo;   /* Object info */
+    H5O_info2_t oinfo;   /* Object info */
     int     i, j;       /* Local index variables */
     herr_t  ret;        /* Generic return value    */
 
@@ -818,7 +818,7 @@ test_attr_compound_read(hid_t fapl)
     CHECK(dataset, FAIL, "H5Dopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 1, "H5Oget_info");
 
@@ -1009,7 +1009,7 @@ test_attr_scalar_read(hid_t fapl)
     hid_t    attr;        /* Attribute ID            */
     H5S_class_t stype;          /* Dataspace class              */
     float       rdata = 0.0F;   /* Buffer for reading 1st attribute */
-    H5O_info_t  oinfo;          /* Object info                  */
+    H5O_info2_t  oinfo;          /* Object info                  */
     herr_t      ret;            /* Generic return value        */
 
     /* Output message about test being performed */
@@ -1024,7 +1024,7 @@ test_attr_scalar_read(hid_t fapl)
     CHECK(dataset, FAIL, "H5Dopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 1, "H5Oget_info");
 
@@ -1217,7 +1217,7 @@ test_attr_mult_read(hid_t fapl)
     int     read_data2[ATTR2_DIM1][ATTR2_DIM2] = {{0}}; /* Buffer for reading 2nd attribute */
     double  read_data3[ATTR3_DIM1][ATTR3_DIM2][ATTR3_DIM3] = {{{0}}}; /* Buffer for reading 3rd attribute */
     ssize_t name_len;   /* Length of attribute name */
-    H5O_info_t oinfo;   /* Object info */
+    H5O_info2_t oinfo;   /* Object info */
     int     i, j, k;    /* Local index values */
     herr_t  ret;        /* Generic return value */
 
@@ -1233,7 +1233,7 @@ test_attr_mult_read(hid_t fapl)
     CHECK(dataset, FAIL, "H5Dopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 3, "H5Oget_info");
 
@@ -1467,7 +1467,7 @@ test_attr_iterate(hid_t fapl)
     hid_t   dataset;    /* Dataset ID            */
     hid_t   sid;        /* Dataspace ID            */
     int     count;      /* operator data for the iterator */
-    H5O_info_t oinfo;   /* Object info                  */
+    H5O_info2_t oinfo;   /* Object info                  */
     herr_t  ret;        /* Generic return value        */
 
     /* Output message about test being performed */
@@ -1490,7 +1490,7 @@ test_attr_iterate(hid_t fapl)
     CHECK(ret, FAIL, "H5Sclose");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 0, "H5Oget_info");
 
@@ -1508,7 +1508,7 @@ test_attr_iterate(hid_t fapl)
     CHECK(dataset, FAIL, "H5Dopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 3, "H5Oget_info");
 
@@ -1541,7 +1541,7 @@ test_attr_delete(hid_t fapl)
     hid_t   attr;       /* Attribute ID            */
     char    attr_name[ATTR_NAME_LEN]; /* Buffer for attribute names */
     ssize_t name_len;   /* Length of attribute name     */
-    H5O_info_t oinfo;   /* Object info                  */
+    H5O_info2_t oinfo;   /* Object info                  */
     herr_t  ret;        /* Generic return value        */
 #else
     (void)fapl;
@@ -1559,7 +1559,7 @@ test_attr_delete(hid_t fapl)
     CHECK(dataset, FAIL, "H5Dopen2");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 3, "H5Oget_info");
 
@@ -1570,7 +1570,7 @@ test_attr_delete(hid_t fapl)
     VERIFY(ret, FAIL, "H5Adelete");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 3, "H5Oget_info");
 
@@ -1579,7 +1579,7 @@ test_attr_delete(hid_t fapl)
     CHECK(ret, FAIL, "H5Adelete");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 2, "H5Oget_info");
 
@@ -1616,7 +1616,7 @@ test_attr_delete(hid_t fapl)
     CHECK(ret, FAIL, "H5Adelete");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 1, "H5Oget_info");
 
@@ -1639,7 +1639,7 @@ test_attr_delete(hid_t fapl)
     CHECK(ret, FAIL, "H5Adelete");
 
     /* Verify the correct number of attributes */
-    ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+    ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 0, "H5Oget_info");
 
@@ -1670,7 +1670,7 @@ test_attr_dtype_shared(hid_t fapl)
     hid_t attr_id;              /* Attribute ID */
     int data = 8;               /* Data to write */
     int rdata = 0;              /* Read read in */
-    H5O_info_t oinfo;           /* Object's information */
+    H5O_info2_t oinfo;           /* Object's information */
 #if 0
     h5_stat_size_t empty_filesize;       /* Size of empty file */
     h5_stat_size_t filesize;             /* Size of file after modifications */
@@ -1707,7 +1707,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(ret, FAIL, "H5Tcommit2");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "H5Oget_info_by_name");
 
@@ -1720,7 +1720,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(dset_id, FAIL, "H5Dcreate2");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "H5Oget_info_by_name");
 
@@ -1729,7 +1729,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(attr_id, FAIL, "H5Acreate2");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 3, "H5Oget_info_by_name");
 
@@ -1742,7 +1742,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(ret, FAIL, "H5Adelete");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "H5Oget_info_by_name");
 
@@ -1751,7 +1751,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(attr_id, FAIL, "H5Acreate2");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 3, "H5Oget_info_by_name");
 
@@ -1806,7 +1806,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(ret, FAIL, "H5Dclose");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 3, "H5Oget_info_by_name");
 
@@ -1815,7 +1815,7 @@ test_attr_dtype_shared(hid_t fapl)
     CHECK(ret, FAIL, "H5Ldelete");
 
     /* Check reference count on named datatype */
-    ret = H5Oget_info_by_name2(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(file_id, TYPE1_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "H5Oget_info_by_name");
 
@@ -2466,7 +2466,7 @@ test_attr_dense_delete(hid_t fcpl, hid_t fapl)
     h5_stat_size_t empty_filesize;       /* Size of empty file */
     h5_stat_size_t filesize;             /* Size of file after modifications */
 #endif
-    H5O_info_t  oinfo;          /* Object info                  */
+    H5O_info2_t  oinfo;          /* Object info                  */
     int         use_min_dset_oh = (dcpl_g != H5P_DEFAULT);
     herr_t      ret;            /* Generic return value        */
 
@@ -2549,7 +2549,7 @@ test_attr_dense_delete(hid_t fcpl, hid_t fapl)
         CHECK(ret, FAIL, "H5Aclose");
 
         /* Check # of attributes */
-        ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+        ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
         CHECK(ret, FAIL, "H5Oget_info");
         VERIFY(oinfo.num_attrs, (u + 1), "H5Oget_info");
     } /* end for */
@@ -2664,7 +2664,7 @@ test_attr_dense_rename(hid_t fcpl, hid_t fapl)
     h5_stat_size_t empty_filesize;       /* Size of empty file */
     h5_stat_size_t filesize;             /* Size of file after modifications */
 #endif
-    H5O_info_t  oinfo;          /* Object info */
+    H5O_info2_t  oinfo;          /* Object info */
     unsigned    u;              /* Local index variable */
     int         use_min_dset_oh = (dcpl_g != H5P_DEFAULT);
     unsigned    use_corder;     /* Track creation order or not */
@@ -2759,7 +2759,7 @@ test_attr_dense_rename(hid_t fcpl, hid_t fapl)
             CHECK(ret, FAIL, "H5Arename_by_name");
 
             /* Check # of attributes */
-            ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+            ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
             CHECK(ret, FAIL, "H5Oget_info");
             VERIFY(oinfo.num_attrs, (u + 1), "H5Oget_info");
         } /* end for */
@@ -2863,7 +2863,7 @@ test_attr_dense_unlink(hid_t fcpl, hid_t fapl)
     h5_stat_size_t empty_filesize;       /* Size of empty file */
     h5_stat_size_t filesize;             /* Size of file after modifications */
 #endif
-    H5O_info_t  oinfo;          /* Object info */
+    H5O_info2_t  oinfo;          /* Object info */
     unsigned    u;              /* Local index variable */
     int         use_min_dset_oh = (dcpl_g != H5P_DEFAULT);
     herr_t      ret;            /* Generic return value        */
@@ -2941,7 +2941,7 @@ test_attr_dense_unlink(hid_t fcpl, hid_t fapl)
         CHECK(ret, FAIL, "H5Aclose");
 
         /* Check # of attributes */
-        ret = H5Oget_info2(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
+        ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
         CHECK(ret, FAIL, "H5Oget_info");
         VERIFY(oinfo.num_attrs, (u + 1), "H5Oget_info");
     } /* end for */
@@ -11130,9 +11130,10 @@ test_attr_bug8(hid_t fcpl, hid_t fapl)
     hid_t   gid;            /* Group ID */
     hid_t   oid;            /* Object ID */
     hsize_t dims = 256;     /* Attribute dimensions */
-    H5O_info_t oinfo;       /* Object info */
+    H5O_info2_t oinfo;      /* Object info */
     H5A_info_t ainfo;       /* Attribute info */
-    haddr_t root_addr;      /* Root group address */
+    H5O_token_t root_token; /* Root group token */
+    int     cmp_value;      /* Result from H5Otoken_cmp */
     herr_t  ret;            /* Generic return status */
 
     /* Output message about test being performed */
@@ -11147,10 +11148,10 @@ test_attr_bug8(hid_t fcpl, hid_t fapl)
     gid = H5Gcreate2(fid, GROUP1_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(gid, FAIL, "H5Gcreate2");
 
-    /* Get root group address */
-    ret = H5Oget_info2(fid, &oinfo, H5O_INFO_BASIC);
+    /* Get root group token */
+    ret = H5Oget_info3(fid, &oinfo, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
-    root_addr = oinfo.addr;
+    root_token = oinfo.token;
 
     /*
      * Create link to root group
@@ -11173,10 +11174,11 @@ test_attr_bug8(hid_t fcpl, hid_t fapl)
     CHECK(gid, FAIL, "H5Gopen2");
     oid = H5Oopen(gid, LINK1_NAME, H5P_DEFAULT);
     CHECK(oid, FAIL, "H5Oopen");
-    ret = H5Oget_info2(oid, &oinfo, H5O_INFO_BASIC);
+    ret = H5Oget_info3(oid, &oinfo, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
-    if(oinfo.addr != root_addr)
-        TestErrPrintf("incorrect link target address: addr: %llu, expected: %llu\n", (long long unsigned)oinfo.addr, (long long unsigned)root_addr);
+    ret = H5Otoken_cmp(oid, &oinfo.token, &root_token, &cmp_value);
+    CHECK(ret, FAIL, "H5Otoken_cmp");
+    VERIFY(cmp_value, 0, "H5Otoken_cmp");
 
     /* Close file */
     ret = H5Fclose(fid);
@@ -11218,10 +11220,11 @@ test_attr_bug8(hid_t fcpl, hid_t fapl)
     CHECK(gid, FAIL, "H5Gopen2");
     oid = H5Oopen(gid, LINK1_NAME, H5P_DEFAULT);
     CHECK(oid, FAIL, "H5Oopen");
-    ret = H5Oget_info2(oid, &oinfo, H5O_INFO_BASIC);
+    ret = H5Oget_info3(oid, &oinfo, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
-    if(oinfo.addr != root_addr)
-        TestErrPrintf("incorrect link target address: addr: %llu, expected: %llu\n", (long long unsigned)oinfo.addr, (long long unsigned)root_addr);
+    ret = H5Otoken_cmp(oid, &oinfo.token, &root_token, &cmp_value);
+    CHECK(ret, FAIL, "H5Otoken_cmp");
+    VERIFY(cmp_value, 0, "H5Otoken_cmp");
     ret = H5Aget_info_by_name(gid, ".", ATTR1_NAME, &ainfo, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Aget_info_by_name");
     if(ainfo.data_size != dims)

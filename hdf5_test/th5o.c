@@ -239,19 +239,18 @@ test_h5o_close(void)
 
 /****************************************************************
 **
-**  test_h5o_open_by_addr(): Test H5Oopen_by_addr function.
+**  test_h5o_open_by_token(): Test H5Oopen_by_token function.
 **
 ****************************************************************/
-#if 0
 static void
-test_h5o_open_by_addr(void)
+test_h5o_open_by_token(void)
 {
     hid_t       fid;                        /* HDF5 File ID      */
     hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
-    H5L_info_t li;                      /* Buffer for H5Lget_info */
-    haddr_t grp_addr;                       /* Addresses for objects */
-    haddr_t dset_addr;
-    haddr_t dtype_addr;
+    H5L_info2_t li;                         /* Buffer for H5Lget_info2 */
+    H5O_token_t grp_token;                  /* Tokens for objects */
+    H5O_token_t dset_token;
+    H5O_token_t dtype_token;
     hsize_t     dims[RANK];
     H5I_type_t  id_type;                    /* Type of IDs returned from H5Oopen */
     H5G_info_t  ginfo;                      /* Group info struct */
@@ -291,25 +290,25 @@ test_h5o_open_by_addr(void)
     ret = H5Sclose(dspace);
     CHECK(ret, FAIL, "H5Sclose");
 
-    /* Get address for each object */
-    ret = H5Lget_info(fid, "group", &li, H5P_DEFAULT);
-    CHECK(ret, FAIL, "H5Lget_info");
-    grp_addr = li.u.address;
-    ret = H5Lget_info(fid, "group/datatype", &li, H5P_DEFAULT);
-    CHECK(ret, FAIL, "H5Lget_info");
-    dtype_addr = li.u.address;
-    ret = H5Lget_info(fid, "dataset", &li, H5P_DEFAULT);
-    CHECK(ret, FAIL, "H5Lget_info");
-    dset_addr = li.u.address;
+    /* Get tokens for each object */
+    ret = H5Lget_info2(fid, "group", &li, H5P_DEFAULT);
+    CHECK(ret, FAIL, "H5Lget_info2");
+    grp_token = li.u.token;
+    ret = H5Lget_info2(fid, "group/datatype", &li, H5P_DEFAULT);
+    CHECK(ret, FAIL, "H5Lget_info2");
+    dtype_token = li.u.token;
+    ret = H5Lget_info2(fid, "dataset", &li, H5P_DEFAULT);
+    CHECK(ret, FAIL, "H5Lget_info2");
+    dset_token = li.u.token;
 
-    /* Now make sure that H5Oopen_by_addr can open all three types of objects */
-    grp = H5Oopen_by_addr(fid, grp_addr);
-    CHECK(grp, FAIL, "H5Oopen_by_addr");
-    dtype = H5Oopen_by_addr(fid, dtype_addr);
-    CHECK(dtype, FAIL, "H5Oopen_by_addr");
+    /* Now make sure that H5Oopen_by_token can open all three types of objects */
+    grp = H5Oopen_by_token(fid, grp_token);
+    CHECK(grp, FAIL, "H5Oopen_by_token");
+    dtype = H5Oopen_by_token(fid, dtype_token);
+    CHECK(dtype, FAIL, "H5Oopen_by_token");
     /* Check that we can use the group ID as a valid location */
-    dset = H5Oopen_by_addr(grp, dset_addr);
-    CHECK(dset, FAIL, "H5Oopen_by_addr");
+    dset = H5Oopen_by_token(grp, dset_token);
+    CHECK(dset, FAIL, "H5Oopen_by_token");
 
     /* Make sure that each is the right kind of ID */
     id_type = H5Iget_type(grp);
@@ -340,40 +339,16 @@ test_h5o_open_by_addr(void)
     ret = H5Dclose(dset);
     CHECK(ret, FAIL, "H5Dclose");
 
-    /* Try giving some bogus values to H5O_open_by_addr. */
-    /* Try to open an object with a bad address */
-    grp_addr += 20;
-    H5E_BEGIN_TRY{
-      grp = H5Oopen_by_addr(fid, grp_addr);
-    }H5E_END_TRY
-    VERIFY(grp, FAIL, "H5Oopen_by_addr");
-
-    /* For instance, an objectno smaller than the end of the file's superblock should
-     * trigger an error */
-    grp_addr = 10;
-    H5E_BEGIN_TRY{
-      grp = H5Oopen_by_addr(fid, grp_addr);
-    }H5E_END_TRY
-    VERIFY(grp, FAIL, "H5Oopen_by_addr");
-
-    /* Likewise, an objectno larger than the size of the file should fail */
-    grp_addr = 0;
-    grp_addr = 1000000000;
-    H5E_BEGIN_TRY{
-      grp = H5Oopen_by_addr(fid, grp_addr);
-    }H5E_END_TRY
-    VERIFY(grp, FAIL, "H5Oopen_by_addr");
-
     ret = H5Fclose(fid);
     CHECK(ret, FAIL, "H5Fclose");
 
     /* Also, trying to open an object without a valid location should fail */
     H5E_BEGIN_TRY{
-      dtype = H5Oopen_by_addr(fid, dtype_addr);
+      dtype = H5Oopen_by_token(fid, dtype_token);
     }H5E_END_TRY
-    VERIFY(dtype, FAIL, "H5Oopen_by_addr");
-} /* test_h5o_open_by_addr() */
-#endif
+    VERIFY(dtype, FAIL, "H5Oopen_by_token");
+} /* test_h5o_open_by_token() */
+
 
 /****************************************************************
 **
@@ -385,7 +360,7 @@ test_h5o_refcount(void)
 {
     hid_t       fid;                        /* HDF5 File ID      */
     hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
-    H5O_info_t  oinfo;                      /* Object info struct */
+    H5O_info2_t  oinfo;                      /* Object info struct */
     hsize_t     dims[RANK];
     herr_t      ret;                        /* Value returned from API calls */
 
@@ -420,13 +395,13 @@ test_h5o_refcount(void)
     CHECK(ret, FAIL, "H5Sclose");
 
     /* Get ref counts for each object.  They should all be 1, since each object has a hard link. */
-    ret = H5Oget_info_by_name2(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
 
@@ -439,13 +414,13 @@ test_h5o_refcount(void)
     CHECK(ret, FAIL, "H5Oincr_refcount");
 
     /* Get ref counts for each object.  They should all be 2 now. */
-    ret = H5Oget_info_by_name2(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "reference count in H5Oget_info_by_name");
 
@@ -457,13 +432,13 @@ test_h5o_refcount(void)
     ret = H5Odecr_refcount(dset);
     CHECK(ret, FAIL, "H5Odecr_refcount");
 
-    ret = H5Oget_info_by_name2(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
 
@@ -495,13 +470,13 @@ test_h5o_refcount(void)
     dset = H5Dopen2(fid, "dataset", H5P_DEFAULT);
     CHECK(dset, FAIL, "H5Dopen2");
 
-    ret = H5Oget_info_by_name2(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 2, "reference count in H5Oget_info_by_name");
 
@@ -533,13 +508,13 @@ test_h5o_refcount(void)
     dset = H5Dopen2(fid, "dataset", H5P_DEFAULT);
     CHECK(dset, FAIL, "H5Dopen2");
 
-    ret = H5Oget_info_by_name2(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "group", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "datatype", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid, "dataset", &oinfo, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
     VERIFY(oinfo.rc, 1, "reference count in H5Oget_info_by_name");
 
@@ -1269,7 +1244,7 @@ test_h5o_getinfo_same_file(void)
 {
     hid_t       fid1, fid2;             /* HDF5 File ID */
     hid_t       gid1, gid2;             /* Group IDs */
-    H5O_info_t  oinfo1, oinfo2;         /* Object info structs */
+    H5O_info2_t  oinfo1, oinfo2;         /* Object info structs */
     herr_t      ret;                    /* Value returned from API calls */
 
     /* Output message about test being performed */
@@ -1290,9 +1265,9 @@ test_h5o_getinfo_same_file(void)
     HDmemset(&oinfo2, 0, sizeof(oinfo2));
 
     /* Query the object info for each object, through group IDs */
-    ret = H5Oget_info2(gid1, &oinfo1, H5O_INFO_BASIC);
+    ret = H5Oget_info3(gid1, &oinfo1, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
-    ret = H5Oget_info2(gid2, &oinfo2, H5O_INFO_BASIC);
+    ret = H5Oget_info3(gid2, &oinfo2, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
 
     VERIFY(oinfo1.fileno, oinfo2.fileno, "file number from H5Oget_info");
@@ -1302,9 +1277,9 @@ test_h5o_getinfo_same_file(void)
     HDmemset(&oinfo2, 0, sizeof(oinfo2));
 
     /* Query the object info for each object, by name */
-    ret = H5Oget_info_by_name2(fid1, "group1", &oinfo1, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid1, "group1", &oinfo1, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid1, "group2", &oinfo2, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid1, "group2", &oinfo2, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
 
     VERIFY(oinfo1.fileno, oinfo2.fileno, "file number from H5Oget_info");
@@ -1335,9 +1310,9 @@ test_h5o_getinfo_same_file(void)
     HDmemset(&oinfo2, 0, sizeof(oinfo2));
 
     /* Query the object info for each object, through group IDs */
-    ret = H5Oget_info2(gid1, &oinfo1, H5O_INFO_BASIC);
+    ret = H5Oget_info3(gid1, &oinfo1, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
-    ret = H5Oget_info2(gid2, &oinfo2, H5O_INFO_BASIC);
+    ret = H5Oget_info3(gid2, &oinfo2, H5O_INFO_BASIC);
     CHECK(ret, FAIL, "H5Oget_info");
 
     VERIFY(oinfo1.fileno, oinfo2.fileno, "file number from H5Oget_info");
@@ -1347,9 +1322,9 @@ test_h5o_getinfo_same_file(void)
     HDmemset(&oinfo2, 0, sizeof(oinfo2));
 
     /* Query the object info for each object, by name */
-    ret = H5Oget_info_by_name2(fid1, "group1", &oinfo1, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid1, "group1", &oinfo1, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
-    ret = H5Oget_info_by_name2(fid1, "group2", &oinfo2, H5O_INFO_BASIC, H5P_DEFAULT);
+    ret = H5Oget_info_by_name3(fid1, "group2", &oinfo2, H5O_INFO_BASIC, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Oget_info_by_name");
 
     VERIFY(oinfo1.fileno, oinfo2.fileno, "file number from H5Oget_info");
@@ -1378,10 +1353,10 @@ test_h5o_getinfo_same_file(void)
 **
 ****************************************************************/
 static int
-visit_obj_cb(hid_t group_id, const char *name, const H5O_info_t *oinfo1,
+visit_obj_cb(hid_t group_id, const char *name, const H5O_info1_t *oinfo1,
     void H5_ATTR_UNUSED *_op_data)
 {
-    H5O_info_t oinfo2;  /* Object info structs */
+    H5O_info1_t oinfo2;  /* Object info structs */
 
     /* Verify the object info for "group1", "group2" and the root group */
     if(!(HDstrcmp(name, "group1"))) {
@@ -1417,7 +1392,7 @@ test_h5o_getinfo_visit(void)
     hid_t gid1 = -1, gid2 = -1; /* Group IDs */
     hid_t sid = -1;             /* Dataspace ID */
     hid_t aid = -1;             /* Attribute ID */
-    H5O_info_t oinfo1, oinfo2;  /* Object info structs */
+    H5O_info1_t oinfo1, oinfo2;  /* Object info structs */
     char attrname[25];          /* Attribute name */
     int j;                      /* Local index variable */
     herr_t ret;                 /* Value returned from API calls */
@@ -1513,9 +1488,7 @@ test_h5o(void)
     MESSAGE(5, ("Testing Objects\n"));
 
     test_h5o_open();              /* Test generic open function */
-#if 0
-    test_h5o_open_by_addr();      /* Test opening objects by address */
-#endif
+    test_h5o_open_by_token();      /* Test opening objects by token */
     test_h5o_close();             /* Test generic close function */
     test_h5o_refcount();          /* Test incrementing and decrementing reference count */
     test_h5o_plist();             /* Test object creation properties */
