@@ -561,8 +561,8 @@ H5VLTestDriver::Main(int argc, char* argv[])
 
     // Report the server return code if it is nonzero.  Otherwise report
     // the client return code.
-    if (serverResult)
-        return serverResult;
+//    if (serverResult)
+//        return serverResult;
 
     if (mpiError) {
         cerr
