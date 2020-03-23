@@ -54,17 +54,17 @@ static int test_refresh_object(void);
 static int test_refresh_object_invalid_params(void);
 
 static herr_t object_copy_attribute_iter_callback(hid_t location_id, const char *attr_name, const H5A_info_t *ainfo, void *op_data);
-static herr_t object_copy_soft_link_non_expand_callback(hid_t group, const char *name, const H5L_info_t *info, void *op_data);
-static herr_t object_copy_soft_link_expand_callback(hid_t group, const char *name, const H5L_info_t *info, void *op_data);
+static herr_t object_copy_soft_link_non_expand_callback(hid_t group, const char *name, const H5L_info2_t *info, void *op_data);
+static herr_t object_copy_soft_link_expand_callback(hid_t group, const char *name, const H5L_info2_t *info, void *op_data);
 #ifndef NO_WRAP_COMMITTED_TYPES
-static herr_t object_visit_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+static herr_t object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 #endif
-static herr_t object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+static herr_t object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 #ifndef NO_WRAP_COMMITTED_TYPES
-static herr_t object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+static herr_t object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 #endif
-static herr_t object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
-static herr_t object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data);
+static herr_t object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
+static herr_t object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 
 /*
  * The array of object tests to be performed.
@@ -622,6 +622,40 @@ test_open_object_invalid_params(void)
 
             PASSED();
         } PART_END(H5Oopen_by_idx_invalid_lapl);
+
+        PART_BEGIN(H5Oopen_by_token_invalid_loc_id) {
+            TESTING_2("H5Oopen_by_token with an invalid location ID")
+
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_token(H5I_INVALID_HID, H5O_TOKEN_UNDEF);
+            } H5E_END_TRY;
+
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_token succeeded with an invalid location ID!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_token_invalid_loc_id);
+            }
+
+            PASSED();
+        } PART_END(H5Oopen_by_token_invalid_loc_id);
+
+        PART_BEGIN(H5Oopen_by_token_invalid_token) {
+            TESTING_2("H5Oopen_by_token with an invalid token")
+
+            H5E_BEGIN_TRY {
+                group_id2 = H5Oopen_by_token(file_id, H5O_TOKEN_UNDEF);
+            } H5E_END_TRY;
+
+            if (group_id2 >= 0) {
+                H5_FAILED();
+                HDprintf("    H5Oopen_by_token succeeded with an invalid token!\n");
+                H5Gclose(group_id2);
+                PART_ERROR(H5Oopen_by_token_invalid_token);
+            }
+
+            PASSED();
+        } PART_END(H5Oopen_by_token_invalid_token);
     } END_MULTIPART;
 
     TESTING_2("test cleanup")
@@ -1354,7 +1388,7 @@ static int
 test_incr_decr_object_refcount(void)
 {
 #ifndef NO_REF_COUNT
-    H5O_info_t oinfo;                      /* Object info struct */
+    H5O_info2_t oinfo;                      /* Object info struct */
 #endif
     hid_t      file_id = H5I_INVALID_HID;
     hid_t      container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -1413,7 +1447,7 @@ test_incr_decr_object_refcount(void)
             }
 
             /* Verify that reference count is 2 now */
-            if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_GRP_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(group_id, OBJECT_REF_COUNT_TEST_GRP_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get reference count for the group '%s' \n", OBJECT_REF_COUNT_TEST_GRP_NAME);
                 PART_ERROR(H5Oincr_decr_refcount_group);
@@ -1433,7 +1467,7 @@ test_incr_decr_object_refcount(void)
             }
 
             /* Verify that reference count is 1 now */
-            if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_GRP_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(group_id, OBJECT_REF_COUNT_TEST_GRP_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get reference count for the group '%s' \n", OBJECT_REF_COUNT_TEST_GRP_NAME);
                 PART_ERROR(H5Oincr_decr_refcount_group);
@@ -1476,7 +1510,7 @@ test_incr_decr_object_refcount(void)
             }
 
             /* Verify that reference count is 2 now */
-            if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get reference count for the dataset '%s' \n", OBJECT_REF_COUNT_TEST_DSET_NAME);
                 PART_ERROR(H5Oincr_decr_refcount_dset);
@@ -1496,7 +1530,7 @@ test_incr_decr_object_refcount(void)
             }
 
             /* Verify that reference count is 1 now */
-            if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(group_id, OBJECT_REF_COUNT_TEST_DSET_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get reference count for the dataset '%s' \n", OBJECT_REF_COUNT_TEST_DSET_NAME);
                 PART_ERROR(H5Oincr_decr_refcount_dset);
@@ -1539,7 +1573,7 @@ test_incr_decr_object_refcount(void)
             }
 
             /* Verify that reference count is 2 now */
-            if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get reference count for the datatype '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
                 PART_ERROR(H5Oincr_decr_refcount_dtype);
@@ -1559,7 +1593,7 @@ test_incr_decr_object_refcount(void)
             }
 
             /* Verify that reference count is 1 now */
-            if (H5Oget_info_by_name2(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
+            if (H5Oget_info_by_name3(group_id, OBJECT_REF_COUNT_TEST_TYPE_NAME, &oinfo, H5O_INFO_BASIC, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't get reference count for the datatype '%s' \n", OBJECT_REF_COUNT_TEST_TYPE_NAME);
                 PART_ERROR(H5Oincr_decr_refcount_dtype);
@@ -1671,7 +1705,7 @@ error:
 static int
 test_object_copy_basic(void)
 {
-    H5O_info_t object_info;
+    H5O_info2_t object_info;
     H5G_info_t group_info;
     htri_t     object_link_exists;
     size_t     i;
@@ -1892,7 +1926,7 @@ test_object_copy_basic(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_group);
@@ -2007,7 +2041,7 @@ test_object_copy_basic(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_dset);
@@ -2080,7 +2114,7 @@ test_object_copy_basic(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_dtype);
@@ -2545,7 +2579,7 @@ error:
 static int
 test_object_copy_no_attributes(void)
 {
-    H5O_info_t object_info;
+    H5O_info2_t object_info;
     htri_t     object_link_exists;
     size_t     i;
     hid_t      file_id = H5I_INVALID_HID;
@@ -2730,7 +2764,7 @@ test_object_copy_no_attributes(void)
              */
             object_info.num_attrs = 1;
 
-            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_group_no_attributes);
@@ -2819,7 +2853,7 @@ test_object_copy_no_attributes(void)
              */
             object_info.num_attrs = 1;
 
-            if (H5Oget_info2(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_dset_no_attributes);
@@ -2908,7 +2942,7 @@ test_object_copy_no_attributes(void)
              */
             object_info.num_attrs = 1;
 
-            if (H5Oget_info2(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_dtype_no_attributes);
@@ -3006,9 +3040,9 @@ error:
 static int
 test_object_copy_by_soft_link(void)
 {
-    H5O_info_t object_info;
+    H5O_info2_t object_info;
     H5G_info_t group_info;
-    H5L_info_t link_info;
+    H5L_info2_t link_info;
     htri_t     object_link_exists;
     size_t     i;
     hid_t      file_id = H5I_INVALID_HID;
@@ -3132,7 +3166,7 @@ test_object_copy_by_soft_link(void)
 
             /* Make sure the new object is an actual group and not another soft link */
             memset(&link_info, 0, sizeof(link_info));
-            if (H5Lget_info(group_id, OBJECT_COPY_SOFT_LINK_TEST_NEW_GROUP_NAME, &link_info, H5P_DEFAULT) < 0) {
+            if (H5Lget_info2(group_id, OBJECT_COPY_SOFT_LINK_TEST_NEW_GROUP_NAME, &link_info, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve info for link '%s'\n", OBJECT_COPY_SOFT_LINK_TEST_NEW_GROUP_NAME);
                 PART_ERROR(H5Ocopy_through_soft_link);
@@ -3183,7 +3217,7 @@ test_object_copy_by_soft_link(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_through_soft_link);
@@ -3416,7 +3450,7 @@ test_object_copy_group_with_soft_links(void)
              * still soft links with their original values.
              */
             i = 0;
-            if (H5Literate(tmp_group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, object_copy_soft_link_non_expand_callback, &i) < 0) {
+            if (H5Literate2(tmp_group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, object_copy_soft_link_non_expand_callback, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to iterate over links in group '%s'\n", OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_NON_EXPAND_GROUP_NAME);
                 PART_ERROR(H5Ocopy_dont_expand_soft_links);
@@ -3507,7 +3541,7 @@ test_object_copy_group_with_soft_links(void)
              * created.
              */
             i = 0;
-            if (H5Literate(tmp_group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, object_copy_soft_link_expand_callback, &i) < 0) {
+            if (H5Literate2(tmp_group_id, H5_INDEX_NAME, H5_ITER_INC, NULL, object_copy_soft_link_expand_callback, &i) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to iterate over links in group '%s'\n", OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_EXPAND_GROUP_NAME);
                 PART_ERROR(H5Ocopy_expand_soft_links);
@@ -3577,7 +3611,7 @@ error:
 static int
 test_object_copy_between_files(void)
 {
-    H5O_info_t object_info;
+    H5O_info2_t object_info;
     H5G_info_t group_info;
     htri_t     object_link_exists;
     size_t     i;
@@ -3809,7 +3843,7 @@ test_object_copy_between_files(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_group_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_group_between_files);
@@ -3916,7 +3950,7 @@ test_object_copy_between_files(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_dset_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_dset_between_files);
@@ -3989,7 +4023,7 @@ test_object_copy_between_files(void)
              */
             object_info.num_attrs = 0;
 
-            if (H5Oget_info2(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
+            if (H5Oget_info3(tmp_dtype_id, &object_info, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to retrieve object info\n");
                 PART_ERROR(H5Ocopy_dtype_between_files);
@@ -4406,7 +4440,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_obj_name_increasing) {
             TESTING_2("H5Ovisit by object name in increasing order")
 #ifndef NO_WRAP_COMMITTED_TYPES
-            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_obj_name_increasing);
@@ -4425,7 +4459,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_obj_name_decreasing) {
             TESTING_2("H5Ovisit by object name in decreasing order")
 #ifndef NO_DECREASING_ALPHA_ITER_ORDER
-            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_obj_name_decreasing);
@@ -4444,7 +4478,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_create_order_increasing) {
             TESTING_2("H5Ovisit by creation order in increasing order")
 #ifndef NO_WRAP_COMMITTED_TYPES
-            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_create_order_increasing);
@@ -4463,7 +4497,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_create_order_decreasing) {
             TESTING_2("H5Ovisit by creation order in decreasing order")
 #ifndef NO_WRAP_COMMITTED_TYPES
-            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_create_order_decreasing);
@@ -4490,7 +4524,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_dset) {
             TESTING_2("H5Ovisit on a dataset ID")
 
-            if (H5Ovisit2(dset_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dset_callback, NULL, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(dset_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dset_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit failed\n");
                 PART_ERROR(H5Ovisit_dset);
@@ -4502,7 +4536,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_dtype) {
             TESTING_2("H5Ovisit on a committed datatype ID")
 #ifndef NO_WRAP_COMMITTED_TYPES
-            if (H5Ovisit2(type_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dtype_callback, NULL, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(type_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dtype_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit failed\n");
                 PART_ERROR(H5Ovisit_dtype);
@@ -4524,7 +4558,7 @@ test_object_visit(void)
             TESTING_2("H5Ovisit_by_name by object name in increasing order")
 #ifndef NO_WRAP_COMMITTED_TYPES
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
@@ -4533,7 +4567,7 @@ test_object_visit(void)
             /* Reset the special counter and repeat the test using an indirect object name. */
             i = 0;
 
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
@@ -4553,7 +4587,7 @@ test_object_visit(void)
             TESTING_2("H5Ovisit_by_name by object name in decreasing order")
 #ifndef NO_DECREASING_ALPHA_ITER_ORDER
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
@@ -4562,7 +4596,7 @@ test_object_visit(void)
             /* Reset the special counter and repeat the test using an indirect object name. */
             i = OBJECT_VISIT_TEST_NUM_OBJS;
 
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
@@ -4582,7 +4616,7 @@ test_object_visit(void)
             TESTING_2("H5Ovisit_by_name by creation order in increasing order")
 #ifndef NO_WRAP_COMMITTED_TYPES
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_increasing);
@@ -4591,7 +4625,7 @@ test_object_visit(void)
             /* Reset the special counter and repeat the test using an indirect object name. */
             i = 2 * OBJECT_VISIT_TEST_NUM_OBJS;
 
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_increasing);
@@ -4611,7 +4645,7 @@ test_object_visit(void)
             TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
 #ifndef NO_WRAP_COMMITTED_TYPES
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
@@ -4620,7 +4654,7 @@ test_object_visit(void)
             /* Reset the special counter and repeat the test using an indirect object name. */
             i = 3 * OBJECT_VISIT_TEST_NUM_OBJS;
 
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
@@ -4647,7 +4681,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_by_name_dset) {
             TESTING_2("H5Ovisit_by_name on a dataset ID")
 
-            if (H5Ovisit_by_name2(group_id, OBJECT_VISIT_TEST_DSET_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_dset_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, OBJECT_VISIT_TEST_DSET_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_dset_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name failed\n");
                 PART_ERROR(H5Ovisit_by_name_dset);
@@ -4659,7 +4693,7 @@ test_object_visit(void)
         PART_BEGIN(H5Ovisit_by_name_dtype) {
             TESTING_2("H5Ovisit_by_name on a committed datatype ID")
 #ifndef NO_WRAP_COMMITTED_TYPES
-            if (H5Ovisit_by_name2(group_id, OBJECT_VISIT_TEST_TYPE_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_dtype_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, OBJECT_VISIT_TEST_TYPE_NAME, H5_INDEX_NAME, H5_ITER_INC, object_visit_dtype_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name failed\n");
                 PART_ERROR(H5Ovisit_by_name_dtype);
@@ -4783,7 +4817,7 @@ test_object_visit_dangling_soft_link(void)
         PART_BEGIN(H5Ovisit_obj_name_increasing) {
             TESTING_2("H5Ovisit by object name in increasing order")
 
-            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_obj_name_increasing);
@@ -4795,7 +4829,7 @@ test_object_visit_dangling_soft_link(void)
         PART_BEGIN(H5Ovisit_obj_name_decreasing) {
             TESTING_2("H5Ovisit by object name in decreasing order")
 #ifndef NO_DECREASING_ALPHA_ITER_ORDER
-            if (H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_obj_name_decreasing);
@@ -4811,7 +4845,7 @@ test_object_visit_dangling_soft_link(void)
         PART_BEGIN(H5Ovisit_create_order_increasing) {
             TESTING_2("H5Ovisit by creation order in increasing order")
 
-            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_create_order_increasing);
@@ -4823,7 +4857,7 @@ test_object_visit_dangling_soft_link(void)
         PART_BEGIN(H5Ovisit_create_order_decreasing) {
             TESTING_2("H5Ovisit by creation order in decreasing order")
 
-            if (H5Ovisit2(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_create_order_decreasing);
@@ -4836,14 +4870,14 @@ test_object_visit_dangling_soft_link(void)
             TESTING_2("H5Ovisit_by_name by object name in increasing order")
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
             }
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC,
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC,
                     object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
@@ -4857,14 +4891,14 @@ test_object_visit_dangling_soft_link(void)
             TESTING_2("H5Ovisit_by_name by object name in decreasing order")
 #ifndef NO_DECREASING_ALPHA_ITER_ORDER
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
             }
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC,
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC,
                     object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
@@ -4882,14 +4916,14 @@ test_object_visit_dangling_soft_link(void)
             TESTING_2("H5Ovisit_by_name by creation order in increasing order")
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_increasing);
             }
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
                     object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
@@ -4903,14 +4937,14 @@ test_object_visit_dangling_soft_link(void)
             TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name2(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
             }
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC,
+            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC,
                     object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
@@ -4996,7 +5030,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit with an invalid object ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit2(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL);
+                err_ret = H5Ovisit3(H5I_INVALID_HID, H5_INDEX_NAME, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5012,7 +5046,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit with an invalid index type")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit2(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL);
+                err_ret = H5Ovisit3(group_id, H5_INDEX_UNKNOWN, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5022,7 +5056,7 @@ test_object_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit2(group_id, H5_INDEX_N, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL);
+                err_ret = H5Ovisit3(group_id, H5_INDEX_N, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5038,7 +5072,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit with an invalid iteration ordering")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_noop_callback, NULL, H5O_INFO_ALL);
+                err_ret = H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_noop_callback, NULL, H5O_INFO_ALL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5048,7 +5082,7 @@ test_object_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit2(group_id, H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL);
+                err_ret = H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5064,7 +5098,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit_by_name with an invalid location ID")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(H5I_INVALID_HID, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(H5I_INVALID_HID, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5080,7 +5114,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit_by_name with an invalid object name")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, NULL, H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(group_id, NULL, H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5090,7 +5124,7 @@ test_object_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, "", H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(group_id, "", H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5106,7 +5140,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit_by_name with an invalid index type")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_UNKNOWN, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(group_id, ".", H5_INDEX_UNKNOWN, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5116,7 +5150,7 @@ test_object_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_N, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(group_id, ".", H5_INDEX_N, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5132,7 +5166,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit_by_name with an invalid iteration ordering")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_UNKNOWN, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5142,7 +5176,7 @@ test_object_visit_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
+                err_ret = H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_N, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5158,7 +5192,7 @@ test_object_visit_invalid_params(void)
             TESTING_2("H5Ovisit_by_name with an invalid LAPL")
 
             H5E_BEGIN_TRY {
-                err_ret = H5Ovisit_by_name2(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5I_INVALID_HID);
+                err_ret = H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_noop_callback, NULL, H5O_INFO_ALL, H5I_INVALID_HID);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
@@ -5687,7 +5721,7 @@ done:
  */
 static herr_t
 object_copy_soft_link_non_expand_callback(hid_t group, const char *name,
-    const H5L_info_t *info, void *op_data)
+    const H5L_info2_t *info, void *op_data)
 {
     size_t *counter = (size_t *) op_data;
     void   *link_val_buf = NULL;
@@ -5740,7 +5774,7 @@ done:
  */
 static herr_t
 object_copy_soft_link_expand_callback(hid_t group, const char *name,
-    const H5L_info_t *info, void *op_data)
+    const H5L_info2_t *info, void *op_data)
 {
     size_t *counter = (size_t *) op_data;
     char    expected_link_name[OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_BUF_SIZE];
@@ -5775,7 +5809,7 @@ done:
  * group and check to make sure their names match what is expected.
  */
 static herr_t
-object_visit_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data)
+object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
 {
     size_t *i = (size_t *) op_data;
     size_t  counter_val = *((size_t *) op_data);
@@ -5826,7 +5860,7 @@ done:
  * H5Ovisit callback for visiting a singular dataset.
  */
 static herr_t
-object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data)
+object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
 {
     herr_t ret_val = 0;
 
@@ -5850,7 +5884,7 @@ object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info_t *objec
  * H5Ovisit callback for visiting a singular committed datatype.
  */
 static herr_t
-object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data)
+object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
 {
     herr_t ret_val = 0;
 
@@ -5874,7 +5908,7 @@ object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info_t *obje
  * H5Ovisit callback for testing visiting of dangling soft links.
  */
 static herr_t
-object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data)
+object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
 {
     herr_t ret_val = 0;
 
@@ -5897,7 +5931,7 @@ object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info_t *o
  * group.
  */
 static herr_t
-object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info_t *object_info, void *op_data)
+object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
 {
     UNUSED(o_id);
     UNUSED(name);

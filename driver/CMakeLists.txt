@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.5 FATAL_ERROR)
 project(H5VL_TEST_DRIVER CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+
 set(KWSYS_NAMESPACE h5vl_test_sys)
 set(KWSYS_USE_SystemTools 1)
 set(KWSYS_USE_Process 1)
