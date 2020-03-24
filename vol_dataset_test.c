@@ -6609,7 +6609,9 @@ test_dataset_set_extent_data(void)
     hid_t   dcpl_id = H5I_INVALID_HID;
     hid_t   fspace_id = H5I_INVALID_HID, dset_space_id = H5I_INVALID_HID;
     int     buf_origin[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM];
+#ifndef NO_CLEAR_ON_SHRINK
     int     buf_expand2[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM];
+#endif
     int     buf_expand[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM*2-1][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM*2-1];
     int     buf_shrink[DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM/2+1][DATASET_SET_EXTENT_DATA_TEST_SPACE_DIM/2+1];
     int     i, j;
