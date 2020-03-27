@@ -2520,6 +2520,11 @@ test_read_attribute_invalid_params(void)
 
     TESTING_2("test cleanup")
 
+    if (read_buf) {
+        HDfree(read_buf);
+        read_buf = NULL;
+    }
+
     if (H5Sclose(space_id) < 0)
         TEST_ERROR
     if (H5Aclose(attr_id) < 0)

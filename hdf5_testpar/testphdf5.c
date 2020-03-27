@@ -753,12 +753,12 @@ int main(int argc, char **argv)
     io_mode_confusion_params.count = 0; /* value not used */
 
     AddTest("I/Omodeconf", io_mode_confusion, NULL,
-            "I/O mode confusion test -- hangs quickly on failure",
+            "I/O mode confusion test",
             &io_mode_confusion_params);
 #endif
 
     if (MAINPROCESS) {
-        printf("I/O mode confusion test -- hangs quickly on failure\n");
+        printf("I/O mode confusion test\n");
         fflush(stdout);
     }
     io_mode_confusion();
