@@ -1946,6 +1946,11 @@ test_get_file_name(void)
 
     TESTING_2("test cleanup")
 
+    if (file_name_buf) {
+        HDfree(file_name_buf);
+        file_name_buf = NULL;
+    }
+
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
