@@ -52,7 +52,7 @@ endif()
 #------------------------------------------------------------------------------
 if("${HDF5_VOL_TEST_SOURCE_DIR}" STREQUAL "${HDF5_VOL_TEST_BINARY_DIR}")
   message(FATAL_ERROR
-    "HDF5 DAOS VOL requires an out of source Build. "
+    "The HDF5 VOL test suite requires an out of source Build. "
     "Please create a separate binary directory and run CMake there.")
 endif()
 
