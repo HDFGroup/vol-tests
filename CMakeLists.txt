@@ -91,8 +91,7 @@ include_directories(
 #------------------------------------------------------------------------------
 # External dependencies
 #------------------------------------------------------------------------------
-# HDF5
-# We will require 1.12 once it is released
+# HDF5 (Requires HDF5 1.12.0 or later)
 find_package(HDF5 NO_MODULE NAMES hdf5 COMPONENTS C shared)
 if(HDF5_FOUND)
   set(HDF5_C_SHARED_LIBRARY hdf5-shared)
