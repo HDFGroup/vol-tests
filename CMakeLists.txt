@@ -403,3 +403,15 @@ else()
     endforeach()
   endif()
 endif()
+
+# Build the h5delete program used in the tool scripts
+add_executable(h5delete ${CMAKE_CURRENT_SOURCE_DIR}/h5delete.c)
+target_include_directories(h5delete
+    SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+)
+target_link_libraries(h5delete
+    ${HDF5_VOL_TEST_EXPORTED_LIBS}
+    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+    ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
+)
+

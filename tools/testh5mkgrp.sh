@@ -24,8 +24,9 @@ EXIT_FAILURE=1
 H5MKGRP=h5mkgrp             # The tool name
 H5LS=h5ls                   # The h5ls tool name
 H5LS_ARGS=-vr               # Arguments to the h5ls tool
+H5DELETE='h5delete -f'      # The h5delete tool name
 
-RM='rm -rf'
+RM='rm -rf'                 # Only for files created via stdout!
 CMP='cmp -s'
 DIFF='diff -c'
 CP='cp'
@@ -216,7 +217,7 @@ RUNTEST()
     shift
 
     # Remove any output file left over from previous test run
-    rm -f $FILEOUT
+    $H5DELETE $FILEOUT
 
     # Run test
     TOOLTEST $H5MKGRP_ARGS $FILEOUT $@
