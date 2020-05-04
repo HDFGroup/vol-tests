@@ -1,0 +1,30 @@
+HDF5 VOL-independent tools tests
+
+This directory includes a set of test scripts that will exercise the HDF5
+command-line tools which do not require the native VOL connector. For all tests
+to pass, you'll need a VOL connector that implements most of the data model
+functionality (but not the native-specific API calls). If your connector only
+implements a subset of the functionality, many tests will fail.
+
+The test scripts are modified versions of a subset of the tools test scripts
+found in the HDF5 library.
+
+These are not well integrated into the testing framework yet and will require
+some manual work to run.
+
+1) Build and install the code in this repository.
+
+2) Make sure the h5delete tool you just built is in your path.
+
+3) Make sure that the HDF5 tools are on your path. The tools will obviously
+   need to be built using HDF5 1.12.0 or later.
+
+4) Set the HDF5_VOL_CONNECTOR environment variable.
+
+    e.g.: export HDF5_VOL_CONNECTOR="pass_through under_vol=0;under_info={}"
+
+5) Run each test script manually:
+    - testh5mkgrp.sh
+
+   You will see a lot of error messages and and FAILED text for anything that
+   fails.
