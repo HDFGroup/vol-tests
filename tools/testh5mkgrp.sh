@@ -37,10 +37,18 @@ AWK='awk'
 nerrors=0
 verbose=yes
 
-# Where the tool's input .h5 and "known good" output files are located
-H5MKGRP_TESTFILES="./testfiles/out/h5mkgrp"
+######################################################################
+# Input files
+# --------------------------------------------------------------------
 
-# Where the text output from a tool or h5dump/h5ls/h5diff goes
+# Where the tool's "known good" output files are located
+H5MKGRP_OUT_FILES="./testfiles/out/h5mkgrp"
+
+######################################################################
+# Output files
+# --------------------------------------------------------------------
+
+# Where the text output goes
 TEXT_OUTPUT_DIR=./h5mkgrp_test_output
 
 # Where the HDF5 output from the tool goes.
@@ -49,35 +57,31 @@ HDF5_OUTPUT_DIR=./h5mkgrp_test_hdf5
 ######################################################################
 # test files
 # --------------------------------------------------------------------
-# All the test files copy from source directory to test directory
-# NOTE: Keep this framework to add/remove test files.
-#       Any test files from other tools can be used in this framework.
-#       This list are also used for checking exist.
-#       Comment '#' without space can be used.
+# NOTE: EOL comment '#' without space can be used.
 # --------------------------------------------------------------------
 
 # Expected output files.
 #
 GOOD_OUTPUT_FILES="
-$H5MKGRP_TESTFILES/h5mkgrp_help.txt
-$H5MKGRP_TESTFILES/h5mkgrp_single.ls
-$H5MKGRP_TESTFILES/h5mkgrp_single_v.ls
-$H5MKGRP_TESTFILES/h5mkgrp_single_p.ls
-$H5MKGRP_TESTFILES/h5mkgrp_single_l.ls
-$H5MKGRP_TESTFILES/h5mkgrp_several.ls
-$H5MKGRP_TESTFILES/h5mkgrp_several_v.ls
-$H5MKGRP_TESTFILES/h5mkgrp_several_p.ls
-$H5MKGRP_TESTFILES/h5mkgrp_several_l.ls
-$H5MKGRP_TESTFILES/h5mkgrp_nested_p.ls
-$H5MKGRP_TESTFILES/h5mkgrp_nested_lp.ls
-$H5MKGRP_TESTFILES/h5mkgrp_nested_mult_p.ls
-$H5MKGRP_TESTFILES/h5mkgrp_nested_mult_lp.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_help.txt
+$H5MKGRP_OUT_FILES/h5mkgrp_single.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_single_v.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_single_p.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_single_l.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_several.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_several_v.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_several_p.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_several_l.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_nested_p.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_nested_lp.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_nested_mult_p.ls
+$H5MKGRP_OUT_FILES/h5mkgrp_nested_mult_lp.ls
 "
 
 # Generated HDF5 files.
 #
-# This list is needed since we can't simply delete a directory with some
-# VOL connectors.
+# This list is needed for cleanup since we can't simply delete a directory
+# with VOL connectors that use non-file storage.
 #
 HDF5_OUTPUT_FILES="
 $HDF5_OUTPUT_DIR/h5mkgrp_single.h5
@@ -94,12 +98,15 @@ $HDF5_OUTPUT_DIR/h5mkgrp_nested_mult_p.h5
 $HDF5_OUTPUT_DIR/h5mkgrp_nested_mult_lp.h5
 "
 
+######################################################################
+# Utility functions
+# --------------------------------------------------------------------
+
 # Copy the expected/"known good" text output files to the text output
-# directory.
+# directory to make it easier to diff the expected and actual output.
 #
 COPY_GOOD_OUTPUT_FILES()
 {
-    # copy the 'known good' output files. Used -f to make sure get a new copy
     for outfile in $GOOD_OUTPUT_FILES
     do
         # ignore '#' comment
@@ -113,6 +120,7 @@ COPY_GOOD_OUTPUT_FILES()
             INODE_SDIR=`$LS -i -d $SDIR | $AWK -F' ' '{print $1}'`
             INODE_DDIR=`$LS -i -d $TEXT_OUTPUT_DIR | $AWK -F' ' '{print $1}'`
             if [ "$INODE_SDIR" != "$INODE_DDIR" ]; then
+                # Use -f to make sure get a new copy
                 $CP -f $outfile $TEXT_OUTPUT_DIR
                 if [ $? -ne 0 ]; then
                     echo "Error: FAILED to copy output file: $outfile ."
@@ -170,6 +178,10 @@ VERIFY_H5LS()
     SPACES="                                                               "
     echo "Verifying h5ls file structure $* $SPACES" | cut -c1-70 | tr -d '\012'
 }
+
+######################################################################
+# Main testing functions
+# --------------------------------------------------------------------
 
 # Run a test and print PASS or *FAIL*. If h5mkgrp can complete
 # with exit status 0, consider it pass. If a test fails then increment
