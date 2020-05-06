@@ -38,7 +38,7 @@ nerrors=0
 verbose=yes
 
 # Where the tool's input .h5 and "known good" output files are located
-H5MKGRP_TESTFILES="./testfiles"
+H5MKGRP_TESTFILES="./testfiles/out/h5mkgrp"
 
 # Where the text output from a tool or h5dump/h5ls/h5diff goes
 TEXT_OUTPUT_DIR=./h5mkgrp_test_output
