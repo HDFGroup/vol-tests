@@ -42,7 +42,7 @@ verbose=yes
 # --------------------------------------------------------------------
 
 # Where the tool's "known good" output files are located
-H5MKGRP_OUT_FILES="./testfiles/out/h5mkgrp"
+H5MKGRP_TESTFILES_OUT_DIR="./testfiles/out/h5mkgrp"
 
 ######################################################################
 # Output files
@@ -62,40 +62,45 @@ HDF5_OUTPUT_DIR=./h5mkgrp_test_hdf5
 
 # Expected output files.
 #
+# Kept in $H5MKGRP_TESTFILES_OUT_DIR
+# Copied to $TEXT_OUTPUT_DIR
+#
 GOOD_OUTPUT_FILES="
-$H5MKGRP_OUT_FILES/h5mkgrp_help.txt
-$H5MKGRP_OUT_FILES/h5mkgrp_single.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_single_v.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_single_p.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_single_l.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_several.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_several_v.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_several_p.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_several_l.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_nested_p.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_nested_lp.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_nested_mult_p.ls
-$H5MKGRP_OUT_FILES/h5mkgrp_nested_mult_lp.ls
+h5mkgrp_help.txt
+h5mkgrp_single.ls
+h5mkgrp_single_v.ls
+h5mkgrp_single_p.ls
+h5mkgrp_single_l.ls
+h5mkgrp_several.ls
+h5mkgrp_several_v.ls
+h5mkgrp_several_p.ls
+h5mkgrp_several_l.ls
+h5mkgrp_nested_p.ls
+h5mkgrp_nested_lp.ls
+h5mkgrp_nested_mult_p.ls
+h5mkgrp_nested_mult_lp.ls
 "
 
 # Generated HDF5 files.
+#
+# Generated in $HDF5_OUTPUT_DIR
 #
 # This list is needed for cleanup since we can't simply delete a directory
 # with VOL connectors that use non-file storage.
 #
 HDF5_OUTPUT_FILES="
-$HDF5_OUTPUT_DIR/h5mkgrp_single.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_single_v.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_single_p.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_single_l.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_several.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_several_v.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_several_p.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_several_l.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_nested_p.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_nested_lp.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_nested_mult_p.h5
-$HDF5_OUTPUT_DIR/h5mkgrp_nested_mult_lp.h5
+h5mkgrp_single.h5
+h5mkgrp_single_v.h5
+h5mkgrp_single_p.h5
+h5mkgrp_single_l.h5
+h5mkgrp_several.h5
+h5mkgrp_several_v.h5
+h5mkgrp_several_p.h5
+h5mkgrp_several_l.h5
+h5mkgrp_nested_p.h5
+h5mkgrp_nested_lp.h5
+h5mkgrp_nested_mult_p.h5
+h5mkgrp_nested_mult_lp.h5
 "
 
 ######################################################################
@@ -109,21 +114,23 @@ COPY_GOOD_OUTPUT_FILES()
 {
     for outfile in $GOOD_OUTPUT_FILES
     do
+        filepath="$H5MKGRP_TESTFILES_OUT_DIR/$outfile"
+
         # ignore '#' comment
-        echo $outfile | tr -d ' ' | grep '^#' > /dev/null
+        echo $filepath | tr -d ' ' | grep '^#' > /dev/null
         RET=$?
         if [ $RET -eq 1 ]; then
             # skip cp if srcdir is same as destdir
             # this occurs when build/test performed in source dir and
             # make cp fail
-            SDIR=`$DIRNAME $outfile`
+            SDIR=`$DIRNAME $filepath`
             INODE_SDIR=`$LS -i -d $SDIR | $AWK -F' ' '{print $1}'`
             INODE_DDIR=`$LS -i -d $TEXT_OUTPUT_DIR | $AWK -F' ' '{print $1}'`
             if [ "$INODE_SDIR" != "$INODE_DDIR" ]; then
                 # Use -f to make sure get a new copy
-                $CP -f $outfile $TEXT_OUTPUT_DIR
+                $CP -f $filepath $TEXT_OUTPUT_DIR
                 if [ $? -ne 0 ]; then
-                    echo "Error: FAILED to copy output file: $outfile ."
+                    echo "Error: FAILED to copy output file: $filepath ."
 
                     # Comment out this to CREATE expected file
                     exit $EXIT_FAILURE
@@ -149,7 +156,8 @@ CLEAN_OUTPUT()
         # a normal file, so we'll use h5delete to delete the file.
         for hdf5file in $HDF5_OUTPUT_FILES
         do
-            $H5DELETE $hdf5file
+            filepath="$HDF5_OUTPUT_DIR/$hdf5file"
+            $H5DELETE $filepath
         done
 
         # The HDF5 output directory is always created, even if the VOL
