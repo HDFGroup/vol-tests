@@ -62,8 +62,8 @@ HDF5_OUTPUT_DIR=./h5mkgrp_test_hdf5
 
 # Expected output files.
 #
-# Kept in $H5MKGRP_TESTFILES_OUT_DIR
-# Copied to $TEXT_OUTPUT_DIR
+# Kept in       $H5MKGRP_TESTFILES_OUT_DIR
+# Copied to     $TEXT_OUTPUT_DIR
 #
 EXPECTED_OUTPUT_FILES="
 h5mkgrp_help.txt
@@ -83,7 +83,7 @@ h5mkgrp_nested_mult_lp.ls
 
 # Generated HDF5 files.
 #
-# Generated in $HDF5_OUTPUT_DIR
+# Generated in  $HDF5_OUTPUT_DIR
 #
 # This list is needed for cleanup since we can't simply delete a directory
 # with VOL connectors that use non-file storage.
