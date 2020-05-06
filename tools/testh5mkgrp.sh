@@ -41,8 +41,8 @@ verbose=yes
 # Input files
 # --------------------------------------------------------------------
 
-# Where the tool's "known good" output files are located
-H5MKGRP_TESTFILES_OUT_DIR="./testfiles/out/h5mkgrp"
+# Where the tool's expected output files are located
+H5MKGRP_TESTFILES_OUT_DIR="./testfiles/expected/h5mkgrp"
 
 ######################################################################
 # Output files
@@ -65,7 +65,7 @@ HDF5_OUTPUT_DIR=./h5mkgrp_test_hdf5
 # Kept in $H5MKGRP_TESTFILES_OUT_DIR
 # Copied to $TEXT_OUTPUT_DIR
 #
-GOOD_OUTPUT_FILES="
+EXPECTED_OUTPUT_FILES="
 h5mkgrp_help.txt
 h5mkgrp_single.ls
 h5mkgrp_single_v.ls
@@ -107,12 +107,12 @@ h5mkgrp_nested_mult_lp.h5
 # Utility functions
 # --------------------------------------------------------------------
 
-# Copy the expected/"known good" text output files to the text output
-# directory to make it easier to diff the expected and actual output.
+# Copy the expected text output files to the text output directory
+# to make it easier to diff the expected and actual output.
 #
-COPY_GOOD_OUTPUT_FILES()
+COPY_EXPECTED_OUTPUT_FILES()
 {
-    for outfile in $GOOD_OUTPUT_FILES
+    for outfile in $EXPECTED_OUTPUT_FILES
     do
         filepath="$H5MKGRP_TESTFILES_OUT_DIR/$outfile"
 
@@ -332,7 +332,7 @@ CMPTEST()
 CLEAN_OUTPUT
 test -d $TEXT_OUTPUT_DIR || mkdir -p $TEXT_OUTPUT_DIR
 test -d $HDF5_OUTPUT_DIR || mkdir -p $HDF5_OUTPUT_DIR
-COPY_GOOD_OUTPUT_FILES
+COPY_EXPECTED_OUTPUT_FILES
 
 # Check that help is displayed properly
 # The file name is a dummy and isn't created (an artifact from other scripts)
