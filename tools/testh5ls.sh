@@ -83,7 +83,6 @@ REPACK_OUTPUT_DIR=./h5ls_repack_output
 # textlink.h5
 # textlinksrc.h5
 # textlinktar.h5
-# thlink.h5
 # tslink.h5
 # tsoftlinks.h5
 # 
@@ -97,6 +96,7 @@ tdset_idx.h5
 tempty.h5
 tgroup.h5
 tgrpnullspace.h5
+thlink.h5
 tloop.h5
 tnestedcomp.h5
 tsaf.h5
@@ -408,7 +408,7 @@ RUNTEST tdset-1.ls 0 -w80 -r -d $REPACK_OUTPUT_DIR/tdset.h5
 #RUNTEST tmultifile.ls 0 -w80 $REPACK_OUTPUT_DIR/thlink.h5 $REPACK_OUTPUT_DIR/tslink.h5
 
 # tests for hard links
-#RUNTEST thlink-1.ls 0 -w80 $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-1.ls 0 -w80 $REPACK_OUTPUT_DIR/thlink.h5
 
 # tests for compound data types
 RUNTEST tcomp-1.ls 0 -w80 -r -d $REPACK_OUTPUT_DIR/tcompound.h5
