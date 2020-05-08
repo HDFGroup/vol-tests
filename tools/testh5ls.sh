@@ -63,8 +63,6 @@ REPACK_OUTPUT_DIR=./h5ls_repack_output
 ######################################################################
 # test files
 # --------------------------------------------------------------------
-# NOTE: EOL comment '#' without space can be used.
-# --------------------------------------------------------------------
 
 # HDF5 test files.
 #
@@ -177,7 +175,7 @@ tvldtypes2be.ls
 # Utility functions
 # --------------------------------------------------------------------
 
-# RUNSERIAL is used. Check if it can return exit code from executalbe correctly.
+# RUNSERIAL is used. Check if it can return exit code from executable correctly.
 if [ -n "$RUNSERIAL_NOEXITCODE" ]; then
     echo "***Warning*** Serial Exit Code is not passed back to shell corretly."
     echo "***Warning*** Exit code checking is skipped."
