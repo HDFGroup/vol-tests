@@ -1134,7 +1134,7 @@ RUNTEST zerodim.ddl --enable-error-stack $REPACK_OUTPUT_DIR/zerodim.h5
 RUNTEST tvms.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvms.h5
 
 # test for binary output
-RUNTEST tbin1.ddl --enable-error-stack -d integer -o out1.bin -b LE $REPACK_OUTPUT_DIR/tbinary.h5
+RUNTEST tbin1.ddl --enable-error-stack -d integer -o $TEXT_OUTPUT_DIR/out1.bin -b LE $REPACK_OUTPUT_DIR/tbinary.h5
 
 # test for string binary output
 RUNTEST2B tstr2bin2.exp --enable-error-stack -d /g2/dset2 -b -o $TEXT_OUTPUT_DIR/tstr2bin2.txt $REPACK_OUTPUT_DIR/tstr2.h5
