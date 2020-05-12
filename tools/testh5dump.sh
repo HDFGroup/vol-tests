@@ -76,9 +76,9 @@ REPACK_OUTPUT_DIR=./h5dump_repack_output
 # These files fail to repack w/ native VOL (investigate later)
 # tall.h5
 # tattrreg.h5 <-- This one does not even cause h5repack to fail!
+# tbigdims.h5 (repack hangs w/ passthru VOL)
 # err_attr_dspace.h5
 # tfcontents1.h5
-# tudlink.h5
 #
 # These files have native-specific content
 # tfamily00000.h5
@@ -92,6 +92,8 @@ REPACK_OUTPUT_DIR=./h5dump_repack_output
 # tfamily00008.h5
 # tfamily00009.h5
 # tfamily00010.h5
+# tfilters.h5
+# filter_fail.h5 (can't be repacked w/o missing filter)
 # tgrp_comments.h5
 # tmulti-b.h5
 # tmulti-g.h5
@@ -108,10 +110,10 @@ REPACK_OUTPUT_DIR=./h5dump_repack_output
 # textlinktar.h5
 # tslink.h5
 # tsoftlinks.h5
+# tudlink.h5
 HDF5_FILES="
 charsets.h5
 file_space.h5
-filter_fail.h5
 packedbits.h5
 t128bit_float.h5
 taindices.h5
@@ -128,7 +130,6 @@ tattr2.h5
 tattr4_be.h5
 tattr.h5
 tattrintsize.h5
-tbigdims.h5
 tbinary.h5
 tbitnopaque.h5
 tchar.h5
@@ -140,12 +141,7 @@ tcompound.h5
 tdatareg.h5
 tdset.h5
 tempty.h5
-textlinkfar.h5
-textlink.h5
-textlinksrc.h5
-textlinktar.h5
 tfcontents2.h5
-tfilters.h5
 tfpformat.h5
 tfvalues.h5
 tgroup.h5
@@ -157,7 +153,6 @@ tints4dims.h5
 tintsattrs.h5
 tlarge_objname.h5
 tldouble.h5
-tlonglinks.h5
 tloop.h5
 tnamed_dtype_attr.h5
 tnestedcmpddt.h5
@@ -171,8 +166,6 @@ tscalarattrintsize.h5
 tscalarintattrsize.h5
 tscalarintsize.h5
 tscalarstring.h5
-tslink.h5
-tsoftlinks.h5
 tstr2.h5
 tstr3.h5
 tstr.h5
@@ -191,6 +184,9 @@ zerodim.h5
 #
 # Kept in       $H5DUMP_TESTFILES_OUT_DIR
 # Copied to     $TEXT_OUTPUT_DIR
+#
+# NOTE: This is ALL the files - they have not been culled based on the HDF5
+#       files in the above list.
 #
 EXPECTED_OUTPUT_FILES="
 charsets.ddl
@@ -432,7 +428,7 @@ REPACK_HDF5_FILES()
         inpath="$H5DUMP_TESTFILES_HDF5_DIR/$repackfile"
         outpath="$REPACK_OUTPUT_DIR/$repackfile"
 
-        # Use -f to make sure get a new copy
+        # Repack the file
         $H5REPACK --src-vol-name=native --enable-error-stack $inpath $outpath
         if [ $? -ne 0 ]; then
             echo "Error: FAILED to repack HDF5 file: $inpath ."
@@ -852,9 +848,9 @@ TOOLTEST5() {
 # ADD_HELP_TEST
 TOOLTEST_HELP() {
 
-    expect="$TESTDIR/$1"
-    actual="$TESTDIR/`basename $1 .txt`.out"
-    actual_err="$TESTDIR/`basename $1 .txt`.err"
+    expect="$TEXT_OUTPUT_DIR/$1"
+    actual="$TEXT_OUTPUT_DIR/`basename $1 .txt`.out"
+    actual_err="$TEXT_OUTPUT_DIR/`basename $1 .txt`.err"
     shift
 
     # Run test.
@@ -1017,13 +1013,13 @@ test -d $REPACK_OUTPUT_DIR || mkdir -p $REPACK_OUTPUT_DIR
 COPY_EXPECTED_OUTPUT_FILES
 REPACK_HDF5_FILES
 
-exit $EXIT_SUCCESS
 
 # Run h5dump tests
 
 # test the help syntax
 TOOLTEST_HELP h5dump-help.txt -h
 
+: <<'END'
 # test data output redirection
 TOOLTEST tnoddl.ddl --enable-error-stack --ddl -y packedbits.h5
 TOOLTEST tnodata.ddl --enable-error-stack --output packedbits.h5
@@ -1409,6 +1405,8 @@ TOOLTEST err_attr_dspace.ddl err_attr_dspace.h5
 
 # test to verify HDFFV-9407: long double full precision
 GREPTEST OUTTXT "1.123456789012345" t128bit_float.ddl -m %.35Lf t128bit_float.h5
+
+END
 
 # Clean up generated files/directories
 CLEAN_OUTPUT
