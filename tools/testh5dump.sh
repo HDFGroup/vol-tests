@@ -79,6 +79,7 @@ REPACK_OUTPUT_DIR=./h5dump_repack_output
 # tbigdims.h5 (repack hangs w/ passthru VOL)
 # err_attr_dspace.h5
 # tfcontents1.h5
+# tfcontents2.h5
 #
 # These files have native-specific content
 # tfamily00000.h5
@@ -141,7 +142,6 @@ tcompound.h5
 tdatareg.h5
 tdset.h5
 tempty.h5
-tfcontents2.h5
 tfpformat.h5
 tfvalues.h5
 tgroup.h5
@@ -625,44 +625,44 @@ RUNTEST2A() {
     sed "s|$REPACK_OUTPUT_DIR/||" < $tmp_file > $actualmeta
 
     if [ ! -f $expect ]; then
-    # Create the expect file if it doesn't yet exist.
-     echo " CREATED"
-     cp $actual $expect
-     echo "    Expected result (*.ddl) missing"
-     nerrors="`expr $nerrors + 1`"
-    elif $CMP $expect $actual; then
-      if [ ! -f $expectdata ]; then
-      # Create the expect data file if it doesn't yet exist.
+        # Create the expect file if it doesn't yet exist.
         echo " CREATED"
-        cp $actualdata $expectdata
-        echo "    Expected data (*.exp) missing"
+        cp $actual $expect
+        echo "    Expected result (*.ddl) missing"
         nerrors="`expr $nerrors + 1`"
-      elif $DIFF $expectdata $actualdata; then
-        if [ ! -f $expectmeta ]; then
-        # Create the expect meta file if it doesn't yet exist.
-          echo " CREATED"
-          cp $actualmeta $expectmeta
-          echo "    Expected metafile (*.ddl) missing"
-          nerrors="`expr $nerrors + 1`"
-        elif $CMP $expectmeta $actualmeta; then
-          echo " PASSED"
+    elif $CMP $expect $actual; then
+        if [ ! -f $expectdata ]; then
+            # Create the expect data file if it doesn't yet exist.
+            echo " CREATED"
+            cp $actualdata $expectdata
+            echo "    Expected data (*.exp) missing"
+            nerrors="`expr $nerrors + 1`"
+        elif $DIFF $expectdata $actualdata; then
+            if [ ! -f $expectmeta ]; then
+                # Create the expect meta file if it doesn't yet exist.
+                echo " CREATED"
+                cp $actualmeta $expectmeta
+                echo "    Expected metafile (*.ddl) missing"
+                nerrors="`expr $nerrors + 1`"
+            elif $CMP $expectmeta $actualmeta; then
+                echo " PASSED"
+            else
+                echo "*FAILED*"
+                echo "    Expected metafile (*.ddl) differs from actual metafile (*.txt)"
+                nerrors="`expr $nerrors + 1`"
+                test yes = "$verbose" && $DIFF $expectmeta $actualmeta |sed 's/^/    /'
+            fi
         else
-          echo "*FAILED*"
-          echo "    Expected metafile (*.ddl) differs from actual metafile (*.txt)"
-          nerrors="`expr $nerrors + 1`"
-          test yes = "$verbose" && $DIFF $expectmeta $actualmeta |sed 's/^/    /'
+            echo "*FAILED*"
+            echo "    Expected datafile (*.exp) differs from actual datafile (*.txt)"
+            nerrors="`expr $nerrors + 1`"
+            test yes = "$verbose" && $DIFF $expectdata $actualdata |sed 's/^/    /'
         fi
-      else
-        echo "*FAILED*"
-        echo "    Expected datafile (*.exp) differs from actual datafile (*.txt)"
-        nerrors="`expr $nerrors + 1`"
-        test yes = "$verbose" && $DIFF $expectdata $actualdata |sed 's/^/    /'
-      fi
     else
-     echo "*FAILED*"
-     echo "    Expected result (*.ddl) differs from actual result (*.out)"
-     nerrors="`expr $nerrors + 1`"
-     test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
+        echo "*FAILED*"
+        echo "    Expected result (*.ddl) differs from actual result (*.out)"
+        nerrors="`expr $nerrors + 1`"
+        test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
     fi
 }
 
@@ -704,171 +704,6 @@ RUNTEST2B() {
     fi
 }
 
-# same as RUNTEST but filters error stack outp
-# Extract file name, line number, version and thread IDs because they may be different
-RUNTEST3() {
-
-    expect="$TEXT_OUTPUT_DIR/$1"
-    actual="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.out"
-    actual_err="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.err"
-    actual_ext="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.ext"
-    actual_sav=${actual}-sav
-    actual_err_sav=${actual_err}-sav
-    shift
-
-    # Run test.
-    TESTING $H5DUMP $@
-    (
-      $RUNSERIAL $H5DUMP "$@"
-    ) >$actual 2>$actual_err
-
-    # save actual and actual_err in case they are needed later.
-    cp $actual $actual_sav
-    STDOUT_FILTER $actual
-    cp $actual_err $actual_err_sav
-    STDERR_FILTER $actual_err
-
-    # Extract file name, line number, version and thread IDs because they may be different
-    sed -e 's/thread [0-9]*/thread (IDs)/' -e 's/: .*\.c /: (file name) /' \
-        -e 's/line [0-9]*/line (number)/' \
-        -e 's/v[1-9]*\.[0-9]*\./version (number)\./' \
-        -e 's/[1-9]*\.[0-9]*\.[0-9]*[^)]*/version (number)/' \
-        -e 's/H5Eget_auto[1-2]*/H5Eget_auto(1 or 2)/' \
-        -e 's/H5Eset_auto[1-2]*/H5Eset_auto(1 or 2)/' \
-     $actual_err > $actual_ext
-
-    if [ ! -f $expect ]; then
-    # Create the expect file if it doesn't yet exist.
-     echo " CREATED"
-     cp $actual $expect
-     echo "    Expected result (*.ddl) missing"
-     nerrors="`expr $nerrors + 1`"
-    elif $CMP $expect $actual; then
-     echo " PASSED"
-    else
-     echo "*FAILED*"
-     echo "    Expected result (*.ddl) differs from actual result (*.out)"
-     nerrors="`expr $nerrors + 1`"
-     test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
-    fi
-}
-
-# same as RUNTEST3 but filters error stack output and compares to an error file
-# Extract file name, line number, version and thread IDs because they may be different
-# ADD_H5ERR_MASK_TEST
-RUNTEST4() {
-
-    expect="$TEXT_OUTPUT_DIR/$1"
-    expect_err="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.err"
-    actual="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.out"
-    actual_err="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.oerr"
-    actual_ext="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.ext"
-    actual_sav=${actual}-sav
-    actual_err_sav=${actual_err}-sav
-    shift
-
-    # Run test.
-    TESTING $H5DUMP $@
-    (
-      $ENVCMD $RUNSERIAL $H5DUMP "$@"
-    ) >$actual 2>$actual_err
-
-    # save actual and actual_err in case they are needed later.
-    cp $actual $actual_sav
-    STDOUT_FILTER $actual
-    cp $actual_err $actual_err_sav
-    STDERR_FILTER $actual_err
-
-    # Extract file name, line number, version and thread IDs because they may be different
-    sed -e 's/thread [0-9]*/thread (IDs)/' -e 's/: .*\.c /: (file name) /' \
-        -e 's/line [0-9]*/line (number)/' \
-        -e 's/v[1-9]*\.[0-9]*\./version (number)\./' \
-        -e 's/[1-9]*\.[0-9]*\.[0-9]*[^)]*/version (number)/' \
-        -e 's/H5Eget_auto[1-2]*/H5Eget_auto(1 or 2)/' \
-        -e 's/H5Eset_auto[1-2]*/H5Eset_auto(1 or 2)/' \
-     $actual_err > $actual_ext
-
-    if [ ! -f $expect ]; then
-    # Create the expect file if it doesn't yet exist.
-     echo " CREATED"
-     cp $actual $expect
-     echo "    Expected result (*.ddl) missing"
-     nerrors="`expr $nerrors + 1`"
-    elif $CMP $expect $actual; then
-     if $CMP $expect_err $actual_ext; then
-      echo " PASSED"
-     else
-      echo "*FAILED*"
-      echo "    Expected result (*.err) differs from actual result (*.oerr)"
-      nerrors="`expr $nerrors + 1`"
-      test yes = "$verbose" && $DIFF $expect_err $actual_ext |sed 's/^/    /'
-     fi
-    else
-     echo "*FAILED*"
-     echo "    Expected result (*.ddl) differs from actual result (*.out)"
-     nerrors="`expr $nerrors + 1`"
-     test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
-    fi
-}
-
-# same as RUNTEST4 but disables plugin filter loading
-# silences extra error output on some platforms
-# ADD_H5ERR_MASK_TEST
-RUNTEST5() {
-
-    expect="$TEXT_OUTPUT_DIR/$1"
-    expect_err="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.err"
-    actual="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.out"
-    actual_err="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.oerr"
-    actual_ext="$TEXT_OUTPUT_DIR/`basename $1 .ddl`.ext"
-    actual_sav=${actual}-sav
-    actual_err_sav=${actual_err}-sav
-    shift
-
-    # Run test.
-    TESTING $H5DUMP $@
-    (
-      $ENVCMD $RUNSERIAL $H5DUMP "$@"
-    ) >$actual 2>$actual_err
-
-    # save actual and actual_err in case they are needed later.
-    cp $actual $actual_sav
-    STDOUT_FILTER $actual
-    cp $actual_err $actual_err_sav
-    STDERR_FILTER $actual_err
-
-    # Extract file name, line number, version and thread IDs because they may be different
-    sed -e 's/thread [0-9]*/thread (IDs)/' -e 's/: .*\.c /: (file name) /' \
-        -e 's/line [0-9]*/line (number)/' \
-        -e 's/v[1-9]*\.[0-9]*\./version (number)\./' \
-        -e 's/[1-9]*\.[0-9]*\.[0-9]*[^)]*/version (number)/' \
-        -e 's/H5Eget_auto[1-2]*/H5Eget_auto(1 or 2)/' \
-        -e 's/H5Eset_auto[1-2]*/H5Eset_auto(1 or 2)/' \
-     $actual_err > $actual_ext
-
-    if [ ! -f $expect ]; then
-    # Create the expect file if it doesn't yet exist.
-     echo " CREATED"
-     cp $actual $expect
-     echo "    Expected result (*.ddl) missing"
-     nerrors="`expr $nerrors + 1`"
-    elif $CMP $expect $actual; then
-     if $CMP $expect_err $actual_ext; then
-      echo " PASSED"
-     else
-      echo "*FAILED*"
-      echo "    Expected result (*.err) differs from actual result (*.oerr)"
-      nerrors="`expr $nerrors + 1`"
-      test yes = "$verbose" && $DIFF $expect_err $actual_ext |sed 's/^/    /'
-     fi
-    else
-     echo "*FAILED*"
-     echo "    Expected result (*.ddl) differs from actual result (*.out)"
-     nerrors="`expr $nerrors + 1`"
-     test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
-    fi
-}
-
 # ADD_HELP_TEST
 RUNTEST_HELP() {
 
@@ -900,7 +735,7 @@ RUNTEST_HELP() {
 
 # Call the h5dump tool and grep for a value
 # txttype ERRTXT greps test error output, otherwise greps test output
-GREPTEST()
+RUNTEST_GREP()
 {
     txttype=$1
     expectdata=$2
@@ -930,7 +765,7 @@ GREPTEST()
 
 # Call the h5dump tool and grep for a value but disables plugin filter loading
 # txttype ERRTXT greps test error output, otherwise greps test output
-GREPTEST2()
+RUNTEST_GREP2()
 {
     txttype=$1
     expectdata=$2
@@ -964,62 +799,6 @@ SKIP() {
     echo  " -SKIP-"
 }
 
-# Print a line-line message left justified in a field of 70 characters
-#
-PRINT_H5DIFF() {
- SPACES="                                                               "
- echo " Running h5diff $* $SPACES" | cut -c1-70 | tr -d '\012'
-}
-
-
-# Call the h5diff tool
-#
-DIFFTEST()
-{
-    PRINT_H5DIFF  $@
-    (
-  $RUNSERIAL $H5DIFF "$@" -q
-    )
-    RET=$?
-    if [ $RET != 0 ] ; then
-         echo "*FAILED*"
-         nerrors="`expr $nerrors + 1`"
-    else
-         echo " PASSED"
-    fi
-
-}
-
-# Print a line-line message left justified in a field of 70 characters
-# beginning with the word "Verifying".
-#
-PRINT_H5IMPORT() {
- SPACES="                                                               "
- echo " Running h5import $* $SPACES" | cut -c1-70 | tr -d '\012'
-}
-
-# Call the h5import tool
-#
-IMPORTTEST()
-{
-    # remove the output hdf5 file if it exists
-    hdf5_file="$TESTDIR/$5"
-    if [ -f $hdf5_file ]; then
-     rm -f $hdf5_file
-    fi
-
-    PRINT_H5IMPORT  $@
-    (
-  $RUNSERIAL $H5IMPORT "$@"
-    )
-    RET=$?
-    if [ $RET != 0 ] ; then
-         echo "*FAILED*"
-         nerrors="`expr $nerrors + 1`"
-    else
-         echo " PASSED"
-    fi
-}
 
 
 ##############################################################################
@@ -1039,6 +818,14 @@ REPACK_HDF5_FILES
 
 
 # Run h5dump tests
+#
+# NOTE: In the official HDF5 library tools tests, the emitted error stack
+#       output is checked against canonical error stack output. This is too
+#       brittle to be done with arbitrary VOL connectors, so all of the tests
+#       which do that now solely test normal output.
+#
+#       The tests are still run with --enable-error-stack, however, in case
+#       that helps with debugging issues.
 
 # test the help syntax
 RUNTEST_HELP h5dump-help.txt -h
@@ -1052,50 +839,50 @@ RUNTEST2 trawdatafile.exp --enable-error-stack -y -o $TEXT_OUTPUT_DIR/trawdatafi
 RUNTEST2 tnoddlfile.exp --enable-error-stack -O -y -o $TEXT_OUTPUT_DIR/tnoddlfile.txt $REPACK_OUTPUT_DIR/packedbits.h5
 RUNTEST2A twithddlfile.exp twithddl.exp --enable-error-stack --ddl=$TEXT_OUTPUT_DIR/twithddl.txt -y -o $TEXT_OUTPUT_DIR/twithddlfile.txt $REPACK_OUTPUT_DIR/packedbits.h5
 RUNTEST2 trawssetfile.exp --enable-error-stack -d "/dset1[1,1;;;]" -y -o $TEXT_OUTPUT_DIR/trawssetfile.txt $REPACK_OUTPUT_DIR/tdset.h5
-: <<'END'
 
 # test for maximum display datasets
-RUNTEST twidedisplay.ddl --enable-error-stack -w0 packedbits.h5
+RUNTEST twidedisplay.ddl --enable-error-stack -w0 $REPACK_OUTPUT_DIR/packedbits.h5
 
 # test for signed/unsigned datasets
-RUNTEST packedbits.ddl --enable-error-stack packedbits.h5
+RUNTEST packedbits.ddl --enable-error-stack $REPACK_OUTPUT_DIR/packedbits.h5
 # test for compound signed/unsigned datasets
-RUNTEST tcmpdintsize.ddl --enable-error-stack tcmpdintsize.h5
+RUNTEST tcmpdintsize.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tcmpdintsize.h5
 # test for signed/unsigned scalar datasets
-RUNTEST tscalarintsize.ddl --enable-error-stack tscalarintsize.h5
+RUNTEST tscalarintsize.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tscalarintsize.h5
 # test for signed/unsigned attributes
-RUNTEST tattrintsize.ddl --enable-error-stack tattrintsize.h5
+RUNTEST tattrintsize.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tattrintsize.h5
 # test for compound signed/unsigned attributes
-RUNTEST tcmpdattrintsize.ddl --enable-error-stack tcmpdattrintsize.h5
+RUNTEST tcmpdattrintsize.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tcmpdattrintsize.h5
 # test for signed/unsigned scalar attributes
-RUNTEST tscalarattrintsize.ddl --enable-error-stack tscalarattrintsize.h5
+RUNTEST tscalarattrintsize.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tscalarattrintsize.h5
 # test for signed/unsigned scalar datasets with attributes
-RUNTEST tscalarintattrsize.ddl --enable-error-stack tscalarintattrsize.h5
+RUNTEST tscalarintattrsize.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tscalarintattrsize.h5
 # test for signed/unsigned datasets attributes
-RUNTEST tintsattrs.ddl --enable-error-stack tintsattrs.h5
+RUNTEST tintsattrs.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tintsattrs.h5
 # test for string scalar dataset attribute
-RUNTEST tscalarstring.ddl --enable-error-stack tscalarstring.h5
+RUNTEST tscalarstring.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tscalarstring.h5
 # test for displaying groups
-RUNTEST tgroup-1.ddl --enable-error-stack tgroup.h5
+RUNTEST tgroup-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tgroup.h5
 # test for displaying the selected groups
-RUNTEST4 tgroup-2.ddl --enable-error-stack --group=/g2 --group / -g /y tgroup.h5
+RUNTEST tgroup-2.ddl --enable-error-stack --group=/g2 --group / -g /y $REPACK_OUTPUT_DIR/tgroup.h5
 
 # test for displaying simple space datasets
-RUNTEST tdset-1.ddl --enable-error-stack tdset.h5
+RUNTEST tdset-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tdset.h5
 # test for displaying selected datasets
-RUNTEST4 tdset-2.ddl --enable-error-stack -H -d dset1 -d /dset2 --dataset=dset3 tdset.h5
+RUNTEST tdset-2.ddl --enable-error-stack -H -d dset1 -d /dset2 --dataset=dset3 $REPACK_OUTPUT_DIR/tdset.h5
 
 # test for displaying attributes
-RUNTEST tattr-1.ddl --enable-error-stack tattr.h5
+RUNTEST tattr-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tattr.h5
 # test for displaying the selected attributes of string type and scalar space
-RUNTEST tattr-2.ddl --enable-error-stack -a "/\/attr1" --attribute /attr4 --attribute=/attr5 tattr.h5
-RUNTEST tattr-2.ddl --enable-error-stack -N "/\/attr1" --any_path /attr4 --any_path=/attr5 tattr.h5
+RUNTEST tattr-2.ddl --enable-error-stack -a "/\/attr1" --attribute /attr4 --attribute=/attr5 $REPACK_OUTPUT_DIR/tattr.h5
+RUNTEST tattr-2.ddl --enable-error-stack -N "/\/attr1" --any_path /attr4 --any_path=/attr5 $REPACK_OUTPUT_DIR/tattr.h5
 # test for header and error messages
-RUNTEST4 tattr-3.ddl --enable-error-stack --header -a /attr2 --attribute=/attr tattr.h5
+RUNTEST tattr-3.ddl --enable-error-stack --header -a /attr2 --attribute=/attr $REPACK_OUTPUT_DIR/tattr.h5
 # test for displaying at least 9 attributes on root from a BE machine
-RUNTEST tattr-4_be.ddl --enable-error-stack tattr4_be.h5
+RUNTEST tattr-4_be.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tattr4_be.h5
 # test for displaying attributes in shared datatype (also in group and dataset)
-RUNTEST tnamed_dtype_attr.ddl --enable-error-stack tnamed_dtype_attr.h5
+# TODO: This test looks like it misses a hard link to a named datatype. Might be an issue with the h5repack H5Ocopy work-around.
+#RUNTEST tnamed_dtype_attr.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tnamed_dtype_attr.h5
 
 # test for displaying soft links and user-defined links
 #RUNTEST tslink-1.ddl --enable-error-stack tslink.h5
@@ -1105,40 +892,42 @@ RUNTEST tnamed_dtype_attr.ddl --enable-error-stack tnamed_dtype_attr.h5
 #RUNTEST tslink-2.ddl --enable-error-stack -N slink2 tslink.h5
 #RUNTEST tudlink-2.ddl --enable-error-stack -l udlink2 tudlink.h5
 # test for displaying dangling soft links
-#RUNTEST4 tslink-D.ddl --enable-error-stack -d /slink1 tslink.h5
+#RUNTEST tslink-D.ddl --enable-error-stack -d /slink1 tslink.h5
 
 # tests for hard links
-RUNTEST thlink-1.ddl --enable-error-stack thlink.h5
-RUNTEST thlink-2.ddl --enable-error-stack -d /g1/dset2 --dataset /dset1 --dataset=/g1/g1.1/dset3 thlink.h5
-RUNTEST thlink-3.ddl --enable-error-stack -d /g1/g1.1/dset3 --dataset /g1/dset2 --dataset=/dset1 thlink.h5
-RUNTEST thlink-4.ddl --enable-error-stack -g /g1 thlink.h5
-RUNTEST thlink-4.ddl --enable-error-stack -N /g1 thlink.h5
-RUNTEST thlink-5.ddl --enable-error-stack -d /dset1 -g /g2 -d /g1/dset2 thlink.h5
-RUNTEST thlink-5.ddl --enable-error-stack -N /dset1 -N /g2 -N /g1/dset2 thlink.h5
+RUNTEST thlink-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-2.ddl --enable-error-stack -d /g1/dset2 --dataset /dset1 --dataset=/g1/g1.1/dset3 $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-3.ddl --enable-error-stack -d /g1/g1.1/dset3 --dataset /g1/dset2 --dataset=/dset1 $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-4.ddl --enable-error-stack -g /g1 $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-4.ddl --enable-error-stack -N /g1 $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-5.ddl --enable-error-stack -d /dset1 -g /g2 -d /g1/dset2 $REPACK_OUTPUT_DIR/thlink.h5
+RUNTEST thlink-5.ddl --enable-error-stack -N /dset1 -N /g2 -N /g1/dset2 $REPACK_OUTPUT_DIR/thlink.h5
 
 # tests for compound data types
-RUNTEST tcomp-1.ddl --enable-error-stack tcompound.h5
+# Looks like the unnamed type number is different after repacking?
+#RUNTEST tcomp-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tcompound.h5
 # test for named data types
-RUNTEST tcomp-2.ddl --enable-error-stack -t /type1 --datatype /type2 --datatype=/group1/type3 tcompound.h5
-RUNTEST tcomp-2.ddl --enable-error-stack -N /type1 --any_path /type2 --any_path=/group1/type3 tcompound.h5
-# test for unamed type
-RUNTEST4 tcomp-3.ddl --enable-error-stack -t /#6632 -g /group2 tcompound.h5
+RUNTEST tcomp-2.ddl --enable-error-stack -t /type1 --datatype /type2 --datatype=/group1/type3 $REPACK_OUTPUT_DIR/tcompound.h5
+RUNTEST tcomp-2.ddl --enable-error-stack -N /type1 --any_path /type2 --any_path=/group1/type3 $REPACK_OUTPUT_DIR/tcompound.h5
+# test for unnamed type
+# Looks like the unnamed type number is different after repacking?
+#RUNTEST tcomp-3.ddl --enable-error-stack -t /#6632 -g /group2 $REPACK_OUTPUT_DIR/tcompound.h5
 # test complicated compound datatype
-RUNTEST tcomp-4.ddl --enable-error-stack tcompound_complex.h5
-RUNTEST tcompound_complex2.ddl --enable-error-stack tcompound_complex2.h5
+RUNTEST tcomp-4.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tcompound_complex.h5
+RUNTEST tcompound_complex2.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tcompound_complex2.h5
 # tests for bitfields and opaque data types
 if test $WORDS_BIGENDIAN != "yes"; then
-RUNTEST tbitnopaque_le.ddl --enable-error-stack tbitnopaque.h5
+RUNTEST tbitnopaque_le.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tbitnopaque.h5
 else
-RUNTEST tbitnopaque_be.ddl --enable-error-stack tbitnopaque.h5
+RUNTEST tbitnopaque_be.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tbitnopaque.h5
 fi
 
 #test for the nested compound type
-RUNTEST tnestcomp-1.ddl --enable-error-stack tnestedcomp.h5
-RUNTEST tnestedcmpddt.ddl --enable-error-stack tnestedcmpddt.h5
+RUNTEST tnestcomp-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tnestedcomp.h5
+RUNTEST tnestedcmpddt.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tnestedcmpddt.h5
 
 # test for options (TODO: tall does not repack)
-#RUNTEST4 tall-1.ddl --enable-error-stack tall.h5
+#RUNTEST tall-1.ddl --enable-error-stack tall.h5
 #RUNTEST tall-2.ddl --enable-error-stack --header -g /g1/g1.1 -a attr2 tall.h5
 #RUNTEST tall-3.ddl --enable-error-stack -d /g2/dset2.1 -l /g1/g1.2/g1.2.1/slink tall.h5
 #RUNTEST tall-3.ddl --enable-error-stack -N /g2/dset2.1 -N /g1/g1.2/g1.2.1/slink tall.h5
@@ -1146,45 +935,45 @@ RUNTEST tnestedcmpddt.ddl --enable-error-stack tnestedcmpddt.h5
 #RUNTEST tall-7N.ddl --enable-error-stack -N attr1 tall.h5
 
 # test for loop detection
-RUNTEST tloop-1.ddl --enable-error-stack tloop.h5
+RUNTEST tloop-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tloop.h5
 
 # test for string
-RUNTEST tstr-1.ddl --enable-error-stack tstr.h5
-RUNTEST tstr-2.ddl --enable-error-stack tstr2.h5
+RUNTEST tstr-1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tstr.h5
+RUNTEST tstr-2.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tstr2.h5
 
 # test for file created by Lib SAF team
-RUNTEST tsaf.ddl --enable-error-stack tsaf.h5
+RUNTEST tsaf.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tsaf.h5
 
 # test for file with variable length data
-RUNTEST tvldtypes1.ddl --enable-error-stack tvldtypes1.h5
-RUNTEST tvldtypes2.ddl --enable-error-stack tvldtypes2.h5
-RUNTEST tvldtypes3.ddl --enable-error-stack tvldtypes3.h5
-RUNTEST tvldtypes4.ddl --enable-error-stack tvldtypes4.h5
-RUNTEST tvldtypes5.ddl --enable-error-stack tvldtypes5.h5
+RUNTEST tvldtypes1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvldtypes1.h5
+RUNTEST tvldtypes2.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvldtypes2.h5
+RUNTEST tvldtypes3.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvldtypes3.h5
+RUNTEST tvldtypes4.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvldtypes4.h5
+RUNTEST tvldtypes5.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvldtypes5.h5
 
 #test for file with variable length string data
-RUNTEST tvlstr.ddl --enable-error-stack tvlstr.h5
-RUNTEST tvlenstr_array.ddl --enable-error-stack tvlenstr_array.h5
+RUNTEST tvlstr.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvlstr.h5
+RUNTEST tvlenstr_array.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvlenstr_array.h5
 
 # test for files with array data
-RUNTEST tarray1.ddl --enable-error-stack tarray1.h5
+RUNTEST tarray1.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray1.h5
 # # added for bug# 2092 - tarray1_big.h
-GREPTEST ERRTXT "NULL token size" tarray1_big.ddl --enable-error-stack -R tarray1_big.h5
-RUNTEST tarray2.ddl --enable-error-stack tarray2.h5
-RUNTEST tarray3.ddl --enable-error-stack tarray3.h5
-RUNTEST tarray4.ddl --enable-error-stack tarray4.h5
-RUNTEST tarray5.ddl --enable-error-stack tarray5.h5
-RUNTEST tarray6.ddl --enable-error-stack tarray6.h5
-RUNTEST tarray7.ddl --enable-error-stack tarray7.h5
-RUNTEST tarray8.ddl --enable-error-stack tarray8.h5
+RUNTEST_GREP ERRTXT "NULL token size" tarray1_big.ddl --enable-error-stack -R $REPACK_OUTPUT_DIR/tarray1_big.h5
+RUNTEST tarray2.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray2.h5
+RUNTEST tarray3.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray3.h5
+RUNTEST tarray4.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray4.h5
+RUNTEST tarray5.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray5.h5
+RUNTEST tarray6.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray6.h5
+RUNTEST tarray7.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray7.h5
+RUNTEST tarray8.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray8.h5
 
 # test for wildcards in filename (does not work with cmake)
 # inconsistent across platforms RUNTEST3 tstarfile.ddl --enable-error-stack -H -d Dataset1 tarr*.h5
-#RUNTEST4 tqmarkfile.ddl --enable-error-stack -H -d Dataset1 tarray?.h5
-RUNTEST tmultifile.ddl --enable-error-stack -H -d Dataset1 tarray2.h5 tarray3.h5 tarray4.h5 tarray5.h5 tarray6.h5 tarray7.h5
+#RUNTEST tqmarkfile.ddl --enable-error-stack -H -d Dataset1 tarray?.h5
+RUNTEST tmultifile.ddl --enable-error-stack -H -d Dataset1 $REPACK_OUTPUT_DIR/tarray2.h5 $REPACK_OUTPUT_DIR/tarray3.h5 $REPACK_OUTPUT_DIR/tarray4.h5 $REPACK_OUTPUT_DIR/tarray5.h5 $REPACK_OUTPUT_DIR/tarray6.h5 $REPACK_OUTPUT_DIR/tarray7.h5
 
 # test for files with empty data
-RUNTEST tempty.ddl --enable-error-stack tempty.h5
+RUNTEST tempty.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tempty.h5
 
 # test for files with groups that have comments
 # TODO: object comments are native-only
@@ -1197,47 +986,47 @@ RUNTEST tempty.ddl --enable-error-stack tempty.h5
 #RUNTEST tmulti.ddl --enable-error-stack --filedriver=multi tmulti
 
 # test for files with group names which reach > 1024 bytes in size
-RUNTEST tlarge_objname.ddl --enable-error-stack -w157 tlarge_objname.h5
+RUNTEST tlarge_objname.ddl --enable-error-stack -w157 $REPACK_OUTPUT_DIR/tlarge_objname.h5
 
 # test '-A' to suppress data but print attr's
-#RUNTEST4 tall-2A.ddl --enable-error-stack -A tall.h5
+#RUNTEST tall-2A.ddl --enable-error-stack -A tall.h5
 
 # test '-A' to suppress attr's but print data
-#RUNTEST4 tall-2A0.ddl --enable-error-stack -A 0 tall.h5
+#RUNTEST tall-2A0.ddl --enable-error-stack -A 0 tall.h5
 
 # test '-r' to print attributes in ASCII instead of decimal
-#RUNTEST4 tall-2B.ddl --enable-error-stack -A -r tall.h5
+#RUNTEST tall-2B.ddl --enable-error-stack -A -r tall.h5
 
 # test Subsetting
 #RUNTEST tall-4s.ddl --enable-error-stack --dataset=/g1/g1.1/dset1.1.1 --start=1,1 --stride=2,3 --count=3,2 --block=1,1 tall.h5
 #RUNTEST tall-5s.ddl --enable-error-stack -d "/g1/g1.1/dset1.1.2[0;2;10;]" tall.h5
-RUNTEST tdset-3s.ddl --enable-error-stack -d "/dset1[1,1;;;]" tdset.h5
-RUNTEST tno-subset.ddl --enable-error-stack --no-compact-subset -d "AHFINDERDIRECT::ah_centroid_t[0] it=0 tl=0" tno-subset.h5
+RUNTEST tdset-3s.ddl --enable-error-stack -d "/dset1[1,1;;;]" $REPACK_OUTPUT_DIR/tdset.h5
+RUNTEST tno-subset.ddl --enable-error-stack --no-compact-subset -d "AHFINDERDIRECT::ah_centroid_t[0] it=0 tl=0" $REPACK_OUTPUT_DIR/tno-subset.h5
 
-RUNTEST tints4dimsCount2.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -c 2,2,2,2 tints4dims.h5
-RUNTEST tints4dimsBlock2.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -c 1,1,1,1 -k 2,2,2,2 tints4dims.h5
-RUNTEST tints4dimsStride2.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -S 2,2,2,2 -c 2,2,2,2 tints4dims.h5
-RUNTEST tints4dimsCountEq.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -S 2,2,1,1 -k 1,2,1,1 -c 2,2,4,4 tints4dims.h5
-RUNTEST tints4dimsBlockEq.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -S 2,2,1,1 -c 2,2,1,1 -k 1,2,4,4 tints4dims.h5
+RUNTEST tints4dimsCount2.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -c 2,2,2,2 $REPACK_OUTPUT_DIR/tints4dims.h5
+RUNTEST tints4dimsBlock2.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -c 1,1,1,1 -k 2,2,2,2 $REPACK_OUTPUT_DIR/tints4dims.h5
+RUNTEST tints4dimsStride2.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -S 2,2,2,2 -c 2,2,2,2 $REPACK_OUTPUT_DIR/tints4dims.h5
+RUNTEST tints4dimsCountEq.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -S 2,2,1,1 -k 1,2,1,1 -c 2,2,4,4 $REPACK_OUTPUT_DIR/tints4dims.h5
+RUNTEST tints4dimsBlockEq.ddl --enable-error-stack -d FourDimInts -s 0,0,0,0 -S 2,2,1,1 -c 2,2,1,1 -k 1,2,4,4 $REPACK_OUTPUT_DIR/tints4dims.h5
 
 # test printing characters in ASCII instead of decimal
-RUNTEST tchar1.ddl --enable-error-stack -r tchar.h5
+RUNTEST tchar1.ddl --enable-error-stack -r $REPACK_OUTPUT_DIR/tchar.h5
 
 # test datatypes in ASCII and UTF8
-RUNTEST charsets.ddl --enable-error-stack charsets.h5
+RUNTEST charsets.ddl --enable-error-stack $REPACK_OUTPUT_DIR/charsets.h5
 
 # rev. 2004
 
 # tests for super block
-# TODO: tfcontents1.h5 does not repack
+# TODO: tfcontents1.h5 does not repack and since the superblock is native-only these are all skipped
 #RUNTEST tboot1.ddl --enable-error-stack -H -B -d dset tfcontents1.h5
-RUNTEST tboot2.ddl --enable-error-stack -B tfcontents2.h5
-RUNTEST tboot2A.ddl --enable-error-stack --boot-block tfcontents2.h5
-RUNTEST tboot2B.ddl --enable-error-stack --superblock tfcontents2.h5
-RUNTEST file_space.ddl --enable-error-stack -B file_space.h5
+#RUNTEST tboot2.ddl --enable-error-stack -B tfcontents2.h5
+#RUNTEST tboot2A.ddl --enable-error-stack --boot-block tfcontents2.h5
+#RUNTEST tboot2B.ddl --enable-error-stack --superblock tfcontents2.h5
+#RUNTEST file_space.ddl --enable-error-stack -B file_space.h5
 
 # test -p with a non existing dataset
-#RUNTEST4 tperror.ddl --enable-error-stack -p -d bogus tfcontents1.h5
+#RUNTEST tperror.ddl --enable-error-stack -p -d bogus tfcontents1.h5
 
 # test for file contents
 #RUNTEST tcontents.ddl --enable-error-stack -n tfcontents1.h5
@@ -1258,40 +1047,40 @@ RUNTEST file_space.ddl --enable-error-stack -B file_space.h5
 #RUNTEST texternal.ddl --enable-error-stack -H -p -d external tfilters.h5
 
 # fill values
-RUNTEST tfill.ddl --enable-error-stack -p tfvalues.h5
+# TODO: Reports offsets, which change after repacking
+#RUNTEST tfill.ddl --enable-error-stack -p $REPACK_OUTPUT_DIR/tfvalues.h5
 
 # several datatype, with references , print path
-RUNTEST treference.ddl --enable-error-stack tattr2.h5
+RUNTEST treference.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tattr2.h5
 
 # escape/not escape non printable characters
-RUNTEST tstringe.ddl --enable-error-stack -e tstr3.h5
-RUNTEST tstring.ddl --enable-error-stack tstr3.h5
+RUNTEST tstringe.ddl --enable-error-stack -e $REPACK_OUTPUT_DIR/tstr3.h5
+RUNTEST tstring.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tstr3.h5
 # char data as ASCII with non escape
-RUNTEST tstring2.ddl --enable-error-stack -r -d str4 tstr3.h5
+RUNTEST tstring2.ddl --enable-error-stack -r -d str4 $REPACK_OUTPUT_DIR/tstr3.h5
 
 # array indices print/not print
-RUNTEST tindicesyes.ddl --enable-error-stack taindices.h5
-RUNTEST tindicesno.ddl --enable-error-stack -y taindices.h5
+RUNTEST tindicesyes.ddl --enable-error-stack $REPACK_OUTPUT_DIR/taindices.h5
+RUNTEST tindicesno.ddl --enable-error-stack -y $REPACK_OUTPUT_DIR/taindices.h5
 
 ########## array indices with subsetting
 # 1D case
-RUNTEST tindicessub1.ddl --enable-error-stack -d 1d -s 1 -S 10 -c 2  -k 3 taindices.h5
+RUNTEST tindicessub1.ddl --enable-error-stack -d 1d -s 1 -S 10 -c 2  -k 3 $REPACK_OUTPUT_DIR/taindices.h5
 
 # 2D case
-RUNTEST tindicessub2.ddl --enable-error-stack -d 2d -s 1,2  -S 3,3 -c 3,2 -k 2,2 taindices.h5
+RUNTEST tindicessub2.ddl --enable-error-stack -d 2d -s 1,2  -S 3,3 -c 3,2 -k 2,2 $REPACK_OUTPUT_DIR/taindices.h5
 
 # 3D case
-RUNTEST tindicessub3.ddl --enable-error-stack -d 3d -s 0,1,2 -S 1,3,3 -c 2,2,2  -k 1,2,2  taindices.h5
+RUNTEST tindicessub3.ddl --enable-error-stack -d 3d -s 0,1,2 -S 1,3,3 -c 2,2,2  -k 1,2,2  $REPACK_OUTPUT_DIR/taindices.h5
 
 # 4D case
-RUNTEST tindicessub4.ddl --enable-error-stack -d 4d -s 0,0,1,2  -c 2,2,3,2 -S 1,1,3,3 -k 1,1,2,2  taindices.h5
+RUNTEST tindicessub4.ddl --enable-error-stack -d 4d -s 0,0,1,2  -c 2,2,3,2 -S 1,1,3,3 -k 1,1,2,2  $REPACK_OUTPUT_DIR/taindices.h5
 
 # Exceed the dimensions for subsetting
-RUNTEST texceedsubstart.ddl --enable-error-stack -d 1d -s 1,3 taindices.h5
-RUNTEST texceedsubcount.ddl --enable-error-stack -d 1d -c 1,3 taindices.h5
-RUNTEST texceedsubstride.ddl --enable-error-stack -d 1d -S 1,3 taindices.h5
-RUNTEST texceedsubblock.ddl --enable-error-stack -d 1d -k 1,3 taindices.h5
-
+RUNTEST texceedsubstart.ddl --enable-error-stack -d 1d -s 1,3 $REPACK_OUTPUT_DIR/taindices.h5
+RUNTEST texceedsubcount.ddl --enable-error-stack -d 1d -c 1,3 $REPACK_OUTPUT_DIR/taindices.h5
+RUNTEST texceedsubstride.ddl --enable-error-stack -d 1d -S 1,3 $REPACK_OUTPUT_DIR/taindices.h5
+RUNTEST texceedsubblock.ddl --enable-error-stack -d 1d -k 1,3 $REPACK_OUTPUT_DIR/taindices.h5
 
 # tests for filters
 # SZIP
@@ -1321,128 +1110,93 @@ RUNTEST texceedsubblock.ddl --enable-error-stack -d 1d -k 1,3 taindices.h5
 #fi
 
 # test for displaying objects with very long names
-RUNTEST tlonglinks.ddl --enable-error-stack tlonglinks.h5
+# TODO: Has diff issues
+#RUNTEST tlonglinks.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tlonglinks.h5
 
 # dimensions over 4GB, print boundary
 # TODO: tbigdims.h5 hangs when repacking
 #RUNTEST tbigdims.ddl --enable-error-stack -d dset4gb -s 4294967284 -c 22 tbigdims.h5
 
 # hyperslab read
-RUNTEST thyperslab.ddl --enable-error-stack thyperslab.h5
-
-
-#
+RUNTEST thyperslab.ddl --enable-error-stack $REPACK_OUTPUT_DIR/thyperslab.h5
 
 # test for displaying dataset and attribute of null space
-RUNTEST tnullspace.ddl --enable-error-stack tnullspace.h5
-RUNTEST tgrpnullspace.ddl -p --enable-error-stack tgrpnullspace.h5
+RUNTEST tnullspace.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tnullspace.h5
+RUNTEST tgrpnullspace.ddl -p --enable-error-stack $REPACK_OUTPUT_DIR/tgrpnullspace.h5
 
 # test for displaying dataset and attribute of space with 0 dimension size
-RUNTEST zerodim.ddl --enable-error-stack zerodim.h5
+RUNTEST zerodim.ddl --enable-error-stack $REPACK_OUTPUT_DIR/zerodim.h5
 
 # test for long double (some systems do not have long double)
-#RUNTEST tldouble.ddl --enable-error-stack tldouble.h5
+#RUNTEST tldouble.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tldouble.h5
 
 # test for vms
-RUNTEST tvms.ddl --enable-error-stack tvms.h5
+RUNTEST tvms.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tvms.h5
 
 # test for binary output
-RUNTEST tbin1.ddl --enable-error-stack -d integer -o out1.bin -b LE tbinary.h5
+RUNTEST tbin1.ddl --enable-error-stack -d integer -o out1.bin -b LE $REPACK_OUTPUT_DIR/tbinary.h5
 
 # test for string binary output
-RUNTEST2B tstr2bin2.exp --enable-error-stack -d /g2/dset2 -b -o tstr2bin2.txt tstr2.h5
-RUNTEST2B tstr2bin6.exp --enable-error-stack -d /g6/dset6 -b -o tstr2bin6.txt tstr2.h5
-
-# NATIVE default. the NATIVE test can be validated with h5import/h5diff
-RUNTEST   tbin1.ddl --enable-error-stack -d integer -o out1.bin  -b  tbinary.h5
-IMPORTTEST out1.bin -c out3.h5import -o out1.h5
-DIFFTEST   tbinary.h5 out1.h5 /integer /integer
-# Same but use h5dump as input to h5import
-IMPORTTEST out1.bin -c tbin1.ddl -o out1D.h5
-#DIFFTEST   tbinary.h5 out1D.h5 /integer /integer
-
-RUNTEST   tbin2.ddl --enable-error-stack -b BE -d float  -o out2.bin  tbinary.h5
-
-# the NATIVE test can be validated with h5import/h5diff
-RUNTEST   tbin3.ddl --enable-error-stack -d integer -o out3.bin -b NATIVE tbinary.h5
-IMPORTTEST out3.bin -c out3.h5import -o out3.h5
-DIFFTEST   tbinary.h5 out3.h5 /integer /integer
-# Same but use h5dump as input to h5import
-IMPORTTEST out3.bin -c tbin3.ddl -o out3D.h5
-#DIFFTEST   tbinary.h5 out3D.h5 /integer /integer
-
-RUNTEST   tbin4.ddl --enable-error-stack -d double  -b FILE -o out4.bin    tbinary.h5
-
-# Clean up binary output files
-if test -z "$HDF5_NOCLEANUP"; then
- rm -f out[1-4].bin
- rm -f out1.h5
- rm -f out3.h5
-fi
+RUNTEST2B tstr2bin2.exp --enable-error-stack -d /g2/dset2 -b -o $TEXT_OUTPUT_DIR/tstr2bin2.txt $REPACK_OUTPUT_DIR/tstr2.h5
+RUNTEST2B tstr2bin6.exp --enable-error-stack -d /g6/dset6 -b -o $TEXT_OUTPUT_DIR/tstr2bin6.txt $REPACK_OUTPUT_DIR/tstr2.h5
 
 # test for dataset region references
 # TODO: The tattrreg file fails to repack
-RUNTEST  tdatareg.ddl --enable-error-stack tdatareg.h5
-GREPTEST ERRTXT "NULL token size" tdataregR.ddl --enable-error-stack -R tdatareg.h5
+RUNTEST  tdatareg.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tdatareg.h5
+RUNTEST_GREP ERRTXT "NULL token size" tdataregR.ddl --enable-error-stack -R $REPACK_OUTPUT_DIR/tdatareg.h5
 #RUNTEST  tattrreg.ddl --enable-error-stack tattrreg.h5
-#GREPTEST ERRTXT "NULL token size" tattrregR.ddl --enable-error-stack -R tattrreg.h5
-RUNTEST2 tbinregR.exp --enable-error-stack -d /Dataset1 -s 0 -R -y -o tbinregR.txt    tdatareg.h5
-
-# Clean up text output files
-if test -z "$HDF5_NOCLEANUP"; then
- rm -f tbinregR.txt
-fi
+#RUNTEST_GREP ERRTXT "NULL token size" tattrregR.ddl --enable-error-stack -R tattrreg.h5
+RUNTEST2 tbinregR.exp --enable-error-stack -d /Dataset1 -s 0 -R -y -o $TEXT_OUTPUT_DIR/tbinregR.txt    $REPACK_OUTPUT_DIR/tdatareg.h5
 
 # tests for group creation order
 # "1" tracked, "2" name, root tracked
-RUNTEST tordergr1.ddl --enable-error-stack --group=1 --sort_by=creation_order --sort_order=ascending tordergr.h5
-RUNTEST tordergr2.ddl --enable-error-stack --group=1 --sort_by=creation_order --sort_order=descending tordergr.h5
-RUNTEST tordergr3.ddl --enable-error-stack -g 2 -q name -z ascending tordergr.h5
-RUNTEST tordergr4.ddl --enable-error-stack -g 2 -q name -z descending tordergr.h5
-RUNTEST tordergr5.ddl --enable-error-stack -q creation_order tordergr.h5
+RUNTEST tordergr1.ddl --enable-error-stack --group=1 --sort_by=creation_order --sort_order=ascending $REPACK_OUTPUT_DIR/tordergr.h5
+RUNTEST tordergr2.ddl --enable-error-stack --group=1 --sort_by=creation_order --sort_order=descending $REPACK_OUTPUT_DIR/tordergr.h5
+RUNTEST tordergr3.ddl --enable-error-stack -g 2 -q name -z ascending $REPACK_OUTPUT_DIR/tordergr.h5
+RUNTEST tordergr4.ddl --enable-error-stack -g 2 -q name -z descending $REPACK_OUTPUT_DIR/tordergr.h5
+RUNTEST tordergr5.ddl --enable-error-stack -q creation_order $REPACK_OUTPUT_DIR/tordergr.h5
 
 # tests for attribute order
-RUNTEST torderattr1.ddl --enable-error-stack -H --sort_by=name --sort_order=ascending torderattr.h5
-RUNTEST torderattr2.ddl --enable-error-stack -H --sort_by=name --sort_order=descending torderattr.h5
-RUNTEST torderattr3.ddl --enable-error-stack -H --sort_by=creation_order --sort_order=ascending torderattr.h5
-RUNTEST torderattr4.ddl --enable-error-stack -H --sort_by=creation_order --sort_order=descending torderattr.h5
+# TODO: Creation order does not always survive repack
+RUNTEST torderattr1.ddl --enable-error-stack -H --sort_by=name --sort_order=ascending $REPACK_OUTPUT_DIR/torderattr.h5
+RUNTEST torderattr2.ddl --enable-error-stack -H --sort_by=name --sort_order=descending $REPACK_OUTPUT_DIR/torderattr.h5
+#RUNTEST torderattr3.ddl --enable-error-stack -H --sort_by=creation_order --sort_order=ascending $REPACK_OUTPUT_DIR/torderattr.h5
+#RUNTEST torderattr4.ddl --enable-error-stack -H --sort_by=creation_order --sort_order=descending $REPACK_OUTPUT_DIR/torderattr.h5
 
 # tests for link references and order
-#RUNTEST4 torderlinks1.ddl --enable-error-stack --sort_by=name --sort_order=ascending tfcontents1.h5
-#RUNTEST4 torderlinks2.ddl --enable-error-stack --sort_by=name --sort_order=descending tfcontents1.h5
+#RUNTEST torderlinks1.ddl --enable-error-stack --sort_by=name --sort_order=ascending tfcontents1.h5
+#RUNTEST torderlinks2.ddl --enable-error-stack --sort_by=name --sort_order=descending tfcontents1.h5
 
 # tests for floating point user defined printf format
-RUNTEST tfpformat.ddl --enable-error-stack -m %.7f tfpformat.h5
+RUNTEST tfpformat.ddl --enable-error-stack -m %.7f $REPACK_OUTPUT_DIR/tfpformat.h5
 
 # tests for traversal of external links
-#RUNTEST4 textlinksrc.ddl --enable-error-stack textlinksrc.h5
-#RUNTEST4 textlinkfar.ddl --enable-error-stack textlinkfar.h5
+#RUNTEST textlinksrc.ddl --enable-error-stack textlinksrc.h5
+#RUNTEST textlinkfar.ddl --enable-error-stack textlinkfar.h5
 
 # test for dangling external links
-#RUNTEST4 textlink.ddl --enable-error-stack textlink.h5
+#RUNTEST textlink.ddl --enable-error-stack textlink.h5
 
 # test for error stack display (BZ2048)
 # TODO: Filter pipeline is native-only
-#GREPTEST2 ERRTXT "filter plugins disabled" filter_fail.ddl --enable-error-stack filter_fail.h5
+#RUNTEST_GREP2 ERRTXT "filter plugins disabled" filter_fail.ddl --enable-error-stack filter_fail.h5
 
 # test for -o -y for dataset with attributes
 #RUNTEST2 tall-6.exp --enable-error-stack -y -o tall-6.txt -d /g1/g1.1/dset1.1.1 tall.h5
 
 # test for non-existing file
 # TODO: Don't test RUNTEST3 files since they emit error stacks which will differ
-#RUNTEST3 non_existing.ddl --enable-error-stack tgroup.h5 non_existing.h5
+#RUNTEST non_existing.ddl --enable-error-stack tgroup.h5 non_existing.h5
 
 # test to verify HDFFV-10333: error similar to H5O_attr_decode in the jira issue
 # TODO: err_attr_dspace.h5 does not repack (may be a native issue?)
 #RUNTEST err_attr_dspace.ddl err_attr_dspace.h5
 
 # test to verify HDFFV-9407: long double full precision
-GREPTEST OUTTXT "1.123456789012345" t128bit_float.ddl -m %.35Lf t128bit_float.h5
+RUNTEST_GREP OUTTXT "1.123456789012345" t128bit_float.ddl -m %.35Lf $REPACK_OUTPUT_DIR/t128bit_float.h5
 
 # Clean up generated files/directories
 CLEAN_OUTPUT
-
-END
 
 # Report test results and exit
 if test $nerrors -eq 0 ; then
