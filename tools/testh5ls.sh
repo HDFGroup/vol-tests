@@ -107,6 +107,9 @@ tvldtypes1.h5
 # Kept in       $H5LS_TESTFILES_OUT_DIR
 # Copied to     $TEXT_OUTPUT_DIR
 #
+# NOTE: This is ALL the files - they have not been culled based on the HDF5
+#       files in the above list.
+#
 EXPECTED_OUTPUT_FILES="
 help-1.ls
 help-2.ls
@@ -208,7 +211,7 @@ REPACK_HDF5_FILES()
         inpath="$H5LS_TESTFILES_HDF5_DIR/$repackfile"
         outpath="$REPACK_OUTPUT_DIR/$repackfile"
 
-        # Use -f to make sure get a new copy
+        # Repack the file
         $H5REPACK --src-vol-name=native --enable-error-stack $inpath $outpath
         if [ $? -ne 0 ]; then
             echo "Error: FAILED to repack HDF5 file: $inpath ."
