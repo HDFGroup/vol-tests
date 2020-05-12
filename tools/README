@@ -23,8 +23,10 @@ some manual work to run.
 
     e.g.: export HDF5_VOL_CONNECTOR="pass_through under_vol=0;under_info={}"
 
-5) Run each test script manually:
-    - testh5mkgrp.sh
+5) Run the master test script
+    sh runtests.sh
 
    You will see a lot of error messages and and FAILED text for anything that
    fails.
+
+   You can also run the individual tool test scripts (testh5ls.sh, etc.).
