@@ -549,7 +549,7 @@ RUNTEST2() {
     # Run test.
     TESTING $H5DUMP $@
     (
-      $RUNSERIAL $H5DUMP "$@"
+        $RUNSERIAL $H5DUMP "$@"
     ) >$actual 2>$actual_err
 
     # Strip the HDF5 output directory name from the output file
@@ -558,31 +558,31 @@ RUNTEST2() {
     sed "s|$REPACK_OUTPUT_DIR/||" < $tmp_file > $actual
 
     if [ ! -f $expect ]; then
-    # Create the expect file if it doesn't yet exist.
-     echo " CREATED"
-     cp $actual $expect
-     echo "    Expected result (*.ddl) missing"
-     nerrors="`expr $nerrors + 1`"
-    elif $CMP $expect $actual; then
-      if [ ! -f $expectdata ]; then
-      # Create the expect data file if it doesn't yet exist.
+        # Create the expect file if it doesn't yet exist.
         echo " CREATED"
-        cp $actualdata $expectdata
-        echo "    Expected data (*.exp) missing"
+        $CP $actual $expect
+        echo "    Expected result (*.ddl) missing"
         nerrors="`expr $nerrors + 1`"
-      elif $CMP $expectdata $actualdata; then
-        echo " PASSED"
-      else
-        echo "*FAILED*"
-        echo "    Expected datafile (*.exp) differs from actual datafile (*.txt)"
-        nerrors="`expr $nerrors + 1`"
-        test yes = "$verbose" && $DIFF $expectdata $actualdata |sed 's/^/    /'
-      fi
+    elif $CMP $expect $actual; then
+        if [ ! -f $expectdata ]; then
+            # Create the expect data file if it doesn't yet exist.
+            echo " CREATED"
+            $CP $actualdata $expectdata
+            echo "    Expected data (*.exp) missing"
+            nerrors="`expr $nerrors + 1`"
+        elif $CMP $expectdata $actualdata; then
+            echo " PASSED"
+        else
+            echo "*FAILED*"
+            echo "    Expected datafile (*.exp) differs from actual datafile (*.txt)"
+            nerrors="`expr $nerrors + 1`"
+            test yes = "$verbose" && $DIFF $expectdata $actualdata |sed 's/^/    /'
+        fi
     else
-     echo "*FAILED*"
-     echo "    Expected result (*.ddl) differs from actual result (*.out)"
-     nerrors="`expr $nerrors + 1`"
-     test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
+        echo "*FAILED*"
+        echo "    Expected result (*.ddl) differs from actual result (*.out)"
+        nerrors="`expr $nerrors + 1`"
+        test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
     fi
 }
 
@@ -605,7 +605,7 @@ RUNTEST2A() {
     # Run test.
     TESTING $H5DUMP $@
     (
-      $RUNSERIAL $H5DUMP "$@"
+        $RUNSERIAL $H5DUMP "$@"
     ) >$actual 2>$actual_err
 
     # Strip the HDF5 output directory name from the output file
@@ -673,7 +673,7 @@ RUNTEST2B() {
     # Run test.
     TESTING $H5DUMP $@
     (
-      $RUNSERIAL $H5DUMP "$@"
+        $RUNSERIAL $H5DUMP "$@"
     ) >$actual 2>$actual_err
 
     # Strip the HDF5 output directory name from the output file
@@ -697,7 +697,6 @@ RUNTEST2B() {
     fi
 }
 
-# ADD_HELP_TEST
 RUNTEST_HELP() {
 
     expect="$TEXT_OUTPUT_DIR/$1"
@@ -708,21 +707,21 @@ RUNTEST_HELP() {
     # Run test.
     TESTING $H5DUMP $@
     (
-      $RUNSERIAL $H5DUMP "$@"
+        $RUNSERIAL $H5DUMP "$@"
     ) >$actual 2>$actual_err
 
     if [ ! -f $expectdata ]; then
-    # Create the expect data file if it doesn't yet exist.
-      echo " CREATED"
-      cp $actual $expect-CREATED
-      echo "    Expected output (*.txt) missing"
-      nerrors="`expr $nerrors + 1`"
+        # Create the expect data file if it doesn't yet exist.
+        echo " CREATED"
+        cp $actual $expect-CREATED
+        echo "    Expected output (*.txt) missing"
+        nerrors="`expr $nerrors + 1`"
     elif $CMP $expect $actual; then
-      echo " PASSED"
+        echo " PASSED"
     else
-      echo "*FAILED*"
-      echo "    Expected output (*.txt) differs from actual output (*.out)"
-      nerrors="`expr $nerrors + 1`"
+        echo "*FAILED*"
+        echo "    Expected output (*.txt) differs from actual output (*.out)"
+        nerrors="`expr $nerrors + 1`"
     fi
 }
 
