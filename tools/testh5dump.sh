@@ -63,7 +63,7 @@ REPACK_OUTPUT_DIR=./h5dump_repack_output
 
 # HDF5 test files.
 #
-# Kept in       $H5LS_TESTFILES_HDF5_DIR
+# Kept in       $H5REPACK_TESTFILES_HDF5_DIR
 # Repacked to   $REPACK_OUTPUT_DIR
 #
 # These files fail to repack w/ native VOL (investigate later)
