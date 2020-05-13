@@ -607,7 +607,7 @@ VERIFY_LAYOUT_DSET error2 h5repack_layout3.h5 chunk_unlimit2 H5S_UNLIMITED -f ch
 VERIFY_LAYOUT_DSET error3 h5repack_layout3.h5 chunk_unlimit3 H5S_UNLIMITED -f chunk_unlimit3:NONE
 
 # Clean up generated files/directories
-#CLEAN_OUTPUT
+CLEAN_OUTPUT
 
 if test $nerrors -eq 0 ; then
     echo "All $TESTNAME tests passed."
