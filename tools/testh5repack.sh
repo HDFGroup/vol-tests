@@ -280,13 +280,33 @@ RUNTEST()
     shift
     shift
 
+    # Run "to VOL storage" test.
+
     inpath="$TESTFILES_HDF5_DIR/$infile"
     outpath="$REPACK_TO_VOL_DIR/$outfile"
 
-    # Run test.
-    TESTING $H5REPACK $@
+    TESTING "native-->VOL: " $H5REPACK $@
     (
         $ENVCMD $RUNSERIAL $H5REPACK --src-vol-name=native "$@" $inpath $outpath
+    )
+    RET=$?
+    if [ $RET != 0 ] ; then
+        echo "*FAILED*"
+        nerrors="`expr $nerrors + 1`"
+    else
+        echo " PASSED"
+        DIFF_HDF5 $inpath $outpath
+    fi
+
+
+    # Run "from VOL storage" test.
+
+    inpath="$REPACK_TO_VOL_DIR/$outfile"
+    outpath="$REPACK_FROM_VOL_DIR/$outfile"
+
+    TESTING "VOL-->native: " $H5REPACK $@
+    (
+        $ENVCMD $RUNSERIAL $H5REPACK --dst-vol-name=native "$@" $inpath $outpath
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -574,7 +594,7 @@ VERIFY_LAYOUT_DSET error2 h5repack_layout3.h5 chunk_unlimit2 H5S_UNLIMITED -f ch
 VERIFY_LAYOUT_DSET error3 h5repack_layout3.h5 chunk_unlimit3 H5S_UNLIMITED -f chunk_unlimit3:NONE
 
 # Clean up generated files/directories
-CLEAN_OUTPUT
+#CLEAN_OUTPUT
 
 if test $nerrors -eq 0 ; then
     echo "All $TESTNAME tests passed."
