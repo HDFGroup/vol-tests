@@ -12,7 +12,7 @@ found in the HDF5 library.
 These are not well integrated into the testing framework yet and will require
 some manual work to run.
 
-1) Build and install the code in this repository.
+1) Build the code in this repository.
 
 2) Make sure the h5delete tool you just built is in your path.
 
