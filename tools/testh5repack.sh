@@ -14,7 +14,7 @@
 # Tests for the h5repack tool
 
 # Assume the HDF5 library was built with gzip support
-USE_FILTER_DEFLATE="yes"
+USE_FILTER_DEFLATE="no"
 
 TESTNAME=h5repack
 EXIT_SUCCESS=0
@@ -43,7 +43,7 @@ verbose=yes
 # --------------------------------------------------------------------
 
 # Where the tool's HDF5 input files are located
-H5REPACK_TESTFILES_HDF5_DIR="./testfiles/hdf5"
+TESTFILES_HDF5_DIR="./testfiles/hdf5"
 
 # Where the tool's expected output files are located
 H5REPACK_TESTFILES_OUT_DIR="./testfiles/expected/h5repack"
@@ -55,8 +55,11 @@ H5REPACK_TESTFILES_OUT_DIR="./testfiles/expected/h5repack"
 # Where the text output goes
 TEXT_OUTPUT_DIR=./h5repack_test_output
 
-# Where the repacked HDF5 input files go
-REPACK_OUTPUT_DIR=./h5repack_repack_output
+# Where the repacked HDF5 files go (TO VOL storage, FROM native)
+REPACK_TO_VOL_DIR=./h5repack_to_vol
+
+# Where the repacked HDF5 files go (FROM VOL storage, TO native)
+REPACK_FROM_VOL_DIR=./h5repack_from_vol
 
 ######################################################################
 # test files
@@ -64,7 +67,7 @@ REPACK_OUTPUT_DIR=./h5repack_repack_output
 
 # HDF5 test files.
 #
-# Kept in       $H5LS_TESTFILES_HDF5_DIR
+# Kept in       $TESTFILES_HDF5_DIR
 # Repacked to   $REPACK_OUTPUT_DIR
 #
 # These files fail to repack w/ native VOL (investigate later)
@@ -205,13 +208,17 @@ CLEAN_OUTPUT()
         # a normal file, so we'll use h5delete to delete the file.
         for hdf5file in $HDF5_FILES
         do
-            filepath="$REPACK_OUTPUT_DIR/$hdf5file"
+            filepath="$REPACK_TO_VOL_DIR/$hdf5file"
             $H5DELETE $filepath
         done
 
-        # The HDF5 output directory is always created, even if the VOL
-        # storage won't use it. Delete it here.
-        $RM $REPACK_OUTPUT_DIR
+        # The VOL-specific HDF5 output directory is always created, even if
+        # the VOL storage won't use it. Delete it here.
+        $RM $REPACK_TO_VOL_DIR
+
+        # The re-repacked directory should only contain native HDF5
+        # files and can be deleted normally.
+        $RM $REPACK_FROM_VOL_DIR
    fi
 }
 
@@ -249,9 +256,9 @@ SKIP() {
 
 # Call the h5diff tool
 #
-DIFFTEST()
+DIFF_HDF5()
 {
-    VERIFY h5diff output $@
+    VERIFY $H5DIFF output $@
     (
         $RUNSERIAL $H5DIFF -q  "$@"
     )
@@ -265,8 +272,7 @@ DIFFTEST()
 
 }
 
-# call TOOLTEST_MAIN
-TOOLTEST()
+RUNTEST()
 {
     echo $@
     infile=$2
@@ -274,10 +280,13 @@ TOOLTEST()
     shift
     shift
 
+    inpath="$TESTFILES_HDF5_DIR/$infile"
+    outpath="$REPACK_TO_VOL_DIR/$outfile"
+
     # Run test.
     TESTING $H5REPACK $@
     (
-        $ENVCMD $RUNSERIAL $H5REPACK "$@" $infile $outfile
+        $ENVCMD $RUNSERIAL $H5REPACK --src-vol-name=native "$@" $inpath $outpath
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -285,7 +294,7 @@ TOOLTEST()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFFTEST $infile $outfile
+        DIFF_HDF5 $inpath $outpath
     fi
 }
 
@@ -303,9 +312,13 @@ VERIFY_LAYOUT_DSET()
     shift
     shift
 
+    inpath="$TESTFILES_HDF5_DIR/$infile"
+    outpath="$REPACK_TO_VOL_DIR/$outfile"
+    layoutpath="$TEXT_OUTPUT_DIR/$layoutfile"
+
     TESTING  $H5REPACK $@
     (
-        $RUNSERIAL $H5REPACK "$@" $infile $outfile
+        $RUNSERIAL $H5REPACK --src-vol-name=native "$@" $inpath $outpath
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -313,16 +326,16 @@ VERIFY_LAYOUT_DSET()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFFTEST $infile $outfile
+        DIFF_HDF5 $inpath $outpath
     fi
 
     #---------------------------------
     # check the layout from a dataset
     VERIFY  "a dataset layout"
     (
-        $RUNSERIAL $H5DUMP -d $dset -pH $outfile > $layoutfile
+        $RUNSERIAL $H5DUMP -d $dset -pH $outpath > $layoutpath
     )
-    $GREP $expectlayout $TESTDIR/$layoutfile > /dev/null
+    $GREP $expectlayout $layoutpath > /dev/null
     if [ $? -eq 0 ]; then
         echo " PASSED"
     else
@@ -343,9 +356,13 @@ VERIFY_LAYOUT_ALL()
     shift
     shift
 
+    inpath="$TESTFILES_HDF5_DIR/$infile"
+    outpath="$REPACK_TO_VOL_DIR/$outfile"
+    layoutpath="$TEXT_OUTPUT_DIR/$layoutfile"
+
     TESTING  $H5REPACK $@
     (
-        $RUNSERIAL $H5REPACK "$@" $infile $outfile
+        $RUNSERIAL $H5REPACK --src-vol-name=native "$@" $inpath $outpath
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -353,7 +370,7 @@ VERIFY_LAYOUT_ALL()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFFTEST $infile $outfile
+        DIFF_HDF5 $inpath $outpath
     fi
 
 
@@ -365,16 +382,16 @@ VERIFY_LAYOUT_ALL()
         echo
         # if CONTIGUOUS
         if [ $expectlayout = "CONTIGUOUS" ]; then
-            TESTING $H5DUMP -pH $outfile
+            TESTING $H5DUMP -pH $outpath
             (
-                $RUNSERIAL $H5DUMP -pH $outfile > $layoutfile
+                $RUNSERIAL $H5DUMP -pH $outpath > $layoutpath
             )
-            $GREP "COMPACT" $layoutfile  > /dev/null
+            $GREP "COMPACT" $layoutpath  > /dev/null
             if [ $? -eq 0 ]; then
                 echo " FAILED"
                 nerrors="`expr $nerrors + 1`"
             else
-                $GREP "CHUNKED" $layoutfile  > /dev/null
+                $GREP "CHUNKED" $layoutpath  > /dev/null
                 if [ $? -eq 0 ]; then
                     echo " FAILED"
                     nerrors="`expr $nerrors + 1`"
@@ -385,16 +402,16 @@ VERIFY_LAYOUT_ALL()
         else
             # if COMPACT
             if [ $expectlayout = "COMPACT" ]; then
-                TESTING $H5DUMP -pH $outfile
+                TESTING $H5DUMP -pH $outpath
                 (
-                    $RUNSERIAL $H5DUMP -pH $outfile > $layoutfile
+                    $RUNSERIAL $H5DUMP -pH $outpath > $layoutpath
                 )
-                $GREP "CHUNKED" $layoutfile  > /dev/null
+                $GREP "CHUNKED" $layoutpath  > /dev/null
                 if [ $? -eq 0 ]; then
                     echo " FAILED"
                     nerrors="`expr $nerrors + 1`"
                 else
-                    $GREP "CONTIGUOUS" $layoutfile  > /dev/null
+                    $GREP "CONTIGUOUS" $layoutpath  > /dev/null
                     if [ $? -eq 0 ]; then
                         echo " FAILED"
                         nerrors="`expr $nerrors + 1`"
@@ -405,16 +422,16 @@ VERIFY_LAYOUT_ALL()
             else
                 # if CHUNKED
                 if [ $expectlayout = "CHUNKED" ]; then
-                    TESTING $H5DUMP -pH $outfile
+                    TESTING $H5DUMP -pH $outpath
                     (
-                        $RUNSERIAL $H5DUMP -pH $outfile > $layoutfile
+                        $RUNSERIAL $H5DUMP -pH $outpath > $layoutpath
                     )
-                    $GREP "CONTIGUOUS" $layoutfile  > /dev/null
+                    $GREP "CONTIGUOUS" $layoutpath  > /dev/null
                     if [ $? -eq 0 ]; then
                         echo " FAILED"
                         nerrors="`expr $nerrors + 1`"
                     else
-                        $GREP "COMPACT" $layoutfile  > /dev/null
+                        $GREP "COMPACT" $layoutpath  > /dev/null
                         if [ $? -eq 0 ]; then
                             echo " FAILED"
                             nerrors="`expr $nerrors + 1`"
@@ -426,214 +443,6 @@ VERIFY_LAYOUT_ALL()
            fi
         fi
     )
-}
-
-# -----------------------------------------------------------------------------
-# Expect h5diff to fail
-# -----------------------------------------------------------------------------
-DIFFFAIL()
-{
-    VERIFY h5diff unequal $@
-    (
-        $RUNSERIAL $H5DIFF -q  "$@"
-    )
-    RET=$?
-    if [ $RET == 0 ] ; then
-         echo "*FAILED*"
-         nerrors="`expr $nerrors + 1`"
-    else
-         echo " PASSED"
-    fi
-}
-
-# -----------------------------------------------------------------------------
-# same as TOOLTEST, but it uses the old syntax -i input_file -o output_file
-# -----------------------------------------------------------------------------
-TOOLTEST0()
-{
-    infile=$2
-    outfile=out-$1.$2
-    shift
-    shift
-
-    # Run test.
-    TESTING $H5REPACK $@
-    (
-        $RUNSERIAL $H5REPACK -i $infile -o $outfile "$@"
-    )
-    RET=$?
-    if [ $RET != 0 ] ; then
-        echo "*FAILED*"
-        nerrors="`expr $nerrors + 1`"
-    else
-        echo " PASSED"
-        DIFFTEST $infile $outfile
-    fi
-}
-
-
-# same as TOOLTEST, but it uses without -i -o options
-# used to test the family driver, where these files reside
-#
-TOOLTEST1()
-{
-    infile=$2
-    outfile=out-$1.$2
-    shift
-    shift
-
-    # Run test.
-    TESTING $H5REPACK $@
-    (
-        $ENVCMD $RUNSERIAL $H5REPACK "$@" $infile $outfile
-    )
-    RET=$?
-    if [ $RET != 0 ] ; then
-        echo "*FAILED*"
-        nerrors="`expr $nerrors + 1`"
-    else
-        echo " PASSED"
-        DIFFTEST $infile $outfile
-    fi
-}
-
-# This is same as TOOLTEST() with comparing display output
-# from -v option
-#
-TOOLTESTV()
-{
-    expect="$TESTDIR/$2-$1.tst"
-    actual="$TESTDIR/`basename $2 .ddl`.out"
-    actual_err="$TESTDIR/`basename $2 .ddl`.err"
-
-    infile=$2
-    outfile=out-$1.$2
-    shift
-    shift
-
-    # Run test.
-    TESTING $H5REPACK $@
-    (
-        $RUNSERIAL $H5REPACK "$@" $infile $outfile
-    ) >$actual 2>$actual_err
-    RET=$?
-    if [ $RET != 0 ] ; then
-        echo "*FAILED*"
-        nerrors="`expr $nerrors + 1`"
-    else
-        echo " PASSED"
-        DIFFTEST $infile $outfile
-    fi
-
-    # display output compare
-    STDOUT_FILTER $actual
-    cat $actual_err >> $actual
-
-    VERIFY output from $H5REPACK $@
-    if cmp -s $expect $actual; then
-        echo " PASSED"
-    else
-        echo "*FAILED*"
-        echo "    Expected result (*.tst) differs from actual result (*.out)"
-        nerrors="`expr $nerrors + 1`"
-        test yes = "$verbose" && diff -c $expect $actual |sed 's/^/    /'
-    fi
-}
-
-# same as TOOLTESTV but filters error stack output and compares to an error file
-# Extract file name, line number, version and thread IDs because they may be different
-# ADD_H5ERR_MASK_TEST
-TOOLTESTM() {
-
-    expect="$TESTDIR/$2-$1.tst"
-    actual="$TESTDIR/`basename $2 .tst`.out"
-    actual_err="$TESTDIR/`basename $2 .tst`.oerr"
-    actual_sav=${actual}-sav
-    actual_err_sav=${actual_err}-sav
-
-    infile=$2
-    outfile=out-$1.$2
-    shift
-    shift
-
-    # Run test.
-    TESTING $H5REPACK $@
-    (
-        $ENVCMD $RUNSERIAL $H5REPACK "$@" $infile $outfile
-    ) >$actual 2>$actual_err
-
-    # save actual and actual_err in case they are needed later.
-    cp $actual $actual_sav
-    cp $actual_err $actual_err_sav
-
-    # Extract file name, line number, version and thread IDs because they may be different
-    sed -e 's/thread [0-9]*/thread (IDs)/' -e 's/: .*\.c /: (file name) /' \
-        -e 's/line [0-9]*/line (number)/' \
-        -e 's/v[1-9]*\.[0-9]*\./version (number)\./' \
-        -e 's/[1-9]*\.[0-9]*\.[0-9]*[^)]*/version (number)/' \
-        -e 's/H5Eget_auto[1-2]*/H5Eget_auto(1 or 2)/' \
-        -e 's/H5Eset_auto[1-2]*/H5Eset_auto(1 or 2)/' \
-     $actual_err > $actual
-
-    if [ ! -f $expect ]; then
-        # Create the expect file if it doesn't yet exist.
-        echo " CREATED"
-        cp $actual $expect
-        echo "    Expected result (*.tst) missing"
-        nerrors="`expr $nerrors + 1`"
-    elif $CMP $expect $actual; then
-        echo " PASSED"
-    else
-        echo "*FAILED*"
-        echo "    Expected result (*.tst) differs from actual result (*.out)"
-        nerrors="`expr $nerrors + 1`"
-        test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
-    fi
-
-}
-
-# This is same as TOOLTESTV() with comparing h5dump output
-# from -pH option
-#
-TOOLTEST_DUMP()
-{
-    infile=$2
-    outfile=out-$1.$2
-    expect="$TESTDIR/$1.$2.ddl"
-    actual="$TESTDIR/out-$1.$2.out"
-    actual_err="$TESTDIR/out-$1.$2.err"
-
-    shift
-    shift
-
-    # Run test.
-    TESTING $H5REPACK $@
-    (
-        $RUNSERIAL $H5REPACK "$@" $infile $outfile
-    ) >$actual 2>$actual_err
-    RET=$?
-    if [ $RET != 0 ] ; then
-        echo "*FAILED*"
-        nerrors="`expr $nerrors + 1`"
-    else
-        echo " PASSED"
-        VERIFY h5dump output $@
-        (
-            $RUNSERIAL $H5DUMP -q creation_order -pH $outfile
-        ) >$actual 2>$actual_err
-        cat $actual_err >> $actual
-
-        RET=$?
-    fi
-
-    if cmp -s $expect $actual; then
-        echo " PASSED"
-    else
-        echo "*FAILED*"
-        echo "    Expected result (*.ddl) differs from actual result (*.out)"
-        nerrors="`expr $nerrors + 1`"
-        test yes = "$verbose" && diff -c $expect $actual |sed 's/^/    /'
-    fi
 }
 
 RUNTEST_HELP() {
@@ -676,13 +485,6 @@ STDOUT_FILTER() {
     rm -f $tmp_file
 }
 
-#
-# The tests
-# We use the files generated by h5repacktst
-# Each run generates "<file>.out.h5" and the tool h5diff is used to
-# compare the input and output files
-#
-
 ##############################################################################
 ##############################################################################
 ###              T H E   T E S T S                                         ###
@@ -695,51 +497,27 @@ STDOUT_FILTER() {
 # use normal files, it'll just stay empty and get deleted later.
 CLEAN_OUTPUT
 test -d $TEXT_OUTPUT_DIR || mkdir -p $TEXT_OUTPUT_DIR
-test -d $REPACK_OUTPUT_DIR || mkdir -p $REPACK_OUTPUT_DIR
+test -d $REPACK_TO_VOL_DIR || mkdir -p $REPACK_TO_VOL_DIR
+test -d $REPACK_FROM_VOL_DIR || mkdir -p $REPACK_FROM_VOL_DIR
 COPY_EXPECTED_OUTPUT_FILES
 
 RUNTEST_HELP h5repack-help.txt -h
-: <<'END'
 
-# copy files (these files have no filters)
-TOOLTEST fill h5repack_fill.h5
-TOOLTEST objs h5repack_objs.h5
-TOOLTEST attr h5repack_attr.h5
-TOOLTEST hlink h5repack_hlink.h5
-TOOLTEST layout h5repack_layout.h5
-TOOLTEST early h5repack_early.h5
+# Basic files (these files have no filters)
+RUNTEST fill h5repack_fill.h5
+# TODO: repack has trouble with this file
+#RUNTEST objs h5repack_objs.h5
+RUNTEST attr h5repack_attr.h5
+RUNTEST hlink h5repack_hlink.h5
+RUNTEST layout h5repack_layout.h5
+RUNTEST early h5repack_early.h5
 
 # nested 8bit enum in both deflated and non-deflated datafiles
 if [ $USE_FILTER_DEFLATE != "yes" ]; then
-TOOLTEST nested_8bit_enum h5repack_nested_8bit_enum.h5
+RUNTEST nested_8bit_enum h5repack_nested_8bit_enum.h5
 else
-TOOLTEST nested_8bit_enum h5repack_nested_8bit_enum_deflated.h5
+RUNTEST nested_8bit_enum h5repack_nested_8bit_enum_deflated.h5
 fi
-
-###########################################################
-# the following tests assume the input files have filters
-###########################################################
-
-#limit
-arg="h5repack_layout.h5 -f GZIP=1 -m 1024"
-if test $USE_FILTER_DEFLATE != "yes"  ; then
- SKIP $arg
-else
- TOOLTEST_DUMP deflate_limit $arg
-fi
-
-#file
-arg="h5repack_layout.h5 -e h5repack.info"
-if test $USE_FILTER_DEFLATE != "yes" ; then
- SKIP $arg
-else
- TOOLTEST deflate_file $arg
-fi
-
-#crtorder
-arg="tordergr.h5 -L"
-TOOLTEST_DUMP crtorder $arg
-
 
 #########################################################
 # layout options (these files have no filters)
@@ -751,8 +529,6 @@ VERIFY_LAYOUT_ALL chunk_20x10 h5repack_layout.h5 CHUNKED -l CHUNK=20x10
 VERIFY_LAYOUT_DSET dset2_conti h5repack_layout.h5 dset2 CONTIGUOUS -l dset2:CONTI
 
 VERIFY_LAYOUT_ALL conti h5repack_layout.h5 CONTIGUOUS -l CONTI
-
-TOOLTESTM dset2_chunk_20x10-errstk h5repack_layout.h5 --layout=dset2:CHUNK=20x10x5 --enable-error-stack
 
 ################################################################
 # layout conversions (file has no filters)
@@ -794,98 +570,11 @@ VERIFY_LAYOUT_DSET error1 h5repack_layout3.h5 chunk_unlimit1 H5S_UNLIMITED -f ch
 VERIFY_LAYOUT_DSET error2 h5repack_layout3.h5 chunk_unlimit2 H5S_UNLIMITED -f chunk_unlimit2:NONE
 
 # chunk dims are smaller than dataset dims. ( dset size < 64k )
-#TOOLTEST_MAIN h5repack_layout3.h5  -f chunk_unlimit3:NONE
+#RUNTEST_MAIN h5repack_layout3.h5  -f chunk_unlimit3:NONE
 VERIFY_LAYOUT_DSET error3 h5repack_layout3.h5 chunk_unlimit3 H5S_UNLIMITED -f chunk_unlimit3:NONE
-
-# file input - should not fail
-TOOLTEST error4 h5repack_layout3.h5 -f NONE
-
-#--------------------------------------------------------------------------
-# Test base: Convert CHUNK to CONTI for a chunked dataset with small dataset
-# (dset size < 64K) and with unlimited max dims on a condition as follow.
-# (HDFFV-8214)
-#--------------------------------------------------------------------------
-
-# chunk dim is bigger than dataset dim. should succeed.
-VERIFY_LAYOUT_DSET ckdim_biger h5repack_layout3.h5 chunk_unlimit2 CONTI -l chunk_unlimit2:CONTI
-# chunk dim is smaller than dataset dim. should succeed.
-VERIFY_LAYOUT_DSET ckdim_smaller h5repack_layout3.h5 chunk_unlimit3 CONTI -l chunk_unlimit3:CONTI
-
-
-# Native option
-# Do not use FILE1, as the named dtype will be converted to native, and h5diff will
-# report a difference.
-TOOLTEST native_fill h5repack_fill.h5 -n
-TOOLTEST native_attr h5repack_attr.h5 -n
-
-
-# latest file format with long switches. use FILE4=h5repack_layout.h5 (no filters)
-arg="h5repack_layout.h5 --layout CHUNK=20x10 --filter GZIP=1 --minimum=10 --native --latest --compact=8 --indexed=6 --ssize=8[:dtype]"
-if test $USE_FILTER_DEFLATE != "yes" ; then
- SKIP $arg
-else
- VERIFY_LAYOUT_ALL layout_long_switches h5repack_layout.h5 CHUNKED --layout CHUNK=20x10 --filter GZIP=1 --minimum=10 --native --latest --compact=8 --indexed=6 --ssize=8[:dtype]
-fi
-
-# latest file format with short switches. use FILE4=h5repack_layout.h5 (no filters)
-arg="h5repack_layout.h5 -l CHUNK=20x10 -f GZIP=1 -m 10 -n -L -c 8 -d 6 -s 8[:dtype]"
-if test $USE_FILTER_DEFLATE != "yes" ; then
- SKIP $arg
-else
- VERIFY_LAYOUT_ALL layout_short_switches h5repack_layout.h5 CHUNKED -l CHUNK=20x10 -f GZIP=1 -m 10 -n -L -c 8 -d 6 -s 8[:dtype]
-fi
-
-# several global filters
-
-arg="h5repack_layout.h5 --filter GZIP=1 --filter SHUF"
-if test $USE_FILTER_DEFLATE != "yes" ; then
- SKIP $arg
-else
- TOOLTEST global_filters $arg
-fi
-
-# syntax of -i infile -o outfile
-# latest file format with short switches. use FILE4=h5repack_layout.h5 (no filters)
-arg="h5repack_layout.h5 -l CHUNK=20x10 -f GZIP=1 -m 10 -n -L -c 8 -d 6 -s 8[:dtype]"
-if test $USE_FILTER_DEFLATE != "yes" ; then
- SKIP $arg
-else
- TOOLTEST0 old_style_layout_short_switches $arg
-fi
-
-# add alignment
-arg="h5repack_objs.h5 -t 1 -a 1 "
-TOOLTEST add_alignment $arg
-
-# test for datum size > H5TOOLS_MALLOCSIZE
-arg="h5repack_objs.h5 -f GZIP=1"
-if test $USE_FILTER_DEFLATE != "yes" ; then
- SKIP $arg
-else
- TOOLTEST gt_mallocsize $arg
-fi
-
-# Check repacking file with committed datatypes in odd configurations
-TOOLTEST committed_dt h5repack_named_dtypes.h5
-
-# test various references (bug 1814 and 1726)
-TOOLTEST bug1814 h5repack_refs.h5
-
-# test attribute with various references (bug1797 / HDFFV-5932)
-# the references in attribute of compund or vlen datatype
-TOOLTEST HDFFV-5932 h5repack_attr_refs.h5
-
-# Add test for memory leak in attirbute. This test is verified by CTEST.
-# 1. leak from vlen string
-# 2. leak from compound type without reference member
-# (HDFFV-7840, )
-# Note: this test is experimental for sharing test file among tools
-TOOLTEST HDFFV-7840 h5diff_attr1.h5
 
 # Clean up generated files/directories
 CLEAN_OUTPUT
-
-END
 
 if test $nerrors -eq 0 ; then
     echo "All $TESTNAME tests passed."
