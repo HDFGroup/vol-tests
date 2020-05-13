@@ -13,9 +13,6 @@
 #
 # Tests for the h5dump tool
 
-# Assume we have access to zlib compression
-USE_FILTER_DEFLATE="yes"
-
 # Assume we are on a little-endian system
 WORDS_BIGENDIAN="no"
 
@@ -27,10 +24,6 @@ H5DUMP=h5dump               # The h5dump tool name
 H5DIFF=h5diff               # The h5diff tool name
 H5DELETE='h5delete -f'      # The h5delete tool name
 H5REPACK=h5repack           # The h5repack tool name
-
-# TODO: Unclear if we'll be keeping this.
-# If we call it before repacking, okay, but if not it has to go.
-H5IMPORT=h5import           # The h5import tool name
 
 RM='rm -rf'
 CMP='cmp'
@@ -793,13 +786,6 @@ RUNTEST_GREP2()
     fi
 }
 
-# Print a "SKIP" message
-SKIP() {
-   TESTING $H5DUMP $@
-    echo  " -SKIP-"
-}
-
-
 
 ##############################################################################
 ##############################################################################
@@ -968,22 +954,12 @@ RUNTEST tarray7.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray7.h5
 RUNTEST tarray8.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tarray8.h5
 
 # test for wildcards in filename (does not work with cmake)
-# inconsistent across platforms RUNTEST3 tstarfile.ddl --enable-error-stack -H -d Dataset1 tarr*.h5
+# inconsistent across platforms RUNTEST tstarfile.ddl --enable-error-stack -H -d Dataset1 tarr*.h5
 #RUNTEST tqmarkfile.ddl --enable-error-stack -H -d Dataset1 tarray?.h5
 RUNTEST tmultifile.ddl --enable-error-stack -H -d Dataset1 $REPACK_OUTPUT_DIR/tarray2.h5 $REPACK_OUTPUT_DIR/tarray3.h5 $REPACK_OUTPUT_DIR/tarray4.h5 $REPACK_OUTPUT_DIR/tarray5.h5 $REPACK_OUTPUT_DIR/tarray6.h5 $REPACK_OUTPUT_DIR/tarray7.h5
 
 # test for files with empty data
 RUNTEST tempty.ddl --enable-error-stack $REPACK_OUTPUT_DIR/tempty.h5
-
-# test for files with groups that have comments
-# TODO: object comments are native-only
-#RUNTEST tgrp_comments.ddl --enable-error-stack tgrp_comments.h5
-
-# test the --filedriver flag
-# TODO: Native VOL only
-#RUNTEST tsplit_file.ddl --enable-error-stack --filedriver=split tsplit_file
-#RUNTEST tfamily.ddl --enable-error-stack --filedriver=family tfamily%05d.h5
-#RUNTEST tmulti.ddl --enable-error-stack --filedriver=multi tmulti
 
 # test for files with group names which reach > 1024 bytes in size
 RUNTEST tlarge_objname.ddl --enable-error-stack -w157 $REPACK_OUTPUT_DIR/tlarge_objname.h5
@@ -1015,16 +991,6 @@ RUNTEST tchar1.ddl --enable-error-stack -r $REPACK_OUTPUT_DIR/tchar.h5
 # test datatypes in ASCII and UTF8
 RUNTEST charsets.ddl --enable-error-stack $REPACK_OUTPUT_DIR/charsets.h5
 
-# rev. 2004
-
-# tests for super block
-# TODO: tfcontents1.h5 does not repack and since the superblock is native-only these are all skipped
-#RUNTEST tboot1.ddl --enable-error-stack -H -B -d dset tfcontents1.h5
-#RUNTEST tboot2.ddl --enable-error-stack -B tfcontents2.h5
-#RUNTEST tboot2A.ddl --enable-error-stack --boot-block tfcontents2.h5
-#RUNTEST tboot2B.ddl --enable-error-stack --superblock tfcontents2.h5
-#RUNTEST file_space.ddl --enable-error-stack -B file_space.h5
-
 # test -p with a non existing dataset
 #RUNTEST tperror.ddl --enable-error-stack -p -d bogus tfcontents1.h5
 
@@ -1034,17 +1000,6 @@ RUNTEST charsets.ddl --enable-error-stack $REPACK_OUTPUT_DIR/charsets.h5
 #RUNTEST tordercontents2.ddl --enable-error-stack -n --sort_by=name --sort_order=descending tfcontents1.h5
 #RUNTEST tattrcontents1.ddl --enable-error-stack -n 1 --sort_order=ascending tall.h5
 #RUNTEST tattrcontents2.ddl --enable-error-stack -n 1 --sort_order=descending tall.h5
-
-# tests for storage layout
-# TODO: filters do not exist in non-native VOL connectors
-# compact
-#RUNTEST tcompact.ddl --enable-error-stack -H -p -d compact tfilters.h5
-# contiguous
-#RUNTEST tcontiguos.ddl --enable-error-stack -H -p -d contiguous tfilters.h5
-# chunked
-#RUNTEST tchunked.ddl --enable-error-stack -H -p -d chunked tfilters.h5
-# external
-#RUNTEST texternal.ddl --enable-error-stack -H -p -d external tfilters.h5
 
 # fill values
 # TODO: Reports offsets, which change after repacking
@@ -1081,33 +1036,6 @@ RUNTEST texceedsubstart.ddl --enable-error-stack -d 1d -s 1,3 $REPACK_OUTPUT_DIR
 RUNTEST texceedsubcount.ddl --enable-error-stack -d 1d -c 1,3 $REPACK_OUTPUT_DIR/taindices.h5
 RUNTEST texceedsubstride.ddl --enable-error-stack -d 1d -S 1,3 $REPACK_OUTPUT_DIR/taindices.h5
 RUNTEST texceedsubblock.ddl --enable-error-stack -d 1d -k 1,3 $REPACK_OUTPUT_DIR/taindices.h5
-
-# tests for filters
-# SZIP
-#RUNTEST tszip.ddl --enable-error-stack -H -p -d szip tfilters.h5
-# deflate
-#RUNTEST tdeflate.ddl --enable-error-stack -H -p -d deflate tfilters.h5
-# shuffle
-#RUNTEST tshuffle.ddl --enable-error-stack -H -p -d shuffle tfilters.h5
-# fletcher32
-#RUNTEST tfletcher32.ddl --enable-error-stack -H -p -d fletcher32  tfilters.h5
-# nbit
-#RUNTEST tnbit.ddl --enable-error-stack -H -p -d nbit  tfilters.h5
-# scaleoffset
-#RUNTEST tscaleoffset.ddl --enable-error-stack -H -p -d scaleoffset  tfilters.h5
-# all
-#RUNTEST tallfilters.ddl --enable-error-stack -H -p -d all  tfilters.h5
-# user defined
-#RUNTEST tuserfilter.ddl --enable-error-stack -H  -p -d myfilter  tfilters.h5
-
-#if test $USE_FILTER_DEFLATE = "yes" ; then
-#  # data read internal filters
-#  RUNTEST treadintfilter.ddl --enable-error-stack -d deflate -d shuffle -d fletcher32 -d nbit -d scaleoffset tfilters.h5
-#  if test $USE_FILTER_SZIP = "yes"; then
-#    # data read
-#    RUNTEST treadfilter.ddl --enable-error-stack -d all -d szip tfilters.h5
-#  fi
-#fi
 
 # test for displaying objects with very long names
 # TODO: Has diff issues
@@ -1177,15 +1105,10 @@ RUNTEST tfpformat.ddl --enable-error-stack -m %.7f $REPACK_OUTPUT_DIR/tfpformat.
 # test for dangling external links
 #RUNTEST textlink.ddl --enable-error-stack textlink.h5
 
-# test for error stack display (BZ2048)
-# TODO: Filter pipeline is native-only
-#RUNTEST_GREP2 ERRTXT "filter plugins disabled" filter_fail.ddl --enable-error-stack filter_fail.h5
-
 # test for -o -y for dataset with attributes
 #RUNTEST2 tall-6.exp --enable-error-stack -y -o tall-6.txt -d /g1/g1.1/dset1.1.1 tall.h5
 
 # test for non-existing file
-# TODO: Don't test RUNTEST3 files since they emit error stacks which will differ
 #RUNTEST non_existing.ddl --enable-error-stack tgroup.h5 non_existing.h5
 
 # test to verify HDFFV-10333: error similar to H5O_attr_decode in the jira issue
@@ -1206,3 +1129,4 @@ else
     echo "$TESTNAME tests failed with $nerrors errors."
     exit $EXIT_FAILURE
 fi
+

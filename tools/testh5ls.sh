@@ -13,9 +13,6 @@
 #
 # Tests for the h5ls tool
 
-# Assume we have access to zlib compression
-USE_FILTER_DEFLATE="yes"
-
 # Assume we are on a little-endian system
 WORDS_BIGENDIAN="no"
 
@@ -320,9 +317,10 @@ RUNTEST() {
 
 ##############################################################################
 ##############################################################################
-###              T H E   T E S T S                                ###
+###              T H E   T E S T S                                         ###
 ##############################################################################
 ##############################################################################
+
 # Prepare for test
 #
 # We create the repack output dir in case it's needed. If a VOL connector doesn't
@@ -477,15 +475,6 @@ RUNTEST nosuchfile.ls 1 $REPACK_OUTPUT_DIR/nosuchfile.h5
 #    RUNTEST tdataregle.ls 0 -v $REPACK_OUTPUT_DIR/tdatareg.h5
 #else
 #    RUNTEST tdataregbe.ls 0 -v $REPACK_OUTPUT_DIR/tdatareg.h5
-#fi
-
-# test for file with datasets that use Fixed Array chunk indices
-# TODO: Diff fails on different data. Unclear if the filter is a problem.
-#if test $USE_FILTER_DEFLATE = "yes" ; then
-#    # data read internal filters
-#    RUNTEST tdset_idx.ls 0 -w80 -d $REPACK_OUTPUT_DIR/tdset_idx.h5
-#else
-#    echo "***skip testing tdset_idx.h5"
 #fi
 
 # Clean up generated files/directories
