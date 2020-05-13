@@ -258,9 +258,18 @@ SKIP() {
 #
 DIFF_HDF5()
 {
+    native_file=$1
+    shift
+
+    if [ $native_file = "1_NATIVE" ]; then
+        vol_args="--vol-name-1=native"
+    else
+        vol_args="--vol-name-2=native"
+    fi
+
     VERIFY $H5DIFF output $@
     (
-        $RUNSERIAL $H5DIFF -q  "$@"
+        $RUNSERIAL $H5DIFF -q  $vol_args "$@"
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -274,7 +283,7 @@ DIFF_HDF5()
 
 RUNTEST()
 {
-    echo $@
+    args=$@
     infile=$2
     outfile=out-$1.$2
     shift
@@ -285,7 +294,8 @@ RUNTEST()
     inpath="$TESTFILES_HDF5_DIR/$infile"
     outpath="$REPACK_TO_VOL_DIR/$outfile"
 
-    TESTING "native-->VOL: " $H5REPACK $@
+    echo "   native-->VOL"
+    TESTING $H5REPACK "($args $@)"
     (
         $ENVCMD $RUNSERIAL $H5REPACK --src-vol-name=native "$@" $inpath $outpath
     )
@@ -295,7 +305,7 @@ RUNTEST()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFF_HDF5 $inpath $outpath
+        DIFF_HDF5 "1_NATIVE" $inpath $outpath
     fi
 
 
@@ -304,7 +314,8 @@ RUNTEST()
     inpath="$REPACK_TO_VOL_DIR/$outfile"
     outpath="$REPACK_FROM_VOL_DIR/$outfile"
 
-    TESTING "VOL-->native: " $H5REPACK $@
+    echo "   VOL-->native"
+    TESTING $H5REPACK "($args $@)"
     (
         $ENVCMD $RUNSERIAL $H5REPACK --dst-vol-name=native "$@" $inpath $outpath
     )
@@ -314,8 +325,10 @@ RUNTEST()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFF_HDF5 $inpath $outpath
+        DIFF_HDF5 "2_NATIVE" $inpath $outpath
     fi
+
+    echo
 }
 
 #------------------------------------------
@@ -346,7 +359,7 @@ VERIFY_LAYOUT_DSET()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFF_HDF5 $inpath $outpath
+        DIFF_HDF5 "1_NATIVE" $inpath $outpath
     fi
 
     #---------------------------------
@@ -390,7 +403,7 @@ VERIFY_LAYOUT_ALL()
         nerrors="`expr $nerrors + 1`"
     else
         echo " PASSED"
-        DIFF_HDF5 $inpath $outpath
+        DIFF_HDF5 "1_NATIVE" $inpath $outpath
     fi
 
 
