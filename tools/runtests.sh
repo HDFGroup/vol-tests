@@ -38,6 +38,14 @@ echo
 sh testh5dump.sh
 
 echo
+echo "*********************"
+echo "* TESTING: h5repack *"
+echo "*********************"
+echo
+
+sh testh5repack.sh
+
+echo
 echo "********"
 echo "* DONE *"
 echo "********"
