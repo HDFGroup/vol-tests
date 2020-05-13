@@ -42,7 +42,7 @@ h5haveexitcode=yes      # default is yes
 # --------------------------------------------------------------------
 
 # Where the tool's HDF5 input files are located
-H5LS_TESTFILES_HDF5_DIR="./testfiles/hdf5"
+TESTFILES_HDF5_DIR="./testfiles/hdf5"
 
 # Where the tool's expected output files are located
 H5LS_TESTFILES_OUT_DIR="./testfiles/expected/h5ls"
@@ -63,7 +63,7 @@ REPACK_OUTPUT_DIR=./h5ls_repack_output
 
 # HDF5 test files.
 #
-# Kept in       $H5LS_TESTFILES_HDF5_DIR
+# Kept in       $TESTFILES_HDF5_DIR
 # Repacked to   $REPACK_OUTPUT_DIR
 #
 # These files fail to repack (investigate later)
@@ -205,7 +205,7 @@ REPACK_HDF5_FILES()
 {
     for repackfile in $HDF5_FILES
     do
-        inpath="$H5LS_TESTFILES_HDF5_DIR/$repackfile"
+        inpath="$TESTFILES_HDF5_DIR/$repackfile"
         outpath="$REPACK_OUTPUT_DIR/$repackfile"
 
         # Repack the file

@@ -42,7 +42,7 @@ verbose=yes
 # --------------------------------------------------------------------
 
 # Where the tool's HDF5 input files are located
-H5DUMP_TESTFILES_HDF5_DIR="./testfiles/hdf5"
+TESTFILES_HDF5_DIR="./testfiles/hdf5"
 
 # Where the tool's expected output files are located
 H5DUMP_TESTFILES_OUT_DIR="./testfiles/expected/h5dump"
@@ -418,7 +418,7 @@ REPACK_HDF5_FILES()
 {
     for repackfile in $HDF5_FILES
     do
-        inpath="$H5DUMP_TESTFILES_HDF5_DIR/$repackfile"
+        inpath="$TESTFILES_HDF5_DIR/$repackfile"
         outpath="$REPACK_OUTPUT_DIR/$repackfile"
 
         # Repack the file
