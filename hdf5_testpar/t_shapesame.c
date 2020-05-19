@@ -2338,12 +2338,14 @@ contig_hs_dr_pio_test(ShapeSameTestMethods sstest_type)
         }
     }
 
-    if ( ( MAINPROCESS ) && ( tests_skipped > 0 ) ) {
-        HDfprintf(stdout, "    %lld of %lld subtests skipped to expedite testing.\n",
-                  tests_skipped, total_tests);
+    if (MAINPROCESS) {
+        if ( tests_skipped > 0 ) {
+            HDfprintf(stdout, "    %lld of %lld subtests skipped to expedite testing.\n",
+                      tests_skipped, total_tests);
+        }
+        else
+            HDprintf("\n");
     }
-    else
-        printf("\n");
 
     return;
 
@@ -4586,12 +4588,14 @@ ckrbrd_hs_dr_pio_test(ShapeSameTestMethods sstest_type)
         }
     }
 
-    if ( ( MAINPROCESS ) && ( tests_skipped > 0 ) ) {
-        HDfprintf(stdout, "     %lld of %lld subtests skipped to expedite testing.\n",
-                  tests_skipped, total_tests);
+    if (MAINPROCESS) {
+        if ( tests_skipped > 0 ) {
+            HDfprintf(stdout, "     %lld of %lld subtests skipped to expedite testing.\n",
+                    tests_skipped, total_tests);
+        }
+        else
+            HDprintf("\n");
     }
-    else
-        printf("\n");
 
     return;
 

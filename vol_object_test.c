@@ -5941,6 +5941,15 @@ object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info2_t *obje
     return 0;
 }
 
+/*
+ * Cleanup temporary test files
+ */
+static void
+cleanup_files(void)
+{
+    H5Fdelete(OBJECT_COPY_BETWEEN_FILES_TEST_FILE_NAME, H5P_DEFAULT);
+}
+
 int
 vol_object_test(void)
 {
@@ -5958,6 +5967,9 @@ vol_object_test(void)
     }
 
     HDprintf("\n");
+
+    HDprintf("Cleaning up testing files\n");
+    cleanup_files();
 
     return nerrors;
 }

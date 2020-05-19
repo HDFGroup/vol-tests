@@ -155,6 +155,9 @@ int main(int argc, char **argv)
     /* Run all the tests that are enabled */
     vol_test_run();
 
+    HDprintf("Cleaning up testing files\n");
+    H5Fdelete(vol_test_filename, H5P_DEFAULT);
+
     HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n",
             (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / (float) n_tests_run_g * 100.0), vol_connector_name);
     HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n",
