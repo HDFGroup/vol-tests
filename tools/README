@@ -16,8 +16,15 @@ some manual work to run.
 
 2) Make sure the h5delete tool you just built is in your path.
 
-3) Make sure that the HDF5 tools are on your path. The tools will obviously
-   need to be built using HDF5 1.12.0 or later.
+3) Make sure that the HDF5 tools are on your path.
+
+    NOTE: The tools tests require the tools to accept the VOL-related
+          command-line parameters, which is an unreleased feature. This
+          means that the tools MUST be built from the develop branch of the
+          HDF5 library (or 1.12.1 when it's released).
+
+    ALSO NOTE: You'll need the shared tools. The statically linked tools
+               cannot load VOL connector plugins.
 
 4) Set the HDF5_VOL_CONNECTOR environment variable.
 
