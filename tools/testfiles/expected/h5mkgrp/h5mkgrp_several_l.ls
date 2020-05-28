@@ -1,13 +1,13 @@
-Opened "h5mkgrp_several_l.h5" with sec2 driver.
+Opened "h5mkgrp_several_l.h5" with XXX driver.
 /                        Group
-    Location:  1:48
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
 /one                     Group
-    Location:  1:195
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
 /two                     Group
-    Location:  1:342
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX

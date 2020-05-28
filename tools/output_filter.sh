@@ -44,14 +44,17 @@
 STDOUT_FILTER() {
     result_file=$1
     tmp_file=/tmp/h5test_tmp_$$
+
     # Filter Sandia Red-Storm yod messages.
     cp $result_file $tmp_file
     sed -e '/^LibLustre:/d' -e '/^Lustre:/d' \
 	< $tmp_file > $result_file
+
     # Filter LANL Lambda mpirun message.
     cp $result_file $tmp_file
     sed -e '/^P4 procgroup file is/d' \
 	< $tmp_file > $result_file
+
     # cleanup
     rm -f $tmp_file
 }
@@ -111,4 +114,11 @@ STDERR_FILTER() {
 	    < $tmp_file > $result_file
     # clean up temporary files.
     rm -f $tmp_file
+}
+
+H5LS_FILTER() {
+    result_file=$1
+    sed -i 's/Modified:.*/Modified:  XXXX-XX-XX XX:XX:XX XXX/' $result_file
+    sed -i 's/Location:.*/Location:  XXX:XXX/' $result_file
+    sed -i 's/with.*driver/with XXX driver/' $result_file
 }

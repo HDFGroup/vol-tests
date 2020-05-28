@@ -1,7 +1,7 @@
-Opened "h5mkgrp_single_p.h5" with sec2 driver.
+Opened "h5mkgrp_single_p.h5" with XXX driver.
 /                        Group
-    Location:  1:96
+    Location:  XXX:XXX
     Links:     1
 /single                  Group
-    Location:  1:800
+    Location:  XXX:XXX
     Links:     1

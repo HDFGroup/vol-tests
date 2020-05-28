@@ -1,4 +1,4 @@
-Opened "tattrreg.h5" with sec2 driver.
+Opened "tattrreg.h5" with XXX driver.
 Dataset1                 Dataset {NULL}
     Attribute: Attribute1 {4}
         Type:      dataset region reference
@@ -18,16 +18,16 @@ Dataset1                 Dataset {NULL}
                NULL
                NULL
 
-    Location:  1:1400
+    Location:  XXX:XXX
     Links:     1
-    Storage:   0 logical bytes, 0 allocated bytes
+    Storage:   XXX
     Type:      32-bit little-endian integer
     Data:
 
 Dataset2                 Dataset {10/10, 10/10}
-    Location:  1:800
+    Location:  XXX:XXX
     Links:     1
-    Storage:   100 logical bytes, 100 allocated bytes, 100.00% utilization
+    Storage:   XXX
     Type:      native unsigned char
     Data:
          0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54,

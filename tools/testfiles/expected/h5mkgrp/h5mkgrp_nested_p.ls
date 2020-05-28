@@ -1,10 +1,10 @@
-Opened "h5mkgrp_nested_p.h5" with sec2 driver.
+Opened "h5mkgrp_nested_p.h5" with XXX driver.
 /                        Group
-    Location:  1:96
+    Location:  XXX:XXX
     Links:     1
 /one                     Group
-    Location:  1:800
+    Location:  XXX:XXX
     Links:     1
 /one/two                 Group
-    Location:  1:1832
+    Location:  XXX:XXX
     Links:     1

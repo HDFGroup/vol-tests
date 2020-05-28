@@ -1,4 +1,4 @@
-# /bin/sh
+#!/usr/bin/env bash
 #
 # Copyright by The HDF Group.
 # Copyright by the Board of Trustees of the University of Illinois.
@@ -232,14 +232,18 @@ RUNH5LS()
     VERIFY_H5LS  $@
     (
       $H5LS $H5LS_ARGS $@
-    ) 2>&1 |sed 's/Modified:.*/Modified:  XXXX-XX-XX XX:XX:XX XXX/' >$actual
+    ) 2>&1 > $actual
+#    ) 2>&1 | sed 's/Modified:.*/Modified:  XXXX-XX-XX XX:XX:XX XXX/' |\
+#        sed 's/Location:.*/Location:  XXX:XXX/' |\
+#        sed 's/with.*driver/with XXX driver/' >$actual
 
     # Save actual in case it is needed later.
     cp $actual $actual_sav
 
-    # Filter output for things like MPI cruft
+    # Filter output for platform-specific things
     STDOUT_FILTER $actual
     STDERR_FILTER $actual
+    H5LS_FILTER $actual
 
     # Strip the HDF5 output directory name from the output file
     # (use | to avoid sed and directory delimiter clash)

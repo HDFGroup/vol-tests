@@ -1,11 +1,11 @@
-Opened "tdatareg.h5" with sec2 driver.
+Opened "tdatareg.h5" with XXX driver.
 Dataset1                 Dataset {4/4}
-    Location:  1:1284
+    Location:  XXX:XXX
     Links:     1
-    Storage:   reference information not available
+    Storage:   XXX
     Type:      dataset region reference
 Dataset2                 Dataset {10/10, 10/10}
-    Location:  1:744
+    Location:  XXX:XXX
     Links:     1
-    Storage:   100 logical bytes, 100 allocated bytes, 100.00% utilization
+    Storage:   XXX
     Type:      8-bit unsigned integer

@@ -1,4 +1,4 @@
-Opened "tattr2.h5" with sec2 driver.
+Opened "tattr2.h5" with XXX driver.
 dset                     Dataset {2/2}
     Attribute: array {2}
         Type:      [3] 32-bit little-endian integer
@@ -84,9 +84,9 @@ dset                     Dataset {2/2}
     Attribute: vlen3D {4, 3, 2}
         Type:      variable length of
                    32-bit little-endian integer
-    Location:  1:976
+    Location:  XXX:XXX
     Links:     1
-    Storage:   8 logical bytes, 0 allocated bytes
+    Storage:   XXX
     Type:      32-bit little-endian integer
 g1                       Group
     Attribute: array {2}
@@ -167,8 +167,8 @@ g1                       Group
     Attribute: vlen3D {4, 3, 2}
         Type:      variable length of
                    32-bit little-endian integer
-    Location:  1:2176
+    Location:  XXX:XXX
     Links:     1
 g2                       Group
-    Location:  1:2824
+    Location:  XXX:XXX
     Links:     1

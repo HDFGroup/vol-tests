@@ -1,21 +1,21 @@
-Opened "h5mkgrp_nested_mult_lp.h5" with sec2 driver.
+Opened "h5mkgrp_nested_mult_lp.h5" with XXX driver.
 /                        Group
-    Location:  1:48
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
 /one                     Group
-    Location:  1:195
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
 /one/two                 Group
-    Location:  1:342
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
 /three                   Group
-    Location:  1:489
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
 /three/four              Group
-    Location:  1:636
+    Location:  XXX:XXX
     Links:     1
     Modified:  XXXX-XX-XX XX:XX:XX XXX
