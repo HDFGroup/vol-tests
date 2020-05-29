@@ -91,11 +91,11 @@ REPACK_FROM_VOL_DIR=./h5repack_from_vol
 # h5repack_fill.h5
 # h5repack_attr.h5
 # h5repack_early.h5
-# h5repack_hlink.h5
 # tordergr.h5
-# h5repack_layout.h5
 # h5repack_nested_8bit_enum.h5
 HDF5_FILES="
+h5repack_hlink.h5
+h5repack_layout.h5
 h5repack_deflate.h5
 h5repack_layouto.h5
 h5repack_layout2.h5
@@ -283,7 +283,7 @@ RUNTEST()
     echo "   native-->VOL"
     TESTING $H5REPACK "($args $@)"
     (
-        $ENVCMD $RUNSERIAL $H5REPACK --src-vol-name=native "$@" $inpath $outpath
+        $ENVCMD $RUNSERIAL $H5REPACK --src-vol-name=native -q name "$@" $inpath $outpath
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -303,7 +303,7 @@ RUNTEST()
     echo "   VOL-->native"
     TESTING $H5REPACK "($args $@)"
     (
-        $ENVCMD $RUNSERIAL $H5REPACK --enable-error-stack --dst-vol-name=native "$@" $inpath $outpath
+        $ENVCMD $RUNSERIAL $H5REPACK --dst-vol-name=native -q name "$@" $inpath $outpath
     )
     RET=$?
     if [ $RET != 0 ] ; then
@@ -526,8 +526,8 @@ RUNTEST_HELP h5repack-help.txt -h
 #RUNTEST fill h5repack_fill.h5
 #RUNTEST objs h5repack_objs.h5
 #RUNTEST attr h5repack_attr.h5
-#RUNTEST hlink h5repack_hlink.h5
-#RUNTEST layout h5repack_layout.h5
+RUNTEST hlink h5repack_hlink.h5
+RUNTEST layout h5repack_layout.h5
 #RUNTEST early h5repack_early.h5
 
 # nested 8bit enum in both deflated and non-deflated datafiles
