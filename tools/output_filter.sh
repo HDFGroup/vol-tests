@@ -128,3 +128,7 @@ H5DUMP_FILTER() {
     sed -i '/OFFSET*/d' $result_file
 }
 
+H5DIFF_FILTER() {
+    result_file=$1
+    sed -i 's/Referenced dataset.*/Referenced dataset      XXXXX            XXXXX/' $result_file
+}

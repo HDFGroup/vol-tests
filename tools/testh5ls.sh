@@ -287,11 +287,11 @@ RUNTEST() {
     (
         $RUNSERIAL $H5LS "$@"
     ) >$actual 2>$actual_err
+    exitcode=$?
 
     # Clean h5ls stdout files
     H5LS_FILTER $actual
 
-    exitcode=$?
     # save actual and actual_err in case they are needed later.
     cp $actual $actual_sav
     STDOUT_FILTER $actual
