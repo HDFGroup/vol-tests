@@ -46,6 +46,14 @@ echo
 sh testh5repack.sh
 
 echo
+echo "*******************"
+echo "* TESTING: h5diff *"
+echo "*******************"
+echo
+
+sh testh5diff.sh
+
+echo
 echo "********"
 echo "* DONE *"
 echo "********"
