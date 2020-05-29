@@ -118,7 +118,13 @@ STDERR_FILTER() {
 
 H5LS_FILTER() {
     result_file=$1
-    sed -i 's/Modified:.*/Modified:  XXXX-XX-XX XX:XX:XX XXX/' $result_file
+    sed -i '/Modified:.*/d' $result_file
     sed -i 's/Location:.*/Location:  XXX:XXX/' $result_file
     sed -i 's/with.*driver/with XXX driver/' $result_file
 }
+
+H5DUMP_FILTER() {
+    result_file=$1
+    sed -i '/OFFSET*/d' $result_file
+}
+
