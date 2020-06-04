@@ -451,9 +451,11 @@ RUNTEST() {
     actual_err_sav=${actual_err}-sav
     shift
     if test -n "$pmode"; then
-        RUNCMD=$RUNPARALLEL
+        # $RUNPARALLEL in HDF5 tests (TODO: handle better)
+        RUNCMD="mpirun -n 6"
     else
-        RUNCMD=$RUNSERIAL
+        # $RUNSERIAL in HDF5 tests
+        RUNCMD=
     fi
 
     # Run test.
@@ -674,8 +676,8 @@ RUNTEST h5diff_56.txt -v $REPACK_OUTPUT_DIR/h5diff_dtypes.h5 $REPACK_OUTPUT_DIR/
 RUNTEST h5diff_57.txt -v $REPACK_OUTPUT_DIR/h5diff_dtypes.h5 $REPACK_OUTPUT_DIR/h5diff_dtypes.h5 dset7a dset7b
 
 # 5.8 (region reference)
-RUNTEST h5diff_58.txt -v2 $REPACK_OUTPUT_DIR/h5diff_dset1.h5 $REPACK_OUTPUT_DIR/h5diff_dset2.h5 refreg
-RUNTEST h5diff_58_ref.txt -v2 $REPACK_OUTPUT_DIR/h5diff_dset1.h5 $REPACK_OUTPUT_DIR/h5diff_dset2.h5 /g1/reference2D
+#RUNTEST h5diff_58.txt -v2 $REPACK_OUTPUT_DIR/h5diff_dset1.h5 $REPACK_OUTPUT_DIR/h5diff_dset2.h5 refreg
+#RUNTEST h5diff_58_ref.txt -v2 $REPACK_OUTPUT_DIR/h5diff_dset1.h5 $REPACK_OUTPUT_DIR/h5diff_dset2.h5 /g1/reference2D
 # STD_REF_OBJ
 #RUNTEST h5diff_reg.txt -v2 $REPACK_OUTPUT_DIR/trefer_attr.h5 $REPACK_OUTPUT_DIR/trefer_ext2.h5 Dataset3 Dataset3
 
