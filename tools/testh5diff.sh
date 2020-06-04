@@ -339,8 +339,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
     -p)    # reset the tool name and bin to run ph5diff tests
     TESTNAME=ph5diff
-    H5DIFF=../../src/h5diff/ph5diff  # The tool name
-    H5DIFF=`pwd`/$H5DIFF    # The path of the tool binary
+    H5DIFF=ph5diff  # The tool name
     pmode=yes
     shift
     ;;
