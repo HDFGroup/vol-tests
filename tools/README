@@ -24,13 +24,19 @@ some manual work to run.
           HDF5 library (or 1.12.1 when it's released).
 
     ALSO NOTE: You'll need the shared tools. The statically linked tools
-               cannot load VOL connector plugins.
+               cannot load VOL connector plugins. The tests use the "simple"
+               names, though (e.g., h5dump, not h5dump-shared), so you
+               might need to build HDF5 with the "shared only" option,
+               create aliases, or rename things in the script.
 
 4) Set the HDF5_VOL_CONNECTOR environment variable.
 
     e.g.: export HDF5_VOL_CONNECTOR="pass_through under_vol=0;under_info={}"
 
-5) Run the master test script
+5) Make sure the HDF5_PLUGIN_PATH environment variable is set to the location
+   of your VOL connector.
+
+6) Run the master test script
     sh runtests.sh
 
    You will see a lot of error messages and and FAILED text for anything that
