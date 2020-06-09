@@ -22,6 +22,9 @@ H5DIFF=h5diff               # The tool name
 H5DELETE='h5delete -f'      # The h5delete tool name
 H5REPACK=h5repack           # The h5repack tool name
 
+RUNSERIAL=""
+RUNPARALLEL="mpiexec -n 6"
+
 RM='rm -rf'
 CMP='cmp -s'
 DIFF='diff -c'
@@ -327,7 +330,7 @@ h5diff_vlstr.txt
 # Utility functions
 # --------------------------------------------------------------------
 
-# RUNSERIAL is used. Check if it can return exit code from executalbe correctly.
+# RUNSERIAL is used. Check if it can return exit code from executable correctly.
 if [ -n "$RUNSERIAL_NOEXITCODE" ]; then
     echo "***Warning*** Serial Exit Code is not passed back to shell corretly."
     echo "***Warning*** Exit code checking is skipped."
