@@ -355,6 +355,7 @@ test_h5o_open_by_token(void)
 **  test_h5o_refcount(): Test H5O refcounting functions.
 **
 ****************************************************************/
+#ifndef NO_REF_COUNT
 static void
 test_h5o_refcount(void)
 {
@@ -546,6 +547,7 @@ test_h5o_refcount(void)
     ret = H5Fclose(fid);
     CHECK(ret, FAIL, "H5Fclose");
 } /* test_h5o_refcount() */
+#endif
 
 
 /****************************************************************
@@ -1490,7 +1492,9 @@ test_h5o(void)
     test_h5o_open();              /* Test generic open function */
     test_h5o_open_by_token();      /* Test opening objects by token */
     test_h5o_close();             /* Test generic close function */
+#ifndef NO_REF_COUNT
     test_h5o_refcount();          /* Test incrementing and decrementing reference count */
+#endif
     test_h5o_plist();             /* Test object creation properties */
     test_h5o_link();              /* Test object link routine */
 #if 0
