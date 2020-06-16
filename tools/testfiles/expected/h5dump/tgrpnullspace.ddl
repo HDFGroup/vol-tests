@@ -12,7 +12,6 @@ GROUP "/" {
          DATASPACE  NULL
          STORAGE_LAYOUT {
             CONTIGUOUS
-            SIZE 0
          }
          FILTERS {
             NONE

@@ -126,6 +126,7 @@ H5LS_FILTER() {
 H5DUMP_FILTER() {
     result_file=$1
     sed -i '/OFFSET*/d' $result_file
+    sed -i '/^\s*SIZE*/d' $result_file
 }
 
 H5DIFF_FILTER() {

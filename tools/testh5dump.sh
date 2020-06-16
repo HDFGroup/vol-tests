@@ -117,6 +117,7 @@ REPACK_OUTPUT_DIR=./h5dump_repack_output
 # tnestedcmpddt.h5  Basically identical output, but type description text differs enough to trigger a problem
 # tvlstr.h5         As above
 HDF5_FILES="
+h5copytst.h5
 charsets.h5
 file_space.h5
 packedbits.h5

@@ -24,6 +24,7 @@
 
 # Default to use h5cc to build h5perf_serial unless $H5CC is defined.
 # 
-h5cc=${H5CC:-h5cc}
+#h5cc=${H5CC:-h5cc}
+h5cc=/home/derobins/opt/hdf5/bin/h5cc
 $h5cc -DSTANDALONE sio_perf.c sio_engine.c sio_timer.c -o h5perf_serial
 $h5cc chunk.c -o chunk
