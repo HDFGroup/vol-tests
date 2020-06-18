@@ -21,7 +21,6 @@ EXIT_SUCCESS=0
 EXIT_FAILURE=1
 
 H5DUMP=h5dump               # The h5dump tool name
-H5DIFF=h5diff               # The h5diff tool name
 H5DELETE='h5delete -f'      # The h5delete tool name
 H5REPACK=h5repack           # The h5repack tool name
 
