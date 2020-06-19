@@ -45,21 +45,21 @@ echo
 
 sh testh5repack.sh
 
+echo
+echo "*******************"
+echo "* TESTING: h5diff *"
+echo "*******************"
+echo
+
+sh testh5diff.sh
+
 #echo
 #echo "*******************"
-#echo "* TESTING: h5diff *"
+#echo "* TESTING: h5copy *"
 #echo "*******************"
 #echo
 
-#sh testh5diff.sh
-
-#echo
-#echo "********************"
-#echo "* TESTING: ph5diff *"
-#echo "********************"
-#echo
-
-#sh testph5diff.sh
+#sh testph5copy.sh
 
 echo
 echo "********"
