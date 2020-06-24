@@ -97,6 +97,19 @@ simple.out.h5
 chunk.out.h5
 compact.out.h5
 compound.out.h5
+named_vl.out.h5
+nested_vl.out.h5
+dset_attr.out.h5
+simple_top.out.h5
+dsrename.out.h5
+grp_empty.out.h5
+grp_attr.out.h5
+simple_group.out.h5
+A_B1_simple.out.h5
+A_B2_simple2.out.h5
+C_D_simple.out.h5
+h5copy_misc1.out.h5
+samefile1.out.h5
 "
 
 
@@ -274,9 +287,9 @@ TOOLTEST()
     else
         echo " PASSED"
 
-        if [ $runh5diff != no ]; then
-            H5DIFFTEST $inputfile $outputfile $7 $9
-        fi
+#        if [ $runh5diff != no ]; then
+#            H5DIFFTEST $inputfile $outputfile $7 $9
+#        fi
     fi
 }
 
@@ -332,9 +345,9 @@ TOOLTEST_PREFILL()
         else
             echo " PASSED"
 
-            if [ $runh5diff != no ]; then
-                H5DIFFTEST $inputfile $outputfile $obj_name $obj_name2
-            fi
+#            if [ $runh5diff != no ]; then
+#                H5DIFFTEST $inputfile $outputfile $obj_name $obj_name2
+#            fi
         fi
     fi
 }
@@ -389,9 +402,9 @@ TOOLTEST_SAME()
         else
             echo " PASSED"
 
-            if [ $runh5diff != no ]; then
-                H5DIFFTEST $outputfile $outputfile $grp_name $grp_name2
-            fi
+#            if [ $runh5diff != no ]; then
+#                H5DIFFTEST $outputfile $outputfile $grp_name $grp_name2
+#            fi
         fi
     fi
 }
