@@ -53,13 +53,13 @@ echo
 
 sh testh5diff.sh
 
-#echo
-#echo "*******************"
-#echo "* TESTING: h5copy *"
-#echo "*******************"
-#echo
+echo
+echo "*******************"
+echo "* TESTING: h5copy *"
+echo "*******************"
+echo
 
-#sh testph5copy.sh
+sh testh5copy.sh
 
 echo
 echo "********"

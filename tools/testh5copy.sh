@@ -287,9 +287,9 @@ TOOLTEST()
     else
         echo " PASSED"
 
-#        if [ $runh5diff != no ]; then
-#            H5DIFFTEST $inputfile $outputfile $7 $9
-#        fi
+        if [ $runh5diff != no ]; then
+            H5DIFFTEST $inputfile $outputfile $7 $9
+        fi
     fi
 }
 
@@ -345,9 +345,9 @@ TOOLTEST_PREFILL()
         else
             echo " PASSED"
 
-#            if [ $runh5diff != no ]; then
-#                H5DIFFTEST $inputfile $outputfile $obj_name $obj_name2
-#            fi
+            if [ $runh5diff != no ]; then
+                H5DIFFTEST $inputfile $outputfile $obj_name $obj_name2
+            fi
         fi
     fi
 }
@@ -402,9 +402,9 @@ TOOLTEST_SAME()
         else
             echo " PASSED"
 
-#            if [ $runh5diff != no ]; then
-#                H5DIFFTEST $outputfile $outputfile $grp_name $grp_name2
-#            fi
+            if [ $runh5diff != no ]; then
+                H5DIFFTEST $outputfile $outputfile $grp_name $grp_name2
+            fi
         fi
     fi
 }
@@ -543,7 +543,7 @@ TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/compact.out.h5 -v -s compact    -d com
 TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/compound.out.h5 -v -s compound   -d compound
 TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/named_vl.out.h5 -v -s named_vl   -d named_vl
 TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/nested_vl.out.h5 -v -s nested_vl  -d nested_vl
-TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/dset_attr.out.h5 -v -s /dset_attr  -d /dset_attr
+#TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/dset_attr.out.h5 -v -s /dset_attr  -d /dset_attr
 
 echo "Test copying dataset within group in source file to root of destination"
 TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/simple_top.out.h5 -v -s grp_dsets/simple  -d simple_top
@@ -553,10 +553,10 @@ TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/dsrename.out.h5 -v -s compound   -d re
 
 echo "Test copying empty, 'full' & 'nested' groups"
 TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/grp_empty.out.h5 -v -s grp_empty  -d grp_empty
-TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/grp_attr.out.h5 -v -s grp_attr -d grp_attr
+#TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/grp_attr.out.h5 -v -s grp_attr -d grp_attr
 
-echo "Test copying dataset within group in source file to group in destination"
-TOOLTEST_PREFILL -i $TESTFILE -o $HDF5_OUTPUT_DIR/simple_group.out.h5 grp_dsets grp_dsets /grp_dsets/simple /grp_dsets/simple_group
+#echo "Test copying dataset within group in source file to group in destination"
+#TOOLTEST_PREFILL -i $TESTFILE -o $HDF5_OUTPUT_DIR/simple_group.out.h5 grp_dsets grp_dsets /grp_dsets/simple /grp_dsets/simple_group
 
 echo "Test copying objects into group hier. that doesn't exist yet in destination file"
 TOOLTEST -i $TESTFILE -o $HDF5_OUTPUT_DIR/A_B1_simple.out.h5 -vp -s simple    -d /A/B1/simple

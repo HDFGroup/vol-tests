@@ -527,7 +527,7 @@ RUNTEST_HELP h5repack-help.txt -h
 #RUNTEST objs h5repack_objs.h5
 #RUNTEST attr h5repack_attr.h5
 RUNTEST hlink h5repack_hlink.h5
-RUNTEST layout h5repack_layout.h5
+#RUNTEST layout h5repack_layout.h5
 #RUNTEST early h5repack_early.h5
 
 # nested 8bit enum in both deflated and non-deflated datafiles
