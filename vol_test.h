@@ -150,6 +150,7 @@ extern char vol_test_filename[];
 #define NO_MAX_CRT_ORDER_RESET
 #define NO_PREVENT_HARD_LINKS_ACROSS_FILES
 #define NO_SOFT_LINK_MANY_DANGLING
+#define NO_ID_PREVENTS_OBJ_DELETE
 
 /*
  * Global variables to keep track of statistics on the

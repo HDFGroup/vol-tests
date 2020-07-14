@@ -1972,13 +1972,16 @@ error:
 static int
 test_resurrect_datatype(void)
 {
+#ifndef NO_ID_PREVENTS_OBJ_DELETE
     hid_t file_id = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
     hid_t type_id = H5I_INVALID_HID;
+#endif /* NO_ID_PREVENTS_OBJ_DELETE */
 
     TESTING("resurrecting datatype after deletion")
 
+#ifndef NO_ID_PREVENTS_OBJ_DELETE
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -2078,9 +2081,13 @@ test_resurrect_datatype(void)
         TEST_ERROR
 
     PASSED();
+#else /* NO_ID_PREVENTS_OBJ_DELETE */
+    SKIPPED();
+#endif /* NO_ID_PREVENTS_OBJ_DELETE */
 
     return 0;
 
+#ifndef NO_ID_PREVENTS_OBJ_DELETE
 error:
     H5E_BEGIN_TRY {
         H5Tclose(type_id);
@@ -2090,6 +2097,7 @@ error:
     } H5E_END_TRY;
 
     return 1;
+#endif /* NO_ID_PREVENTS_OBJ_DELETE */
 }
 
 static int
