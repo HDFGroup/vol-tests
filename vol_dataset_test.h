@@ -227,6 +227,17 @@ int vol_dataset_test(void);
 #define DATASET_WRITE_INVALID_PARAMS_TEST_GROUP_NAME      "dataset_write_invalid_params_test"
 #define DATASET_WRITE_INVALID_PARAMS_TEST_DSET_NAME       "dataset_write_invalid_params_dset"
 
+#define DATASET_DATA_BUILTIN_CONVERSION_TEST_DSET_SPACE_RANK    3
+#define DATASET_DATA_BUILTIN_CONVERSION_TEST_MEM_DTYPESIZE      sizeof(int)
+#define DATASET_DATA_BUILTIN_CONVERSION_TEST_MEM_DTYPE          H5T_NATIVE_INT
+#define DATASET_DATA_BUILTIN_CONVERSION_TEST_NUM_POINTS         10
+#define DATASET_DATA_BUILTIN_CONVERSION_TEST_GROUP_NAME         "dataset_builtin_conversion_verification_test"
+#define DATASET_DATA_BUILTIN_CONVERSION_TEST_DSET_NAME          "dataset_builtin_conversion_verification_dset"
+
+#define DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS         10
+#define DATASET_DATA_COMPOUND_PARTIAL_IO_TEST_GROUP_NAME         "dataset_compound_partial_io_test"
+#define DATASET_DATA_COMPOUND_PARTIAL_IO_TEST_DSET_NAME          "dataset_compound_partial_io_test"
+
 #define DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_SPACE_RANK 2
 #define DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_NUM_PASSES 3
 #define DATASET_SET_EXTENT_CHUNKED_UNLIMITED_TEST_GROUP_NAME "set_extent_chunked_unlimited_test"

@@ -88,6 +88,7 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
 #define PART_END(part_name) } part_##part_name##_end:
 #define PART_ERROR(part_name) { nerrors++; goto part_##part_name##_end; }
 #define PART_EMPTY(part_name) { goto part_##part_name##_end; }
+#define PART_TEST_ERROR(part_name) {H5_FAILED(); AT(); nerrors++; goto part_##part_name##_end;}
 
 /*
  * Alarm definitions to wait up (terminate) a test that runs too long.
