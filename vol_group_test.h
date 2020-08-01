@@ -32,6 +32,14 @@ int vol_group_test(void);
 
 #define GROUP_CREATE_ANONYMOUS_GROUP_NAME "anon_group"
 
+#define GROUP_CREATE_INTMD_REL_INTMD_NAME "rel_intmd"
+#define GROUP_CREATE_INTMD_REL_END_NAME "rel_end"
+#define GROUP_CREATE_INTMD_ABS_INTMD_NAME "abs_intmd"
+#define GROUP_CREATE_INTMD_ABS_END_NAME "abs_end"
+#define GROUP_CREATE_INTMD_MULT_INTMD1_NAME "mult_intmd1"
+#define GROUP_CREATE_INTMD_MULT_INTMD2_NAME "mult_intmd2"
+#define GROUP_CREATE_INTMD_MULT_END_NAME "mult_end"
+
 #define OPEN_NONEXISTENT_GROUP_TEST_GNAME "/nonexistent_group"
 
 #define GROUP_PROPERTY_LIST_TEST_GROUP_NAME1 "property_list_test_group1"

@@ -16,6 +16,7 @@ static int test_create_group_under_root(void);
 static int test_create_group_under_existing_group(void);
 static int test_create_many_groups(void);
 static int test_create_deep_groups(void);
+static int test_create_intermediate_group(void);
 static int test_create_group_invalid_params(void);
 static int test_create_anonymous_group(void);
 static int test_create_anonymous_group_invalid_params(void);
@@ -39,6 +40,7 @@ static int (*group_tests[])(void) = {
         test_create_group_under_existing_group,
         test_create_many_groups,
         test_create_deep_groups,
+        test_create_intermediate_group,
         test_create_group_invalid_params,
         test_create_anonymous_group,
         test_create_anonymous_group_invalid_params,
@@ -320,6 +322,122 @@ create_group_recursive(hid_t parent_gid, unsigned counter)
 error:
     H5E_BEGIN_TRY {
         H5Gclose(child_gid);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to create groups automatically using H5Pset_create_intermediate_group
+ */
+static int
+test_create_intermediate_group(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t crt_intmd_lcpl_id = H5I_INVALID_HID;
+
+    TESTING("H5Gcreate group with intermediate group creation")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group\n");
+        goto error;
+    }
+
+    /* Set up plist for creating intermediate groups */
+    if((crt_intmd_lcpl_id = H5Pcreate(H5P_LINK_CREATE)) < 0)
+        TEST_ERROR
+    if(H5Pset_create_intermediate_group(crt_intmd_lcpl_id, TRUE) < 0)
+        TEST_ERROR
+
+    /* Create an intermediate group using a relative path */
+    if((group_id = H5Gcreate2(container_group, GROUP_CREATE_INTMD_REL_INTMD_NAME "/" GROUP_CREATE_INTMD_REL_END_NAME, crt_intmd_lcpl_id, H5P_DEFAULT, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+
+    /* Verify both groups were created */
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_REL_INTMD_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_REL_INTMD_NAME "/" GROUP_CREATE_INTMD_REL_END_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+
+    /* Create an intermediate group using an absolute path */
+    if((group_id = H5Gcreate2(container_group, "/" GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_ABS_INTMD_NAME "/" GROUP_CREATE_INTMD_ABS_END_NAME, crt_intmd_lcpl_id, H5P_DEFAULT, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+
+    /* Verify both groups were created */
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_ABS_INTMD_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_ABS_INTMD_NAME "/" GROUP_CREATE_INTMD_ABS_END_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+
+    /* Create two intermediate groups using an absolute path */
+    if((group_id = H5Gcreate2(container_group,  "/" GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD1_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD2_NAME "/" GROUP_CREATE_INTMD_MULT_END_NAME, crt_intmd_lcpl_id, H5P_DEFAULT, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+
+    /* Verify all three groups were created */
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD1_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD1_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD2_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+    if((group_id = H5Gopen2(file_id, GROUP_TEST_GROUP_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD1_NAME "/" GROUP_CREATE_INTMD_MULT_INTMD2_NAME "/" GROUP_CREATE_INTMD_MULT_END_NAME, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+    if(H5Gclose(group_id) < 0)
+        TEST_ERROR
+    group_id = H5I_INVALID_HID;
+
+
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+    if (H5Pclose(crt_intmd_lcpl_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+        H5Pclose(crt_intmd_lcpl_id);
     } H5E_END_TRY;
 
     return 1;
