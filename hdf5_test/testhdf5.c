@@ -679,14 +679,16 @@ main(int argc, char *argv[])
 
     /* Tests are generally arranged from least to most complexity... */
     /* AddTest("config", test_configure, cleanup_configure, "Configure definitions", NULL); */
-    HDprintf("** Configure definitions **\n");
+    HDprintf("** CONFIGURE DEFINITIONS **\n");
     test_configure();
+    HDprintf("\n");
 
     /* AddTest("metadata", test_metadata, cleanup_metadata, "Encoding/decoding metadata", NULL); */
 
     /* AddTest("checksum", test_checksum, cleanup_checksum, "Checksum algorithm", NULL); */
-    HDprintf("** Checksum algorithm **\n");
+    HDprintf("** CHECKSUM ALGORITHM **\n");
     test_checksum();
+    HDprintf("\n");
 
     /* AddTest("tst", test_tst, NULL,  "Ternary Search Trees", NULL); */
 
@@ -697,72 +699,88 @@ main(int argc, char *argv[])
     /* AddTest("refstr", test_refstr, NULL,  "Reference Counted Strings", NULL); */
 
     /* AddTest("file", test_file, cleanup_file, "Low-Level File I/O", NULL); */
-    HDprintf("** Low-Level File I/O **\n");
+    HDprintf("** LOW-LEVEL FILE I/O **\n");
     test_file();
+    HDprintf("\n");
 
     /* AddTest("objects", test_h5o, cleanup_h5o, "Generic Object Functions", NULL); */
-    HDprintf("** Generic Object Functions **\n");
+    HDprintf("** GENERIC OBJECT FUNCTIONS **\n");
     test_h5o();
+    HDprintf("\n");
 
     /* AddTest("h5s",  test_h5s,  cleanup_h5s,  "Dataspaces", NULL); */
-    HDprintf("** Dataspaces **\n");
+    HDprintf("** DATASPACES **\n");
     test_h5s();
+    HDprintf("\n");
 
     /* AddTest("coords",  test_coords,  cleanup_coords,  "Dataspace coordinates", NULL); */
-    HDprintf("** Dataspace coordinates **\n");
+    HDprintf("** DATASPACE COORDINATES **\n");
     test_coords();
+    HDprintf("\n");
 
     /* AddTest("sohm", test_sohm, cleanup_sohm,  "Shared Object Header Messages", NULL); */
 
     /* AddTest("attr", test_attr, cleanup_attr,  "Attributes", NULL); */
-    HDprintf("** Attributes **\n");
+    HDprintf("** ATTRIBUTES **\n");
     test_attr();
+    HDprintf("\n");
 
     /* AddTest("select", test_select, cleanup_select,  "Selections", NULL); */
-    HDprintf("** Selections **\n");
+    HDprintf("** SELECTIONS **\n");
     test_select();
+    HDprintf("\n");
 
     /* AddTest("time", test_time, cleanup_time,  "Time Datatypes", NULL); */
-    HDprintf("** Time Datatypes **\n");
+    HDprintf("** TIME DATATYPES**\n");
     test_time();
+    HDprintf("\n");
 
     /* AddTest("ref_deprec", test_reference_deprec, cleanup_reference_deprec,  "Deprecated References", NULL); */
 
     /* AddTest("ref", test_reference, cleanup_reference,  "References", NULL); */
-    HDprintf("** References **\n");
+    HDprintf("** REFERENCES **\n");
     test_reference();
+    HDprintf("\n");
 
     /* AddTest("vltypes", test_vltypes, cleanup_vltypes,  "Variable-Length Datatypes", NULL); */
-    HDprintf("** Variable-Length Datatypes **\n");
+    HDprintf("** VARIABLE-LENGTH DATATYPES **\n");
     test_vltypes();
+    HDprintf("\n");
 
     /* AddTest("vlstrings", test_vlstrings, cleanup_vlstrings,  "Variable-Length Strings", NULL); */
-    HDprintf("** Variable-Length Strings **\n");
+    HDprintf("** VARIABLE-LENGTH STRINGS **\n");
     test_vlstrings();
+    HDprintf("\n");
 
     /* AddTest("iterate", test_iterate, cleanup_iterate,  "Group & Attribute Iteration", NULL); */
-    HDprintf("** Group & Attribute Iteration **\n");
+    HDprintf("** GROUP & ATTRIBUTE ITERATION **\n");
     test_iterate();
+    HDprintf("\n");
 
     /* AddTest("array", test_array, cleanup_array,  "Array Datatypes", NULL); */
-    HDprintf("** Array Datatypes **\n");
+    HDprintf("** ARRAY DATATYPES **\n");
     test_array();
+    HDprintf("\n");
 
     /* AddTest("genprop", test_genprop, cleanup_genprop,  "Generic Properties", NULL); */
-    HDprintf("** Generic Properties **\n");
+    HDprintf("** GENERIC PROPERTIES **\n");
     test_genprop();
+    HDprintf("\n");
 
     /* AddTest("unicode", test_unicode, cleanup_unicode,  "UTF-8 Encoding", NULL); */
-    HDprintf("** UTF-8 Encoding **\n");
+    HDprintf("** UTF-8 ENCODING **\n");
     test_unicode();
+    HDprintf("\n");
 
     /* AddTest("id", test_ids, NULL,  "User-Created Identifiers", NULL); */
-    HDprintf("** User-Created Identifiers **\n");
+    HDprintf("** USER-CREATED IDENTIFIERS **\n");
     test_ids();
+    HDprintf("\n");
 
     /* AddTest("misc", test_misc, cleanup_misc,  "Miscellaneous", NULL); */
-    HDprintf("** Miscellaneous **\n");
+    HDprintf("** MISCELLANEOUS **\n");
     test_misc();
+    HDprintf("\n");
 
     /* Display testing information */
     /* TestInfo(argv[0]); */
@@ -781,7 +799,7 @@ main(int argc, char *argv[])
     if (/* GetTestCleanup() && */!getenv("HDF5_NOCLEANUP")) {
         /* TestCleanup(); */
 
-        HDprintf("Test Cleanup\n");
+        HDprintf("TEST CLEANUP\n");
 
         H5E_BEGIN_TRY
             cleanup_configure();
@@ -802,6 +820,8 @@ main(int argc, char *argv[])
             cleanup_unicode();
             cleanup_misc();
         H5E_END_TRY;
+
+        HDprintf("\n");
     }
 
     /* Release test infrastructure */

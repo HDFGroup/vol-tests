@@ -68,10 +68,12 @@ static int find_err_msg_cb(unsigned n, const H5E_error2_t *err_desc, void *_clie
 /* Local functions */
 int iter_strcmp(const void *s1, const void *s2);
 int iter_strcmp2(const void *s1, const void *s2);
+#ifndef NO_ITERATION_RESTART
 static herr_t liter_cb(hid_t group, const char *name, const H5L_info2_t *info,
     void *op_data);
 static herr_t liter_cb2(hid_t group, const char *name, const H5L_info2_t *info,
     void *op_data);
+#endif
 herr_t aiter_cb(hid_t group, const char *name, const H5A_info_t *ainfo,
     void *op_data);
 
@@ -90,6 +92,7 @@ H5_ATTR_PURE int iter_strcmp(const void *s1, const void *s2)
 **  liter_cb(): Custom link iteration callback routine.
 **
 ****************************************************************/
+#ifndef NO_ITERATION_RESTART
 static herr_t
 liter_cb(hid_t H5_ATTR_UNUSED group, const char *name, const H5L_info2_t H5_ATTR_UNUSED *link_info,
     void *op_data)
@@ -120,6 +123,7 @@ liter_cb(hid_t H5_ATTR_UNUSED group, const char *name, const H5L_info2_t H5_ATTR
             return(-1);
     } /* end switch */
 } /* end liter_cb() */
+#endif
 
 /****************************************************************
 **
@@ -129,6 +133,7 @@ liter_cb(hid_t H5_ATTR_UNUSED group, const char *name, const H5L_info2_t H5_ATTR
 static void
 test_iter_group(hid_t fapl, hbool_t new_format)
 {
+#ifndef NO_ITERATION_RESTART
     hid_t file;             /* File ID */
     hid_t dataset;          /* Dataset ID */
     hid_t datatype;         /* Common datatype ID */
@@ -142,10 +147,14 @@ test_iter_group(hid_t fapl, hbool_t new_format)
     iter_info info;         /* Custom iteration information */
     H5G_info_t ginfo;       /* Buffer for querying object's info */
     herr_t ret;            /* Generic return value */
+#else
+    (void)fapl;
+    (void)new_format;
+#endif
 
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Group Iteration Functionality\n"));
-
+    MESSAGE(5, ("Testing Group Iteration Functionality - SKIPPED for now due to no iteration restart support\n"));
+#ifndef NO_ITERATION_RESTART
     /* Create the test file with the datasets */
     file = H5Fcreate(DATAFILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
     CHECK(file, FAIL, "H5Fcreate");
@@ -352,6 +361,7 @@ test_iter_group(hid_t fapl, hbool_t new_format)
     /* Free the dataset names */
     for(i = 0; i< (NDATASETS + 2); i++)
         HDfree(lnames[i]);
+#endif
 } /* test_iter_group() */
 
 /****************************************************************
@@ -397,6 +407,7 @@ aiter_cb(hid_t H5_ATTR_UNUSED group, const char *name, const H5A_info_t H5_ATTR_
 ****************************************************************/
 static void test_iter_attr(hid_t fapl, hbool_t new_format)
 {
+#ifndef NO_ITERATION_RESTART
     hid_t file;             /* File ID */
     hid_t dataset;          /* Common Dataset ID */
     hid_t filespace;        /* Common dataspace ID */
@@ -407,9 +418,15 @@ static void test_iter_attr(hid_t fapl, hbool_t new_format)
     char *anames[NATTR];    /* Names of the attributes created */
     iter_info info;         /* Custom iteration information */
     herr_t        ret;        /* Generic return value        */
+#else
+    (void)fapl;
+    (void)new_format;
+#endif
 
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Attribute Iteration Functionality\n"));
+    MESSAGE(5, ("Testing Attribute Iteration Functionality - SKIPPED for no due to no iteration restart support\n"));
+#ifndef NO_ITERATION_RESTART
+    HDmemset(&info, 0, sizeof(iter_info));
 
     /* Create the test file with the datasets */
     file = H5Fcreate(DATAFILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
@@ -475,7 +492,7 @@ static void test_iter_attr(hid_t fapl, hbool_t new_format)
     if((ret = H5Aiterate2(dataset, H5_INDEX_NAME, H5_ITER_INC, &idx, aiter_cb, &info)) > 0)
         TestErrPrintf("Attribute iteration function didn't return zero correctly!\n");
 
-    /* Test all attributes on dataset, when callback always returns 1 */
+    /* Test all attributes on dataset, when callback always returns 2 */
     /* This also tests the "restarting" ability, because the index changes */
     info.command = RET_TWO;
     i = 0;
@@ -493,8 +510,12 @@ static void test_iter_attr(hid_t fapl, hbool_t new_format)
         /* Don't check name when new format is used */
         if(!new_format) {
             /* Verify that the correct name is retrieved */
-            if(HDstrcmp(info.name, anames[(size_t)idx - 1]) != 0)
-                TestErrPrintf("%u: Attribute iteration function didn't set names correctly, info.name = '%s', anames[%u] = '%s'!\n", __LINE__, info.name, (unsigned)(idx - 1), anames[(size_t)idx - 1]);
+            if(idx > 0) {
+                if(HDstrcmp(info.name, anames[(size_t)idx - 1]) != 0)
+                    TestErrPrintf("%u: Attribute iteration function didn't set names correctly, info.name = '%s', anames[%u] = '%s'!\n", __LINE__, info.name, (unsigned)(idx - 1), anames[(size_t)idx - 1]);
+            } /* end if */
+            else
+                TestErrPrintf("%u: 'idx' was not set correctly!\n", __LINE__);
         } /* end if */
     } /* end while */
     VERIFY(ret, -1, "H5Aiterate2");
@@ -520,8 +541,12 @@ static void test_iter_attr(hid_t fapl, hbool_t new_format)
         /* Don't check name when new format is used */
         if(!new_format) {
             /* Verify that the correct name is retrieved */
-            if(HDstrcmp(info.name, anames[(size_t)idx - 1]) != 0)
-                TestErrPrintf("%u: Attribute iteration function didn't set names correctly, info.name = '%s', anames[%u] = '%s'!\n", __LINE__, info.name, (unsigned)(idx - 1), anames[(size_t)idx - 1]);
+            if(idx > 0) {
+                if(HDstrcmp(info.name, anames[(size_t)idx - 1]) != 0)
+                    TestErrPrintf("%u: Attribute iteration function didn't set names correctly, info.name = '%s', anames[%u] = '%s'!\n", __LINE__, info.name, (unsigned)(idx - 1), anames[(size_t)idx - 1]);
+            }
+            else
+                TestErrPrintf("%u: 'idx' was not set correctly!\n", __LINE__);
         } /* end if */
     } /* end while */
     VERIFY(ret, -1, "H5Aiterate2");
@@ -537,7 +562,7 @@ static void test_iter_attr(hid_t fapl, hbool_t new_format)
     /* Free the attribute names */
     for(i=0; i< NATTR; i++)
         HDfree(anames[i]);
-
+#endif
 } /* test_iter_attr() */
 
 /****************************************************************
@@ -555,6 +580,7 @@ H5_ATTR_PURE int iter_strcmp2(const void *s1, const void *s2)
 **  liter_cb2(): Custom link iteration callback routine.
 **
 ****************************************************************/
+#ifndef NO_ITERATION_RESTART
 static herr_t
 liter_cb2(hid_t loc_id, const char *name, const H5L_info2_t H5_ATTR_UNUSED *link_info,
     void *opdata)
@@ -581,6 +607,7 @@ liter_cb2(hid_t loc_id, const char *name, const H5L_info2_t H5_ATTR_UNUSED *link
 
     return(H5_ITER_STOP);
 } /* liter_cb2() */
+#endif
 
 /****************************************************************
 **
@@ -591,6 +618,7 @@ liter_cb2(hid_t loc_id, const char *name, const H5L_info2_t H5_ATTR_UNUSED *link
 static void
 test_iter_group_large(hid_t fapl)
 {
+#ifndef NO_ITERATION_RESTART
     hid_t        file;        /* HDF5 File IDs        */
     hid_t        dataset;    /* Dataset ID            */
     hid_t        group;      /* Group ID             */
@@ -613,10 +641,12 @@ test_iter_group_large(hid_t fapl)
     /* Allocate & initialize array */
     names = (iter_info *)HDcalloc(sizeof(iter_info), (ITER_NGROUPS + 2));
     CHECK_PTR(names, "HDcalloc");
-
+#else
+    (void)fapl;
+#endif
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Large Group Iteration Functionality\n"));
-
+    MESSAGE(5, ("Testing Large Group Iteration Functionality - SKIPPED for now due to no iteration restart support\n"));
+#ifndef NO_ITERATION_RESTART
     /* Create file */
     file = H5Fcreate(DATAFILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
     CHECK(file, FAIL, "H5Fcreate");
@@ -705,6 +735,7 @@ test_iter_group_large(hid_t fapl)
 
     /* Release memory */
     HDfree(names);
+#endif
 } /* test_iterate_group_large() */
 
 /****************************************************************

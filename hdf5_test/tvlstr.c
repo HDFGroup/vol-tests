@@ -856,9 +856,9 @@ static void test_vl_rewrite(void)
  **      H5Sselect_element.
  **
  ****************************************************************/
-#ifndef NO_WRITE_SAME_ELEMENT_TWICE
 static void test_write_same_element(void)
 {
+#ifndef NO_WRITE_SAME_ELEMENT_TWICE
     hid_t   file1, dataset1;
     hid_t   mspace, fspace, dtype;
     hsize_t fdim[] = {SPACE1_DIM1};
@@ -866,9 +866,11 @@ static void test_write_same_element(void)
     hsize_t marray[] = {NUMP};
     hsize_t coord[SPACE1_RANK][NUMP];
     herr_t ret;
-
     char *wdata[SPACE1_DIM1] = {"Parting", "is such a", "sweet", "sorrow."};
+#endif
 
+    MESSAGE(5, ("Testing writing to same element of VL string dataset twice - SKIPPED for now due to no support\n"));
+#ifndef NO_WRITE_SAME_ELEMENT_TWICE
     file1 = H5Fcreate(DATAFILE3, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(file1, FAIL, "H5Fcreate");
 
@@ -943,8 +945,8 @@ static void test_write_same_element(void)
 
     ret = H5Fclose(file1);
     CHECK(ret, FAIL, "H5Fclose");
-} /* test_write_same_element */
 #endif
+} /* test_write_same_element */
 
 /****************************************************************
 **
@@ -970,10 +972,9 @@ test_vlstrings(void)
 
     /* Test writing VL datasets in files with lots of unlinking */
     test_vl_rewrite();
-#ifndef NO_WRITE_SAME_ELEMENT_TWICE
+
     /* Test writing to the same element more than once using H5Sselect_elements */
     test_write_same_element();
-#endif
 }   /* test_vlstrings() */
 
 /*-------------------------------------------------------------------------

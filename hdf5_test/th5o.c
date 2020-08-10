@@ -21,7 +21,7 @@
 
 #include "testhdf5.h"
 
-#define TEST_FILENAME "th5o_file"
+#define TEST_FILENAME "th5o_file.h5"
 
 #define RANK 2
 #define DIM0 5
@@ -355,7 +355,6 @@ test_h5o_open_by_token(void)
 **  test_h5o_refcount(): Test H5O refcounting functions.
 **
 ****************************************************************/
-#ifndef NO_REF_COUNT
 static void
 test_h5o_refcount(void)
 {
@@ -547,7 +546,6 @@ test_h5o_refcount(void)
     ret = H5Fclose(fid);
     CHECK(ret, FAIL, "H5Fclose");
 } /* test_h5o_refcount() */
-#endif
 
 
 /****************************************************************
@@ -1344,7 +1342,7 @@ test_h5o_getinfo_same_file(void)
 } /* test_h5o_getinfo_same_file() */
 
 #ifndef H5_NO_DEPRECATED_SYMBOLS
-
+#if 0
 /****************************************************************
 **
 **  visit_obj_cb():
@@ -1474,7 +1472,7 @@ test_h5o_getinfo_visit(void)
     CHECK(ret, FAIL, "H5Fclose");
 
 } /* test_h5o_getinfo_visit() */
-
+#endif
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
 
 
@@ -1492,9 +1490,7 @@ test_h5o(void)
     test_h5o_open();              /* Test generic open function */
     test_h5o_open_by_token();      /* Test opening objects by token */
     test_h5o_close();             /* Test generic close function */
-#ifndef NO_REF_COUNT
     test_h5o_refcount();          /* Test incrementing and decrementing reference count */
-#endif
     test_h5o_plist();             /* Test object creation properties */
     test_h5o_link();              /* Test object link routine */
 #if 0
@@ -1503,7 +1499,9 @@ test_h5o(void)
 #endif
     test_h5o_getinfo_same_file(); /* Test info for objects in the same file */
 #ifndef H5_NO_DEPRECATED_SYMBOLS
+#if 0
     test_h5o_getinfo_visit();     /* Test object info for H5Oget_info1/2 and H5Ovisit1 */
+#endif
 #endif
 } /* test_h5o() */
 

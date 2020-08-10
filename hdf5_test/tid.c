@@ -370,10 +370,14 @@ out:
 static int test_is_valid(void)
 {
     hid_t   dtype;      /* datatype id */
+#if 0
     int64_t nmembs1;    /* number of type memnbers */
     int64_t nmembs2;
+#endif
     htri_t  tri_ret;    /* htri_t return value */
+#if 0
     herr_t  ret;        /* return value */
+#endif
 
     /* Create a datatype id */
     dtype = H5Tcopy(H5T_NATIVE_INT);
@@ -386,7 +390,7 @@ static int test_is_valid(void)
     VERIFY(tri_ret, TRUE, "H5Iis_valid");
     if (tri_ret != TRUE)
         goto out;
-#if 0
+#if 0 /* Cannot call internal APIs and cannot call public H5Inmembers on library types */
     /* Artificially manipulate the reference counts so app_count is 0, and dtype
      * appears to be an internal id.  This takes advantage of the fact that
      * H5Ipkg is included.
@@ -405,16 +409,18 @@ static int test_is_valid(void)
     VERIFY(tri_ret, FALSE, "H5Iis_valid");
     if (tri_ret != FALSE)
         goto out;
-#endif
+
     /* Close dtype and verify that it has been closed */
-    CHECK(H5Inmembers(H5I_DATATYPE, (hsize_t *)&nmembs1), FAIL, "H5Inmembers");
+    nmembs1 = H5I_nmembers(H5I_DATATYPE);
+    CHECK(nmembs1, FAIL, "H5I_nmembers");
     if (nmembs1 < 0)
         goto out;
-    ret = H5Idec_ref(dtype);
-    CHECK(ret, FAIL, "H5Idec_ref");
+    ret = H5I_dec_ref(dtype);
+    CHECK(ret, FAIL, "H5I_dec_ref");
     if (ret < 0)
         goto out;
-    VERIFY(H5Inmembers(H5I_DATATYPE, (hsize_t *)&nmembs2), nmembs1 - 1, "H5Inmembers");
+    nmembs2 = H5I_nmembers(H5I_DATATYPE);
+    VERIFY(nmembs2, nmembs1 - 1, "H5I_nmembers");
     if (nmembs2 != nmembs1 - 1)
         goto out;
 
@@ -423,7 +429,7 @@ static int test_is_valid(void)
     VERIFY(tri_ret, FALSE, "H5Iis_valid");
     if (tri_ret != FALSE)
         goto out;
-
+#endif
     /* Check that an id of -1 is invalid */
     tri_ret = H5Iis_valid((hid_t)-1);
     VERIFY(tri_ret, FALSE, "H4Iis_valid");

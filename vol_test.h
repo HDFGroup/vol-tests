@@ -17,6 +17,7 @@
 #include <H5private.h>
 
 #include "vol_test_util.h"
+#include "vol_tests_disabled.h"
 
 /* Moved from h5test */
 
@@ -125,33 +126,11 @@ extern char vol_test_filename[];
  * of a dataspace/datatype. */
 #define MAX_DIM_SIZE 16
 
-#define NO_LARGE_TESTS
-
 /*
  * XXX: Set of compatibility macros that should be replaced once the
  * VOL connector feature support situation is resolved.
  */
 #define GROUP_CREATION_IS_SUPPORTED
-
-/*
- * Temporarily disable certain tests.
- */
-#define NO_DECREASING_ALPHA_ITER_ORDER
-#define NO_USER_DEFINED_LINKS
-#define NO_EXTERNAL_LINKS
-#define NO_FILE_MOUNTS
-#define NO_CLEAR_ON_SHRINK
-#define NO_DOUBLE_OBJECT_OPENS
-#define NO_OBJECT_GET_NAME
-#define NO_WRAP_COMMITTED_TYPES /* bug in HDF5 */
-#define NO_REF_COUNT
-#define WRONG_DATATYPE_OBJ_COUNT
-#define NO_SHARED_DATATYPES
-#define NO_INVALID_PROPERTY_LIST_TESTS
-#define NO_MAX_CRT_ORDER_RESET
-#define NO_PREVENT_HARD_LINKS_ACROSS_FILES
-#define NO_SOFT_LINK_MANY_DANGLING
-#define NO_ID_PREVENTS_OBJ_DELETE
 
 /*
  * Global variables to keep track of statistics on the

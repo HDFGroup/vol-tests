@@ -120,7 +120,9 @@ test_h5s_basic(void)
     hid_t        fid1;        /* HDF5 File IDs        */
     hid_t        sid1, sid2;    /* Dataspace ID            */
     hid_t        dset1;        /* Dataset ID            */
+#ifndef NO_VALIDATE_DATASPACE
     hid_t               aid1;           /* Attribute ID                 */
+#endif
     int                rank;        /* Logical rank of dataspace    */
     hsize_t        dims1[] = {SPACE1_DIM1, SPACE1_DIM2, SPACE1_DIM3};
     hsize_t        dims2[] = {SPACE2_DIM1, SPACE2_DIM2, SPACE2_DIM3,
@@ -251,13 +253,13 @@ test_h5s_basic(void)
     CHECK(sid1, FAIL, "H5Screate");
     sid2 = H5Screate_simple(1, dims1, dims1);
     CHECK(sid2, FAIL, "H5Screate");
-
+#ifndef NO_VALIDATE_DATASPACE
     /* This dataset's space has no extent; it should not be created */
     H5E_BEGIN_TRY {
         dset1 = H5Dcreate2(fid1, BASICDATASET, H5T_NATIVE_INT, sid1, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     } H5E_END_TRY
     VERIFY(dset1, FAIL, "H5Dcreate2");
-
+#endif
     dset1 = H5Dcreate2(fid1, BASICDATASET2, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(dset1, FAIL, "H5Dcreate2");
 
@@ -266,7 +268,7 @@ test_h5s_basic(void)
     ret = H5Dwrite(dset1, H5T_NATIVE_INT, sid1, H5S_ALL, H5P_DEFAULT, &n);
     } H5E_END_TRY
     VERIFY(ret, FAIL, "H5Dwrite");
-
+#ifndef NO_VALIDATE_DATASPACE
     H5E_BEGIN_TRY {
     ret = H5Dwrite(dset1, H5T_NATIVE_INT, H5S_ALL, sid1, H5P_DEFAULT, &n);
     } H5E_END_TRY
@@ -276,7 +278,7 @@ test_h5s_basic(void)
     ret = H5Dwrite(dset1, H5T_NATIVE_INT, sid1, sid1, H5P_DEFAULT, &n);
     } H5E_END_TRY
     VERIFY(ret, FAIL, "H5Dwrite");
-
+#endif
     /* Try to iterate using the bad dataspace */
     H5E_BEGIN_TRY {
     ret = H5Diterate(&n, H5T_NATIVE_INT, sid1, NULL, NULL);
@@ -288,19 +290,19 @@ test_h5s_basic(void)
     ret = H5Dfill(NULL, H5T_NATIVE_INT, &n, H5T_NATIVE_INT, sid1);
     } H5E_END_TRY
     VERIFY(ret, FAIL, "H5Dfill");
-
+#ifndef NO_VALIDATE_DATASPACE
     /* Now use the bad dataspace as the space for an attribute */
     H5E_BEGIN_TRY {
     aid1 = H5Acreate2(dset1, BASICATTR, H5T_NATIVE_INT, sid1, H5P_DEFAULT, H5P_DEFAULT);
     } H5E_END_TRY
     VERIFY(aid1, FAIL, "H5Acreate2");
-
+#endif
     /* Make sure that dataspace reads using the bad dataspace fail */
     H5E_BEGIN_TRY {
     ret = H5Dread(dset1, H5T_NATIVE_INT, sid1, H5S_ALL, H5P_DEFAULT, &n);
     } H5E_END_TRY
     VERIFY(ret, FAIL, "H5Dread");
-
+#ifndef NO_VALIDATE_DATASPACE
     H5E_BEGIN_TRY {
     ret = H5Dread(dset1, H5T_NATIVE_INT, H5S_ALL, sid1, H5P_DEFAULT, &n);
     } H5E_END_TRY
@@ -310,7 +312,7 @@ test_h5s_basic(void)
     ret = H5Dread(dset1, H5T_NATIVE_INT, sid1, sid1, H5P_DEFAULT, &n);
     } H5E_END_TRY
     VERIFY(ret, FAIL, "H5Dread");
-
+#endif
     /* Clean up */
     ret = H5Dclose(dset1);
     CHECK(ret, FAIL, "H5Dclose");
@@ -568,10 +570,12 @@ test_h5s_zero_dim(void)
     short               rdata_short[SPACE1_DIM2][SPACE1_DIM3];
     int                 wdata_real[SPACE1_DIM1][SPACE1_DIM2][SPACE1_DIM3];
     int                 rdata_real[SPACE1_DIM1][SPACE1_DIM2][SPACE1_DIM3];
+#ifndef NO_CHECK_SELECTION_BOUNDS
     int                 val = 3;
     hsize_t             start[] = {0, 0, 0};
     hsize_t             count[] = {3, 15, 13};
-    hsize_t            coord[1][3];    /* Coordinates for point selection */
+    hsize_t             coord[1][3];    /* Coordinates for point selection */
+#endif
     hssize_t            nelem;          /* Number of elements           */
     H5S_sel_type        sel_type;       /* Type of selection currently  */
     H5S_class_t         stype;          /* dataspace type               */
@@ -716,7 +720,7 @@ test_h5s_zero_dim(void)
                 }
             }
         }
-
+#ifndef NO_CHECK_SELECTION_BOUNDS
         /* Select a hyperslab beyond its current dimension sizes, then try to write
          * the data.  It should fail. */
         ret = H5Sselect_hyperslab(sid1, H5S_SELECT_SET, start, NULL, count, NULL);
@@ -726,11 +730,11 @@ test_h5s_zero_dim(void)
             ret = H5Dwrite(dset1, H5T_NATIVE_INT, H5S_ALL, sid1, H5P_DEFAULT, wdata);
         } H5E_END_TRY;
         VERIFY(ret, FAIL, "H5Dwrite");
-
+#endif
         /* Change to "none" selection */
         ret = H5Sselect_none(sid1);
         CHECK(ret, FAIL, "H5Sselect_none");
-
+#ifndef NO_CHECK_SELECTION_BOUNDS
         /* Select a point beyond the dimension size, then try to write the data.
          * It should fail. */
         coord[0][0]=2; coord[0][1]=5; coord[0][2]=3;
@@ -741,7 +745,7 @@ test_h5s_zero_dim(void)
             ret = H5Dwrite(dset1, H5T_NATIVE_INT, H5S_ALL, sid1, H5P_DEFAULT, &val);
         } H5E_END_TRY;
         VERIFY(ret, FAIL, "H5Dwrite");
-
+#endif
         /* Restore the selection to all */
         ret = H5Sselect_all(sid1);
         CHECK(ret, FAIL, "H5Sselect_all");
@@ -832,7 +836,7 @@ test_h5s_zero_dim(void)
                            i, j, rdata[i][j]);
                 }
         }
-
+#ifndef NO_CHECK_SELECTION_BOUNDS
         /* Now extend the first dimension size of the dataset to SPACE1_DIM1*3 past the maximal size.
          * It is supposed to fail. */
         extend_dims[0] = SPACE1_DIM1*3;
@@ -840,7 +844,7 @@ test_h5s_zero_dim(void)
             ret = H5Dset_extent(dset1, extend_dims);
         } H5E_END_TRY;
         VERIFY(ret, FAIL, "H5Dset_extent");
-
+#endif
         ret = H5Pclose(plist_id);
         CHECK(ret, FAIL, "H5Pclose");
 
@@ -3374,7 +3378,7 @@ test_h5s(void)
     test_h5s_basic();           /* Test basic H5S code */
     test_h5s_null();            /* Test Null dataspace H5S code */
     test_h5s_zero_dim();        /* Test dataspace with zero dimension size */
-
+#if 0
     /* Loop through all the combinations of low/high version bounds */
     for(low = H5F_LIBVER_EARLIEST; low < H5F_LIBVER_NBOUNDS; H5_INC_ENUM(H5F_libver_t, low)) {
         for(high = H5F_LIBVER_EARLIEST; high < H5F_LIBVER_NBOUNDS; H5_INC_ENUM(H5F_libver_t, high)) {
@@ -3382,15 +3386,18 @@ test_h5s(void)
             /* Invalid combinations, just continue */
             if(high == H5F_LIBVER_EARLIEST || high < low)
                 continue;
-
+#else
+            low = H5F_LIBVER_LATEST;
+            high = H5F_LIBVER_LATEST;
+#endif
             test_h5s_encode(low, high);                 /* Test encoding and decoding */
             test_h5s_encode_regular_hyper(low, high);   /* Test encoding regular hyperslabs */
             test_h5s_encode_irregular_hyper(low, high); /* Test encoding irregular hyperslabs */
             test_h5s_encode_points(low, high);          /* Test encoding points */
-
+#if 0
         } /* end high bound */
     } /* end low bound */
-
+#endif
     test_h5s_encode_length();   /* Test version 2 hyperslab encoding length is correct */
 #ifndef H5_NO_DEPRECATED_SYMBOLS
     test_h5s_encode1();         /* Test operations with old API routine (H5Sencode1) */

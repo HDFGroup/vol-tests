@@ -3962,10 +3962,14 @@ test_misc23(void)
     hsize_t     dims[] = {10};
     hid_t       file_id=0, group_id=0, type_id=0, space_id=0,
                 tmp_id=0, create_id=H5P_DEFAULT, access_id=H5P_DEFAULT;
+#ifndef NO_OBJECT_GET_NAME
     char        objname[MISC23_NAME_BUF_SIZE];  /* Name of object */
+#endif
     H5O_info2_t  oinfo;
     htri_t      tri_status;
+#ifndef NO_OBJECT_GET_NAME
     ssize_t     namelen;
+#endif
     herr_t      status;
 
     /* Output message about test being performed */
@@ -4033,12 +4037,12 @@ test_misc23(void)
 
     tmp_id = H5Gcreate2(file_id, "/A/B01/grp", create_id, H5P_DEFAULT, access_id);
     CHECK(tmp_id, FAIL, "H5Gcreate2");
-
+#ifndef NO_OBJECT_GET_NAME
     /* Query that the name of the new group is correct */
     namelen = H5Iget_name(tmp_id, objname, (size_t)MISC23_NAME_BUF_SIZE);
     CHECK(namelen, FAIL, "H5Iget_name");
     VERIFY_STR(objname, "/A/B01/grp", "H5Iget_name");
-
+#endif
     status = H5Gclose(tmp_id);
     CHECK(status, FAIL, "H5Gclose");
 
@@ -4266,23 +4270,23 @@ test_misc23(void)
     /**********************************************************************
     * test H5Lcreate_external()
     **********************************************************************/
-
+#ifndef NO_EXTERNAL_LINKS
     status = H5Lcreate_external("fake_filename", "fake_path", file_id, "/A/B20/grp", create_id, access_id);
     CHECK(status, FAIL, "H5Lcreate_external");
 
     tri_status = H5Lexists(file_id, "/A/B20/grp", access_id);
     VERIFY(tri_status, TRUE, "H5Lexists");
-
+#endif
     /**********************************************************************
     * test H5Lcreate_ud()
     **********************************************************************/
-
+#ifndef NO_USER_DEFINED_LINKS
     status = H5Lcreate_ud(file_id, "/A/B21/grp", H5L_TYPE_EXTERNAL, "file\0obj", (size_t) 9, create_id, access_id);
     CHECK(status, FAIL, "H5Lcreate_ud");
 
     tri_status = H5Lexists(file_id, "/A/B21/grp", access_id);
     VERIFY(tri_status, TRUE, "H5Lexists");
-
+#endif
     /**********************************************************************
     * close
     **********************************************************************/
@@ -4303,17 +4307,17 @@ test_misc23(void)
 **  test_misc24(): Test opening objects with inappropriate APIs
 **
 ****************************************************************/
-#if 0
 static void
 test_misc24(void)
 {
+#if 0
     hid_t       file_id = 0, group_id = 0, type_id = 0, space_id = 0,
                 dset_id = 0, tmp_id = 0;
     herr_t      ret;            /* Generic return value */
-
+#endif
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing opening objects with inappropriate APIs\n"));
-
+    MESSAGE(5, ("Testing opening objects with inappropriate APIs - SKIPPED due to causing problems in HDF5\n"));
+#if 0
     /* Create a new file using default properties. */
     file_id = H5Fcreate(MISC24_FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(file_id, FAIL, "H5Fcreate");
@@ -4504,8 +4508,8 @@ test_misc24(void)
     /* Close file */
     ret = H5Fclose(file_id);
     CHECK(ret, FAIL, "H5Fclose");
-} /* end test_misc24() */
 #endif
+} /* end test_misc24() */
 
 /****************************************************************
 **
@@ -5731,11 +5735,7 @@ test_misc(void)
     test_misc22();      /* check szip bits per pixel */
 #endif /* H5_HAVE_FILTER_SZIP */
     test_misc23();      /* Test intermediate group creation */
-#if 0
     test_misc24();      /* Test inappropriate API opens of objects */
-#else
-    HDprintf("** SKIPPED a test due to it causing issues in HDF5 **\n");
-#endif
     test_misc25a();     /* Exercise null object header message merge bug */
 #if 0
     test_misc25b();     /* Exercise null object header message merge bug on existing file */
