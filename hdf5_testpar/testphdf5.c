@@ -587,7 +587,7 @@ int main(int argc, char **argv)
 #endif
 
     if (MAINPROCESS) {
-        printf("dataset fill value - SKIPPED currently until fill values are supported\n");
+        printf("dataset fill value\n");
         fflush(stdout);
     }
     dataset_fillvalue();
@@ -743,10 +743,10 @@ int main(int argc, char **argv)
 #endif
 
     if (MAINPROCESS) {
-        printf("null dataset test - SKIPPED currently due to assertion in HDF5\n");
+        printf("null dataset test\n");
         fflush(stdout);
     }
-    /* null_dataset(); */
+    null_dataset();
 
 #if 0
     io_mode_confusion_params.name  = PARATESTFILE;

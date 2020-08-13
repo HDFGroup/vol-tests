@@ -224,7 +224,9 @@ static void test_rw_noupdate(void);
 static void
 test_file_create(void)
 {
-    hid_t        fid1, fid2, fid3; /* HDF5 File IDs        */
+    hid_t        fid1 = H5I_INVALID_HID;
+    hid_t        fid2 = H5I_INVALID_HID;
+    hid_t        fid3 = H5I_INVALID_HID; /* HDF5 File IDs        */
     hid_t        tmpl1, tmpl2;    /*file creation templates    */
     hsize_t        ublock;        /*sizeof userblock        */
     size_t        parm;        /*file-creation parameters    */
@@ -253,7 +255,7 @@ test_file_create(void)
     /* Create with H5F_ACC_EXCL */
     fid1 = H5Fcreate(FILE1, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(fid1, FAIL, "H5Fcreate");
-
+#ifndef NO_TRUNCATE_OPEN_FILE
     /*
      * try to create the same file with H5F_ACC_TRUNC. This should fail
      * because fid1 is the same file and is currently open.
@@ -262,7 +264,7 @@ test_file_create(void)
         fid2 = H5Fcreate(FILE1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(fid2, FAIL, "H5Fcreate");
-
+#endif
     /* Close all files */
     ret = H5Fclose(fid1);
     CHECK(ret, FAIL, "H5Fclose");
@@ -284,7 +286,7 @@ test_file_create(void)
     /* Test create with H5F_ACC_TRUNC. This will truncate the existing file. */
     fid1 = H5Fcreate(FILE1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(fid1, FAIL, "H5Fcreate");
-
+#ifndef NO_TRUNCATE_OPEN_FILE
     /*
      * Try to truncate first file again. This should fail because fid1 is the
      * same file and is currently open.
@@ -293,7 +295,7 @@ test_file_create(void)
         fid2 = H5Fcreate(FILE1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(fid2, FAIL, "H5Fcreate");
-
+#endif
     /*
      * Try with H5F_ACC_EXCL. This should fail too because the file already
      * exists.
@@ -1230,7 +1232,7 @@ test_get_obj_ids(void)
 
     /* Close the file first */
     H5Fclose(fid);
-
+#ifndef WRONG_DATATYPE_OBJ_COUNT
     /* Get the number of all opened objects */
     oid_count = H5Fget_obj_count((hid_t)H5F_OBJ_ALL, H5F_OBJ_ALL);
     CHECK(oid_count, FAIL, "H5Fget_obj_count");
@@ -1242,7 +1244,7 @@ test_get_obj_ids(void)
     /* Get the list of all opened objects */
     ret_count = H5Fget_obj_ids((hid_t)H5F_OBJ_ALL, H5F_OBJ_ALL, (size_t)oid_count, oid_list);
     CHECK(ret_count, FAIL, "H5Fget_obj_ids");
-    VERIFY(ret_count, NDSETS, "H5Fget_obj_count");
+    VERIFY(ret_count, NDSETS, "H5Fget_obj_ids");
 
     H5E_BEGIN_TRY
         /* Close all open objects with H5Oclose */
@@ -1251,6 +1253,7 @@ test_get_obj_ids(void)
     H5E_END_TRY;
 
     HDfree(oid_list);
+#endif
 }
 
 /****************************************************************
@@ -2047,7 +2050,6 @@ test_file_delete(hid_t fapl_id)
 **      works correctly in variuous situations.
 **
 *****************************************************************/
-#if 0
 static void
 test_file_open_dot(void)
 {
@@ -2163,7 +2165,6 @@ test_file_open_dot(void)
     CHECK(ret, FAIL, "H5Fclose");
 
 } /* end test_file_open_dot() */
-#endif
 
 /****************************************************************
 **
@@ -2227,11 +2228,11 @@ test_file_open_overlap(void)
     /* Create dataset in group w/first file ID */
     did1 = H5Dcreate2(gid, DSET1, H5T_NATIVE_INT, sid, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(did1, FAIL, "H5Dcreate2");
-
+#ifndef WRONG_DATATYPE_OBJ_COUNT
     /* Check number of objects opened in first file */
     nobjs = H5Fget_obj_count(fid1, H5F_OBJ_LOCAL|H5F_OBJ_ALL);
     VERIFY(nobjs, 3, "H5Fget_obj_count");       /* 3 == file, dataset & group */
-
+#endif
     /* Close dataset */
     ret = H5Dclose(did1);
     CHECK(ret, FAIL, "H5Dclose");
@@ -2538,7 +2539,6 @@ test_file_double_file_dataset_open(hbool_t new_format)
 #if 0
     hsize_t size;                               /* File size */
 #endif
-    char filename[FILENAME_LEN];    /* Filename to use */
     const char* data[] = {"String 1", "String 2", "String 3", "String 4", "String 5"};    /* Input Data */
     const char* e_data[] = {"String 1", "String 2", "String 3", "String 4", "String 5", "String 6", "String 7"};    /* Input Data */
     char* buffer[5];                /* Output buffer */
@@ -2557,10 +2557,8 @@ test_file_double_file_dataset_open(hbool_t new_format)
         CHECK(ret, FAIL, "H5Pset_libver_bounds");
     } /* end if */
 
-    h5_fixname(FILE1, fapl, filename, sizeof filename);
-
     /* Create the test file */
-    fid1 = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
+    fid1 = H5Fcreate(FILE1, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
     CHECK(fid1, FAIL, "H5Fcreate");
 
     /* Create a chunked dataset with fixed array indexing */
@@ -2650,7 +2648,7 @@ test_file_double_file_dataset_open(hbool_t new_format)
      */
 
     /* First file open */
-    fid1 = H5Fopen(filename, H5F_ACC_RDWR, fapl);
+    fid1 = H5Fopen(FILE1, H5F_ACC_RDWR, fapl);
     CHECK(fid1, FAIL, "H5Fopen");
 
     /* First file's dataset open */
@@ -2665,7 +2663,7 @@ test_file_double_file_dataset_open(hbool_t new_format)
     CHECK(ret, FAIL, "H5Dwrite");
 
     /* Second file open */
-    fid2 = H5Fopen(filename, H5F_ACC_RDWR, fapl);
+    fid2 = H5Fopen(FILE1, H5F_ACC_RDWR, fapl);
     CHECK(fid2, FAIL, "H5Fopen");
 
     /* Second file's dataset open */
@@ -2706,11 +2704,11 @@ test_file_double_file_dataset_open(hbool_t new_format)
      */
 
     /* First file open */
-    fid1 = H5Fopen(filename, H5F_ACC_RDONLY, fapl);
+    fid1 = H5Fopen(FILE1, H5F_ACC_RDONLY, fapl);
     CHECK(fid1, FAIL, "H5Fopen");
 
     /* Second file open */
-    fid2 = H5Fopen(filename, H5F_ACC_RDONLY, fapl);
+    fid2 = H5Fopen(FILE1, H5F_ACC_RDONLY, fapl);
     CHECK(fid2, FAIL, "H5Fopen");
 
     /* Second file's dataset open */
@@ -2771,7 +2769,7 @@ test_file_double_file_dataset_open(hbool_t new_format)
      */
 
     /* First file open */
-    fid1 = H5Fopen(filename, H5F_ACC_RDONLY, fapl);
+    fid1 = H5Fopen(FILE1, H5F_ACC_RDONLY, fapl);
     CHECK(fid1, FAIL, "H5Fopen");
 
     /* First file's dataset open */
@@ -2783,7 +2781,7 @@ test_file_double_file_dataset_open(hbool_t new_format)
     CHECK(size, 0, "H5Dget_storage_size");
 #endif
     /* Second file open */
-    fid2 = H5Fopen(filename, H5F_ACC_RDONLY, fapl);
+    fid2 = H5Fopen(FILE1, H5F_ACC_RDONLY, fapl);
     CHECK(fid2, FAIL, "H5Fopen");
 
     /* Second file's dataset open */
@@ -2816,7 +2814,7 @@ test_file_double_file_dataset_open(hbool_t new_format)
      *     from second call to H5Dset_extent->...H5D__earray_idx_remove->H5EA_get...H5EA__iblock_protect...H5AC_protect
      */
     /* First file open */
-    fid1 = H5Fopen(filename, H5F_ACC_RDWR, fapl);
+    fid1 = H5Fopen(FILE1, H5F_ACC_RDWR, fapl);
     CHECK(fid1, FAIL, "H5Fopen");
 
     /* First file's dataset open */
@@ -2835,7 +2833,7 @@ test_file_double_file_dataset_open(hbool_t new_format)
     CHECK(ret, FAIL, "H5Dwrite");
 
     /* Second file open */
-    fid2 = H5Fopen(filename, H5F_ACC_RDWR, fapl);
+    fid2 = H5Fopen(FILE1, H5F_ACC_RDWR, fapl);
     CHECK(fid2, FAIL, "H5Fopen");
 
     /* Second file's dataset open */
@@ -7938,11 +7936,7 @@ test_file(void)
     test_file_perm2();                          /* Test file access permission again */
     test_file_is_accessible(env_h5_drvr);       /* Test detecting HDF5 files correctly */
     test_file_delete(fapl_id);                  /* Test H5Fdelete */
-#if 0
     test_file_open_dot();                       /* Test opening objects with "." for a name */
-#else
-    HDprintf("** SKIPPED a test due to it causing issues in HDF5 **\n");
-#endif
     test_file_open_overlap();                   /* Test opening files in an overlapping manner */
     test_file_getname();                        /* Test basic H5Fget_name() functionality */
     test_file_double_root_open();               /* Test opening root group from two files works properly */

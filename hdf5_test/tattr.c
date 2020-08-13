@@ -175,7 +175,9 @@ test_attr_basic_write(hid_t fapl)
     hsize_t      dims3[] = {ATTR2_DIM1,ATTR2_DIM2};
     int          read_data1[ATTR1_DIM1]={0}; /* Buffer for reading 1st attribute */
     int          i;
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     hid_t        ret_id;        /* Generic hid_t return value */
+#endif
     herr_t       ret;           /* Generic return value */
 
     /* Output message about test being performed */
@@ -224,13 +226,13 @@ test_attr_basic_write(hid_t fapl)
     /* Create an attribute for the dataset */
     attr = H5Acreate2(dataset, ATTR1_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(attr, FAIL, "H5Acreate2");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(dataset, ATTR1_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write attribute information */
     ret = H5Awrite(attr, H5T_NATIVE_INT, attr_data1);
     CHECK(ret, FAIL, "H5Awrite");
@@ -365,12 +367,13 @@ test_attr_basic_write(hid_t fapl)
     attr_size = H5Aget_storage_size(attr);
     VERIFY(attr_size, (ATTR2_DIM1 * ATTR2_DIM2 * sizeof(int)), "H5Aget_storage_size");
 #endif
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(group, ATTR2_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write attribute information */
     ret = H5Awrite(attr, H5T_NATIVE_INT, attr_data2);
     CHECK(ret, FAIL, "H5Awrite");
@@ -405,7 +408,6 @@ test_attr_basic_write(hid_t fapl)
 static void
 test_attr_basic_read(hid_t fapl)
 {
-#if 0
     hid_t       fid1;        /* HDF5 File IDs        */
     hid_t       dataset;     /* Dataset ID            */
     hid_t       group;       /* Group ID            */
@@ -415,13 +417,10 @@ test_attr_basic_read(hid_t fapl)
     int         read_data2[ATTR2_DIM1][ATTR2_DIM2] = {{0}}; /* Buffer for reading 2nd attribute */
     int         i, j;       /* Local index variables        */
     herr_t      ret;        /* Generic return value        */
-#else
-    (void)fapl;
-#endif
 
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Basic Attribute Read Functions - SKIPPED temporarily until DAOS update\n"));
-#if 0
+    MESSAGE(5, ("Testing Basic Attribute Read Functions\n"));
+
     /* Create file */
     fid1 = H5Fopen(FILENAME, H5F_ACC_RDWR, fapl);
     CHECK(fid1, FAIL, "H5Fopen");
@@ -489,7 +488,6 @@ test_attr_basic_read(hid_t fapl)
     /* Close file */
     ret = H5Fclose(fid1);
     CHECK(ret, FAIL, "H5Fclose");
-#endif
 }   /* test_attr_basic_read() */
 
 
@@ -702,7 +700,9 @@ test_attr_compound_write(hid_t fapl)
     hid_t        attr;        /* Attribute ID            */
     hsize_t      dims1[] = {SPACE1_DIM1, SPACE1_DIM2, SPACE1_DIM3};
     hsize_t      dims2[] = {ATTR4_DIM1,ATTR4_DIM2};
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     hid_t        ret_id;        /* Generic hid_t return value    */
+#endif
     herr_t       ret;           /* Generic return value        */
 
     /* Output message about test being performed */
@@ -744,13 +744,13 @@ test_attr_compound_write(hid_t fapl)
     /* Create complex attribute for the dataset */
     attr = H5Acreate2(dataset, ATTR4_NAME, tid1, sid2, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(attr, FAIL, "H5Acreate2");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(dataset, ATTR4_NAME, tid1, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write complex attribute data */
     ret = H5Awrite(attr, tid1, attr_data4);
     CHECK(ret, FAIL, "H5Awrite");
@@ -940,7 +940,9 @@ test_attr_scalar_write(hid_t fapl)
     hid_t        sid1,sid2;   /* Dataspace ID            */
     hid_t        attr;        /* Attribute ID            */
     hsize_t      dims1[] = {SPACE1_DIM1, SPACE1_DIM2, SPACE1_DIM3};
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     hid_t        ret_id;        /* Generic hid_t return value    */
+#endif
     herr_t       ret;           /* Generic return value        */
 
     /* Output message about test being performed */
@@ -965,13 +967,13 @@ test_attr_scalar_write(hid_t fapl)
     /* Create an attribute for the dataset */
     attr = H5Acreate2(dataset, ATTR5_NAME, H5T_NATIVE_FLOAT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(attr, FAIL, "H5Acreate2");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(dataset, ATTR5_NAME, H5T_NATIVE_FLOAT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write attribute information */
     ret = H5Awrite(attr, H5T_NATIVE_FLOAT, &attr_data5);
     CHECK(ret, FAIL, "H5Awrite");
@@ -1083,7 +1085,9 @@ test_attr_mult_write(hid_t fapl)
     hsize_t      dims2[] = {ATTR1_DIM1};
     hsize_t      dims3[] = {ATTR2_DIM1,ATTR2_DIM2};
     hsize_t      dims4[] = {ATTR3_DIM1,ATTR3_DIM2,ATTR3_DIM3};
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     hid_t        ret_id;        /* Generic hid_t return value    */
+#endif
     herr_t       ret;           /* Generic return value        */
 
     /* Output message about test being performed */
@@ -1112,13 +1116,13 @@ test_attr_mult_write(hid_t fapl)
     /* Create 1st attribute for the dataset */
     attr = H5Acreate2(dataset, ATTR1_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(attr, FAIL, "H5Acreate2");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(dataset, ATTR1_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write 1st attribute data */
     ret = H5Awrite(attr, H5T_NATIVE_INT, attr_data1);
     CHECK(ret, FAIL, "H5Awrite");
@@ -1138,13 +1142,13 @@ test_attr_mult_write(hid_t fapl)
     /* Create 2nd attribute for the dataset */
     attr = H5Acreate2(dataset, ATTR2_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(attr, FAIL, "H5Acreate2");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(dataset, ATTR2_NAME, H5T_NATIVE_INT, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write 2nd attribute information */
     ret = H5Awrite(attr, H5T_NATIVE_INT, attr_data2);
     CHECK(ret, FAIL, "H5Awrite");
@@ -1164,13 +1168,13 @@ test_attr_mult_write(hid_t fapl)
     /* Create 3rd attribute for the dataset */
     attr = H5Acreate2(dataset, ATTR3_NAME, H5T_NATIVE_DOUBLE, sid2, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(attr, FAIL, "H5Acreate2");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Try to create the same attribute again (should fail) */
     H5E_BEGIN_TRY
         ret_id = H5Acreate2(dataset, ATTR3_NAME, H5T_NATIVE_DOUBLE, sid2, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(ret_id, FAIL, "H5Acreate2");
-
+#endif
     /* Write 3rd attribute information */
     ret = H5Awrite(attr, H5T_NATIVE_DOUBLE, attr_data3);
     CHECK(ret, FAIL, "H5Awrite");
@@ -1209,7 +1213,7 @@ test_attr_mult_read(hid_t fapl)
     char    attr_name[ATTR_NAME_LEN]; /* Buffer for attribute names */
     char    temp_name[ATTR_NAME_LEN]; /* Buffer for mangling attribute names */
     int     rank;       /* Attribute rank */
-    hsize_t dims[ATTR_MAX_DIMS];        /* Attribute dimensions */
+    hsize_t dims[ATTR_MAX_DIMS] = {0};        /* Attribute dimensions */
     H5T_class_t t_class;        /* Attribute datatype class */
     H5T_order_t order;          /* Attribute datatype order */
     size_t      size;           /* Attribute datatype size as stored in file */
@@ -1535,7 +1539,6 @@ test_attr_iterate(hid_t fapl)
 static void
 test_attr_delete(hid_t fapl)
 {
-#if 0
     hid_t   fid1;       /* HDF5 File ID         */
     hid_t   dataset;    /* Dataset ID            */
     hid_t   attr;       /* Attribute ID            */
@@ -1543,13 +1546,10 @@ test_attr_delete(hid_t fapl)
     ssize_t name_len;   /* Length of attribute name     */
     H5O_info2_t oinfo;   /* Object info                  */
     herr_t  ret;        /* Generic return value        */
-#else
-    (void)fapl;
-#endif
 
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Basic Attribute Deletion Functions - SKIPPED temporarily until DAOS update\n"));
-#if 0
+    MESSAGE(5, ("Testing Basic Attribute Deletion Functions\n"));
+
     /* Open file */
     fid1 = H5Fopen(FILENAME, H5F_ACC_RDWR, fapl);
     CHECK(fid1, FAIL, "H5Fopen");
@@ -1562,13 +1562,13 @@ test_attr_delete(hid_t fapl)
     ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
     VERIFY(oinfo.num_attrs, 3, "H5Oget_info");
-
+#ifndef NO_DELETE_NONEXISTENT_ATTRIBUTE
     /* Try to delete bogus attribute */
     H5E_BEGIN_TRY
         ret = H5Adelete(dataset, "Bogus");
     H5E_END_TRY;
     VERIFY(ret, FAIL, "H5Adelete");
-
+#endif
     /* Verify the correct number of attributes */
     ret = H5Oget_info3(dataset, &oinfo, H5O_INFO_NUM_ATTRS);
     CHECK(ret, FAIL, "H5Oget_info");
@@ -1650,7 +1650,6 @@ test_attr_delete(hid_t fapl)
     /* Close file */
     ret = H5Fclose(fid1);
     CHECK(ret, FAIL, "H5Fclose");
-#endif
 }   /* test_attr_delete() */
 
 
@@ -1663,6 +1662,7 @@ test_attr_delete(hid_t fapl)
 static void
 test_attr_dtype_shared(hid_t fapl)
 {
+#ifndef NO_SHARED_DATATYPES
     hid_t file_id;              /* File ID */
     hid_t dset_id;              /* Dataset ID */
     hid_t space_id;             /* Dataspace ID for dataset & attribute */
@@ -1676,10 +1676,12 @@ test_attr_dtype_shared(hid_t fapl)
     h5_stat_size_t filesize;             /* Size of file after modifications */
 #endif
     herr_t  ret;                /* Generic return value        */
-
+#else
+    (void)fapl;
+#endif
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Shared Datatypes with Attributes\n"));
-
+    MESSAGE(5, ("Testing Shared Datatypes with Attributes - SKIPPED for now due to no support for shared datatypes\n"));
+#ifndef NO_SHARED_DATATYPES
     /* Create a file */
     file_id = H5Fcreate(FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
     CHECK(file_id, FAIL, "H5Fopen");
@@ -1830,6 +1832,7 @@ test_attr_dtype_shared(hid_t fapl)
     /* Check size of file */
     filesize = h5_get_file_size(FILENAME, fapl);
     VERIFY(filesize, empty_filesize, "h5_get_file_size");
+#endif
 #endif
 }   /* test_attr_dtype_shared() */
 
@@ -2262,13 +2265,13 @@ test_attr_dense_create(hid_t fcpl, hid_t fapl)
     /* Close attribute */
     ret = H5Aclose(attr);
     CHECK(ret, FAIL, "H5Aclose");
-
+#ifndef NO_PREVENT_CREATE_SAME_ATTRIBUTE_TWICE
     /* Attempt to add attribute again, which should fail */
     H5E_BEGIN_TRY
         attr = H5Acreate2(dataset, attrname, H5T_NATIVE_UINT, sid, H5P_DEFAULT, H5P_DEFAULT);
     H5E_END_TRY;
     VERIFY(attr, FAIL, "H5Acreate2");
-
+#endif
     /* Close dataspace */
     ret = H5Sclose(sid);
     CHECK(ret, FAIL, "H5Sclose");
@@ -2649,7 +2652,6 @@ test_attr_dense_delete(hid_t fcpl, hid_t fapl)
 static void
 test_attr_dense_rename(hid_t fcpl, hid_t fapl)
 {
-#if 0
     hid_t    fid;               /* HDF5 File ID            */
     hid_t    dataset;           /* Dataset ID            */
     hid_t    sid;               /* Dataspace ID            */
@@ -2669,13 +2671,10 @@ test_attr_dense_rename(hid_t fcpl, hid_t fapl)
     int         use_min_dset_oh = (dcpl_g != H5P_DEFAULT);
     unsigned    use_corder;     /* Track creation order or not */
     herr_t      ret;            /* Generic return value        */
-#else
-    (void)fcpl;
-    (void)fapl;
-#endif
+
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing Renaming Attributes in Dense Storage - SKIPPED temporarily until DAOS update\n"));
-#if 0
+    MESSAGE(5, ("Testing Renaming Attributes in Dense Storage\n"));
+
     if (use_min_dset_oh) { /* using minimized dataset headers */
         /* modify fcpl...
          * sidestep "bug" where file space is lost with minimized dset ohdrs
@@ -2835,7 +2834,6 @@ test_attr_dense_rename(hid_t fcpl, hid_t fapl)
     /* Check size of file */
     filesize = h5_get_file_size(FILENAME, fapl);
     VERIFY(filesize, empty_filesize, "h5_get_file_size");
-#endif
 #endif
 }   /* test_attr_dense_rename() */
 
@@ -3171,7 +3169,6 @@ test_attr_dense_limits(hid_t fcpl, hid_t fapl)
 static void
 test_attr_dense_dup_ids(hid_t fcpl, hid_t fapl)
 {
-#if 0
     hid_t    fid;           /* HDF5 File ID            */
     hid_t    dataset;       /* Dataset ID            */
     hid_t    gid1, gid2;    /* Group ID            */
@@ -3191,14 +3188,10 @@ test_attr_dense_dup_ids(hid_t fcpl, hid_t fapl)
 #endif
     unsigned    u, i;           /* Local index variable */
     herr_t      ret;            /* Generic return value        */
-#else
-    (void)fcpl;
-    (void)fapl;
-#endif
 
     /* Output message about test being performed */
-    MESSAGE(5, ("Testing operations with two IDs for Dense Storage - SKIPPED temporarily until DAOS update\n"));
-#if 0
+    MESSAGE(5, ("Testing operations with two IDs for Dense Storage\n"));
+
     /*-----------------------------------------------------------------------------------
      *        Create an attribute in dense storage and fill it with fill value.
      */
@@ -3694,7 +3687,6 @@ test_attr_dense_dup_ids(hid_t fcpl, hid_t fapl)
     /* Close file */
     ret = H5Fclose(fid);
     CHECK(ret, FAIL, "H5Fclose");
-#endif
 }   /* test_attr_dense_dup_ids() */
 
 
@@ -3940,6 +3932,7 @@ test_attr_big(hid_t fcpl, hid_t fapl)
         VERIFY(is_empty, TRUE, "H5O__is_attr_empty_test");
 #endif
     } /* end if */
+#if 0
     else {
         /* Shouldn't be able to create "big" attributes with older version of format */
         VERIFY(attr, FAIL, "H5Acreate2");
@@ -3949,13 +3942,12 @@ test_attr_big(hid_t fcpl, hid_t fapl)
          *  message heap instead of forcing the attribute storage into the dense
          *  form - QAK)
          */
-#if 0
         is_empty = H5O__is_attr_empty_test(dataset);
         VERIFY(is_empty, FALSE, "H5O__is_attr_empty_test");
         is_dense = H5O__is_attr_dense_test(dataset);
         VERIFY(is_dense, FALSE, "H5O__is_attr_dense_test");
-#endif
     } /* end else */
+#endif
 
 
     /* Close dataspaces */
@@ -4483,20 +4475,23 @@ test_attr_corder_create_basic(hid_t fcpl, hid_t fapl)
         dcpl = H5Pcopy(dcpl_g);
         CHECK(dcpl, FAIL, "H5Pcopy");
     }
-
+#if 0
     /* Get creation order indexing on object */
     ret = H5Pget_attr_creation_order(dcpl, &crt_order_flags);
     CHECK(ret, FAIL, "H5Pget_attr_creation_order");
     VERIFY(crt_order_flags, 0, "H5Pget_attr_creation_order");
-
+#endif
     /* Setting invalid combination of a attribute order creation order indexing on should fail */
     H5E_BEGIN_TRY
         ret = H5Pset_attr_creation_order(dcpl, H5P_CRT_ORDER_INDEXED);
     H5E_END_TRY;
     VERIFY(ret, FAIL, "H5Pset_attr_creation_order");
+
+#if 0
     ret = H5Pget_attr_creation_order(dcpl, &crt_order_flags);
     CHECK(ret, FAIL, "H5Pget_attr_creation_order");
     VERIFY(crt_order_flags, 0, "H5Pget_attr_creation_order");
+#endif
 
     /* Set attribute creation order tracking & indexing for object */
     ret = H5Pset_attr_creation_order(dcpl, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED));
@@ -6360,7 +6355,6 @@ test_attr_get_name_invalid_buf(hid_t fcpl, hid_t fapl)
 static void
 test_attr_delete_by_idx(hbool_t new_format, hid_t fcpl, hid_t fapl)
 {
-#if 0
     hid_t    fid;        /* HDF5 File ID            */
     hid_t    dset1, dset2, dset3;    /* Dataset IDs            */
     hid_t    my_dataset;    /* Current dataset ID        */
@@ -6385,14 +6379,9 @@ test_attr_delete_by_idx(hbool_t new_format, hid_t fcpl, hid_t fapl)
     unsigned    curr_dset;      /* Current dataset to work on */
     unsigned    u;              /* Local index variable */
     herr_t    ret;        /* Generic return value        */
-#else
-    (void)new_format;
-    (void)fcpl;
-    (void)fapl;
-#endif
 
-    MESSAGE(5, ("Testing Deleting Attribute By Index - SKIPPED temporarily until DAOS update\n"))
-#if 0
+    MESSAGE(5, ("Testing Deleting Attribute By Index\n"))
+
     /* Create dataspace for dataset & attributes */
     sid = H5Screate(H5S_SCALAR);
     CHECK(sid, FAIL, "H5Screate");
@@ -6912,7 +6901,6 @@ test_attr_delete_by_idx(hbool_t new_format, hid_t fcpl, hid_t fapl)
     /* Close dataspace */
     ret = H5Sclose(sid);
     CHECK(ret, FAIL, "H5Sclose");
-#endif
 }   /* test_attr_delete_by_idx() */
 
 
@@ -7004,6 +6992,7 @@ attr_iterate1_cb(hid_t loc_id, const char *attr_name, void *_op_data)
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
 #endif
 
+#ifndef NO_ITERATION_RESTART
 /*-------------------------------------------------------------------------
  * Function:    attr_iterate2_fail_cb
  *
@@ -7332,7 +7321,7 @@ attr_iterate_check(hid_t fid, const char *dsetname, hid_t obj_id,
     else
         return(-1);
 } /* end attr_iterate_check() */
-
+#endif
 
 /****************************************************************
 **
@@ -7362,7 +7351,9 @@ test_attr_iterate2(hbool_t new_format, hid_t fcpl, hid_t fapl)
     H5_iter_order_t order;      /* Order within in the index */
     attr_iter_info_t iter_info; /* Iterator info */
     hbool_t     *visited = NULL;        /* Array of flags for visiting links */
+#ifndef NO_ITERATION_RESTART
     hsize_t     idx;            /* Start index for iteration */
+#endif
     unsigned     use_index;     /* Use index on creation order values */
     const char *dsetname;       /* Name of dataset for attributes */
     char    attrname[NAME_BUF_SIZE];    /* Name of attribute */
@@ -7519,6 +7510,7 @@ test_attr_iterate2(hbool_t new_format, hid_t fcpl, hid_t fapl)
                     is_dense = H5O__is_attr_dense_test(my_dataset);
                     VERIFY(is_dense, FALSE, "H5O__is_attr_dense_test");
 #endif
+#ifndef NO_ITERATION_RESTART
                     /* Check for out of bound iteration */
                     idx = u;
                     H5E_BEGIN_TRY
@@ -7541,6 +7533,7 @@ test_attr_iterate2(hbool_t new_format, hid_t fcpl, hid_t fapl)
                     /* Test iteration over attributes stored compactly */
                     ret = attr_iterate_check(fid, dsetname, my_dataset, idx_type, order, u, &iter_info);
                     CHECK(ret, FAIL, "attr_iterate_check");
+#endif
                 } /* end for */
 
 
@@ -7611,6 +7604,7 @@ test_attr_iterate2(hbool_t new_format, hid_t fcpl, hid_t fapl)
                         VERIFY(name_count, (max_compact * 2), "H5O__attr_dense_info_test");
                     } /* end if */
 #endif
+#ifndef NO_ITERATION_RESTART
                     /* Check for out of bound iteration */
                     idx = u;
                     H5E_BEGIN_TRY
@@ -7633,6 +7627,7 @@ test_attr_iterate2(hbool_t new_format, hid_t fcpl, hid_t fapl)
                     /* Test iteration over attributes stored densely */
                     ret = attr_iterate_check(fid, dsetname, my_dataset, idx_type, order, u, &iter_info);
                     CHECK(ret, FAIL, "attr_iterate_check");
+#endif
                 } /* end for */
 
                 /* Close Datasets */
@@ -11565,9 +11560,10 @@ test_attr(void)
                  * attributes being larger than 64K */
                 test_attr_bug8(my_fcpl, /* my_fapl */ fapl);               /* Test attribute expanding object header with undecoded messages */
                 test_attr_bug9(my_fcpl, /* my_fapl */ fapl);               /* Test large attributes converting to dense storage */
-
+#if 0
                 /* tests specific to the "new format" */
                 if (new_format == TRUE) {
+#endif
                     /* General attribute tests */
                     test_attr_dense_create(my_fcpl, /* my_fapl */ fapl);       /* Test dense attribute storage creation */
                     test_attr_dense_open(my_fcpl, /* my_fapl */ fapl);         /* Test opening attributes in dense storage */
@@ -11599,8 +11595,9 @@ test_attr(void)
                      * and in fact fails if used with the old format due to the
                      * attributes being larger than 64K */
                     test_attr_bug7(my_fcpl, /* my_fapl */ fapl);               /* Test creating and deleting large attributes in ohdr chunk 0 */
-
+#if 0
                 } /* if using "new format" */
+#endif
             } /* for unshared/shared attributes */
 #if 0
         } /* for old/new format */

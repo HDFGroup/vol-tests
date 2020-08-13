@@ -18,6 +18,7 @@
 
 #include "H5private.h"
 #include "testpar.h"
+#include "vol_tests_disabled.h"
 
 /*
  * Define parameters for various tests since we do not have access to

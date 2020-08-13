@@ -22,17 +22,7 @@
 /* #include "h5test.h" */
 #include "hdf5.h"
 #include "H5private.h"
-
-/* Temporarily disable tests until object reference counts are supported */
-#define NO_REF_COUNT
-
-/* Temporarily disable tests until attribute (0) fill values are supported */
-#define NO_ATTR_FILL_VALUE_SUPPORT
-
-#define NO_DECREASING_ALPHA_ITER_ORDER
-
-/* Disable edge case test */
-#define NO_WRITE_SAME_ELEMENT_TWICE
+#include "vol_tests_disabled.h"
 
 #define VERBO_NONE 0     /* None    */
 #define VERBO_DEF  3     /* Default */
