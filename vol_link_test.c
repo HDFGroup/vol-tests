@@ -7938,7 +7938,7 @@ test_copy_link_invalid_params(void)
 
             PASSED();
         } PART_END(H5Lcopy_invalid_same_location);
- 
+
         PART_BEGIN(H5Lcopy_invalid_across_files) {
             TESTING_2("H5Lcopy invalid across files")
 
@@ -7951,13 +7951,13 @@ test_copy_link_invalid_params(void)
             }
 
             H5E_BEGIN_TRY {
-                err_ret = H5Lcopy(group_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, ext_file_id,
+                err_ret = H5Lcopy(src_grp_id, COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, ext_file_id,
                         COPY_LINK_INVALID_PARAMS_TEST_HARD_LINK_COPY_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Lcopy succeeded with an invalid same location\n");
+                HDprintf("    H5Lcopy succeeded in copying a hard link across files!\n");
                 PART_ERROR(H5Lcopy_invalid_across_files);
             }
 
@@ -10049,13 +10049,13 @@ test_move_link_invalid_params(void)
 
             /* Move a group across files. */
             H5E_BEGIN_TRY {
-                err_ret = H5Lmove(group_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, ext_file_id,
+                err_ret = H5Lmove(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, ext_file_id,
                     MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT, H5P_DEFAULT);
             } H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
-                HDprintf("    H5Lmove succeeded with an invalid external location!\n");
+                HDprintf("    H5Lmove succeeded in moving a hard link across files!\n");
                 PART_ERROR(H5Lmove_across_files);
             }
 
