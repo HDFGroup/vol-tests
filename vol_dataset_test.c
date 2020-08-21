@@ -6664,8 +6664,8 @@ test_dataset_compound_partial_io(void)
 
             /* Initialize wbuf */
             for (i = 0; i < DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS; i++) {
-                wbuf[i].a = 2 * i;
-                wbuf[i].b = 2 * i + 1;
+                wbuf[i].a = (int)(2 * i);
+                wbuf[i].b = (int)(2 * i + 1);
             }
 
             /* Write data */
@@ -6742,8 +6742,8 @@ test_dataset_compound_partial_io(void)
 
             /* Initialize wbuf */
             for (i = 0; i < DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS; i++) {
-                wbuf[i].a = 2 * DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS + 2 * i;
-                wbuf[i].b = 2 * DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS + 2 * i + 1;
+                wbuf[i].a = (int)(2 * DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS + 2 * i);
+                wbuf[i].b = (int)(2 * DATASET_COMPOUND_PARTIAL_IO_DSET_DIMS + 2 * i + 1);
             }
 
             /* Write data */

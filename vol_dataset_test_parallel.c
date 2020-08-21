@@ -3317,7 +3317,7 @@ test_read_dataset_one_proc_0_selection(void)
     hsize_t   stride[DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK];
     hsize_t   count[DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK];
     hsize_t   block[DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK];
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -3385,7 +3385,7 @@ test_read_dataset_one_proc_0_selection(void)
                 for (j = 0; j < elem_per_proc; j++) {
                     size_t idx = (i * elem_per_proc) + j;
 
-                    ((int *) write_buf)[idx] = (size_t) i;
+                    ((int *) write_buf)[idx] = (int) i;
                 }
             }
 
@@ -3490,7 +3490,9 @@ test_read_dataset_one_proc_0_selection(void)
 
     BEGIN_INDEPENDENT_OP(read_buf_alloc) {
         if (!MAINPROCESS) {
-            if (NULL == (read_buf = HDmalloc(((hsize_t) space_npoints / (size_t) mpi_size) * (size_t) DATASET_READ_ONE_PROC_0_SEL_TEST_DTYPE_SIZE))) {
+            read_buf_size = ((size_t)(space_npoints / mpi_size) * DATASET_READ_ONE_PROC_0_SEL_TEST_DTYPE_SIZE);
+
+            if (NULL == (read_buf = HDmalloc(read_buf_size))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(read_buf_alloc);
@@ -3615,7 +3617,7 @@ test_read_dataset_one_proc_none_selection(void)
     hsize_t   stride[DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK];
     hsize_t   count[DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK];
     hsize_t   block[DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK];
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -3788,7 +3790,9 @@ test_read_dataset_one_proc_none_selection(void)
 
     BEGIN_INDEPENDENT_OP(read_buf_alloc) {
         if (!MAINPROCESS) {
-            if (NULL == (read_buf = HDmalloc(((hsize_t) space_npoints / (size_t) mpi_size) * (size_t) DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE))) {
+            read_buf_size = ((size_t)(space_npoints / mpi_size) * DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE);
+
+            if (NULL == (read_buf = HDmalloc(read_buf_size))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(read_buf_alloc);
@@ -3921,7 +3925,7 @@ test_read_dataset_one_proc_all_selection(void)
 {
     hssize_t  space_npoints;
     hsize_t  *dims = NULL;
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -4094,7 +4098,9 @@ test_read_dataset_one_proc_all_selection(void)
 
     BEGIN_INDEPENDENT_OP(read_buf_alloc) {
         if (MAINPROCESS) {
-            if (NULL == (read_buf = HDmalloc((size_t) (space_npoints * DATASET_READ_ONE_PROC_ALL_SEL_TEST_DTYPE_SIZE)))) {
+            read_buf_size = (size_t)space_npoints * DATASET_READ_ONE_PROC_ALL_SEL_TEST_DTYPE_SIZE;
+
+            if (NULL == (read_buf = HDmalloc(read_buf_size))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(read_buf_alloc);
@@ -4147,7 +4153,7 @@ test_read_dataset_one_proc_all_selection(void)
                 size_t elem_per_proc = (size_t) (space_npoints / mpi_size);
 
                 for (j = 0; j < elem_per_proc; j++) {
-                    int idx = (i * elem_per_proc) + j;
+                    int idx = (int)((i * elem_per_proc) + j);
 
                     if (((int *) read_buf)[idx] != (int) i) {
                         H5_FAILED();
@@ -4235,7 +4241,7 @@ test_read_dataset_all_file_hyper_mem(void)
 {
     hssize_t  space_npoints;
     hsize_t  *dims = NULL;
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -4423,7 +4429,8 @@ test_read_dataset_all_file_hyper_mem(void)
              * buffer in order to prove that the mapping from all selection <-> hyperslab
              * selection works correctly.
              */
-            if (NULL == (read_buf = HDcalloc(1, (size_t) (2 * space_npoints * DATASET_READ_ALL_FILE_HYPER_MEM_TEST_DTYPE_SIZE)))) {
+            read_buf_size = (size_t)(2 * space_npoints) * DATASET_READ_ALL_FILE_HYPER_MEM_TEST_DTYPE_SIZE;
+            if (NULL == (read_buf = HDcalloc(1, read_buf_size))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(dset_read);
@@ -4548,7 +4555,7 @@ test_read_dataset_all_file_point_mem(void)
     hssize_t  space_npoints;
     hsize_t  *points = NULL;
     hsize_t  *dims = NULL;
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -4733,7 +4740,8 @@ test_read_dataset_all_file_point_mem(void)
              * buffer in order to prove that the mapping from all selection <-> point
              * selection works correctly.
              */
-            if (NULL == (read_buf = HDcalloc(1, (size_t) (2 * space_npoints * DATASET_READ_ALL_FILE_POINT_MEM_TEST_DTYPE_SIZE)))) {
+            read_buf_size = (size_t)(2 * space_npoints) * DATASET_READ_ALL_FILE_POINT_MEM_TEST_DTYPE_SIZE;
+            if (NULL == (read_buf = HDcalloc(1, read_buf_size))) {
                 H5_FAILED();
                 HDprintf("    couldn't allocate buffer for dataset read\n");
                 INDEPENDENT_OP_ERROR(dset_read);
@@ -4864,7 +4872,7 @@ test_read_dataset_hyper_file_point_mem(void)
     hsize_t   stride[DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK];
     hsize_t   count[DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK];
     hsize_t   block[DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK];
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -5040,7 +5048,8 @@ test_read_dataset_hyper_file_point_mem(void)
      * buffer in order to prove that the mapping from hyperslab selection <-> point
      * selection works correctly.
      */
-    if (NULL == (read_buf = HDcalloc(1, 2 * ((hsize_t) space_npoints / (size_t) mpi_size) * (size_t) DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE))) {
+    read_buf_size = (2 * (size_t)(space_npoints / mpi_size) * DATASET_READ_ONE_PROC_NONE_SEL_TEST_DTYPE_SIZE);
+    if (NULL == (read_buf = HDcalloc(1, read_buf_size))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for dataset read\n");
         goto error;
@@ -5184,7 +5193,7 @@ test_read_dataset_point_file_hyper_mem(void)
     hssize_t  space_npoints;
     hsize_t  *dims = NULL;
     hsize_t  *points = NULL;
-    size_t    i, data_size;
+    size_t    i, data_size, read_buf_size;
     hid_t     file_id = H5I_INVALID_HID;
     hid_t     fapl_id = H5I_INVALID_HID;
     hid_t     container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
@@ -5360,7 +5369,8 @@ test_read_dataset_point_file_hyper_mem(void)
      * buffer in order to prove that the mapping from point selection <-> hyperslab
      * selection works correctly.
      */
-    if (NULL == (read_buf = HDcalloc(1, (size_t) (2 * (space_npoints / mpi_size) * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_DTYPE_SIZE)))) {
+    read_buf_size = (2 * (size_t)(space_npoints / mpi_size) * DATASET_READ_POINT_FILE_HYPER_MEM_TEST_DTYPE_SIZE);
+    if (NULL == (read_buf = HDcalloc(1, read_buf_size))) {
         H5_FAILED();
         HDprintf("    couldn't allocate buffer for dataset read\n");
         goto error;

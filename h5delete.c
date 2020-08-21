@@ -22,8 +22,9 @@
 
 #include <hdf5.h>
 
+static void usage(void);
 
-void
+static void
 usage(void)
 {
     fprintf(stderr, "Usage: h5delete [-f] <filename>\n");

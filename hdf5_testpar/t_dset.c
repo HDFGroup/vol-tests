@@ -584,7 +584,7 @@ dataset_writeAll(void)
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
 
     /* set up the coords array selection */
-    num_points = (hsize_t)dim1;
+    num_points = (size_t)dim1;
     coords = (hsize_t *)HDmalloc((size_t)(dim1 * RANK) * sizeof(hsize_t));
     VRFY((coords != NULL), "coords malloc succeeded");
 
@@ -1115,7 +1115,7 @@ dataset_readAll(void)
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
 
     /* set up the coords array selection */
-    num_points = (hsize_t) dim1;
+    num_points = (size_t) dim1;
     coords = (hsize_t *)HDmalloc((size_t)(dim0 * dim1 * RANK) * sizeof(hsize_t));
     VRFY((coords != NULL), "coords malloc succeeded");
 
