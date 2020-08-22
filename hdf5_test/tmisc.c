@@ -2811,6 +2811,9 @@ test_misc16(void)
     hsize_t        dims[] = {MISC16_SPACE_DIM};
     int                 i;
 
+    HDmemset(wdata, 0, sizeof(wdata));
+    HDmemset(rdata, 0, sizeof(rdata));
+
     /* Initialize the data */
     /* (Note that these are supposed to stress the code, so are a little weird) */
     HDmemcpy(wdata[0], "1234567", MISC16_STR_SIZE);
@@ -2895,6 +2898,9 @@ test_misc17(void)
     hid_t        tid;       /* Datatype ID            */
     hsize_t        dims[] = {MISC17_SPACE_DIM1, MISC17_SPACE_DIM2};
     int                 i;
+
+    HDmemset(wdata, 0, sizeof(wdata));
+    HDmemset(rdata, 0, sizeof(rdata));
 
     /* Initialize the data */
     /* (Note that these are supposed to stress the code, so are a little weird) */
