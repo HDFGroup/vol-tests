@@ -723,7 +723,7 @@ dataset_big_write(void)
     count[0] = 1;
     count[1] = 1;
     start[0] = 0;
-    start[1] = dims[1]/(hsize_t) (mpi_size * mpi_rank);
+    start[1] = (dims[1]/(hsize_t)mpi_size) * (hsize_t)mpi_rank;
 
     num_points = bigcount;
 
@@ -1031,7 +1031,7 @@ dataset_big_read(void)
     count[0] = 1;
     count[1] = 1;
     start[0] = 0;
-    start[1] = dims[1]/(hsize_t) (mpi_size * mpi_rank);
+    start[1] = (dims[1]/(hsize_t)mpi_size) * (hsize_t)mpi_rank;
 
     fill_datasets(start, block, wdata);
     MESG("data_array initialized");
