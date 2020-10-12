@@ -830,7 +830,7 @@ main(int argc, char *argv[])
     /* Exit failure if errors encountered; else exit success. */
     /* No need to print anything since PerformTests() already does. */
     if (nerrors /* GetTestNumErrs() */ > 0) {
-        HDprintf("** HDF5 tests failed with %lld errors **\n", nerrors);
+        HDprintf("** HDF5 tests failed with %d errors **\n", nerrors);
         HDexit(EXIT_FAILURE);
     } else {
         HDprintf("** HDF5 tests ran successfully **\n");

@@ -6206,7 +6206,7 @@ object_copy_soft_link_non_expand_callback(hid_t group, const char *name,
 
     if (strncmp(link_val_buf, expected_link_val, OBJECT_COPY_GROUP_WITH_SOFT_LINKS_TEST_BUF_SIZE)) {
         HDprintf("    value '%s' for link '%s' did not match expected value '%s'\n",
-                link_val_buf, name, expected_link_val);
+                (char *) link_val_buf, name, expected_link_val);
         ret_value = H5_ITER_ERROR;
         goto done;
     }

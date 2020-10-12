@@ -7543,7 +7543,8 @@ test_dataset_set_extent_data(void)
             for (i = 0; i < DATASET_SET_EXTENT_DATA_TEST_SPACE_RANK; i++)
                 if (dims_out[i] != 0) {
                     H5_FAILED();
-                    HDprintf("    dims_out[%d] = %d.  It should be 0.\n", i, dims_out[i]);
+                    HDprintf("    dims_out[%d] = %llu.  It should be 0.\n",
+                            i, (long long unsigned int) dims_out[i]);
                     PART_ERROR(H5Dset_extent_data_shrink_to_zero);
                 }
 
@@ -8771,7 +8772,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
     for (i = 0; i < data_size / chunk_size; i++) {
         size_t j, k;
 
-        HDprintf("\r Reading chunk %lld", i);
+        HDprintf("\r Reading chunk %zu", i);
 
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (dims[j] == chunk_dims[j])
@@ -9075,7 +9076,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     for (i = 0; i < data_size / chunk_size; i++) {
         size_t j;
 
-        HDprintf("\r Reading chunk %lld", i);
+        HDprintf("\r Reading chunk %zu", i);
 
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (dims[j] == chunk_dims[j])
@@ -9371,7 +9372,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
         for (i = 0; i < data_size / chunk_size; i++) {
             size_t j, k;
 
-            HDprintf("\r Reading chunk %lld", i);
+            HDprintf("\r Reading chunk %zu", i);
 
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
                 if (dims[j] == chunk_dims[j])
@@ -9682,7 +9683,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
         for (i = 0; i < data_size / chunk_size; i++) {
             size_t j;
 
-            HDprintf("\r Reading chunk %lld", i);
+            HDprintf("\r Reading chunk %zu", i);
 
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
                 if (dims[j] == chunk_dims[j])
@@ -9891,7 +9892,7 @@ test_read_partial_chunk_all_selection(void)
             if (read_buf[i][j] != (int) ((i * FIXED_DIMSIZE) + j)) {
                 H5_FAILED();
                 HDprintf("    data verification failed for read buffer element %lld: expected %lld but was %lld\n",
-                        (long long) ((i * FIXED_DIMSIZE) + j), (long long) ((i * FIXED_DIMSIZE) + j), read_buf[i][j]);
+                        (long long) ((i * FIXED_DIMSIZE) + j), (long long) ((i * FIXED_DIMSIZE) + j), (long long) read_buf[i][j]);
                 goto error;
             }
 
@@ -10112,7 +10113,7 @@ test_read_partial_chunk_hyperslab_selection(void)
             goto error;
         }
 
-        HDprintf("\r Writing chunk %lld", i);
+        HDprintf("\r Writing chunk %zu", i);
 
         if (H5Dwrite(dset_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, write_buf) < 0) {
             H5_FAILED();
@@ -10145,7 +10146,7 @@ test_read_partial_chunk_hyperslab_selection(void)
             goto error;
         }
 
-        HDprintf("\r Reading chunk %lld", i);
+        HDprintf("\r Reading chunk %zu", i);
 
         if (H5Dread(dset_id, DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_DTYPE, mspace_id, fspace_id, H5P_DEFAULT, read_buf) < 0) {
             H5_FAILED();
@@ -10158,7 +10159,7 @@ test_read_partial_chunk_hyperslab_selection(void)
                 if (read_buf[j][k] != (int) ((j * FIXED_CHUNK_DIMSIZE) + k)) {
                     H5_FAILED();
                     HDprintf("    data verification failed for read buffer element %lld: expected %lld but was %lld\n",
-                            (long long) ((j * FIXED_CHUNK_DIMSIZE) + k), (long long) ((j * FIXED_CHUNK_DIMSIZE) + k), read_buf[j][k]);
+                            (long long) ((j * FIXED_CHUNK_DIMSIZE) + k), (long long) ((j * FIXED_CHUNK_DIMSIZE) + k), (long long) read_buf[j][k]);
                     goto error;
                 }
     }

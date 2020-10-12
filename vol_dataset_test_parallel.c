@@ -5818,7 +5818,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
             goto error;
         }
 
-        if (MAINPROCESS) HDprintf("\r All ranks reading chunk %lld", i);
+        if (MAINPROCESS) HDprintf("\r All ranks reading chunk %zu", i);
 
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (j == 0)
@@ -6230,7 +6230,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
             goto error;
         }
 
-        if (MAINPROCESS) HDprintf("\r All ranks reading chunk %lld", i);
+        if (MAINPROCESS) HDprintf("\r All ranks reading chunk %zu", i);
 
         for (j = 0; j < DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
             if (j == 0)
@@ -6664,7 +6664,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
                 goto error;
             }
 
-            if (MAINPROCESS) HDprintf("\r All ranks reading chunk %lld", i);
+            if (MAINPROCESS) HDprintf("\r All ranks reading chunk %zu", i);
 
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
                 if (j == 0)
@@ -7114,7 +7114,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
                 goto error;
             }
 
-            if (MAINPROCESS) HDprintf("\r All ranks reading chunk %lld", i);
+            if (MAINPROCESS) HDprintf("\r All ranks reading chunk %zu", i);
 
             for (j = 0; j < DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK; j++) {
                 if (j == 0)
