@@ -6240,9 +6240,7 @@ error:
 static int
 test_attribute_iterate_datatype(void)
 {
-#ifndef NO_WRAP_COMMITTED_TYPES
     size_t link_counter;
-#endif
     size_t i;
     htri_t attr_exists;
     hid_t  file_id = H5I_INVALID_HID;
@@ -6350,7 +6348,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate2_name_increasing) {
             TESTING_2("H5Aiterate by attribute name in increasing order")
-#ifndef NO_WRAP_COMMITTED_TYPES
+
             link_counter = 0;
 
             /* Test basic attribute iteration capability using both index types and both index orders */
@@ -6368,10 +6366,6 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate2_name_increasing);
-#endif
         } PART_END(H5Aiterate2_name_increasing);
 
         PART_BEGIN(H5Aiterate2_name_decreasing) {
@@ -6402,7 +6396,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate2_creation_increasing) {
             TESTING_2("H5Aiterate by creation order in increasing order")
-#ifndef NO_WRAP_COMMITTED_TYPES
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -6420,15 +6414,11 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate2_creation_increasing);
-#endif
         } PART_END(H5Aiterate2_creation_increasing);
 
         PART_BEGIN(H5Aiterate2_creation_decreasing) {
             TESTING_2("H5Aiterate by creation order in decreasing order")
-#ifndef NO_WRAP_COMMITTED_TYPES
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -6446,15 +6436,11 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate2_creation_decreasing);
-#endif
         } PART_END(H5Aiterate2_creation_decreasing);
 
         PART_BEGIN(H5Aiterate_by_name_name_increasing) {
             TESTING_2("H5Aiterate_by_name by attribute name in increasing order")
-#ifndef NO_WRAP_COMMITTED_TYPES
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 0;
 
@@ -6473,10 +6459,6 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_name_increasing);
-#endif
         } PART_END(H5Aiterate_by_name_name_increasing);
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing) {
@@ -6508,7 +6490,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate_by_name_creation_increasing) {
             TESTING_2("H5Aiterate_by_name by creation order in increasing order")
-#ifndef NO_WRAP_COMMITTED_TYPES
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -6527,15 +6509,11 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_creation_increasing);
-#endif
         } PART_END(H5Aiterate_by_name_creation_increasing);
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing) {
             TESTING_2("H5Aiterate_by_name by creation order in decreasing order")
-#ifndef NO_WRAP_COMMITTED_TYPES
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -6554,10 +6532,6 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_creation_decreasing);
-#endif
         } PART_END(H5Aiterate_by_name_creation_decreasing);
     } END_MULTIPART;
 
