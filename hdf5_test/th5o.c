@@ -257,6 +257,9 @@ test_h5o_open_by_token(void)
     H5T_class_t type_class;                 /* Class of the datatype */
     herr_t      ret;                        /* Value returned from API calls */
 
+    /* Output message about test being performed */
+    MESSAGE(5, ("Testing H5Oopen_by_token\n"));
+
     /* Create a new HDF5 file */
     fid = H5Fcreate(TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     CHECK(fid, FAIL, "H5Fcreate");
