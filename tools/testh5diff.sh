@@ -1160,7 +1160,7 @@ RUNTEST h5diff_646.txt -v --use-system-epsilon -p 0.05 $REPACK_OUTPUT_DIR/h5diff
 # ##############################################################################
 
 # Clean up generated files/directories
-#CLEAN_OUTPUT
+CLEAN_OUTPUT
 
 if test $nerrors -eq 0 ; then
     echo "All $TESTNAME tests passed."
