@@ -13,6 +13,7 @@
 # include <sys/wait.h>
 #endif
 
+#include <h5vl_test_sys/RegularExpression.hxx>
 #include <h5vl_test_sys/SystemTools.hxx>
 
 using std::vector;
@@ -34,6 +35,8 @@ H5VLTestDriver::H5VLTestDriver()
     this->ClientArgCount = 0;
     this->ClientHelperArgStart = 0;
     this->ClientHelperArgCount = 0;
+    this->ClientInitArgStart = 0;
+    this->ClientInitArgCount = 0;
     this->ServerArgStart = 0;
     this->ServerArgCount = 0;
     this->AllowErrorInOutput = false;
@@ -41,8 +44,10 @@ H5VLTestDriver::H5VLTestDriver()
     this->TimeOut = DART_TESTING_TIMEOUT - 10.0;
     this->ServerExitTimeOut = 2; /* 2 seconds timeout for server to exit */
     this->ClientHelper = false;
+    this->ClientInit = false;
     this->TestServer = false;
     this->TestSerial = false;
+    this->IgnoreServerResult = false;
 }
 
 //----------------------------------------------------------------------------
@@ -153,7 +158,7 @@ H5VLTestDriver::ProcessCommandLine(int argc, char *argv[])
             ArgCountP = &this->ClientArgCount;
             continue;
         }
-        if (strcmp(argv[i], "--client_helper") == 0) {
+        if (strcmp(argv[i], "--client-helper") == 0) {
             std::cerr << "Client Helper" << std::endl;
             this->ClientHelper = true;
             this->ClientHelperExecutable = ::FixExecutablePath(argv[i + 1]);
@@ -161,6 +166,16 @@ H5VLTestDriver::ProcessCommandLine(int argc, char *argv[])
             this->ClientHelperArgStart = i + 1;
             this->ClientHelperArgCount = this->ClientHelperArgStart;
             ArgCountP = &this->ClientHelperArgCount;
+            continue;
+        }
+        if (strcmp(argv[i], "--client-init") == 0) {
+            std::cerr << "Client Init" << std::endl;
+            this->ClientInit = true;
+            this->ClientInitExecutable = ::FixExecutablePath(argv[i + 1]);
+            ++i; /* Skip executable */
+            this->ClientInitArgStart = i + 1;
+            this->ClientInitArgCount = this->ClientInitArgStart;
+            ArgCountP = &this->ClientInitArgCount;
             continue;
         }
         if (strcmp(argv[i], "--server") == 0) {
@@ -186,6 +201,13 @@ H5VLTestDriver::ProcessCommandLine(int argc, char *argv[])
             ArgCountP = NULL;
             continue;
         }
+        if (strncmp(argv[i], "--allow-server-errors", strlen("--allow-server-errors")) == 0) {
+            this->IgnoreServerResult = true;
+            std::cerr << "The allow server errors in output flag was set to " <<
+                this->IgnoreServerResult << std::endl;
+            ArgCountP = NULL;
+            continue;
+        }
         if (strcmp(argv[i], "--serial") == 0) {
             this->TestSerial = true;
             std::cerr << "This is a serial test" << std::endl;
@@ -208,6 +230,10 @@ H5VLTestDriver::CreateCommandLine(vector<const char*> &commandLine,
     if (!isServer && this->ClientEnvVars.size()) {
         for (unsigned int i = 0; i < this->ClientEnvVars.size(); ++i)
             commandLine.push_back(this->ClientEnvVars[i].c_str());
+#ifdef H5VL_TEST_CLIENT_INIT_TOKEN_VAR
+        if (this->ClientTokenVar.size())
+            commandLine.push_back(this->ClientTokenVar.c_str());
+#endif
     }
 
     if (!isHelper && this->MPIRun.size()) {
@@ -233,8 +259,6 @@ H5VLTestDriver::CreateCommandLine(vector<const char*> &commandLine,
             commandLine.push_back(MPIClientPostFlags[i].c_str());
 
     // remaining flags for the test
-//    cerr << "Arg start is " << argStart << "\n";
-//    cerr << "Arg count is " << argCount << "\n";
     for (int ii = argStart; ii < argCount; ++ii) {
         commandLine.push_back(argv[ii]);
     }
@@ -257,7 +281,7 @@ H5VLTestDriver::StartServer(h5vl_test_sysProcess *server, const char *name,
     string output;
     while (!foundWaiting) {
         int pipe = this->WaitForAndPrintLine(name, server, output, 100.0, out,
-            err, &foundWaiting);
+            err, H5VL_TEST_SERVER_START_MSG, &foundWaiting);
         if (pipe == h5vl_test_sysProcess_Pipe_None
             || pipe == h5vl_test_sysProcess_Pipe_Timeout) {
             break;
@@ -269,6 +293,74 @@ H5VLTestDriver::StartServer(h5vl_test_sysProcess *server, const char *name,
     } else {
         cerr << "H5VLTestDriver: " << name << " never started.\n";
         h5vl_test_sysProcess_Kill(server);
+        return 0;
+    }
+}
+
+//----------------------------------------------------------------------------
+int
+H5VLTestDriver::StartClientHelper(h5vl_test_sysProcess *client,
+    const char *name, vector<char> &out, vector<char> &err)
+{
+    if (!client)
+        return 1;
+
+    cerr << "H5VLTestDriver: starting process " << name << "\n";
+    h5vl_test_sysProcess_SetTimeout(client, this->TimeOut);
+    h5vl_test_sysProcess_Execute(client);
+    int foundWaiting = 0;
+    string output;
+    while (!foundWaiting) {
+        int pipe = this->WaitForAndPrintLine(name, client, output, 100.0, out,
+            err, H5VL_TEST_CLIENT_HELPER_START_MSG, &foundWaiting);
+        if (pipe == h5vl_test_sysProcess_Pipe_None
+            || pipe == h5vl_test_sysProcess_Pipe_Timeout) {
+            break;
+        }
+    }
+    if (foundWaiting) {
+        cerr << "H5VLTestDriver: " << name << " sucessfully started.\n";
+        return 1;
+    } else {
+        cerr << "H5VLTestDriver: " << name << " never started.\n";
+        h5vl_test_sysProcess_Kill(client);
+        return 0;
+    }
+}
+
+//----------------------------------------------------------------------------
+int
+H5VLTestDriver::StartClientInit(h5vl_test_sysProcess *client,
+    const char *name, vector<char> &out, vector<char> &err)
+{
+    if (!client)
+        return 1;
+
+    cerr << "H5VLTestDriver: starting process " << name << "\n";
+    h5vl_test_sysProcess_SetTimeout(client, this->TimeOut);
+    h5vl_test_sysProcess_Execute(client);
+    int foundToken = 0;
+    string output, token;
+    while (!foundToken) {
+        int pipe = this->WaitForAndPrintLine(name, client, output, 100.0, out,
+            err, NULL, NULL);
+        if (pipe == h5vl_test_sysProcess_Pipe_None
+            || pipe == h5vl_test_sysProcess_Pipe_Timeout) {
+            break;
+        }
+        if (this->OutputStringHasToken(name, H5VL_TEST_CLIENT_INIT_TOKEN_REGEX, output, token)) {
+            foundToken = 1;
+            this->ClientTokenVar = std::string(H5VL_TEST_CLIENT_INIT_TOKEN_VAR)
+                + std::string("=") + std::string(token);
+            break;
+        }
+    }
+
+    if (foundToken) {
+        cerr << "H5VLTestDriver: " << name << " token: " << token << " was found.\n";
+        return 1;
+    } else {
+        cerr << "H5VLTestDriver: " << name << " token was not found.\n";
         return 0;
     }
 }
@@ -354,10 +446,45 @@ H5VLTestDriver::OutputStringHasError(const char *pname, string &output)
 }
 
 //----------------------------------------------------------------------------
+int
+H5VLTestDriver::OutputStringHasToken(const char *pname, const char *regex,
+    string &output, string &token)
+{
+    vector<string> lines;
+    vector<string>::iterator it;
+    h5vl_test_sys::SystemTools::Split(output.c_str(), lines);
+    h5vl_test_sys::RegularExpression re(regex);
+
+    for (it = lines.begin(); it != lines.end(); ++it) {
+        if (re.find(*it)) {
+            token = re.match(1);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+//----------------------------------------------------------------------------
 #define H5VL_CLEAN_PROCESSES do {      \
   h5vl_test_sysProcess_Delete(client); \
   h5vl_test_sysProcess_Delete(client_helper); \
+  h5vl_test_sysProcess_Delete(client_init); \
   h5vl_test_sysProcess_Delete(server); \
+} while (0)
+
+#define H5VL_EXECUTE_CMD(cmd) do {                              \
+    if (strlen(cmd) > 0) {                                      \
+        std::vector<std::string> commands =                     \
+            h5vl_test_sys::SystemTools::SplitString(cmd, ';');  \
+        for (unsigned int cc = 0; cc < commands.size(); cc++) { \
+            std::string command = commands[cc];                 \
+            if (command.size() > 0) {                           \
+                std::cout << command.c_str() << std::endl;      \
+                system(command.c_str());                        \
+            }                                                   \
+        }                                                       \
+    }                                                           \
 } while (0)
 
 //----------------------------------------------------------------------------
@@ -367,16 +494,7 @@ H5VLTestDriver::Main(int argc, char* argv[])
 #ifdef H5VL_TEST_INIT_COMMAND
     // run user-specified commands before initialization.
     // For example: "killall -9 rsh test;"
-    if (strlen(H5VL_TEST_INIT_COMMAND) > 0) {
-        std::vector<std::string> commands =
-            h5vl_test_sys::SystemTools::SplitString(H5VL_TEST_INIT_COMMAND,
-                ';');
-        for (unsigned int cc = 0; cc < commands.size(); cc++) {
-            std::string command = commands[cc];
-            if (command.size() > 0)
-                system(command.c_str());
-        }
-    }
+    H5VL_EXECUTE_CMD(H5VL_TEST_INIT_COMMAND);
 #endif
 
     if (!this->ProcessCommandLine(argc, argv))
@@ -388,6 +506,8 @@ H5VLTestDriver::Main(int argc, char* argv[])
     h5vl_test_sysProcess *server = 0;
     h5vl_test_sysProcess *client = 0;
     h5vl_test_sysProcess *client_helper = 0;
+    h5vl_test_sysProcess *client_init = 0;
+
     if (this->TestServer) {
         server = h5vl_test_sysProcess_New();
         if (!server) {
@@ -406,6 +526,15 @@ H5VLTestDriver::Main(int argc, char* argv[])
             return 1;
         }
     }
+    if (this->ClientInit) {
+        client_init = h5vl_test_sysProcess_New();
+        if (!client_init) {
+            H5VL_CLEAN_PROCESSES;
+            cerr << "H5VLTestDriver: Cannot allocate h5vl_test_sysProcess to "
+                "run the client init.\n";
+            return 1;
+        }
+    }
     client = h5vl_test_sysProcess_New();
     if (!client) {
         H5VL_CLEAN_PROCESSES;
@@ -416,6 +545,10 @@ H5VLTestDriver::Main(int argc, char* argv[])
 
     vector<char> ClientStdOut;
     vector<char> ClientStdErr;
+    vector<char> ClientHelperStdOut;
+    vector<char> ClientHelperStdErr;
+    vector<char> ClientInitStdOut;
+    vector<char> ClientInitStdErr;
     vector<char> ServerStdOut;
     vector<char> ServerStdErr;
 
@@ -445,6 +578,53 @@ H5VLTestDriver::Main(int argc, char* argv[])
             this->GetDirectory(clientHelperExe).c_str());
     }
 
+    vector<const char *> clientInitCommand;
+    if (client_init) {
+        // Construct the client helper process command line.
+        const char *clientInitExe = this->ClientInitExecutable.c_str();
+        this->CreateCommandLine(clientInitCommand, clientInitExe, 0, 1,
+            "1", this->ClientInitArgStart, this->ClientInitArgCount, argv);
+        this->ReportCommand(&clientInitCommand[0], "client_init");
+        h5vl_test_sysProcess_SetCommand(client_init, &clientInitCommand[0]);
+        h5vl_test_sysProcess_SetWorkingDirectory(client_init,
+            this->GetDirectory(clientInitExe).c_str());
+    }
+
+    // Start the server if there is one
+    if (!this->StartServer(server, "server", ServerStdOut, ServerStdErr)) {
+        cerr << "H5VLTestDriver: Server never started.\n";
+        H5VL_CLEAN_PROCESSES;
+        return -1;
+    }
+
+    // Start the client helper here if there is one
+    if (!this->StartClientHelper(client_helper, "client_helper",
+        ClientHelperStdOut, ClientHelperStdErr)) {
+        cerr << "H5VLTestDriver: Client Helper never started.\n";
+        this->Stop(server, "server");
+#ifdef H5VL_TEST_SERVER_EXIT_COMMAND
+        H5VL_EXECUTE_CMD(H5VL_TEST_SERVER_EXIT_COMMAND);
+#endif
+        H5VL_CLEAN_PROCESSES;
+        return -1;
+    }
+
+    // Start the client init here if there is one
+    if (!this->StartClientInit(client_init, "client_init",
+        ClientInitStdOut, ClientInitStdErr)) {
+        cerr << "H5VLTestDriver: Client Init never started.\n";
+        this->Stop(server, "server");
+#ifdef H5VL_TEST_SERVER_EXIT_COMMAND
+        H5VL_EXECUTE_CMD(H5VL_TEST_SERVER_EXIT_COMMAND);
+#endif
+        this->Stop(client_helper, "client_helper");
+#ifdef H5VL_TEST_CLIENT_HELPER_EXIT_COMMAND
+        H5VL_EXECUTE_CMD(H5VL_TEST_CLIENT_HELPER_EXIT_COMMAND);
+#endif
+        H5VL_CLEAN_PROCESSES;
+        return -1;
+    }
+
     // Construct the client process command line.
     vector<const char *> clientCommand;
     const char *clientExe = this->ClientExecutable.c_str();
@@ -456,24 +636,11 @@ H5VLTestDriver::Main(int argc, char* argv[])
     h5vl_test_sysProcess_SetWorkingDirectory(client,
         this->GetDirectory(clientExe).c_str());
 
-    // Start the server if there is one
-    if (!this->StartServer(server, "server", ServerStdOut, ServerStdErr)) {
-        cerr << "H5VLTestDriver: Server never started.\n";
-        H5VL_CLEAN_PROCESSES;
-        return -1;
-    }
-
-    // Start the client helper here if there is one
-    if (!this->StartClient(client_helper, "client_helper")) {
-        cerr << "H5VLTestDriver: Client Helper never started.\n";
-        this->Stop(server, "server");
-        H5VL_CLEAN_PROCESSES;
-        return -1;
-    }
-
     // Now run the client
     if (!this->StartClient(client, "client")) {
         this->Stop(server, "server");
+        this->Stop(client_helper, "client_helper");
+        this->Stop(client_init, "client_init");
         H5VL_CLEAN_PROCESSES;
         return -1;
     }
@@ -485,7 +652,7 @@ H5VLTestDriver::Main(int argc, char* argv[])
     int mpiError = 0;
     while (clientPipe) {
         clientPipe = this->WaitForAndPrintLine("client", client, output, 0.1,
-            ClientStdOut, ClientStdErr, 0);
+            ClientStdOut, ClientStdErr, NULL, NULL);
         if (!mpiError && this->OutputStringHasError("client", output)) {
             mpiError = 1;
         }
@@ -494,7 +661,7 @@ H5VLTestDriver::Main(int argc, char* argv[])
         double timeout = (clientPipe) ? 0 : this->ServerExitTimeOut;
         output = "";
         this->WaitForAndPrintLine("server", server, output, timeout,
-            ServerStdOut, ServerStdErr, 0);
+            ServerStdOut, ServerStdErr, NULL, NULL);
         if (!mpiError && this->OutputStringHasError("server", output)) {
             mpiError = 1;
         }
@@ -510,40 +677,14 @@ H5VLTestDriver::Main(int argc, char* argv[])
     // the server.
     if (server) {
 #ifdef H5VL_TEST_SERVER_EXIT_COMMAND
-    // run user-specified commands before initialization.
-    // For example: "killall -9 rsh test;"
-    if (strlen(H5VL_TEST_SERVER_EXIT_COMMAND) > 0) {
-        std::vector<std::string> commands =
-            h5vl_test_sys::SystemTools::SplitString(H5VL_TEST_SERVER_EXIT_COMMAND,
-                ';');
-        for (unsigned int cc = 0; cc < commands.size(); cc++) {
-            std::string command = commands[cc];
-            if (command.size() > 0) {
-                std::cout << command.c_str() << std::endl;
-                system(command.c_str());
-            }
-        }
-    }
+        H5VL_EXECUTE_CMD(H5VL_TEST_SERVER_EXIT_COMMAND);
 #endif
         h5vl_test_sysProcess_WaitForExit(server, &this->ServerExitTimeOut);
     }
 
     if (client_helper) {
 #ifdef H5VL_TEST_CLIENT_HELPER_EXIT_COMMAND
-    // run user-specified commands before initialization.
-    // For example: "killall -9 rsh test;"
-    if (strlen(H5VL_TEST_CLIENT_HELPER_EXIT_COMMAND) > 0) {
-        std::vector<std::string> commands =
-            h5vl_test_sys::SystemTools::SplitString(H5VL_TEST_CLIENT_HELPER_EXIT_COMMAND,
-                ';');
-        for (unsigned int cc = 0; cc < commands.size(); cc++) {
-            std::string command = commands[cc];
-            if (command.size() > 0) {
-                std::cout << command.c_str() << std::endl;
-                system(command.c_str());
-            }
-        }
-    }
+        H5VL_EXECUTE_CMD(H5VL_TEST_CLIENT_HELPER_EXIT_COMMAND);
 #endif
         h5vl_test_sysProcess_WaitForExit(client_helper, 0);
     }
@@ -561,8 +702,8 @@ H5VLTestDriver::Main(int argc, char* argv[])
 
     // Report the server return code if it is nonzero.  Otherwise report
     // the client return code.
-//    if (serverResult)
-//        return serverResult;
+    if (serverResult && !this->IgnoreServerResult)
+        return serverResult;
 
     if (mpiError) {
         cerr
@@ -748,15 +889,15 @@ H5VLTestDriver::PrintLine(const char *pname, const char *line)
 int
 H5VLTestDriver::WaitForAndPrintLine(const char *pname,
     h5vl_test_sysProcess *process, string &line, double timeout,
-    vector<char> &out, vector<char> &err, int *foundWaiting)
+    vector<char> &out, vector<char> &err, const char *waitMsg,
+    int *foundWaiting)
 {
     int pipe = this->WaitForLine(process, line, timeout, out, err);
     if (pipe == h5vl_test_sysProcess_Pipe_STDOUT
         || pipe == h5vl_test_sysProcess_Pipe_STDERR) {
         this->PrintLine(pname, line.c_str());
-        if (foundWaiting && (line.find(H5VL_TEST_SERVER_START_MSG) != line.npos)) {
+        if (foundWaiting && (line.find(waitMsg) != line.npos))
             *foundWaiting = 1;
-        }
     }
     return pipe;
 }
