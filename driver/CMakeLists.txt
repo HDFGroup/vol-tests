@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.5 FATAL_ERROR)
 project(H5VL_TEST_DRIVER CXX)
 
+include(CheckAsan)
+include(CheckUbsan)
+
 set(CMAKE_CXX_STANDARD 11)
 
 set(KWSYS_NAMESPACE h5vl_test_sys)
