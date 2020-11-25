@@ -91,7 +91,7 @@ include_directories(
 #------------------------------------------------------------------------------
 # External dependencies
 #------------------------------------------------------------------------------
-# HDF5 (Requires HDF5 1.12.0 or later)
+# HDF5
 find_package(HDF5 NO_MODULE NAMES hdf5 COMPONENTS C shared)
 if(HDF5_FOUND)
   set(HDF5_C_SHARED_LIBRARY hdf5-shared)
@@ -106,18 +106,14 @@ if(HDF5_FOUND)
 else()
   # Allow for HDF5 autotools builds
   find_package(HDF5 MODULE REQUIRED)
-  if(HDF5_FOUND)
-    set(HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES
-      ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
-      ${HDF5_INCLUDE_DIRS}
-    )
-    set(HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES
-      ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
-      ${HDF5_LIBRARIES}
-    )
-  else()
-    message(FATAL_ERROR "Could not find HDF5, please check HDF5_DIR.")
-  endif()
+  set(HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES
+    ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+    ${HDF5_INCLUDE_DIRS}
+  )
+  set(HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES
+    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+    ${HDF5_LIBRARIES}
+  )
 endif()
 
 # HDF5 tests in separate tests
@@ -132,22 +128,15 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
 endif()
 if(HDF5_VOL_TEST_ENABLE_PARALLEL OR HDF5_ENABLE_PARALLEL)
   # MPI
-  # Temporary workaround because HDF5 does not pull MPI dependency
-  if(NOT MPI_FOUND)
   find_package(MPI REQUIRED)
-  endif()
-  if(MPI_FOUND)
-    set(HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES
-      ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
-      ${MPI_INCLUDE_PATH}
-    )
-    set(HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES
-      ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
-      ${MPI_LIBRARIES}
-    )
-  else()
-    message(FATAL_ERROR "Could not find MPI.")
-  endif()
+  set(HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES
+    ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+    ${MPI_INCLUDE_PATH}
+  )
+  set(HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES
+    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+    ${MPI_LIBRARIES}
+  )
 endif()
 
 #set(HDF5_VOL_TEST_INIT_COMMAND "" CACHE STRING
@@ -193,7 +182,6 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   )
 endif()
 
-
 foreach(vol_test ${vol_tests})
   set(HDF5_VOL_TEST_SRCS
     ${HDF5_VOL_TEST_SRCS}
@@ -209,7 +197,8 @@ endforeach()
 
 add_executable(h5vl_test ${HDF5_VOL_TEST_SRCS} vol_test.c vol_test_util.c)
 if(HDF5_VOL_TEST_ENABLE_PARALLEL)
-  add_executable(h5vl_test_parallel ${HDF5_VOL_TEST_PARALLEL_SRCS} vol_test_parallel.c vol_test_util.c)
+  add_executable(h5vl_test_parallel
+    ${HDF5_VOL_TEST_PARALLEL_SRCS} vol_test_parallel.c vol_test_util.c)
 endif()
 #  target_include_directories(h5vl_test
 #    PUBLIC  "$<BUILD_INTERFACE:${HDF5_VOL_TEST_BUILD_INCLUDE_DEPENDENCIES}>"
@@ -236,6 +225,8 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
 endif()
 
 # Include the ported HDF5 tests
+
+# Serial tests
 foreach(hdf5_test ${hdf5_tests})
   if(${hdf5_test} STREQUAL "testhdf5")
     add_executable(h5_test_${hdf5_test}
@@ -272,6 +263,8 @@ foreach(hdf5_test ${hdf5_tests})
     ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
   )
 endforeach()
+
+# Parallel tests
 if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   foreach(hdf5_partest ${hdf5_partests})
     if(${hdf5_partest} STREQUAL "testphdf5")
@@ -290,7 +283,8 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
         ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/t_filter_read.c
       )
     else()
-      add_executable(h5_partest_${hdf5_partest} ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c)
+      add_executable(h5_partest_${hdf5_partest}
+        ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_testpar/${hdf5_partest}.c)
     endif()
 
     target_include_directories(h5_partest_${hdf5_partest}
@@ -304,7 +298,105 @@ if(HDF5_VOL_TEST_ENABLE_PARALLEL)
   endforeach()
 endif()
 
-if(NOT HDF5_VOL_TEST_SERVER)
+# Build the h5delete program used in the tool scripts
+add_executable(h5delete ${CMAKE_CURRENT_SOURCE_DIR}/h5delete.c)
+target_include_directories(h5delete
+    SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
+)
+target_link_libraries(h5delete
+    ${HDF5_VOL_TEST_EXPORTED_LIBS}
+    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
+    ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
+)
+
+#------------------------------------------------------------------------------
+# Tests
+#------------------------------------------------------------------------------
+if(HDF5_VOL_TEST_SERVER)
+  # Driver options
+  if(HDF5_VOL_TEST_SERVER_ALLOW_ERRORS)
+    set(HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS --allow-server-errors)
+  endif()
+  if(HDF5_VOL_TEST_CLIENT_HELPER)
+    set(HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS  ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+      --client-helper ${HDF5_VOL_TEST_CLIENT_HELPER})
+  endif()
+  if(HDF5_VOL_TEST_CLIENT_INIT)
+    set(HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS  ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+      --client-init ${HDF5_VOL_TEST_CLIENT_INIT})
+  endif()
+
+  # Serial dynamic client/server test
+  if(NOT HDF5_VOL_TEST_ENABLE_PART)
+    add_test(NAME "h5vl_test"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:h5vl_test>
+      --serial
+      ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+    )
+  else()
+    foreach(vol_test ${vol_tests})
+      add_test(NAME "h5vl_test_${vol_test}"
+        COMMAND $<TARGET_FILE:h5vl_test_driver>
+        --server ${HDF5_VOL_TEST_SERVER}
+        --client $<TARGET_FILE:h5vl_test> ${vol_test}
+        --serial
+        ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+      )
+    endforeach()
+  endif()
+
+  foreach(hdf5_test ${hdf5_tests})
+    add_test(NAME "h5_test_${hdf5_test}"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:h5_test_${hdf5_test}>
+      --serial
+      ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+    )
+  endforeach()
+
+  # Hook external tests to same test suite
+  foreach(ext_vol_test ${HDF5_VOL_EXT_SERIAL_TESTS})
+    add_test(NAME "h5vl_ext_${ext_vol_test}"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:${ext_vol_test}>
+      --serial
+      ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+    )
+  endforeach()
+
+  # Parallel dynamic client/server test
+  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+    add_test(NAME "h5vl_test_parallel"
+      COMMAND $<TARGET_FILE:h5vl_test_driver>
+      --server ${HDF5_VOL_TEST_SERVER}
+      --client $<TARGET_FILE:h5vl_test_parallel>
+      ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+    )
+
+    foreach(hdf5_partest ${hdf5_partests})
+      add_test(NAME "h5_partest_${hdf5_partest}"
+        COMMAND $<TARGET_FILE:h5vl_test_driver>
+        --server ${HDF5_VOL_TEST_SERVER}
+        --client $<TARGET_FILE:h5_partest_${hdf5_partest}>
+        ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+      )
+    endforeach()
+
+    # Hook external tests to same test suite
+    foreach(ext_vol_test ${HDF5_VOL_EXT_PARALLEL_TESTS})
+      add_test(NAME "h5vl_ext_${ext_vol_test}"
+        COMMAND $<TARGET_FILE:h5vl_test_driver>
+        --server ${HDF5_VOL_TEST_SERVER}
+        --client $<TARGET_FILE:${ext_vol_test}>
+        ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
+      )
+    endforeach()
+  endif()
+else()
   if(NOT HDF5_VOL_TEST_ENABLE_PART)
     add_test(NAME "h5vl_test"
       COMMAND $<TARGET_FILE:h5vl_test>
@@ -314,13 +406,15 @@ if(NOT HDF5_VOL_TEST_SERVER)
       add_test(NAME "h5vl_test_${vol_test}"
         COMMAND $<TARGET_FILE:h5vl_test> ${vol_test}
       )
-      endforeach()
+    endforeach()
   endif()
+
   foreach(hdf5_test ${hdf5_tests})
     add_test(NAME "h5_test_${hdf5_test}"
       COMMAND $<TARGET_FILE:h5_test_${hdf5_test}>
     )
   endforeach()
+
   if(HDF5_VOL_TEST_ENABLE_PARALLEL)
     add_test(NAME "h5vl_test_parallel"
       COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
@@ -335,83 +429,4 @@ if(NOT HDF5_VOL_TEST_SERVER)
       )
     endforeach()
   endif()
-else()
-  if(HDF5_VOL_TEST_CLIENT_HELPER)
-    set(HDF5_VOL_TEST_CLIENT_HELPER_CMD --client_helper ${HDF5_VOL_TEST_CLIENT_HELPER})
-  endif()
-  # Serial dynamic client/server test
-  if(NOT HDF5_VOL_TEST_ENABLE_PART)
-    add_test(NAME "h5vl_test"
-      COMMAND $<TARGET_FILE:h5vl_test_driver>
-      --server ${HDF5_VOL_TEST_SERVER}
-      --client $<TARGET_FILE:h5vl_test>
-      --serial
-      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-    )
-  else()
-    foreach(vol_test ${vol_tests})
-      add_test(NAME "h5vl_test_${vol_test}"
-        COMMAND $<TARGET_FILE:h5vl_test_driver>
-        --server ${HDF5_VOL_TEST_SERVER}
-        --client $<TARGET_FILE:h5vl_test> ${vol_test}
-        --serial
-        ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-      )
-    endforeach()
-  endif()
-  foreach(hdf5_test ${hdf5_tests})
-    add_test(NAME "h5_test_${hdf5_test}"
-      COMMAND $<TARGET_FILE:h5vl_test_driver>
-      --server ${HDF5_VOL_TEST_SERVER}
-      --client $<TARGET_FILE:h5_test_${hdf5_test}>
-      --serial
-      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-    )
-  endforeach()
-  foreach(ext_vol_test ${HDF5_VOL_EXT_SERIAL_TESTS})
-    add_test(NAME "h5vl_ext_${ext_vol_test}"
-      COMMAND $<TARGET_FILE:h5vl_test_driver>
-      --server ${HDF5_VOL_TEST_SERVER}
-      --client $<TARGET_FILE:${ext_vol_test}>
-      --serial
-      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-    )
-  endforeach()
-  # Parallel dynamic client/server test
-  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
-    add_test(NAME "h5vl_test_parallel"
-      COMMAND $<TARGET_FILE:h5vl_test_driver>
-      --server ${HDF5_VOL_TEST_SERVER}
-      --client $<TARGET_FILE:h5vl_test_parallel>
-      ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-    )
-    foreach(hdf5_partest ${hdf5_partests})
-      add_test(NAME "h5_partest_${hdf5_partest}"
-        COMMAND $<TARGET_FILE:h5vl_test_driver>
-        --server ${HDF5_VOL_TEST_SERVER}
-        --client $<TARGET_FILE:h5_partest_${hdf5_partest}>
-        ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-      )
-    endforeach()
-    foreach(ext_vol_test ${HDF5_VOL_EXT_PARALLEL_TESTS})
-      add_test(NAME "h5vl_ext_${ext_vol_test}"
-        COMMAND $<TARGET_FILE:h5vl_test_driver>
-        --server ${HDF5_VOL_TEST_SERVER}
-        --client $<TARGET_FILE:${ext_vol_test}>
-        ${HDF5_VOL_TEST_CLIENT_HELPER_CMD}
-      )
-    endforeach()
-  endif()
 endif()
-
-# Build the h5delete program used in the tool scripts
-add_executable(h5delete ${CMAKE_CURRENT_SOURCE_DIR}/h5delete.c)
-target_include_directories(h5delete
-    SYSTEM PUBLIC ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
-)
-target_link_libraries(h5delete
-    ${HDF5_VOL_TEST_EXPORTED_LIBS}
-    ${HDF5_VOL_TEST_EXT_LIB_DEPENDENCIES}
-    ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
-)
-

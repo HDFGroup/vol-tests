@@ -25,22 +25,29 @@ protected:
 
     int StartServer(h5vl_test_sysProcess *server, const char *name,
         std::vector<char> &out, std::vector<char> &err);
+    int StartClientHelper(h5vl_test_sysProcess *client, const char *name,
+        std::vector<char> &out, std::vector<char> &err);
+    int StartClientInit(h5vl_test_sysProcess *client, const char *name,
+        std::vector<char> &out, std::vector<char> &err);
     int StartClient(h5vl_test_sysProcess *client, const char *name);
     void Stop(h5vl_test_sysProcess *p, const char *name);
     int OutputStringHasError(const char *pname, std::string &output);
+    int OutputStringHasToken(const char *pname, const char *regex,
+        std::string &output, std::string &token);
 
     int WaitForLine(h5vl_test_sysProcess *process, std::string &line,
         double timeout, std::vector<char> &out, std::vector<char> &err);
     void PrintLine(const char *pname, const char *line);
     int WaitForAndPrintLine(const char *pname, h5vl_test_sysProcess *process,
         std::string &line, double timeout, std::vector<char> &out,
-        std::vector<char> &err, int *foundWaiting);
+        std::vector<char> &err, const char *waitMsg, int *foundWaiting);
 
     std::string GetDirectory(std::string location);
 
 private:
     std::string ClientExecutable;       // fullpath to client executable
     std::string ClientHelperExecutable; // fullpath to client helper executable
+    std::string ClientInitExecutable;   // fullpath to client init executable
     std::string ServerExecutable;       // fullpath to server executable
     std::string MPIRun;                 // fullpath to mpirun executable
 
@@ -60,21 +67,27 @@ private:
     std::string MPIServerNumProcessFlag;
     std::string MPIClientNumProcessFlag;
 
+    std::string ClientTokenVar;  // use token to launch client if requested
+
     std::string CurrentPrintLineName;
 
     double TimeOut;
     double ServerExitTimeOut;   // time to wait for servers to finish.
     bool ClientHelper;
+    bool ClientInit;
     bool TestServer;
 
     int ClientArgStart;
     int ClientArgCount;
     int ClientHelperArgStart;
     int ClientHelperArgCount;
+    int ClientInitArgStart;
+    int ClientInitArgCount;
     int ServerArgStart;
     int ServerArgCount;
     bool AllowErrorInOutput;
     bool TestSerial;
+    bool IgnoreServerResult;
 };
 
 #endif //H5VL_TEST_DRIVER_H
