@@ -2494,6 +2494,9 @@ test_object_copy_shallow_group_copy(void)
         goto error;
     }
 
+    if (H5Gclose(tmp_group_id) < 0)
+        TEST_ERROR
+
     /*
      * Ensure that the last immediate member of the copied group doesn't
      * contain any members after the shallow copy.
