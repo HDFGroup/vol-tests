@@ -160,9 +160,9 @@ test_one_dataset_io(void)
 
             PASSED();
         } PART_END(single_dset_dclose);
-#if 0 /* Doesn't work with H5Dclose_async - change to H5Dflush?  Either way needs work */
-        PART_BEGIN(single_dset_dclose_async) {
-            TESTING_2("synchronization using H5Dclose_async()")
+
+        PART_BEGIN(single_dset_dflush) {
+            TESTING_2("synchronization using H5Oflush_async()")
 
             /* Update wbuf */
             for(i = 0; i < 6; i++)
@@ -172,35 +172,24 @@ test_one_dataset_io(void)
             /* Write the dataset asynchronously */
             if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
                     wbuf, es_id) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
+                PART_TEST_ERROR(single_dset_dflush)
 
-            /* Close the dataset asynchronously.  This will effectively work as a
+            /* Flush the dataset asynchronously.  This will effectively work as a
              * barrier, guaranteeing the read takes place after the write. */
-            if(H5Dclose_async(dset_id, es_id) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
-
-            /* Re-open the dataset asynchronously */
-            if((dset_id = H5Dopen_async(file_id, "dset", H5P_DEFAULT, es_id)) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
+            /* Change to async when available -NAF */
+            if(H5Oflush_async(dset_id, es_id) < 0)
+                PART_TEST_ERROR(single_dset_dflush)
 
             /* Read the dataset asynchronously */
             if(H5Dread_async(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
                     rbuf, es_id) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
-
-            /* Close the dataset asynchronously */
-            if(H5Dclose_async(dset_id, es_id) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
-
-            /* Close the file asynchronously */
-            if(H5Fclose_async(file_id, es_id) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
+                PART_TEST_ERROR(single_dset_dflush)
 
             /* Wait for the event stack to complete */
             if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
-                PART_TEST_ERROR(single_dset_dclose_async)
+                PART_TEST_ERROR(single_dset_dflush)
             if(op_failed)
-                PART_TEST_ERROR(single_dset_dclose_async)
+                PART_TEST_ERROR(single_dset_dflush)
 
             /* Verify the read data */
             for(i = 0; i < 6; i++)
@@ -208,12 +197,12 @@ test_one_dataset_io(void)
                     if(wbuf[i][j] != rbuf[i][j]) {
                         H5_FAILED();
                         HDprintf("    data verification failed\n");
-                        PART_ERROR(single_dset_dclose_async)
+                        PART_ERROR(single_dset_dflush)
                     } /* end if */
 
             PASSED();
-        } PART_END(single_dset_dclose_async);
-#endif
+        } PART_END(single_dset_dflush);
+
         PART_BEGIN(single_dset_fclose) {
             TESTING_2("synchronization using H5Fclose()")
 
@@ -361,10 +350,10 @@ test_multi_dataset_io(void)
                     PART_TEST_ERROR(multi_dset_open)
             } /* end for */
 
-            /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
-                PART_TEST_ERROR(multi_dset_open)
-            if(op_failed)
+            /* Flush the file asynchronously.  This will effectively work as a
+             * barrier, guaranteeing the read takes place after the write. */
+            /* Change to async when available -NAF */
+            if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
                 PART_TEST_ERROR(multi_dset_open)
 
             /* Loop over datasets */
@@ -443,10 +432,10 @@ for(i = 0; i < 5; i++) {
                     PART_TEST_ERROR(multi_dset_close)
             } /* end for */
 
-            /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
-                PART_TEST_ERROR(multi_dset_close)
-            if(op_failed)
+            /* Flush the file asynchronously.  This will effectively work as a
+             * barrier, guaranteeing the read takes place after the write. */
+            /* Change to async when available -NAF */
+            if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
                 PART_TEST_ERROR(multi_dset_close)
 
             /* Loop over datasets */
@@ -604,14 +593,14 @@ test_multi_file_dataset_io(void)
                     PART_TEST_ERROR(multi_file_dset_open)
             } /* end for */
 
-            /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
-                PART_TEST_ERROR(multi_file_dset_open)
-            if(op_failed)
-                PART_TEST_ERROR(multi_file_dset_open)
-
             /* Loop over files */
             for(i = 0; i < 5; i++) {
+                /* Flush the dataset asynchronously.  This will effectively work as a
+                 * barrier, guaranteeing the read takes place after the write. */
+                /* Change to async when available -NAF */
+                if(H5Oflush_async(dset_id[i], es_id) < 0)
+                    PART_TEST_ERROR(multi_file_dset_open)
+
                 /* Read the dataset asynchronously */
                 if(H5Dread_async(dset_id[i], H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
                         rbuf[i], es_id) < 0)
@@ -666,14 +655,14 @@ test_multi_file_dataset_io(void)
                     PART_TEST_ERROR(multi_file_dset_dclose)
             } /* end for */
 
-            /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
-                PART_TEST_ERROR(multi_file_dset_dclose)
-            if(op_failed)
-                PART_TEST_ERROR(multi_file_dset_dclose)
-
             /* Loop over files */
             for(i = 0; i < 5; i++) {
+                /* Flush the file asynchronously.  This will effectively work as a
+                 * barrier, guaranteeing the read takes place after the write. */
+                /* Change to async when available -NAF */
+                if(H5Fflush_async(file_id[i], H5F_SCOPE_LOCAL, es_id) < 0)
+                    PART_TEST_ERROR(multi_file_dset_open)
+
                 /* Open the dataset asynchronously */
                 if((dset_id[0] = H5Dopen_async(file_id[i], "dset", H5P_DEFAULT, es_id)) < 0)
                     PART_TEST_ERROR(multi_file_dset_dclose)
@@ -852,7 +841,7 @@ test_multi_file_grp_dset_io(void)
     int rbuf[5][6][10];
     int i, j, k;
 
-    TESTING_MULTIPART("multi file dataset I/O")
+    TESTING_MULTIPART("multi file dataset I/O with groups")
 
     TESTING_2("test setup")
 
