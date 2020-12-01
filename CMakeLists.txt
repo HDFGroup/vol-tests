@@ -167,6 +167,7 @@ set(vol_tests
   link
   misc
   object
+  async
 )
 
 # Ported HDF5 tests

@@ -35,6 +35,7 @@
 #include "vol_link_test.h"
 #include "vol_object_test.h"
 #include "vol_misc_test.h"
+#include "vol_async_test.h"
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
@@ -59,6 +60,7 @@ size_t n_tests_skipped_g;
     X(VOL_TEST_LINK,      "link",      vol_link_test,      1)   \
     X(VOL_TEST_OBJECT,    "object",    vol_object_test,    1)   \
     X(VOL_TEST_MISC,      "misc",      vol_misc_test,      1)   \
+    X(VOL_TEST_ASYNC,     "async",     vol_async_test,      1)   \
     X(VOL_TEST_MAX,       "",          NULL,               0)
 
 #define X(a, b, c, d) a,
