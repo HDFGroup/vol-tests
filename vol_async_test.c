@@ -18,6 +18,9 @@ static int test_one_dataset_io(void);
 static int test_multi_dataset_io(void);
 static int test_multi_file_dataset_io(void);
 static int test_multi_file_grp_dset_io(void);
+static int test_set_extent(void);
+static int test_attribute_io(void);
+static int test_attribute_io_tconv(void);
 
 /*
  * The array of async tests to be performed.
@@ -27,6 +30,9 @@ static int (*async_tests[])(void) = {
         test_multi_dataset_io,
         test_multi_file_dataset_io,
         test_multi_file_grp_dset_io,
+        test_set_extent,
+        test_attribute_io,
+        test_attribute_io_tconv,
 };
 
 /* Highest "printf" file created (starting at 0) */
@@ -176,7 +182,6 @@ test_one_dataset_io(void)
 
             /* Flush the dataset asynchronously.  This will effectively work as a
              * barrier, guaranteeing the read takes place after the write. */
-            /* Change to async when available -NAF */
             if(H5Oflush_async(dset_id, es_id) < 0)
                 PART_TEST_ERROR(single_dset_dflush)
 
@@ -352,7 +357,6 @@ test_multi_dataset_io(void)
 
             /* Flush the file asynchronously.  This will effectively work as a
              * barrier, guaranteeing the read takes place after the write. */
-            /* Change to async when available -NAF */
             if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
                 PART_TEST_ERROR(multi_dset_open)
 
@@ -434,7 +438,6 @@ for(i = 0; i < 5; i++) {
 
             /* Flush the file asynchronously.  This will effectively work as a
              * barrier, guaranteeing the read takes place after the write. */
-            /* Change to async when available -NAF */
             if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
                 PART_TEST_ERROR(multi_dset_close)
 
@@ -597,7 +600,6 @@ test_multi_file_dataset_io(void)
             for(i = 0; i < 5; i++) {
                 /* Flush the dataset asynchronously.  This will effectively work as a
                  * barrier, guaranteeing the read takes place after the write. */
-                /* Change to async when available -NAF */
                 if(H5Oflush_async(dset_id[i], es_id) < 0)
                     PART_TEST_ERROR(multi_file_dset_open)
 
@@ -659,7 +661,6 @@ test_multi_file_dataset_io(void)
             for(i = 0; i < 5; i++) {
                 /* Flush the file asynchronously.  This will effectively work as a
                  * barrier, guaranteeing the read takes place after the write. */
-                /* Change to async when available -NAF */
                 if(H5Fflush_async(file_id[i], H5F_SCOPE_LOCAL, es_id) < 0)
                     PART_TEST_ERROR(multi_file_dset_open)
 
@@ -1113,6 +1114,421 @@ error:
 
     return 1;
 } /* end test_multi_file_grp_dset_io() */
+
+
+/*
+ * Create file and dataset, write to dataset
+ */
+static int
+test_set_extent(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t fspace_id = H5I_INVALID_HID;
+    hid_t fspace_out = H5I_INVALID_HID;
+    hid_t mspace_id = H5I_INVALID_HID;
+    hid_t dcpl_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    hsize_t dims[2] = {1, 10};
+    hsize_t mdims[2] = {6, 10};
+    hsize_t cdims[2] = {2, 3};
+    hsize_t start[2] = {0, 0};
+    hsize_t count[2] = {1, 10};
+    size_t num_in_progress;
+    hbool_t op_failed;
+    htri_t tri_ret;
+    int wbuf[6][10];
+    int rbuf[6][10];
+    int i, j;
+
+    TESTING("extending dataset")
+
+    /* Create file dataspace */
+    if((fspace_id = H5Screate_simple(2, dims, mdims)) < 0)
+        TEST_ERROR
+
+    /* Create memory dataspace */
+    if((mspace_id = H5Screate_simple(1, &dims[1], NULL)) < 0)
+        TEST_ERROR
+
+    /* Create DCPL */
+    if((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR
+
+    /* Set chunking */
+    if(H5Pset_chunk(dcpl_id, 2, cdims) < 0)
+        TEST_ERROR
+
+    /* Initialize wbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            wbuf[i][j] = 10 * i + j;
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Create file asynchronously */
+    if((file_id = H5Fcreate_async(ASYNC_VOL_TEST_FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the dataset asynchronously */
+    if((dset_id = H5Dcreate_async(file_id, "dset", H5T_NATIVE_INT, fspace_id,
+            H5P_DEFAULT, dcpl_id, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Extend the first dataset from 1 to 6, 1 at a time */
+    for(i = 0; i < 6; i++) {
+        /* No need to extend on the first iteration */
+        if(i) {
+            /* Extend datapace */
+            dims[0] = (hsize_t)(i + 1);
+            if(H5Sset_extent_simple(fspace_id, 2, dims, mdims) < 0)
+                TEST_ERROR
+
+            /* Extend dataset asynchronously */
+            if(H5Dset_extent_async(dset_id, dims, es_id) < 0)
+                TEST_ERROR
+
+            /* Select hyperslab in file space to match new region */
+            start[0] = (hsize_t)i;
+            if(H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0)
+                TEST_ERROR
+        } /* end if */
+
+        /* Get dataset dataspace */
+        if((fspace_out = H5Dget_space_async(dset_id, es_id)) < 0)
+            TEST_ERROR
+
+        /* Verify extent is correct */
+        if((tri_ret = H5Sextent_equal(fspace_id, fspace_out)) < 0)
+            TEST_ERROR
+        if(!tri_ret)
+            FAIL_PUTS_ERROR("    dataspaces are not equal\n");
+
+        /* Close output dataspace */
+        if(H5Sclose(fspace_out) < 0)
+            TEST_ERROR
+
+        /* Write the dataset slice asynchronously */
+        if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, mspace_id, fspace_id, H5P_DEFAULT,
+                wbuf[i], es_id) < 0)
+            TEST_ERROR
+    } /* end for */
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the entire dataset asynchronously */
+    if(H5Dread_async(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            if(wbuf[i][j] != rbuf[i][j])
+                FAIL_PUTS_ERROR("    data verification failed\n")
+
+    if(H5Dclose(dset_id) < 0)
+        TEST_ERROR
+    if(H5Fclose(file_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(mspace_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(fspace_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(dcpl_id) < 0)
+        TEST_ERROR
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(mspace_id);
+        H5Sclose(fspace_id);
+        H5Sclose(fspace_out);
+        H5Pclose(dcpl_id);
+        H5Dclose(dset_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_set_extent() */
+
+
+/*
+ * Create file, dataset, and attribute, write to attribute
+ */
+static int
+test_attribute_io(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t attr_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    hsize_t dims[2] = {6, 10};
+    size_t num_in_progress;
+    hbool_t op_failed;
+    int wbuf[6][10];
+    int rbuf[6][10];
+    int i, j;
+
+    TESTING("attribute I/O")
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the dataset asynchronously */
+    if((dset_id = H5Dcreate_async(file_id, "attr_dset", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously */
+    if((attr_id = H5Acreate_async(dset_id, "attr", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Initialize wbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            wbuf[i][j] = 10 * i + j;
+
+    /* Write the attribute asynchronously */
+    if(H5Awrite_async(attr_id, H5T_NATIVE_INT, wbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            if(wbuf[i][j] != rbuf[i][j])
+                FAIL_PUTS_ERROR("    data verification failed\n");
+
+    /* Close the attribute asynchronously */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open the attribute asynchronously */
+    if((attr_id = H5Aopen_async(dset_id, "attr", H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            if(wbuf[i][j] != rbuf[i][j])
+                FAIL_PUTS_ERROR("    data verification failed\n");
+
+    /* Close out of order to see if it trips things up */
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Dclose(dset_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_attribute_io() */
+
+
+/*
+ * Create file, dataset, and attribute, write to attribute with type conversion
+ */
+static int
+test_attribute_io_tconv(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t attr_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    hsize_t dims[2] = {6, 10};
+    size_t num_in_progress;
+    hbool_t op_failed;
+    int wbuf[6][10];
+    int rbuf[6][10];
+    int i, j;
+
+    TESTING("attribute I/O with type conversion")
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously by name */
+    if((attr_id = H5Acreate_by_name_async(file_id, "attr_dset", "attr_tconv",
+            H5T_STD_U16BE, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Initialize wbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            wbuf[i][j] = 10 * i + j;
+
+    /* Write the attribute asynchronously */
+    if(H5Awrite_async(attr_id, H5T_NATIVE_INT, wbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            if(wbuf[i][j] != rbuf[i][j])
+                FAIL_PUTS_ERROR("    data verification failed\n");
+
+    /* Close the attribute asynchronously */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open the attribute asynchronously */
+    if((attr_id = H5Aopen_by_name_async(file_id, "attr_dset", "attr_tconv",
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            if(wbuf[i][j] != rbuf[i][j])
+                FAIL_PUTS_ERROR("    data verification failed\n");
+
+    /* Close */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_attribute_io_tconv() */
 
 
 /*
