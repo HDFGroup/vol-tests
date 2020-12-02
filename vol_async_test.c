@@ -21,6 +21,7 @@ static int test_multi_file_grp_dset_io(void);
 static int test_set_extent(void);
 static int test_attribute_io(void);
 static int test_attribute_io_tconv(void);
+static int test_attribute_io_compound(void);
 
 /*
  * The array of async tests to be performed.
@@ -33,6 +34,7 @@ static int (*async_tests[])(void) = {
         test_set_extent,
         test_attribute_io,
         test_attribute_io_tconv,
+        test_attribute_io_compound,
 };
 
 /* Highest "printf" file created (starting at 0) */
@@ -1529,6 +1531,302 @@ error:
 
     return 1;
 } /* end test_attribute_io_tconv() */
+
+
+/*
+ * Create file, dataset, and attribute, write to attribute with compound type
+ * conversion
+ */
+typedef struct tattr_cmpd_t {
+    int a;
+    int b;
+} tattr_cmpd_t;
+
+static int
+test_attribute_io_compound(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t attr_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t mtype_id = H5I_INVALID_HID;
+    hid_t ftype_id = H5I_INVALID_HID;
+    hid_t mtypea_id = H5I_INVALID_HID;
+    hid_t mtypeb_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    hsize_t dims[2] = {6, 10};
+    size_t num_in_progress;
+    hbool_t op_failed;
+    tattr_cmpd_t wbuf[6][10];
+    tattr_cmpd_t rbuf[6][10];
+    tattr_cmpd_t fbuf[6][10];
+    int i, j;
+
+    TESTING("attribute I/O with compound type conversion")
+
+    /* Create datatype */
+    if((mtype_id = H5Tcreate (H5T_COMPOUND, sizeof(tattr_cmpd_t))) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtype_id, "a_name", HOFFSET(tattr_cmpd_t, a), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtype_id, "b_name", HOFFSET(tattr_cmpd_t, b), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+
+    if((mtypea_id = H5Tcreate (H5T_COMPOUND, sizeof(tattr_cmpd_t))) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtypea_id, "a_name", HOFFSET(tattr_cmpd_t, a), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+
+    if((mtypeb_id = H5Tcreate (H5T_COMPOUND, sizeof(tattr_cmpd_t))) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtypeb_id, "b_name", HOFFSET(tattr_cmpd_t, b), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+
+    if((ftype_id = H5Tcreate (H5T_COMPOUND, 2 + 8)) < 0)
+        TEST_ERROR
+    if(H5Tinsert(ftype_id, "a_name", 0, H5T_STD_U16BE) < 0)
+        TEST_ERROR
+    if(H5Tinsert(ftype_id, "b_name", 2, H5T_STD_I64LE) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously by name */
+    if((attr_id = H5Acreate_by_name_async(file_id, "attr_dset", "attr_cmpd",
+            ftype_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Initialize wbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            wbuf[i][j].a = 2 * (10 * i + j);
+            wbuf[i][j].b = 2 * (10 * i + j) + 1;
+        } /* end for */
+
+    /* Write the attribute asynchronously */
+    if(H5Awrite_async(attr_id, mtype_id, wbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Update fbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            fbuf[i][j].a = wbuf[i][j].a;
+            fbuf[i][j].b = wbuf[i][j].b;
+        } /* end for */
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, mtype_id, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            if(rbuf[i][j].a != fbuf[i][j].a)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+            if(rbuf[i][j].b != fbuf[i][j].b)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+        } /* end for */
+
+    /* Clear the read buffer */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            rbuf[i][j].a = -2;
+            rbuf[i][j].b = -2;
+        } /* end for */
+
+    /* Read the attribute asynchronously (element a only) */
+    if(H5Aread_async(attr_id, mtypea_id, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            if(rbuf[i][j].a != fbuf[i][j].a)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+            if(rbuf[i][j].b != -2)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+        } /* end for */
+
+    /* Clear the read buffer */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            rbuf[i][j].a = -2;
+            rbuf[i][j].b = -2;
+        } /* end for */
+
+    /* Read the attribute asynchronously (element b only) */
+    if(H5Aread_async(attr_id, mtypeb_id, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            if(rbuf[i][j].a != -2)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+            if(rbuf[i][j].b != fbuf[i][j].b)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+        } /* end for */
+
+    /* Update wbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            wbuf[i][j].a += 2 * 6 * 10;
+            wbuf[i][j].b += 2 * 6 * 10;
+        } /* end for */
+
+    /* Write the attribute asynchronously (element a only) */
+    if(H5Awrite_async(attr_id, mtypea_id, wbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Update fbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            fbuf[i][j].a = wbuf[i][j].a;
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Clear the read buffer */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            rbuf[i][j].a = -2;
+            rbuf[i][j].b = -2;
+        } /* end for */
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, mtype_id, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            if(rbuf[i][j].a != fbuf[i][j].a)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+            if(rbuf[i][j].b != fbuf[i][j].b)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+        } /* end for */
+
+    /* Update wbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            wbuf[i][j].a += 2 * 6 * 10;
+            wbuf[i][j].b += 2 * 6 * 10;
+        } /* end for */
+
+    /* Write the attribute asynchronously (element b only) */
+    if(H5Awrite_async(attr_id, mtypeb_id, wbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Update fbuf */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++)
+            fbuf[i][j].b = wbuf[i][j].b;
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Clear the read buffer */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            rbuf[i][j].a = -2;
+            rbuf[i][j].b = -2;
+        } /* end for */
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, mtype_id, rbuf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for(i = 0; i < 6; i++)
+        for(j = 0; j < 10; j++) {
+            if(rbuf[i][j].a != fbuf[i][j].a)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+            if(rbuf[i][j].b != fbuf[i][j].b)
+                FAIL_PUTS_ERROR("    data verification failed\n");
+        } /* end for */
+
+    /* Close */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_attribute_io_compound() */
 
 
 /*
