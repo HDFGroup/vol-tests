@@ -22,6 +22,7 @@ static int test_set_extent(void);
 static int test_attribute_io(void);
 static int test_attribute_io_tconv(void);
 static int test_attribute_io_compound(void);
+static int test_group(void);
 
 /*
  * The array of async tests to be performed.
@@ -35,6 +36,7 @@ static int (*async_tests[])(void) = {
         test_attribute_io,
         test_attribute_io_tconv,
         test_attribute_io_compound,
+        test_group,
 };
 
 /* Highest "printf" file created (starting at 0) */
@@ -1802,6 +1804,14 @@ test_attribute_io_compound(void)
         TEST_ERROR
     if(H5Sclose(space_id) < 0)
         TEST_ERROR
+    if(H5Tclose(mtype_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(ftype_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(mtypea_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(mtypeb_id) < 0)
+        TEST_ERROR
 
     /* Wait for the event stack to complete */
     if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
@@ -1819,6 +1829,10 @@ test_attribute_io_compound(void)
 error:
     H5E_BEGIN_TRY {
         H5Sclose(space_id);
+        H5Tclose(mtype_id);
+        H5Tclose(ftype_id);
+        H5Tclose(mtypea_id);
+        H5Tclose(mtypeb_id);
         H5Aclose(attr_id);
         H5Fclose(file_id);
         H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
@@ -1827,6 +1841,158 @@ error:
 
     return 1;
 } /* end test_attribute_io_compound() */
+
+
+/*
+ * Test group interfaces
+ */
+static int
+test_group(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t parent_group_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t subgroup_id = H5I_INVALID_HID;
+    hid_t gcpl_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    H5G_info_t info1;
+    H5G_info_t info2;
+    H5G_info_t info3;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("group operations")
+
+    /* Create GCPL */
+    if((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0)
+        TEST_ERROR
+
+    /* Track creation order */
+    if(H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the parent group asynchronously */
+    if((parent_group_id = H5Gcreate_async(file_id, "group_parent",
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create 3 subgroups asynchronously, the first with no sub-subgroups, the
+     * second with 1, and the third with 2 */
+    if((group_id = H5Gcreate_async(parent_group_id, "group1", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    if((group_id = H5Gcreate_async(parent_group_id, "group2", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if((subgroup_id = H5Gcreate_async(group_id, "subgroup1", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(subgroup_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    if((group_id = H5Gcreate_async(parent_group_id, "group3", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if((subgroup_id = H5Gcreate_async(group_id, "subgroup1", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(subgroup_id, es_id) < 0)
+        TEST_ERROR
+    if((subgroup_id = H5Gcreate_async(group_id, "subgroup2", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(subgroup_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the file asynchronously.  This will effectively work as a barrier,
+     * guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Test H5Gget_info_async */
+    /* Open group1 asynchronously */
+    if((group_id = H5Gopen_async(parent_group_id, "group1", H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Get info */
+    if(H5Gget_info_async(group_id, &info1, es_id) < 0)
+        TEST_ERROR
+
+    /* Test H5Gget_info_by_idx_async */
+    if(H5Gget_info_by_idx_async(parent_group_id, ".", H5_INDEX_CRT_ORDER,
+            H5_ITER_INC, 1, &info2, H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Test H5Gget_info_by_name_async */
+    if(H5Gget_info_by_name_async(parent_group_id, "group3", &info3, H5P_DEFAULT,
+            es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify group infos */
+    if(info1.nlinks != 0)
+        FAIL_PUTS_ERROR("    incorrect number of links")
+    if(info2.nlinks != 1)
+        FAIL_PUTS_ERROR("    incorrect number of links")
+    if(info3.nlinks != 2)
+        FAIL_PUTS_ERROR("    incorrect number of links")
+
+    /* Close */
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(parent_group_id);
+        H5Fclose(file_id);
+        H5Pclose(gcpl_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_group() */
 
 
 /*
