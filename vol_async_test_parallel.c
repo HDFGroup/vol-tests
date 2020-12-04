@@ -2913,6 +2913,18 @@ test_link(void)
     if(H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+        H5_FAILED();
+        HDprintf("    MPI_Barrier failed\n");
+        goto error;
+    }
+
     /* Check if hard link exists */
     /* Change to async interface when we have a reasonable API -NAF */
     if((existsh1 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
@@ -2938,6 +2950,18 @@ test_link(void)
     if(H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+        H5_FAILED();
+        HDprintf("    MPI_Barrier failed\n");
+        goto error;
+    }
+
     /* Check if hard link exists */
     /* Change to async interface when we have a reasonable API -NAF */
     if((existsh2 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
@@ -2961,6 +2985,18 @@ test_link(void)
      * barrier, guaranteeing the read takes place after the delete. */
     if(H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+        H5_FAILED();
+        HDprintf("    MPI_Barrier failed\n");
+        goto error;
+    }
 
     /* Check if hard link exists */
     /* Change to async interface when we have a reasonable API -NAF */
@@ -3096,6 +3132,20 @@ test_ocopy_orefresh(void)
      * barrier, guaranteeing the dataset open takes place copy. */
     if(H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
+
+    if(!coll_metadata_read) {
+        /* Wait for the event stack to complete */
+        if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            TEST_ERROR
+        if(op_failed)
+            TEST_ERROR
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            H5_FAILED();
+            HDprintf("    MPI_Barrier failed\n");
+            goto error;
+        }
+    }
 
     /* Open the copied dataset asynchronously */
     if((dset_id = H5Dopen_async(parent_group_id, "copied_dset", H5P_DEFAULT,
