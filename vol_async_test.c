@@ -26,6 +26,7 @@ static int test_attribute_io_compound(void);
 static int test_group(void);
 static int test_link(void);
 static int test_ocopy_orefresh(void);
+static int test_file_reopen(void);
 
 /*
  * The array of async tests to be performed.
@@ -43,6 +44,7 @@ static int (*async_tests[])(void) = {
         test_group,
         test_link,
         test_ocopy_orefresh,
+        test_file_reopen,
 };
 
 /* Highest "printf" file created (starting at 0) */
@@ -2371,7 +2373,7 @@ test_ocopy_orefresh(void)
         TEST_ERROR
 
     /* Refresh the copied dataset asynchronously */
-    if(H5Drefresh(dset_id) < 0)
+    if(H5Orefresh(dset_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
@@ -2412,6 +2414,69 @@ error:
 
     return 1;
 } /* end test_ocopy_orefresh() */
+
+
+/*
+ * Test H5Freopen()
+ */
+static int
+test_file_reopen(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t reopened_file_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("H5Freopen()")
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Reopen file asynchronously */
+    if((reopened_file_id = H5Freopen_async(file_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Close */
+    if(H5Fclose_async(reopened_file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Fclose(reopened_file_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_file_reopen() */
 
 
 /*
