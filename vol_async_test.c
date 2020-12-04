@@ -23,6 +23,7 @@ static int test_attribute_io(void);
 static int test_attribute_io_tconv(void);
 static int test_attribute_io_compound(void);
 static int test_group(void);
+static int test_link(void);
 
 /*
  * The array of async tests to be performed.
@@ -37,6 +38,7 @@ static int (*async_tests[])(void) = {
         test_attribute_io_tconv,
         test_attribute_io_compound,
         test_group,
+        test_link,
 };
 
 /* Highest "printf" file created (starting at 0) */
@@ -1201,7 +1203,9 @@ test_set_extent(void)
         } /* end if */
 
         /* Get dataset dataspace */
-        if((fspace_out = H5Dget_space_async(dset_id, es_id)) < 0)
+        /* Change to async interface when we have a reasonable API, and use a
+         * second event set only for H5Dget_space -NAF */
+        if((fspace_out = H5Dget_space(dset_id)) < 0)
             TEST_ERROR
 
         /* Verify extent is correct */
@@ -1993,6 +1997,200 @@ error:
 
     return 1;
 } /* end test_group() */
+
+
+/*
+ * Test link interfaces
+ */
+static int
+test_link(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t parent_group_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t gcpl_id = H5I_INVALID_HID;
+    hid_t lapl_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    htri_t existsh1;
+    htri_t existsh2;
+    htri_t existsh3;
+    htri_t existss1;
+    htri_t existss2;
+    htri_t existss3;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("link operations")
+
+    /* Create GCPL */
+    if((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0)
+        TEST_ERROR
+
+    /* Track creation order */
+    if(H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0)
+        TEST_ERROR
+
+    /* Create default LAPL - necessary to work around bug in HDF5 */
+    if((lapl_id = H5Pcreate(H5P_LINK_ACCESS)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the parent group asynchronously */
+    if((parent_group_id = H5Gcreate_async(file_id, "link_parent",
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create subgroup asynchronously. */
+    if((group_id = H5Gcreate_async(parent_group_id, "group", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Create hard link asynchronously */
+    /* Change to async when we have a working API -NAF */
+    if(H5Lcreate_hard(parent_group_id, "group", parent_group_id, "hard_link",
+            H5P_DEFAULT, H5P_DEFAULT) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the soft link create takes place after the hard
+     * link create. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Create soft link asynchronously */
+    if(H5Lcreate_soft_async("/link_parent/group", parent_group_id, "soft_link",
+            H5P_DEFAULT, lapl_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the writes. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if hard link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existsh1 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Check if soft link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existss1 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the delete takes place after the reads. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Delete soft link by index */
+    if(H5Ldelete_by_idx_async(parent_group_id, ".", H5_INDEX_CRT_ORDER,
+            H5_ITER_INC, 2, H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the delete. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if hard link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existsh2 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Check if soft link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existss2 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the delete takes place after the reads. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Delete hard link */
+    if(H5Ldelete_async(parent_group_id, "hard_link", H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the delete. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if hard link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existsh3 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Check if soft link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existss3 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Check if existence returns were correct */
+    if(!existsh1)
+        FAIL_PUTS_ERROR("    link exists returned FALSE for link that should exist")
+    if(!existss1)
+        FAIL_PUTS_ERROR("    link exists returned FALSE for link that should exist")
+    if(!existsh2)
+        FAIL_PUTS_ERROR("    link exists returned FALSE for link that should exist")
+    if(existss2)
+        FAIL_PUTS_ERROR("    link exists returned TRUE for link that should not exist")
+    if(existsh3)
+        FAIL_PUTS_ERROR("    link exists returned TRUE for link that should not exist")
+    if(existsh3)
+        FAIL_PUTS_ERROR("    link exists returned TRUE for link that should not exist")
+
+    /* Close */
+    if(H5Gclose_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(lapl_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(parent_group_id);
+        H5Fclose(file_id);
+        H5Pclose(gcpl_id);
+        H5Pclose(lapl_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_link() */
 
 
 /*
