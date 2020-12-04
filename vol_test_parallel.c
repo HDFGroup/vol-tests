@@ -21,6 +21,7 @@
 #include "vol_link_test_parallel.h"
 #include "vol_object_test_parallel.h"
 #include "vol_misc_test_parallel.h"
+#include "vol_async_test_parallel.h"
 
 char vol_test_parallel_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
@@ -30,6 +31,59 @@ size_t n_tests_failed_g;
 size_t n_tests_skipped_g;
 
 int mpi_size, mpi_rank;
+
+/* X-macro to define the following for each test:
+ * - enum type
+ * - name
+ * - test function
+ * - enabled by default
+ */
+#define VOL_PARALLEL_TESTS                                               \
+    X(VOL_TEST_NULL,      "",          NULL,                        0)   \
+    X(VOL_TEST_FILE,      "file",      vol_file_test_parallel,      1)   \
+    X(VOL_TEST_GROUP,     "group",     vol_group_test_parallel,     1)   \
+    X(VOL_TEST_DATASET,   "dataset",   vol_dataset_test_parallel,   1)   \
+    X(VOL_TEST_DATATYPE,  "datatype",  vol_datatype_test_parallel,  1)   \
+    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test_parallel, 1)   \
+    X(VOL_TEST_LINK,      "link",      vol_link_test_parallel,      1)   \
+    X(VOL_TEST_OBJECT,    "object",    vol_object_test_parallel,    1)   \
+    X(VOL_TEST_MISC,      "misc",      vol_misc_test_parallel,      1)   \
+    X(VOL_TEST_ASYNC,     "async",     vol_async_test_parallel,     1)   \
+    X(VOL_TEST_MAX,       "",          NULL,                        0)
+
+#define X(a, b, c, d) a,
+enum vol_test_type { VOL_PARALLEL_TESTS };
+#undef X
+#define X(a, b, c, d) b,
+static char * const vol_test_name[] = { VOL_PARALLEL_TESTS };
+#undef X
+#define X(a, b, c, d) c,
+static int (*vol_test_func[])(void) = { VOL_PARALLEL_TESTS };
+#undef X
+#define X(a, b, c, d) d,
+static int vol_test_enabled[] = { VOL_PARALLEL_TESTS };
+#undef X
+
+static enum vol_test_type
+vol_test_name_to_type(const char *test_name)
+{
+    enum vol_test_type i = 0;
+
+    while(strcmp(vol_test_name[i], test_name) && i != VOL_TEST_MAX)
+        i++;
+
+    return((i == VOL_TEST_MAX) ? VOL_TEST_NULL : i);
+}
+
+static void
+vol_test_run(void)
+{
+    enum vol_test_type i;
+
+    for (i = VOL_TEST_FILE; i < VOL_TEST_MAX; i++)
+        if (vol_test_enabled[i])
+            (void)vol_test_func[i]();
+}
 
 hid_t
 create_mpi_fapl(MPI_Comm comm, MPI_Info info)
@@ -54,6 +108,11 @@ error:
     return H5I_INVALID_HID;
 } /* end create_mpi_fapl() */
 
+/*
+ * Generates random dimensions for a dataspace. The first dimension
+ * is always `mpi_size` to allow for convenient subsetting; the rest
+ * of the dimensions are randomized.
+ */
 int
 generate_random_parallel_dimensions(int space_rank, hsize_t **dims_out)
 {
@@ -100,6 +159,16 @@ main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
+    /* Simple argument checking, TODO can improve that later */
+    if (argc > 1) {
+        enum vol_test_type i = vol_test_name_to_type(argv[1]);
+        if (i != VOL_TEST_NULL) {
+            /* Run only specific VOL test */
+            memset(vol_test_enabled, 0, sizeof(vol_test_enabled));
+            vol_test_enabled[i] = 1;
+        }
+    }
+
     /*
      * Make sure that HDF5 is initialized on all MPI ranks before proceeding.
      * This is important for certain VOL connectors which may require a
@@ -143,14 +212,8 @@ main(int argc, char **argv)
         }
     } END_INDEPENDENT_OP(create_test_container);
 
-    (void)vol_file_test_parallel();
-    (void)vol_group_test_parallel();
-    (void)vol_dataset_test_parallel();
-    (void)vol_datatype_test_parallel();
-    (void)vol_attribute_test_parallel();
-    (void)vol_link_test_parallel();
-    (void)vol_object_test_parallel();
-    (void)vol_misc_test_parallel();
+    /* Run all the tests that are enabled */
+    vol_test_run();
 
     if (MAINPROCESS)
         HDprintf("The below statistics are minimum values due to the possibility of some ranks failing a test while others pass:\n");
