@@ -19,11 +19,13 @@ static int test_multi_dataset_io(void);
 static int test_multi_file_dataset_io(void);
 static int test_multi_file_grp_dset_io(void);
 static int test_set_extent(void);
+static int test_attribute_exists(void);
 static int test_attribute_io(void);
 static int test_attribute_io_tconv(void);
 static int test_attribute_io_compound(void);
 static int test_group(void);
 static int test_link(void);
+static int test_ocopy_orefresh(void);
 
 /*
  * The array of async tests to be performed.
@@ -34,11 +36,13 @@ static int (*async_tests[])(void) = {
         test_multi_file_dataset_io,
         test_multi_file_grp_dset_io,
         test_set_extent,
+        test_attribute_exists,
         test_attribute_io,
         test_attribute_io_tconv,
         test_attribute_io_compound,
         test_group,
         test_link,
+        test_ocopy_orefresh,
 };
 
 /* Highest "printf" file created (starting at 0) */
@@ -1280,6 +1284,118 @@ error:
 
 
 /*
+ * Test H5Aexists()
+ */
+static int
+test_attribute_exists(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t attr_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    hsize_t dims[2] = {6, 10};
+    htri_t exists1;
+    htri_t exists2;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("H5Aexists()")
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the dataset asynchronously */
+    if((dset_id = H5Dcreate_async(file_id, "attr_exists_dset", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Check if the attribute exists synchronously */
+    /* Change to async when we have a reasonable API -NAF */
+    if((exists1 = H5Aexists(dset_id, "attr")) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the create takes place after the existence check
+     */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously */
+    if((attr_id = H5Acreate_async(dset_id, "attr", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the existence check takes place after the create.
+     */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if the attribute exists synchronously */
+    /* Change to async when we have a reasonable API -NAF */
+    if((exists2 = H5Aexists(dset_id, "attr")) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Check if H5Aexists returned the correct values */
+    if(exists1)
+        FAIL_PUTS_ERROR("    H5Aexists returned TRUE for an attribute that should not exist")
+    if(!exists2)
+        FAIL_PUTS_ERROR("    H5Aexists returned FALSE for an attribute that should exist")
+
+    /* Close */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Dclose(dset_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_attribute_io() */
+
+
+/*
  * Create file, dataset, and attribute, write to attribute
  */
 static int
@@ -2191,6 +2307,111 @@ error:
 
     return 1;
 } /* end test_link() */
+
+
+/*
+ * Test H5Ocopy() and H5Orefresh()
+ */
+static int
+test_ocopy_orefresh(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t parent_group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    hsize_t dims[2] = {6, 10};
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("H5Ocopy() and H5Orefresh()")
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(2, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the parent group asynchronously */
+    if((parent_group_id = H5Gcreate_async(file_id, "ocopy_parent",
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create dataset asynchronously. */
+    if((dset_id = H5Dcreate_async(parent_group_id, "dset", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the copy takes place after dataset create. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Copy dataset */
+    if(H5Ocopy_async(parent_group_id, "dset", parent_group_id, "copied_dset",
+            H5P_DEFAULT, H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the dataset open takes place copy. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open the copied dataset asynchronously */
+    if((dset_id = H5Dopen_async(parent_group_id, "copied_dset", H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Refresh the copied dataset asynchronously */
+    if(H5Drefresh(dset_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Close */
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Dclose(dset_id);
+        H5Gclose(parent_group_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_ocopy_orefresh() */
 
 
 /*
