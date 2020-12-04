@@ -480,6 +480,9 @@ static void test_misc2_write_attribute(void)
     char *string_att1 = HDstrdup("string attribute in file one");
     char *string_att2 = HDstrdup("string attribute in file two");
 
+    HDmemset(&data, 0, sizeof(data));
+    HDmemset(&data_check, 0, sizeof(data_check));
+
     type = misc2_create_type();
 
     dataspace = H5Screate(H5S_SCALAR);

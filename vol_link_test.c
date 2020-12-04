@@ -10059,6 +10059,19 @@ test_move_link_invalid_params(void)
                 PART_ERROR(H5Lmove_across_files);
             }
 
+            /* Ensure that original link still exists */
+            if ((link_exists = H5Lexists(src_grp_id, MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't determine if original link '%s' exists after invalid link move\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lmove_across_files);
+            }
+
+            if (!link_exists) {
+                H5_FAILED();
+                HDprintf("    original link '%s' didn't exist after failed move!\n", MOVE_LINK_INVALID_PARAMS_TEST_HARD_LINK_NAME);
+                PART_ERROR(H5Lmove_across_files);
+            }
+
             if (H5Fclose(ext_file_id) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to close a file!\n");

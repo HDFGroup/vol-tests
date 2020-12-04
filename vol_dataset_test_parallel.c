@@ -6630,14 +6630,17 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
             }
         } END_INDEPENDENT_OP(dset_write);
 
-        /*
-         * Close and re-open the dataset to ensure the data got written.
-         */
         if (dset_id >= 0) {
             H5E_BEGIN_TRY {
                 H5Dclose(dset_id);
             } H5E_END_TRY;
             dset_id = H5I_INVALID_HID;
+        }
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            H5_FAILED();
+            HDprintf("    MPI_Barrier failed\n");
+            goto error;
         }
 
         if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
@@ -6657,12 +6660,6 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
          */
         for (i = 0, n_chunks_per_rank = (data_size / (size_t) mpi_size) / chunk_size; i < n_chunks_per_rank; i++) {
             size_t j, k;
-
-            if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
-                H5_FAILED();
-                HDprintf("    MPI_Barrier failed\n");
-                goto error;
-            }
 
             if (MAINPROCESS) HDprintf("\r All ranks reading chunk %zu", i);
 
@@ -6720,6 +6717,12 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
                 H5Dclose(dset_id);
             } H5E_END_TRY;
             dset_id = H5I_INVALID_HID;
+        }
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            H5_FAILED();
+            HDprintf("    MPI_Barrier failed\n");
+            goto error;
         }
     }
 
@@ -7080,14 +7083,17 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
             }
         } END_INDEPENDENT_OP(dset_write);
 
-        /*
-         * Close and re-open the dataset to ensure the data got written.
-         */
         if (dset_id >= 0) {
             H5E_BEGIN_TRY {
                 H5Dclose(dset_id);
             } H5E_END_TRY;
             dset_id = H5I_INVALID_HID;
+        }
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            H5_FAILED();
+            HDprintf("    MPI_Barrier failed\n");
+            goto error;
         }
 
         if ((dset_id = H5Dopen2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_NAME, H5P_DEFAULT)) < 0) {
@@ -7107,12 +7113,6 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
          */
         for (i = 0, n_chunks_per_rank = (data_size / (size_t) mpi_size) / chunk_size; i < n_chunks_per_rank; i++) {
             size_t j, k;
-
-            if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
-                H5_FAILED();
-                HDprintf("    MPI_Barrier failed\n");
-                goto error;
-            }
 
             if (MAINPROCESS) HDprintf("\r All ranks reading chunk %zu", i);
 
@@ -7171,6 +7171,12 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
                 H5Dclose(dset_id);
             } H5E_END_TRY;
             dset_id = H5I_INVALID_HID;
+        }
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            H5_FAILED();
+            HDprintf("    MPI_Barrier failed\n");
+            goto error;
         }
     }
 
