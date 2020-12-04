@@ -86,7 +86,7 @@ vol_test_run(void)
 }
 
 hid_t
-create_mpi_fapl(MPI_Comm comm, MPI_Info info)
+create_mpi_fapl(MPI_Comm comm, MPI_Info info, hbool_t coll_md_read)
 {
     hid_t ret_pl = H5I_INVALID_HID;
 
@@ -97,7 +97,7 @@ create_mpi_fapl(MPI_Comm comm, MPI_Info info)
 
     if (H5Pset_fapl_mpio(ret_pl, comm, info) < 0)
         goto error;
-    if (H5Pset_all_coll_metadata_ops(ret_pl, TRUE) < 0)
+    if (H5Pset_all_coll_metadata_ops(ret_pl, coll_md_read) < 0)
         goto error;
     if (H5Pset_coll_metadata_write(ret_pl, TRUE) < 0)
         goto error;

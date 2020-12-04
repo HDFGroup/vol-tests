@@ -19,6 +19,14 @@ static int test_multi_dataset_io(void);
 static int test_multi_file_dataset_io(void);
 static int test_multi_file_grp_dset_io(void);
 static int test_set_extent(void);
+static int test_attribute_exists(void);
+static int test_attribute_io(void);
+static int test_attribute_io_tconv(void);
+static int test_attribute_io_compound(void);
+static int test_group(void);
+static int test_link(void);
+static int test_ocopy_orefresh(void);
+static int test_file_reopen(void);
 
 /*
  * The array of parallel async tests to be performed.
@@ -29,7 +37,17 @@ static int (*par_async_tests[])(void) = {
     test_multi_file_dataset_io,
     test_multi_file_grp_dset_io,
     test_set_extent,
+    test_attribute_exists,
+    test_attribute_io,
+    test_attribute_io_tconv,
+    test_attribute_io_compound,
+    test_group,
+    test_link,
+    test_ocopy_orefresh,
+    test_file_reopen,
 };
+
+hbool_t coll_metadata_read = TRUE;
 
 /* Highest "printf" file created (starting at 0) */
 int max_printf_file = -1;
@@ -62,7 +80,7 @@ test_one_dataset_io(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
         TEST_ERROR
 
     /* Create dataspace */
@@ -85,7 +103,7 @@ test_one_dataset_io(void)
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
         TEST_ERROR
 
-    /* Calculate size of data buffers */
+    /* Calculate size of data buffers - first dimension is skipped in calculation */
     for (i = 1, data_size = 1; i < ONE_DATASET_IO_TEST_SPACE_RANK; i++)
         data_size *= dims[i];
     data_size *= sizeof(int);
@@ -403,7 +421,7 @@ test_multi_dataset_io(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
         TEST_ERROR
 
     /* Create dataspace */
@@ -422,7 +440,7 @@ test_multi_dataset_io(void)
     if((file_id = H5Fcreate_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id, es_id)) < 0)
         TEST_ERROR
 
-    /* Calculate size of data buffers */
+    /* Calculate size of data buffers - first dimension is skipped in calculation */
     for (i = 1, data_size = 1; i < MULTI_DATASET_IO_TEST_SPACE_RANK; i++)
         data_size *= dims[i];
     data_size *= sizeof(int);
@@ -713,7 +731,7 @@ test_multi_file_dataset_io(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
         TEST_ERROR
 
     /* Create dataspace */
@@ -728,7 +746,7 @@ test_multi_file_dataset_io(void)
     if((es_id = H5EScreate()) <  0)
         TEST_ERROR
 
-    /* Calculate size of data buffers */
+    /* Calculate size of data buffers - first dimension is skipped in calculation */
     for (i = 1, data_size = 1; i < MULTI_FILE_DATASET_IO_TEST_SPACE_RANK; i++)
         data_size *= dims[i];
     data_size *= sizeof(int);
@@ -1106,7 +1124,7 @@ test_multi_file_grp_dset_io(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
         TEST_ERROR
 
     /* Create dataspace */
@@ -1121,7 +1139,7 @@ test_multi_file_grp_dset_io(void)
     if((es_id = H5EScreate()) <  0)
         TEST_ERROR
 
-    /* Calculate size of data buffers */
+    /* Calculate size of data buffers - first dimension is skipped in calculation */
     for (i = 1, data_size = 1; i < MULTI_FILE_GRP_DSET_IO_TEST_SPACE_RANK; i++)
         data_size *= dims[i];
     data_size *= sizeof(int);
@@ -1500,7 +1518,7 @@ test_set_extent(void)
 
     TESTING("extending dataset")
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
         TEST_ERROR
 
     /* Create dataspace */
@@ -1549,7 +1567,7 @@ test_set_extent(void)
             H5P_DEFAULT, dcpl_id, H5P_DEFAULT, es_id)) < 0)
         TEST_ERROR
 
-    /* Calculate size of data buffers */
+    /* Calculate size of data buffers - first dimension is skipped in calculation */
     for (i = 1, data_size = 1; i < SET_EXTENT_TEST_SPACE_RANK; i++)
         data_size *= dims[i];
     data_size *= sizeof(int);
@@ -1766,6 +1784,1448 @@ error:
 #undef SET_EXTENT_TEST_NUM_EXTENDS
 
 /*
+ * Creates an attribute on a dataset. All ranks check to see
+ * if the attribute exists before and after creating the
+ * attribute on the dataset.
+ */
+#define ATTRIBUTE_EXISTS_TEST_SPACE_RANK 2
+static int
+test_attribute_exists(void)
+{
+    hsize_t *dims = NULL;
+    hbool_t  op_failed;
+    size_t   num_in_progress;
+    htri_t   exists1;
+    htri_t   exists2;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    fapl_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    attr_id = H5I_INVALID_HID;
+    hid_t    space_id = H5I_INVALID_HID;
+    hid_t    es_id = H5I_INVALID_HID;
+
+    TESTING("H5Aexists()")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if (generate_random_parallel_dimensions(ATTRIBUTE_EXISTS_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(ATTRIBUTE_EXISTS_TEST_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the dataset asynchronously */
+    if((dset_id = H5Dcreate_async(file_id, "attr_exists_dset", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Check if the attribute exists synchronously */
+    /* Change to async when we have a reasonable API -NAF */
+    if((exists1 = H5Aexists(dset_id, "attr")) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the create takes place after the existence check
+     */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously */
+    if((attr_id = H5Acreate_async(dset_id, "attr", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the existence check takes place after the create.
+     */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if the attribute exists synchronously */
+    /* Change to async when we have a reasonable API -NAF */
+    if((exists2 = H5Aexists(dset_id, "attr")) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Check if H5Aexists returned the correct values */
+    if(exists1)
+        FAIL_PUTS_ERROR("    H5Aexists returned TRUE for an attribute that should not exist")
+    if(!exists2)
+        FAIL_PUTS_ERROR("    H5Aexists returned FALSE for an attribute that should exist")
+
+    /* Close */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (dims) {
+        HDfree(dims);
+        dims = NULL;
+    }
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (dims) HDfree(dims);
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Dclose(dset_id);
+        H5Pclose(fapl_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+#undef ATTRIBUTE_EXISTS_TEST_SPACE_RANK
+
+/*
+ * Creates a file, dataset and attribute. Each rank writes to
+ * the attribute. Then, each rank reads the attribute and
+ * verifies the data is correct.
+ */
+#define ATTRIBUTE_IO_TEST_SPACE_RANK 2
+static int
+test_attribute_io(void)
+{
+    hsize_t *dims = NULL;
+    hbool_t  op_failed;
+    size_t   num_in_progress;
+    size_t   i, data_size;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    fapl_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    attr_id = H5I_INVALID_HID;
+    hid_t    space_id = H5I_INVALID_HID;
+    hid_t    es_id = H5I_INVALID_HID;
+    int     *write_buf = NULL;
+    int     *read_buf = NULL;
+
+    TESTING("attribute I/O")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if (generate_random_parallel_dimensions(ATTRIBUTE_IO_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(ATTRIBUTE_IO_TEST_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the dataset asynchronously */
+    if((dset_id = H5Dcreate_async(file_id, "attr_dset", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously */
+    if((attr_id = H5Acreate_async(dset_id, "attr", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Calculate size of data buffers */
+    for (i = 0, data_size = 1; i < ATTRIBUTE_IO_TEST_SPACE_RANK; i++)
+        data_size *= dims[i];
+    data_size *= sizeof(int);
+
+    if (NULL == (write_buf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute write\n");
+        TEST_ERROR
+    }
+
+    if (NULL == (read_buf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute read\n");
+        TEST_ERROR
+    }
+
+    /* Initialize write_buf. */
+    for (i = 0; i < data_size / sizeof(int); i++)
+        write_buf[i] = 10 * i;
+
+    /* Write the attribute asynchronously */
+    if(H5Awrite_async(attr_id, H5T_NATIVE_INT, write_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Oflush_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(int); i++)
+        if(write_buf[i] != read_buf[i]) {
+            H5_FAILED();
+            HDprintf("    data verification failed\n");
+            goto error;
+        } /* end if */
+
+    /* Close the attribute asynchronously */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open the attribute asynchronously */
+    if((attr_id = H5Aopen_async(dset_id, "attr", H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(int); i++)
+        if(write_buf[i] != read_buf[i]) {
+            H5_FAILED();
+            HDprintf("    data verification failed\n");
+            goto error;
+        } /* end if */
+
+    /* Close out of order to see if it trips things up */
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (read_buf) {
+        HDfree(read_buf);
+        read_buf = NULL;
+    }
+
+    if (write_buf) {
+        HDfree(write_buf);
+        write_buf = NULL;
+    }
+
+    if (dims) {
+        HDfree(dims);
+        dims = NULL;
+    }
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (read_buf) HDfree(read_buf);
+        if (write_buf) HDfree(write_buf);
+        if (dims) HDfree(dims);
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Dclose(dset_id);
+        H5Pclose(fapl_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * Creates a file, dataset and attribute in parallel. Each rank writes to
+ * the attribute with datatype conversion involved, then reads back the
+ * attribute and verifies the data is correct.
+ */
+#define ATTRIBUTE_IO_TCONV_TEST_SPACE_RANK 2
+static int
+test_attribute_io_tconv(void)
+{
+    hsize_t *dims = NULL;
+    hbool_t  op_failed;
+    size_t   num_in_progress;
+    size_t   i, data_size;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    fapl_id = H5I_INVALID_HID;
+    hid_t    dset_id = H5I_INVALID_HID;
+    hid_t    attr_id = H5I_INVALID_HID;
+    hid_t    space_id = H5I_INVALID_HID;
+    hid_t    es_id = H5I_INVALID_HID;
+    int     *write_buf = NULL;
+    int     *read_buf = NULL;
+
+    TESTING("attribute I/O with type conversion")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if (generate_random_parallel_dimensions(ATTRIBUTE_IO_TCONV_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(ATTRIBUTE_IO_TCONV_TEST_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously by name */
+    if((attr_id = H5Acreate_by_name_async(file_id, "attr_dset", "attr_tconv",
+            H5T_STD_U16BE, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Calculate size of data buffers */
+    for (i = 0, data_size = 1; i < ATTRIBUTE_IO_TCONV_TEST_SPACE_RANK; i++)
+        data_size *= dims[i];
+    data_size *= sizeof(int);
+
+    if (NULL == (write_buf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute write\n");
+        TEST_ERROR
+    }
+
+    if (NULL == (read_buf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute read\n");
+        TEST_ERROR
+    }
+
+    /* Initialize write_buf. */
+    for (i = 0; i < data_size / sizeof(int); i++)
+        write_buf[i] = 10 * i;
+
+    /* Write the attribute asynchronously */
+    if(H5Awrite_async(attr_id, H5T_NATIVE_INT, write_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(int); i++)
+        if(write_buf[i] != read_buf[i]) {
+            H5_FAILED();
+            HDprintf("    data verification failed\n");
+            goto error;
+        } /* end if */
+
+    /* Close the attribute asynchronously */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open the attribute asynchronously */
+    if((attr_id = H5Aopen_by_name_async(file_id, "attr_dset", "attr_tconv",
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, H5T_NATIVE_INT, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(int); i++)
+        if(write_buf[i] != read_buf[i]) {
+            H5_FAILED();
+            HDprintf("    data verification failed\n");
+            goto error;
+        } /* end if */
+
+    /* Close */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (read_buf) {
+        HDfree(read_buf);
+        read_buf = NULL;
+    }
+
+    if (write_buf) {
+        HDfree(write_buf);
+        write_buf = NULL;
+    }
+
+    if (dims) {
+        HDfree(dims);
+        dims = NULL;
+    }
+
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (read_buf) HDfree(read_buf);
+        if (write_buf) HDfree(write_buf);
+        if (dims) HDfree(dims);
+        H5Sclose(space_id);
+        H5Aclose(attr_id);
+        H5Dclose(dset_id);
+        H5Pclose(fapl_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * Creates a file, dataset and attribute in parallel. Each rank writes to
+ * the attribute with a compound datatype, then reads back the attribute
+ * and verifies the data is correct.
+ */
+typedef struct tattr_cmpd_t {
+    int a;
+    int b;
+} tattr_cmpd_t;
+
+#define ATTRIBUTE_IO_COMPOUND_TEST_SPACE_RANK 2
+static int
+test_attribute_io_compound(void)
+{
+    hsize_t *dims = NULL;
+    hbool_t  op_failed;
+    size_t   num_in_progress;
+    size_t   i, data_size;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    fapl_id = H5I_INVALID_HID;
+    hid_t    attr_id = H5I_INVALID_HID;
+    hid_t    space_id = H5I_INVALID_HID;
+    hid_t    mtype_id = H5I_INVALID_HID;
+    hid_t    ftype_id = H5I_INVALID_HID;
+    hid_t    mtypea_id = H5I_INVALID_HID;
+    hid_t    mtypeb_id = H5I_INVALID_HID;
+    hid_t    es_id = H5I_INVALID_HID;
+    tattr_cmpd_t *write_buf = NULL;
+    tattr_cmpd_t *read_buf = NULL;
+    tattr_cmpd_t *fbuf = NULL;
+
+    TESTING("attribute I/O with compound type conversion")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if (generate_random_parallel_dimensions(ATTRIBUTE_IO_COMPOUND_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
+
+    /* Create datatype */
+    if((mtype_id = H5Tcreate (H5T_COMPOUND, sizeof(tattr_cmpd_t))) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtype_id, "a_name", HOFFSET(tattr_cmpd_t, a), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtype_id, "b_name", HOFFSET(tattr_cmpd_t, b), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+
+    if((mtypea_id = H5Tcreate (H5T_COMPOUND, sizeof(tattr_cmpd_t))) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtypea_id, "a_name", HOFFSET(tattr_cmpd_t, a), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+
+    if((mtypeb_id = H5Tcreate (H5T_COMPOUND, sizeof(tattr_cmpd_t))) < 0)
+        TEST_ERROR
+    if(H5Tinsert(mtypeb_id, "b_name", HOFFSET(tattr_cmpd_t, b), H5T_NATIVE_INT) < 0)
+        TEST_ERROR
+
+    if((ftype_id = H5Tcreate (H5T_COMPOUND, 2 + 8)) < 0)
+        TEST_ERROR
+    if(H5Tinsert(ftype_id, "a_name", 0, H5T_STD_U16BE) < 0)
+        TEST_ERROR
+    if(H5Tinsert(ftype_id, "b_name", 2, H5T_STD_I64LE) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(ATTRIBUTE_IO_COMPOUND_TEST_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the attribute asynchronously by name */
+    if((attr_id = H5Acreate_by_name_async(file_id, "attr_dset", "attr_cmpd",
+            ftype_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Calculate size of data buffers */
+    for (i = 0, data_size = 1; i < ATTRIBUTE_IO_COMPOUND_TEST_SPACE_RANK; i++)
+        data_size *= dims[i];
+    data_size *= sizeof(tattr_cmpd_t);
+
+    if (NULL == (write_buf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute write\n");
+        TEST_ERROR
+    }
+
+    if (NULL == (read_buf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute read\n");
+        TEST_ERROR
+    }
+
+    if (NULL == (fbuf = HDmalloc(data_size))) {
+        H5_FAILED();
+        HDprintf("    couldn't allocate buffer for attribute read verification\n");
+        TEST_ERROR
+    }
+
+    /* Initialize write_buf. */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        write_buf[i].a = 10 * i;
+        write_buf[i].b = (10 * i) + 1;
+    }
+
+    /* Write the attribute asynchronously */
+    if(H5Awrite_async(attr_id, mtype_id, write_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Update fbuf */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        fbuf[i].a = write_buf[i].a;
+        fbuf[i].b = write_buf[i].b;
+    }
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, mtype_id, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        if(read_buf[i].a != fbuf[i].a) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'a'\n");
+            goto error;
+        } /* end if */
+        if(read_buf[i].b != fbuf[i].b) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'b'\n");
+            goto error;
+        } /* end if */
+    }
+
+    /* Clear the read buffer */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        read_buf[i].a = -2;
+        read_buf[i].b = -2;
+    }
+
+    /* Read the attribute asynchronously (element a only) */
+    if(H5Aread_async(attr_id, mtypea_id, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        if(read_buf[i].a != fbuf[i].a) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'a'\n");
+            goto error;
+        } /* end if */
+        if(read_buf[i].b != -2) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'b'\n");
+            goto error;
+        } /* end if */
+    }
+
+    /* Clear the read buffer */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        read_buf[i].a = -2;
+        read_buf[i].b = -2;
+    }
+
+    /* Read the attribute asynchronously (element b only) */
+    if(H5Aread_async(attr_id, mtypeb_id, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        if(read_buf[i].a != -2) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'a'\n");
+            goto error;
+        } /* end if */
+        if(read_buf[i].b != fbuf[i].b) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'b'\n");
+            goto error;
+        } /* end if */
+    }
+
+    if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+        H5_FAILED();
+        HDprintf("    MPI_Barrier failed\n");
+        goto error;
+    }
+
+    /* Update write_buf */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        write_buf[i].a += 2 * 6 * 10;
+        write_buf[i].b += 2 * 6 * 10;
+    }
+
+    /* Write the attribute asynchronously (element a only) */
+    if(H5Awrite_async(attr_id, mtypea_id, write_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Update fbuf */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        fbuf[i].a = write_buf[i].a;
+    }
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Clear the read buffer */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        read_buf[i].a = -2;
+        read_buf[i].b = -2;
+    }
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, mtype_id, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        if(read_buf[i].a != fbuf[i].a) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'a'\n");
+            goto error;
+        } /* end if */
+        if(read_buf[i].b != fbuf[i].b) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'b'\n");
+            goto error;
+        } /* end if */
+    }
+
+    if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+        H5_FAILED();
+        HDprintf("    MPI_Barrier failed\n");
+        goto error;
+    }
+
+    /* Update write_buf */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        write_buf[i].a += 2 * 6 * 10;
+        write_buf[i].b += 2 * 6 * 10;
+    }
+
+    /* Write the attribute asynchronously (element b only) */
+    if(H5Awrite_async(attr_id, mtypeb_id, write_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Update fbuf */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        fbuf[i].b = write_buf[i].b;
+    }
+
+    /* Flush the dataset asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Clear the read buffer */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        read_buf[i].a = -2;
+        read_buf[i].b = -2;
+    }
+
+    /* Read the attribute asynchronously */
+    if(H5Aread_async(attr_id, mtype_id, read_buf, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify the read data */
+    for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
+        if(read_buf[i].a != fbuf[i].a) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'a'\n");
+            goto error;
+        } /* end if */
+        if(read_buf[i].b != fbuf[i].b) {
+            H5_FAILED();
+            HDprintf("    data verification failed for field 'b'\n");
+            goto error;
+        } /* end if */
+    }
+
+    /* Close */
+    if(H5Aclose_async(attr_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Sclose(space_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(mtype_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(ftype_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(mtypea_id) < 0)
+        TEST_ERROR
+    if(H5Tclose(mtypeb_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (read_buf) {
+        HDfree(read_buf);
+        read_buf = NULL;
+    }
+
+    if (write_buf) {
+        HDfree(write_buf);
+        write_buf = NULL;
+    }
+
+    if (fbuf) {
+        HDfree(fbuf);
+        fbuf = NULL;
+    }
+
+    if (dims) {
+        HDfree(dims);
+        dims = NULL;
+    }
+
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (read_buf) HDfree(read_buf);
+        if (write_buf) HDfree(write_buf);
+        if (fbuf) HDfree(fbuf);
+        if (dims) HDfree(dims);
+        H5Sclose(space_id);
+        H5Tclose(mtype_id);
+        H5Tclose(ftype_id);
+        H5Tclose(mtypea_id);
+        H5Tclose(mtypeb_id);
+        H5Aclose(attr_id);
+        H5Pclose(fapl_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * Tests async group interfaces in parallel
+ */
+static int
+test_group(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t fapl_id = H5I_INVALID_HID;
+    hid_t parent_group_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t subgroup_id = H5I_INVALID_HID;
+    hid_t gcpl_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    H5G_info_t info1;
+    H5G_info_t info2;
+    H5G_info_t info3;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("group operations")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create GCPL */
+    if((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0)
+        TEST_ERROR
+
+    /* Track creation order */
+    if(H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the parent group asynchronously */
+    if((parent_group_id = H5Gcreate_async(file_id, "group_parent",
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create 3 subgroups asynchronously, the first with no sub-subgroups, the
+     * second with 1, and the third with 2 */
+    if((group_id = H5Gcreate_async(parent_group_id, "group1", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    if((group_id = H5Gcreate_async(parent_group_id, "group2", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if((subgroup_id = H5Gcreate_async(group_id, "subgroup1", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(subgroup_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    if((group_id = H5Gcreate_async(parent_group_id, "group3", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if((subgroup_id = H5Gcreate_async(group_id, "subgroup1", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(subgroup_id, es_id) < 0)
+        TEST_ERROR
+    if((subgroup_id = H5Gcreate_async(group_id, "subgroup2", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(subgroup_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the file asynchronously.  This will effectively work as a barrier,
+     * guaranteeing the read takes place after the write. */
+    if(H5Fflush_async(file_id, H5F_SCOPE_LOCAL, es_id) < 0)
+        TEST_ERROR
+
+    /* Test H5Gget_info_async */
+    /* Open group1 asynchronously */
+    if((group_id = H5Gopen_async(parent_group_id, "group1", H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Get info */
+    if(H5Gget_info_async(group_id, &info1, es_id) < 0)
+        TEST_ERROR
+
+    /* Test H5Gget_info_by_idx_async */
+    if(H5Gget_info_by_idx_async(parent_group_id, ".", H5_INDEX_CRT_ORDER,
+            H5_ITER_INC, 1, &info2, H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Test H5Gget_info_by_name_async */
+    if(H5Gget_info_by_name_async(parent_group_id, "group3", &info3, H5P_DEFAULT,
+            es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Verify group infos */
+    if(info1.nlinks != 0)
+        FAIL_PUTS_ERROR("    incorrect number of links")
+    if(info2.nlinks != 1)
+        FAIL_PUTS_ERROR("    incorrect number of links")
+    if(info3.nlinks != 2)
+        FAIL_PUTS_ERROR("    incorrect number of links")
+
+    /* Close */
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(subgroup_id);
+        H5Gclose(group_id);
+        H5Gclose(parent_group_id);
+        H5Fclose(file_id);
+        H5Pclose(fapl_id);
+        H5Pclose(gcpl_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * Tests async link interfaces in parallel
+ */
+static int
+test_link(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t fapl_id = H5I_INVALID_HID;
+    hid_t parent_group_id = H5I_INVALID_HID;
+    hid_t group_id = H5I_INVALID_HID;
+    hid_t gcpl_id = H5I_INVALID_HID;
+    hid_t lapl_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    htri_t existsh1;
+    htri_t existsh2;
+    htri_t existsh3;
+    htri_t existss1;
+    htri_t existss2;
+    htri_t existss3;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("link operations")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create GCPL */
+    if((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0)
+        TEST_ERROR
+
+    /* Track creation order */
+    if(H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0)
+        TEST_ERROR
+
+    /* Create default LAPL - necessary to work around bug in HDF5 */
+    if((lapl_id = H5Pcreate(H5P_LINK_ACCESS)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the parent group asynchronously */
+    if((parent_group_id = H5Gcreate_async(file_id, "link_parent",
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create subgroup asynchronously. */
+    if((group_id = H5Gcreate_async(parent_group_id, "group", H5P_DEFAULT,
+            H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Create hard link asynchronously */
+    /* Change to async when we have a working API -NAF */
+    if(H5Lcreate_hard(parent_group_id, "group", parent_group_id, "hard_link",
+            H5P_DEFAULT, H5P_DEFAULT) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the soft link create takes place after the hard
+     * link create. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Create soft link asynchronously */
+    if(H5Lcreate_soft_async("/link_parent/group", parent_group_id, "soft_link",
+            H5P_DEFAULT, lapl_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the writes. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if hard link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existsh1 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Check if soft link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existss1 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the delete takes place after the reads. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Delete soft link by index */
+    if(H5Ldelete_by_idx_async(parent_group_id, ".", H5_INDEX_CRT_ORDER,
+            H5_ITER_INC, 2, H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the delete. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if hard link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existsh2 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Check if soft link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existss2 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the delete takes place after the reads. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Delete hard link */
+    if(H5Ldelete_async(parent_group_id, "hard_link", H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the read takes place after the delete. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Check if hard link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existsh3 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Check if soft link exists */
+    /* Change to async interface when we have a reasonable API -NAF */
+    if((existss3 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Check if existence returns were correct */
+    if(!existsh1)
+        FAIL_PUTS_ERROR("    link exists returned FALSE for link that should exist")
+    if(!existss1)
+        FAIL_PUTS_ERROR("    link exists returned FALSE for link that should exist")
+    if(!existsh2)
+        FAIL_PUTS_ERROR("    link exists returned FALSE for link that should exist")
+    if(existss2)
+        FAIL_PUTS_ERROR("    link exists returned TRUE for link that should not exist")
+    if(existsh3)
+        FAIL_PUTS_ERROR("    link exists returned TRUE for link that should not exist")
+    if(existsh3)
+        FAIL_PUTS_ERROR("    link exists returned TRUE for link that should not exist")
+
+    /* Close */
+    if(H5Gclose_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(gcpl_id) < 0)
+        TEST_ERROR
+    if(H5Pclose(lapl_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Gclose(group_id);
+        H5Gclose(parent_group_id);
+        H5Fclose(file_id);
+        H5Pclose(fapl_id);
+        H5Pclose(gcpl_id);
+        H5Pclose(lapl_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * Tests H5Ocopy_async and H5Orefresh_async in parallel
+ */
+#define OCOPY_REFRESH_TEST_SPACE_RANK 2
+static int
+test_ocopy_orefresh(void)
+{
+    hsize_t *dims = NULL;
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t fapl_id = H5I_INVALID_HID;
+    hid_t parent_group_id = H5I_INVALID_HID;
+    hid_t dset_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("H5Ocopy() and H5Orefresh()")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if (generate_random_parallel_dimensions(OCOPY_REFRESH_TEST_SPACE_RANK, &dims) < 0)
+        TEST_ERROR
+
+    /* Create dataspace */
+    if((space_id = H5Screate_simple(OCOPY_REFRESH_TEST_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create the parent group asynchronously */
+    if((parent_group_id = H5Gcreate_async(file_id, "ocopy_parent",
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Create dataset asynchronously. */
+    if((dset_id = H5Dcreate_async(parent_group_id, "dset", H5T_NATIVE_INT, space_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the copy takes place after dataset create. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Copy dataset */
+    if(H5Ocopy_async(parent_group_id, "dset", parent_group_id, "copied_dset",
+            H5P_DEFAULT, H5P_DEFAULT, es_id) < 0)
+        TEST_ERROR
+
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the dataset open takes place copy. */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open the copied dataset asynchronously */
+    if((dset_id = H5Dopen_async(parent_group_id, "copied_dset", H5P_DEFAULT,
+            es_id)) < 0)
+        TEST_ERROR
+
+    /* Refresh the copied dataset asynchronously */
+    if(H5Orefresh(dset_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Close */
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Gclose_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if (dims) {
+        HDfree(dims);
+        dims = NULL;
+    }
+
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        if (dims) HDfree(dims);
+        H5Sclose(space_id);
+        H5Dclose(dset_id);
+        H5Gclose(parent_group_id);
+        H5Pclose(fapl_id);
+        H5Fclose(file_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+#undef OCOPY_REFRESH_TEST_SPACE_RANK
+
+/*
+ * Tests H5Freopen_async in parallel
+ */
+static int
+test_file_reopen(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t fapl_id = H5I_INVALID_HID;
+    hid_t reopened_file_id = H5I_INVALID_HID;
+    hid_t es_id = H5I_INVALID_HID;
+    size_t num_in_progress;
+    hbool_t op_failed;
+
+    TESTING("H5Freopen()")
+
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, coll_metadata_read)) < 0)
+        TEST_ERROR
+
+    /* Create event stack */
+    if((es_id = H5EScreate()) <  0)
+        TEST_ERROR
+
+    /* Open file asynchronously */
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Reopen file asynchronously */
+    if((reopened_file_id = H5Freopen_async(file_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Close */
+    if(H5Fclose_async(reopened_file_id, es_id) < 0)
+        TEST_ERROR
+    if(H5Fclose_async(file_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    if(H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+    if(H5ESclose(es_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Fclose(reopened_file_id);
+        H5Fclose(file_id);
+        H5Pclose(fapl_id);
+        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESclose(es_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
  * Cleanup temporary test files
  */
 static void
@@ -1796,6 +3256,28 @@ vol_async_test_parallel(void)
         HDprintf("*                                            *\n");
         HDprintf("**********************************************\n\n");
     }
+
+    for (i = 0, nerrors = 0; i < ARRAY_LENGTH(par_async_tests); i++) {
+        nerrors += (*par_async_tests[i])() ? 1 : 0;
+
+        if (MPI_SUCCESS != MPI_Barrier(MPI_COMM_WORLD)) {
+            if (MAINPROCESS)
+                HDprintf("    MPI_Barrier() failed!\n");
+        }
+    }
+
+    if (MAINPROCESS) {
+        HDprintf("\n");
+        HDprintf("Cleaning up testing files\n");
+    }
+
+    cleanup_files();
+
+    if (MAINPROCESS) {
+        HDprintf("\n * Re-testing with independent metadata reads *\n");
+    }
+
+    coll_metadata_read = FALSE;
 
     for (i = 0, nerrors = 0; i < ARRAY_LENGTH(par_async_tests); i++) {
         nerrors += (*par_async_tests[i])() ? 1 : 0;

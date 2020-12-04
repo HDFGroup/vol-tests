@@ -37,7 +37,7 @@ test_create_file(void)
 
     TESTING("H5Fcreate");
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
         TEST_ERROR
 
     if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
@@ -77,7 +77,7 @@ test_open_file(void)
 
     TESTING_2("test setup")
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0)
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
         TEST_ERROR
 
     PASSED();
@@ -194,7 +194,7 @@ test_split_comm_file_access(void)
         MPI_Comm_rank(comm, &sub_mpi_rank);
 
         /* setup file access template */
-        if ((fapl_id = create_mpi_fapl(comm, info)) < 0) {
+        if ((fapl_id = create_mpi_fapl(comm, info, TRUE)) < 0) {
             err_occurred = 1;
             goto access_end;
         }
@@ -277,7 +277,7 @@ cleanup_files(void)
 {
     hid_t fapl_id = H5I_INVALID_HID;
 
-    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL)) < 0) {
+    if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0) {
         if (MAINPROCESS)
             HDprintf("    failed to create FAPL for deleting test files\n");
         return;
