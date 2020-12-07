@@ -35,7 +35,9 @@
 #include "vol_link_test.h"
 #include "vol_object_test.h"
 #include "vol_misc_test.h"
-#include "vol_async_test.h"
+#ifdef H5VL_TEST_HAS_AYNC
+#    include "vol_async_test.h"
+#endif
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
@@ -50,6 +52,7 @@ size_t n_tests_skipped_g;
  * - test function
  * - enabled by default
  */
+#ifdef H5VL_TEST_HAS_AYNC
 #define VOL_TESTS                                               \
     X(VOL_TEST_NULL,       "",         NULL,               0)   \
     X(VOL_TEST_FILE,      "file",      vol_file_test,      1)   \
@@ -60,8 +63,21 @@ size_t n_tests_skipped_g;
     X(VOL_TEST_LINK,      "link",      vol_link_test,      1)   \
     X(VOL_TEST_OBJECT,    "object",    vol_object_test,    1)   \
     X(VOL_TEST_MISC,      "misc",      vol_misc_test,      1)   \
-    X(VOL_TEST_ASYNC,     "async",     vol_async_test,      1)   \
+    X(VOL_TEST_ASYNC,     "async",     vol_async_test,     1)   \
     X(VOL_TEST_MAX,       "",          NULL,               0)
+#else
+#define VOL_TESTS                                               \
+    X(VOL_TEST_NULL,       "",         NULL,               0)   \
+    X(VOL_TEST_FILE,      "file",      vol_file_test,      1)   \
+    X(VOL_TEST_GROUP,     "group",     vol_group_test,     1)   \
+    X(VOL_TEST_DATASET,   "dataset",   vol_dataset_test,   1)   \
+    X(VOL_TEST_DATATYPE,  "datatype",  vol_datatype_test,  1)   \
+    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test, 1)   \
+    X(VOL_TEST_LINK,      "link",      vol_link_test,      1)   \
+    X(VOL_TEST_OBJECT,    "object",    vol_object_test,    1)   \
+    X(VOL_TEST_MISC,      "misc",      vol_misc_test,      1)   \
+    X(VOL_TEST_MAX,       "",          NULL,               0)
+#endif
 
 #define X(a, b, c, d) a,
 enum vol_test_type { VOL_TESTS };

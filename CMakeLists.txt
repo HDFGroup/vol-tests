@@ -120,6 +120,13 @@ endif()
 option(HDF5_VOL_TEST_ENABLE_PART
   "Enable testing in separate tests." OFF)
 
+# HDF5 async tests
+option(HDF5_VOL_TEST_ENABLE_ASYNC
+  "Enable async API tests." OFF)
+  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+  set(H5VL_TEST_HAS_ASYNC 1)
+endif()
+
 # Parallel HDF5 tests
 option(HDF5_VOL_TEST_ENABLE_PARALLEL
   "Enable testing in parallel (requires MPI)." OFF)
@@ -167,8 +174,14 @@ set(vol_tests
   link
   misc
   object
-  async
 )
+
+if(HDF5_VOL_TEST_ENABLE_ASYNC)
+  set(vol_tests
+    ${vol_tests}
+    async
+  )
+endif()
 
 # Ported HDF5 tests
 set(hdf5_tests
