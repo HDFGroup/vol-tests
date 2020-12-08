@@ -1136,13 +1136,15 @@ test_set_extent(void)
 {
     hid_t file_id = H5I_INVALID_HID;
     hid_t dset_id = H5I_INVALID_HID;
-    hid_t fspace_id = H5I_INVALID_HID;
-    hid_t fspace_out = H5I_INVALID_HID;
+    hid_t fspace_id[6] = {H5I_INVALID_HID, H5I_INVALID_HID, H5I_INVALID_HID,
+        H5I_INVALID_HID, H5I_INVALID_HID, H5I_INVALID_HID};
+    hid_t fspace_out[6] = {H5I_INVALID_HID, H5I_INVALID_HID, H5I_INVALID_HID,
+        H5I_INVALID_HID, H5I_INVALID_HID, H5I_INVALID_HID};
     hid_t mspace_id = H5I_INVALID_HID;
     hid_t dcpl_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
     hsize_t dims[2] = {1, 10};
-    hsize_t mdims[2] = {6, 10};
+    hsize_t mdims[2] = {7, 10};
     hsize_t cdims[2] = {2, 3};
     hsize_t start[2] = {0, 0};
     hsize_t count[2] = {1, 10};
@@ -1153,10 +1155,10 @@ test_set_extent(void)
     int rbuf[6][10];
     int i, j;
 
-    TESTING("extending dataset")
+    TESTING("H5Dset_extent() and H5Dget_space()")
 
     /* Create file dataspace */
-    if((fspace_id = H5Screate_simple(2, dims, mdims)) < 0)
+    if((fspace_id[0] = H5Screate_simple(2, dims, mdims)) < 0)
         TEST_ERROR
 
     /* Create memory dataspace */
@@ -1185,7 +1187,7 @@ test_set_extent(void)
         TEST_ERROR
 
     /* Create the dataset asynchronously */
-    if((dset_id = H5Dcreate_async(file_id, "dset", H5T_NATIVE_INT, fspace_id,
+    if((dset_id = H5Dcreate_async(file_id, "dset", H5T_NATIVE_INT, fspace_id[0],
             H5P_DEFAULT, dcpl_id, H5P_DEFAULT, es_id)) < 0)
         TEST_ERROR
 
@@ -1193,9 +1195,13 @@ test_set_extent(void)
     for(i = 0; i < 6; i++) {
         /* No need to extend on the first iteration */
         if(i) {
+            /* Copy dataspace */
+            if((fspace_id[i] = H5Scopy(fspace_id[i - 1])) < 0)
+                TEST_ERROR
+
             /* Extend datapace */
             dims[0] = (hsize_t)(i + 1);
-            if(H5Sset_extent_simple(fspace_id, 2, dims, mdims) < 0)
+            if(H5Sset_extent_simple(fspace_id[i], 2, dims, mdims) < 0)
                 TEST_ERROR
 
             /* Extend dataset asynchronously */
@@ -1204,28 +1210,16 @@ test_set_extent(void)
 
             /* Select hyperslab in file space to match new region */
             start[0] = (hsize_t)i;
-            if(H5Sselect_hyperslab(fspace_id, H5S_SELECT_SET, start, NULL, count, NULL) < 0)
+            if(H5Sselect_hyperslab(fspace_id[i], H5S_SELECT_SET, start, NULL, count, NULL) < 0)
                 TEST_ERROR
         } /* end if */
 
         /* Get dataset dataspace */
-        /* Change to async interface when we have a reasonable API, and use a
-         * second event set only for H5Dget_space -NAF */
-        if((fspace_out = H5Dget_space(dset_id)) < 0)
-            TEST_ERROR
-
-        /* Verify extent is correct */
-        if((tri_ret = H5Sextent_equal(fspace_id, fspace_out)) < 0)
-            TEST_ERROR
-        if(!tri_ret)
-            FAIL_PUTS_ERROR("    dataspaces are not equal\n");
-
-        /* Close output dataspace */
-        if(H5Sclose(fspace_out) < 0)
+        if((fspace_out[i] = H5Dget_space_async(dset_id, es_id)) < 0)
             TEST_ERROR
 
         /* Write the dataset slice asynchronously */
-        if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, mspace_id, fspace_id, H5P_DEFAULT,
+        if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, mspace_id, fspace_id[i], H5P_DEFAULT,
                 wbuf[i], es_id) < 0)
             TEST_ERROR
     } /* end for */
@@ -1240,6 +1234,19 @@ test_set_extent(void)
             rbuf, es_id) < 0)
         TEST_ERROR
 
+    /* Verify extents are correct.  We do not need to wait because of the
+     * "future id" capability. */
+    for(i = 0; i < 6; i++) {
+        if((tri_ret = H5Sextent_equal(fspace_id[i], fspace_out[i])) < 0)
+            TEST_ERROR
+        if(!tri_ret)
+            FAIL_PUTS_ERROR("    dataspaces are not equal\n");
+        if(i && H5Sclose(fspace_id[i]) < 0)
+            TEST_ERROR
+        if(H5Sclose(fspace_out[i]) < 0)
+            TEST_ERROR
+    } /* end for */
+
     /* Wait for the event stack to complete */
     if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
@@ -1248,17 +1255,57 @@ test_set_extent(void)
 
     /* Verify the read data */
     for(i = 0; i < 6; i++)
-        for(j = 0; j < 10; j++)
+        for(j = 0; j < 10; j++) 
             if(wbuf[i][j] != rbuf[i][j])
                 FAIL_PUTS_ERROR("    data verification failed\n")
 
+    /*
+     * Now try extending the dataset, closing it, reopening it, and getting the
+     * space.
+     */
+    /* Extend datapace */
+    dims[0] = (hsize_t)7;
+    if(H5Sset_extent_simple(fspace_id[0], 2, dims, mdims) < 0)
+        TEST_ERROR
+
+    /* Extend dataset asynchronously */
+    if(H5Dset_extent_async(dset_id, dims, es_id) < 0)
+        TEST_ERROR
+
+    /* Close dataset asynchronously */
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open dataset asynchronously */
+    if((dset_id = H5Dopen_async(file_id, "dset", H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Get dataset dataspace asynchronously */
+    if((fspace_out[0] = H5Dget_space_async(dset_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Verify the extents match */
+    if((tri_ret = H5Sextent_equal(fspace_id[0], fspace_out[0])) < 0)
+        TEST_ERROR
+    if(!tri_ret)
+        FAIL_PUTS_ERROR("    dataspaces are not equal\n");
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
+
+    /* Close */
     if(H5Dclose(dset_id) < 0)
         TEST_ERROR
     if(H5Fclose(file_id) < 0)
         TEST_ERROR
     if(H5Sclose(mspace_id) < 0)
         TEST_ERROR
-    if(H5Sclose(fspace_id) < 0)
+    if(H5Sclose(fspace_id[0]) < 0)
+        TEST_ERROR
+    if(H5Sclose(fspace_out[0]) < 0)
         TEST_ERROR
     if(H5Pclose(dcpl_id) < 0)
         TEST_ERROR
@@ -1272,8 +1319,10 @@ test_set_extent(void)
 error:
     H5E_BEGIN_TRY {
         H5Sclose(mspace_id);
-        H5Sclose(fspace_id);
-        H5Sclose(fspace_out);
+        for(i = 0; i < 6; i++) {
+            H5Sclose(fspace_id[i]);
+            H5Sclose(fspace_out[i]);
+        } /* end for */
         H5Pclose(dcpl_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
@@ -1297,8 +1346,8 @@ test_attribute_exists(void)
     hid_t space_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
     hsize_t dims[2] = {6, 10};
-    htri_t exists1;
-    htri_t exists2;
+    hbool_t exists1;
+    hbool_t exists2;
     size_t num_in_progress;
     hbool_t op_failed;
 
@@ -1321,9 +1370,8 @@ test_attribute_exists(void)
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
         TEST_ERROR
 
-    /* Check if the attribute exists synchronously */
-    /* Change to async when we have a reasonable API -NAF */
-    if((exists1 = H5Aexists(dset_id, "attr")) < 0)
+    /* Check if the attribute exists asynchronously */
+    if(H5Aexists_async(dset_id, "attr", &exists1, es_id) < 0)
         TEST_ERROR
 
     /* Flush the dataset asynchronously.  This will effectively work as a
@@ -1343,9 +1391,8 @@ test_attribute_exists(void)
     if(H5Oflush_async(dset_id, es_id) < 0)
         TEST_ERROR
 
-    /* Check if the attribute exists synchronously */
-    /* Change to async when we have a reasonable API -NAF */
-    if((exists2 = H5Aexists(dset_id, "attr")) < 0)
+    /* Check if the attribute exists asynchronously */
+    if(H5Aexists_async(dset_id, "attr", &exists2, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
@@ -2129,12 +2176,12 @@ test_link(void)
     hid_t gcpl_id = H5I_INVALID_HID;
     hid_t lapl_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
-    htri_t existsh1;
-    htri_t existsh2;
-    htri_t existsh3;
-    htri_t existss1;
-    htri_t existss2;
-    htri_t existss3;
+    hbool_t existsh1;
+    hbool_t existsh2;
+    hbool_t existsh3;
+    hbool_t existss1;
+    hbool_t existss2;
+    hbool_t existss3;
     size_t num_in_progress;
     hbool_t op_failed;
 
@@ -2195,13 +2242,11 @@ test_link(void)
         TEST_ERROR
 
     /* Check if hard link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existsh1 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "hard_link", &existsh1, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Check if soft link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existss1 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "soft_link", &existss1, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
@@ -2220,13 +2265,11 @@ test_link(void)
         TEST_ERROR
 
     /* Check if hard link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existsh2 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "hard_link", &existsh2, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Check if soft link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existss2 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "soft_link", &existss2, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
@@ -2244,13 +2287,11 @@ test_link(void)
         TEST_ERROR
 
     /* Check if hard link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existsh3 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "hard_link", &existsh3, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Check if soft link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existss3 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "soft_link", &existss3, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */

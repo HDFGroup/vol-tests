@@ -1513,6 +1513,7 @@ test_set_extent(void)
     hid_t    space_id_out = H5I_INVALID_HID;
     hid_t    mspace_id = H5I_INVALID_HID;
     hid_t    es_id = H5I_INVALID_HID;
+    htri_t   tri_ret;
     int     *write_buf = NULL;
     int     *read_buf = NULL;
 
@@ -1625,8 +1626,6 @@ test_set_extent(void)
      * mpi rank involved on each iteration. Each rank will claim one of the new
      * "rows" for I/O in an interleaved fashion. */
     for(i = 0; i < SET_EXTENT_TEST_NUM_EXTENDS; i++) {
-        htri_t tri_ret;
-
         /* No need to extend on the first iteration */
         if(i) {
             /* Extend datapace */
@@ -1716,6 +1715,24 @@ test_set_extent(void)
             goto error;
         } /* end if */
 
+    /* Close dataset asynchronously */
+    if(H5Dclose_async(dset_id, es_id) < 0)
+        TEST_ERROR
+
+    /* Open dataset asynchronously */
+    if((dset_id = H5Dopen_async(file_id, "dset", H5P_DEFAULT, es_id)) < 0)
+        TEST_ERROR
+
+    /* Get dataset dataspace asynchronously */
+    if((space_id_out = H5Dget_space_async(dset_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Verify the extents match */
+    if((tri_ret = H5Sextent_equal(space_id, space_id_out)) < 0)
+        TEST_ERROR
+    if(!tri_ret)
+        FAIL_PUTS_ERROR("    dataspaces are not equal\n");
+
     if (read_buf) {
         HDfree(read_buf);
         read_buf = NULL;
@@ -1740,6 +1757,12 @@ test_set_extent(void)
         HDfree(dims);
         dims = NULL;
     }
+
+    /* Wait for the event stack to complete */
+    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+        TEST_ERROR
+    if(op_failed)
+        TEST_ERROR
 
     if(H5Dclose(dset_id) < 0)
         TEST_ERROR
@@ -1795,8 +1818,8 @@ test_attribute_exists(void)
     hsize_t *dims = NULL;
     hbool_t  op_failed;
     size_t   num_in_progress;
-    htri_t   exists1;
-    htri_t   exists2;
+    hbool_t  exists1;
+    hbool_t  exists2;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
@@ -1830,9 +1853,8 @@ test_attribute_exists(void)
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
         TEST_ERROR
 
-    /* Check if the attribute exists synchronously */
-    /* Change to async when we have a reasonable API -NAF */
-    if((exists1 = H5Aexists(dset_id, "attr")) < 0)
+    /* Check if the attribute exists asynchronously */
+    if(H5Aexists_async(dset_id, "attr", &exists1, es_id) < 0)
         TEST_ERROR
 
     /* Flush the dataset asynchronously.  This will effectively work as a
@@ -1852,9 +1874,8 @@ test_attribute_exists(void)
     if(H5Oflush_async(dset_id, es_id) < 0)
         TEST_ERROR
 
-    /* Check if the attribute exists synchronously */
-    /* Change to async when we have a reasonable API -NAF */
-    if((exists2 = H5Aexists(dset_id, "attr")) < 0)
+    /* Check if the attribute exists asynchronously */
+    if(H5Aexists_async(dset_id, "attr", &exists2, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
@@ -2845,12 +2866,12 @@ test_link(void)
     hid_t gcpl_id = H5I_INVALID_HID;
     hid_t lapl_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
-    htri_t existsh1;
-    htri_t existsh2;
-    htri_t existsh3;
-    htri_t existss1;
-    htri_t existss2;
-    htri_t existss3;
+    hbool_t existsh1;
+    hbool_t existsh2;
+    hbool_t existsh3;
+    hbool_t existss1;
+    hbool_t existss2;
+    hbool_t existss3;
     size_t num_in_progress;
     hbool_t op_failed;
 
@@ -2926,13 +2947,11 @@ test_link(void)
     }
 
     /* Check if hard link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existsh1 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "hard_link", &existsh1, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Check if soft link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existss1 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "soft_link", &existss1, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
@@ -2963,13 +2982,11 @@ test_link(void)
     }
 
     /* Check if hard link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existsh2 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "hard_link", &existsh2, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Check if soft link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existss2 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "soft_link", &existss2, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
@@ -2999,13 +3016,11 @@ test_link(void)
     }
 
     /* Check if hard link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existsh3 = H5Lexists(parent_group_id, "hard_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "hard_link", &existsh3, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Check if soft link exists */
-    /* Change to async interface when we have a reasonable API -NAF */
-    if((existss3 = H5Lexists(parent_group_id, "soft_link", H5P_DEFAULT)) < 0)
+    if(H5Lexists_async(parent_group_id, "soft_link", &existss3, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
