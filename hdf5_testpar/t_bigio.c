@@ -1822,9 +1822,11 @@ do_express_test(int world_mpi_rank)
 int main(int argc, char **argv)
 {
     int ExpressMode = 0;
+#if 0
     hsize_t newsize = 1048576;
     /* Set the bigio processing limit to be 'newsize' bytes */
     hsize_t oldsize = 0; /* H5_mpi_set_bigio_count(newsize); */
+#endif
     hid_t acc_plist = H5I_INVALID_HID;
 
     /* Having set the bigio handling to a size that is managable,
@@ -1832,9 +1834,11 @@ int main(int argc, char **argv)
      * that we try to ensure that our bigio handling is actually
      * envoked and tested.
      */
+#if 0
     if (newsize != oldsize) {
        bigcount = newsize * 2;
     }
+#endif
 
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
