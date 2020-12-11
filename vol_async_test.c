@@ -105,7 +105,7 @@ test_one_dataset_io(void)
                 PART_TEST_ERROR(single_dset_eswait)
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(single_dset_eswait)
             if(op_failed)
                 PART_TEST_ERROR(single_dset_eswait)
@@ -116,7 +116,7 @@ test_one_dataset_io(void)
                 PART_TEST_ERROR(single_dset_eswait)
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(single_dset_eswait)
             if(op_failed)
                 PART_TEST_ERROR(single_dset_eswait)
@@ -203,7 +203,7 @@ test_one_dataset_io(void)
                 PART_TEST_ERROR(single_dset_dflush)
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(single_dset_dflush)
             if(op_failed)
                 PART_TEST_ERROR(single_dset_dflush)
@@ -278,7 +278,7 @@ test_one_dataset_io(void)
     TESTING_2("test cleanup")
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -297,7 +297,7 @@ error:
         H5Sclose(space_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -381,7 +381,7 @@ test_multi_dataset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_dset_open)
             if(op_failed)
                 PART_TEST_ERROR(multi_dset_open)
@@ -473,7 +473,7 @@ for(i = 0; i < 5; i++) {
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_dset_close)
             if(op_failed)
                 PART_TEST_ERROR(multi_dset_close)
@@ -515,7 +515,7 @@ for(i = 0; i < 5; i++) {
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -535,7 +535,7 @@ error:
         for(i = 0; i < 5; i++)
             H5Dclose(dset_id[i]);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -622,7 +622,7 @@ test_multi_file_dataset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_dset_open)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_dset_open)
@@ -691,7 +691,7 @@ test_multi_file_dataset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_dset_dclose)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_dset_dclose)
@@ -750,7 +750,7 @@ test_multi_file_dataset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_dset_fclose)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_dset_fclose)
@@ -783,7 +783,7 @@ test_multi_file_dataset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_dset_fclose)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_dset_fclose)
@@ -805,7 +805,7 @@ test_multi_file_dataset_io(void)
     TESTING_2("test cleanup")
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -826,7 +826,7 @@ error:
             H5Dclose(dset_id[i]);
             H5Fclose(file_id[i]);
         } /* end for */
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -918,7 +918,7 @@ test_multi_file_grp_dset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_grp_dset_no_kick)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_grp_dset_no_kick)
@@ -959,7 +959,7 @@ test_multi_file_grp_dset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_grp_dset_no_kick)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_grp_dset_no_kick)
@@ -1031,7 +1031,7 @@ test_multi_file_grp_dset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_grp_dset_kick)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_grp_dset_kick)
@@ -1078,7 +1078,7 @@ test_multi_file_grp_dset_io(void)
             } /* end for */
 
             /* Wait for the event stack to complete */
-            if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+            if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
                 PART_TEST_ERROR(multi_file_grp_dset_kick)
             if(op_failed)
                 PART_TEST_ERROR(multi_file_grp_dset_kick)
@@ -1100,7 +1100,7 @@ test_multi_file_grp_dset_io(void)
     TESTING_2("test cleanup")
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1120,7 +1120,7 @@ error:
         H5Gclose(grp_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -1248,7 +1248,7 @@ test_set_extent(void)
     } /* end for */
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1291,7 +1291,7 @@ test_set_extent(void)
         FAIL_PUTS_ERROR("    dataspaces are not equal\n");
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1326,7 +1326,7 @@ error:
         H5Pclose(dcpl_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -1396,7 +1396,7 @@ test_attribute_exists(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1418,7 +1418,7 @@ test_attribute_exists(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1436,7 +1436,7 @@ error:
         H5Aclose(attr_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -1505,7 +1505,7 @@ test_attribute_io(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1529,7 +1529,7 @@ test_attribute_io(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1551,7 +1551,7 @@ test_attribute_io(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1569,7 +1569,7 @@ error:
         H5Aclose(attr_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -1634,7 +1634,7 @@ test_attribute_io_tconv(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1659,7 +1659,7 @@ test_attribute_io_tconv(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1679,7 +1679,7 @@ test_attribute_io_tconv(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1696,7 +1696,7 @@ error:
         H5Sclose(space_id);
         H5Aclose(attr_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -1806,7 +1806,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1832,7 +1832,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1858,7 +1858,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1905,7 +1905,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1952,7 +1952,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -1983,7 +1983,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2004,7 +2004,7 @@ error:
         H5Tclose(mtypeb_id);
         H5Aclose(attr_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -2113,7 +2113,7 @@ test_group(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2137,7 +2137,7 @@ test_group(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2156,7 +2156,7 @@ error:
         H5Gclose(parent_group_id);
         H5Fclose(file_id);
         H5Pclose(gcpl_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -2295,7 +2295,7 @@ test_link(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2325,7 +2325,7 @@ test_link(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2344,7 +2344,7 @@ error:
         H5Fclose(file_id);
         H5Pclose(gcpl_id);
         H5Pclose(lapl_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -2418,7 +2418,7 @@ test_ocopy_orefresh(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2432,7 +2432,7 @@ test_ocopy_orefresh(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2449,7 +2449,7 @@ error:
         H5Dclose(dset_id);
         H5Gclose(parent_group_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 
@@ -2484,7 +2484,7 @@ test_file_reopen(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2496,7 +2496,7 @@ test_file_reopen(void)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
-    if(H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
+    if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
         TEST_ERROR
     if(op_failed)
         TEST_ERROR
@@ -2512,7 +2512,7 @@ error:
     H5E_BEGIN_TRY {
         H5Fclose(reopened_file_id);
         H5Fclose(file_id);
-        H5ESwait(es_id, H5ES_WAIT_FOREVER, &num_in_progress, &op_failed);
+        H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
 

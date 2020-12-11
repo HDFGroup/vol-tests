@@ -18,6 +18,18 @@
 #include "vol_test.h"
 #include "testpar.h"
 
+/* Define H5VL_VERSION if not already defined */
+#ifndef H5VL_VERSION
+#define H5VL_VERSION 0
+#endif
+
+/* Define macro to wait forever depending on version */
+#if H5VL_VERSION >= 2
+#define VOL_TEST_WAIT_FOREVER H5ES_WAIT_FOREVER
+#else
+#define VOL_TEST_WAIT_FOREVER UINT64_MAX
+#endif
+
 #define PARALLEL_TEST_FILE_NAME "vol_test_parallel.h5"
 extern char vol_test_parallel_filename[];
 
