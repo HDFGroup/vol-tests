@@ -16,6 +16,7 @@
 #include <hdf5.h>
 #include <H5private.h>
 
+#include "h5vl_test_config.h"
 #include "vol_test_util.h"
 #include "vol_tests_disabled.h"
 
