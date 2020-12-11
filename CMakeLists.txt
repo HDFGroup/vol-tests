@@ -123,7 +123,7 @@ option(HDF5_VOL_TEST_ENABLE_PART
 # HDF5 async tests
 option(HDF5_VOL_TEST_ENABLE_ASYNC
   "Enable async API tests." OFF)
-  if(HDF5_VOL_TEST_ENABLE_PARALLEL)
+if(HDF5_VOL_TEST_ENABLE_ASYNC)
   set(H5VL_TEST_HAS_ASYNC 1)
 endif()
 
