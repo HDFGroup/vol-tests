@@ -26,7 +26,7 @@
  */
 #define PARATESTFILE "ParaTest.h5"
 #define NDATASETS 300
-#define NGROUPS 512
+#define NGROUPS 256
 
 /* Turn off verbose reporting by default */
 #define VERBOSE_MED (FALSE)

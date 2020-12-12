@@ -17,7 +17,7 @@
 #define DIM  2
 #define SIZE 32
 #define NDATASET 4
-#define GROUP_DEPTH 128
+#define GROUP_DEPTH 32
 enum obj_type { is_group, is_dset };
 
 
