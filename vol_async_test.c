@@ -2174,7 +2174,6 @@ test_link(void)
     hid_t parent_group_id = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
     hid_t gcpl_id = H5I_INVALID_HID;
-    hid_t lapl_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
     hbool_t existsh1;
     hbool_t existsh2;
@@ -2193,10 +2192,6 @@ test_link(void)
 
     /* Track creation order */
     if(H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0)
-        TEST_ERROR
-
-    /* Create default LAPL - necessary to work around bug in HDF5 */
-    if((lapl_id = H5Pcreate(H5P_LINK_ACCESS)) < 0)
         TEST_ERROR
 
     /* Create event stack */
@@ -2220,9 +2215,8 @@ test_link(void)
         TEST_ERROR
 
     /* Create hard link asynchronously */
-    /* Change to async when we have a working API -NAF */
-    if(H5Lcreate_hard(parent_group_id, "group", parent_group_id, "hard_link",
-            H5P_DEFAULT, H5P_DEFAULT) < 0)
+    if(H5Lcreate_hard_async(parent_group_id, "group", parent_group_id, "hard_link",
+            H5P_DEFAULT, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
@@ -2233,7 +2227,7 @@ test_link(void)
 
     /* Create soft link asynchronously */
     if(H5Lcreate_soft_async("/link_parent/group", parent_group_id, "soft_link",
-            H5P_DEFAULT, lapl_id, es_id) < 0)
+            H5P_DEFAULT, H5P_DEFAULT, es_id) < 0)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
@@ -2321,8 +2315,6 @@ test_link(void)
         TEST_ERROR
     if(H5Pclose(gcpl_id) < 0)
         TEST_ERROR
-    if(H5Pclose(lapl_id) < 0)
-        TEST_ERROR
 
     /* Wait for the event stack to complete */
     if(H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed) < 0)
@@ -2343,7 +2335,6 @@ error:
         H5Gclose(parent_group_id);
         H5Fclose(file_id);
         H5Pclose(gcpl_id);
-        H5Pclose(lapl_id);
         H5ESwait(es_id, VOL_TEST_WAIT_FOREVER, &num_in_progress, &op_failed);
         H5ESclose(es_id);
     } H5E_END_TRY;
