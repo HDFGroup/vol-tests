@@ -234,6 +234,11 @@ parallel_access_dataset(const char *filename, int chunk_factor, access_type acti
         VRFY((*dataset >= 0), "");
     }
 
+    /* Make sure all processes are done before continuing.  Otherwise, one
+     * process could change the dataset extent before another finishes opening
+     * it, resulting in only some of the processes calling H5Dset_extent(). */
+    MPI_Barrier(MPI_COMM_WORLD);
+
     memspace = H5Screate_simple(1, chunk_dims, NULL);
     VRFY((memspace >= 0), "");
 
