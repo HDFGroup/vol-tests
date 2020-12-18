@@ -2214,6 +2214,12 @@ test_link(void)
     if(H5Gclose_async(group_id, es_id) < 0)
         TEST_ERROR
 
+    /* Flush the parent group asynchronously.  This will effectively work as a
+     * barrier, guaranteeing the link to the subgroup is visible to later tasks.
+     */
+    if(H5Oflush_async(parent_group_id, es_id) < 0)
+        TEST_ERROR
+
     /* Create hard link asynchronously */
     if(H5Lcreate_hard_async(parent_group_id, "group", parent_group_id, "hard_link",
             H5P_DEFAULT, H5P_DEFAULT, es_id) < 0)
