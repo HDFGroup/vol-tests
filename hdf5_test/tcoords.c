@@ -712,5 +712,5 @@ void test_coords(void)
 void
 cleanup_coords(void)
 {
-    remove(FILENAME);
+    H5Fdelete(FILENAME, H5P_DEFAULT);
 }
