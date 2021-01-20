@@ -200,7 +200,7 @@ test_one_dataset_io(void)
 
             /* Initialize write_buf */
             for (i = 0; i < data_size / sizeof(int); i++)
-                ((int *) write_buf)[i] = i;
+                ((int *) write_buf)[i] = (int)i;
 
             /* Write the dataset asynchronously */
             if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, mspace_id, space_id, H5P_DEFAULT,
@@ -244,7 +244,7 @@ test_one_dataset_io(void)
 
             /* Initialize write_buf */
             for (i = 0; i < data_size / sizeof(int); i++)
-                ((int *) write_buf)[i] = 10 * i;
+                ((int *) write_buf)[i] = 10 * (int)i;
 
             /* Write the dataset asynchronously */
             if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, mspace_id, space_id, H5P_DEFAULT,
@@ -283,7 +283,7 @@ test_one_dataset_io(void)
 
             /* Initialize write_buf */
             for (i = 0; i < data_size / sizeof(int); i++)
-                ((int *) write_buf)[i] = i + 5;
+                ((int *) write_buf)[i] = (int)i + 5;
 
             /* Write the dataset asynchronously */
             if(H5Dwrite_async(dset_id, H5T_NATIVE_INT, mspace_id, space_id, H5P_DEFAULT,
@@ -815,7 +815,7 @@ test_multi_file_dataset_io(void)
                 if((file_id[i] = H5Fcreate_async(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id, es_id)) < 0)
                     PART_TEST_ERROR(multi_file_dset_open)
                 if((int)i > max_printf_file)
-                    max_printf_file = i;
+                    max_printf_file = (int)i;
 
                 /* Create the dataset asynchronously */
                 if((dset_id[i] = H5Dcreate_async(file_id[i], "dset", H5T_NATIVE_INT, space_id,
@@ -1208,7 +1208,7 @@ test_multi_file_grp_dset_io(void)
                 if((file_id = H5Fcreate_async(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id, es_id)) < 0)
                     PART_TEST_ERROR(multi_file_grp_dset_no_kick)
                 if((int)i > max_printf_file)
-                    max_printf_file = i;
+                    max_printf_file = (int)i;
 
                 /* Create the group asynchronously */
                 if((grp_id = H5Gcreate_async(file_id, "grp", H5P_DEFAULT,
@@ -1320,7 +1320,7 @@ test_multi_file_grp_dset_io(void)
                 if((file_id = H5Fcreate_async(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id, es_id)) < 0)
                     PART_TEST_ERROR(multi_file_grp_dset_kick)
                 if((int)i > max_printf_file)
-                    max_printf_file = i;
+                    max_printf_file = (int)i;
 
                 /* Create the group asynchronously */
                 if((grp_id = H5Gcreate_async(file_id, "grp", H5P_DEFAULT,
@@ -1539,7 +1539,8 @@ test_set_extent(void)
     }
 
     for(i = 0; i < SET_EXTENT_TEST_SPACE_RANK; i++) {
-        maxdims[i] = (i == 0) ? dims[i] + (SET_EXTENT_TEST_NUM_EXTENDS * mpi_size) : dims[i];
+        maxdims[i] = (i == 0) ? dims[i] + (hsize_t)(SET_EXTENT_TEST_NUM_EXTENDS * mpi_size)
+                              : dims[i];
         cdims[i] = (dims[i] == 1) ? 1 : dims[i] / 2;
     }
 
@@ -1642,7 +1643,7 @@ test_set_extent(void)
                 if (j == 0) {
                     start[j] = (hsize_t)mpi_rank;
                     block[j] = 1;
-                    stride[j] = mpi_size;
+                    stride[j] = (hsize_t)mpi_size;
                     count[j] = i + 1;
                 }
                 else {
@@ -2008,7 +2009,7 @@ test_attribute_io(void)
 
     /* Initialize write_buf. */
     for (i = 0; i < data_size / sizeof(int); i++)
-        write_buf[i] = 10 * i;
+        write_buf[i] = 10 * (int)i;
 
     /* Write the attribute asynchronously */
     if(H5Awrite_async(attr_id, H5T_NATIVE_INT, write_buf, es_id) < 0)
@@ -2188,7 +2189,7 @@ test_attribute_io_tconv(void)
 
     /* Initialize write_buf. */
     for (i = 0; i < data_size / sizeof(int); i++)
-        write_buf[i] = 10 * i;
+        write_buf[i] = 10 * (int)i;
 
     /* Write the attribute asynchronously */
     if(H5Awrite_async(attr_id, H5T_NATIVE_INT, write_buf, es_id) < 0)
@@ -2408,8 +2409,8 @@ test_attribute_io_compound(void)
 
     /* Initialize write_buf. */
     for (i = 0; i < data_size / sizeof(tattr_cmpd_t); i++) {
-        write_buf[i].a = 10 * i;
-        write_buf[i].b = (10 * i) + 1;
+        write_buf[i].a = 10 * (int)i;
+        write_buf[i].b = (10 * (int)i) + 1;
     }
 
     /* Write the attribute asynchronously */
