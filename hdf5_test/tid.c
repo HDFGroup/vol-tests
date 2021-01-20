@@ -881,6 +881,7 @@ error:
     return -1;
 } /* end test_remove_clear_type() */
 
+#if defined(H5VL_VERSION) && H5VL_VERSION >= 2
 /* Typedef for future objects */
 typedef struct {
     H5I_type_t obj_type; /* ID type for actual object */
@@ -1371,6 +1372,7 @@ error:
 
     return -1;
 } /* end test_future_ids() */
+#endif
 
 void
 test_ids(void)
@@ -1390,6 +1392,8 @@ test_ids(void)
         TestErrPrintf("ID type list test failed\n");
     if (test_remove_clear_type() < 0)
         TestErrPrintf("ID remove during H5Iclear_type test failed\n");
+#if defined(H5VL_VERSION) && H5VL_VERSION >= 2
     if (test_future_ids() < 0)
         TestErrPrintf("Future ID test failed\n");
+#endif
 }
