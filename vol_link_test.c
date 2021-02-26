@@ -257,6 +257,8 @@ test_create_hard_link_long_name(void)
 {
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
+    char   vol_name[5];
+    size_t name_len = MAX_NAME_LEN;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char   *objname = NULL; /* Name of object [Long] */
     size_t u;               /* Local index variable */
@@ -281,13 +283,23 @@ test_create_hard_link_long_name(void)
         goto error;
     }
 
+    if (H5VLget_connector_name(file_id, vol_name, 5) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get VOL NAME '%s'\n", HARD_LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    /** for DAOS VOL, max link name supported is 99 (Lexical key) */
+    if (strcmp(vol_name, "daos") == 0)
+        name_len = 99;
+
     /* Construct very long file name */
-    if((objname = (char *)HDmalloc((size_t)(MAX_NAME_LEN + 1))) == NULL)
+    if((objname = (char *)HDmalloc((size_t)(name_len + 1))) == NULL)
         TEST_ERROR
 
-    for(u = 0; u < MAX_NAME_LEN; u++)
+    for(u = 0; u < name_len; u++)
         objname[u] = 'a';
-    objname[MAX_NAME_LEN] = '\0';
+    objname[name_len] = '\0';
 
     if (H5Lcreate_hard(file_id, "/", group_id, objname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
@@ -1247,6 +1259,8 @@ test_create_soft_link_long_name(void)
 {
     htri_t link_exists;
     hid_t  file_id = H5I_INVALID_HID;
+    char   vol_name[5];
+    size_t name_len = MAX_NAME_LEN;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     char   *objname = NULL; /* Name of object [Long] */
     size_t u;               /* Local index variable */
@@ -1271,13 +1285,23 @@ test_create_soft_link_long_name(void)
         goto error;
     }
 
+    if (H5VLget_connector_name(file_id, vol_name, 5) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get VOL NAME '%s'\n", HARD_LINK_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    /** for DAOS VOL, max link name supported is 99 (Lexical key) */
+    if (strcmp(vol_name, "daos") == 0)
+        name_len = 99;
+
     /* Construct very long file name */
-    if((objname = (char *)HDmalloc((size_t)(MAX_NAME_LEN + 1))) == NULL)
+    if((objname = (char *)HDmalloc((size_t)(name_len + 1))) == NULL)
         TEST_ERROR
 
-    for(u = 0; u < MAX_NAME_LEN; u++)
+    for(u = 0; u < name_len; u++)
         objname[u] = 'b';
-    objname[MAX_NAME_LEN] = '\0';
+    objname[name_len] = '\0';
 
     if (H5Lcreate_soft(SOFT_LINK_TEST_LONG_OBJECT_NAME, group_id, objname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
