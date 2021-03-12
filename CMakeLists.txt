@@ -18,8 +18,8 @@ project(HDF5_VOL_TEST C)
 #------------------------------------------------------------------------------
 # Set module path
 #------------------------------------------------------------------------------
-#set(HDF5_VOL_TEST_CMAKE_MODULE_PATH "${HDF5_VOL_TEST_SOURCE_DIR}/CMake")
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${HDF5_VOL_TEST_CMAKE_MODULE_PATH})
+set(HDF5_VOL_TEST_CMAKE_MODULE_PATH "${HDF5_VOL_TEST_SOURCE_DIR}/CMake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${HDF5_VOL_TEST_CMAKE_MODULE_PATH})
 
 #------------------------------------------------------------------------------
 # Version information
@@ -29,7 +29,7 @@ project(HDF5_VOL_TEST C)
 #------------------------------------------------------------------------------
 # Setup CMake Environment
 #------------------------------------------------------------------------------
-if(APPLE OR WIN32)
+if(WIN32)
   message("The HDF5 VOL test suite is currently not supported on this platform." FATAL_ERROR)
 endif()
 
