@@ -34,7 +34,6 @@ static int test_object_comments(void);
 static int test_object_comments_invalid_params(void);
 static int test_object_visit(void);
 static int test_object_visit_soft_link(void);
-static int test_object_visit_dangling_soft_link(void);
 static int test_object_visit_invalid_params(void);
 static int test_close_object(void);
 static int test_close_object_invalid_params(void);
@@ -51,7 +50,6 @@ static herr_t object_visit_callback(hid_t o_id, const char *name, const H5O_info
 static herr_t object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 static herr_t object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 static herr_t object_visit_soft_link_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
-static herr_t object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 static herr_t object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data);
 
 /*
@@ -80,7 +78,6 @@ static int (*object_tests[])(void) = {
         test_object_comments_invalid_params,
         test_object_visit,
         test_object_visit_soft_link,
-        test_object_visit_dangling_soft_link,
         test_object_visit_invalid_params,
         test_close_object,
         test_close_object_invalid_params,
@@ -4835,8 +4832,13 @@ error:
 }
 
 /*
- * A test for H5Ovisit(_by_name) on objects pointed to
- * by soft links.
+ * A test for H5Ovisit(_by_name) on soft links. Since
+ * H5Ovisit(_by_name) ignores soft links, this test is
+ * meant to verify that behavior by placing objects and
+ * the soft links pointing to those objects in separate
+ * groups. Visiting is done only on the group containing
+ * the links to ensure that the objects in the other group
+ * do not get visited.
  */
 static int
 test_object_visit_soft_link(void)
@@ -4844,7 +4846,8 @@ test_object_visit_soft_link(void)
     size_t i;
     hid_t  file_id = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  subgroup_id = H5I_INVALID_HID;
+    hid_t  subgroup_id = H5I_INVALID_HID, subgroup_id2 = H5I_INVALID_HID;
+    hid_t  linked_group_id = H5I_INVALID_HID;
     hid_t  gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("object visiting with soft links");
@@ -4882,35 +4885,85 @@ test_object_visit_soft_link(void)
         goto error;
     }
 
-    if ((subgroup_id = H5Gcreate2(group_id, OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME,
+    /* Create group to hold soft links */
+    if ((subgroup_id = H5Gcreate2(group_id, OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1,
             H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME);
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1);
         goto error;
     }
 
-    if (H5Gclose(subgroup_id) < 0) {
+    /* Create group to hold objects pointed to by soft links */
+    if ((subgroup_id2 = H5Gcreate2(group_id, OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't close group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME);
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2);
         goto error;
     }
 
-    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME,
-            group_id, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME1, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    /* Create objects under subgroup 2 */
+    if ((linked_group_id = H5Gcreate2(subgroup_id2, OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME1,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME1);
+        goto error;
+    }
+
+    if (H5Gclose(linked_group_id) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't close group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME1);
+        goto error;
+    }
+
+    if ((linked_group_id = H5Gcreate2(subgroup_id2, OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME2,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME2);
+        goto error;
+    }
+
+    if (H5Gclose(linked_group_id) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't close group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME2);
+        goto error;
+    }
+
+    if ((linked_group_id = H5Gcreate2(subgroup_id2, OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME3,
+            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME3);
+        goto error;
+    }
+
+    if (H5Gclose(linked_group_id) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't close group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME3);
+        goto error;
+    }
+
+    if (H5Gclose(subgroup_id2) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't close group '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2);
+        goto error;
+    }
+
+    /* Create soft links under subgroup 1 to point to the previously-created objects */
+    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2 "/" OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME1,
+            subgroup_id, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME1, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME1);
         goto error;
     }
 
-    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME,
-            group_id, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2 "/" OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME2,
+            subgroup_id, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME2);
         goto error;
     }
 
-    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME,
-            group_id, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME "/" OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2 "/" OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME3,
+            subgroup_id, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME3);
         goto error;
@@ -4931,7 +4984,7 @@ test_object_visit_soft_link(void)
 
             i = 0;
 
-            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(subgroup_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in increasing order failed\n");
                 PART_ERROR(H5Ovisit_obj_name_increasing);
@@ -4952,7 +5005,7 @@ test_object_visit_soft_link(void)
             /* Reset the counter to the appropriate value for the next test */
             i = OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
-            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(subgroup_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_obj_name_decreasing);
@@ -4977,7 +5030,7 @@ test_object_visit_soft_link(void)
             /* Reset the counter to the appropriate value for the next test */
             i = 2 * OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
-            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(subgroup_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in increasing order failed\n");
                 PART_ERROR(H5Ovisit_create_order_increasing);
@@ -4998,7 +5051,7 @@ test_object_visit_soft_link(void)
             /* Reset the counter to the appropriate value for the next test */
             i = 3 * OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
-            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
+            if (H5Ovisit3(subgroup_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_create_order_decreasing);
@@ -5020,7 +5073,7 @@ test_object_visit_soft_link(void)
             i = 0;
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_soft_link_callback,
+            if (H5Ovisit_by_name3(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_soft_link_callback,
                     &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
@@ -5037,7 +5090,7 @@ test_object_visit_soft_link(void)
             i = 0;
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC,
+            if (H5Ovisit_by_name3(group_id, OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1, H5_INDEX_NAME, H5_ITER_INC,
                     object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
@@ -5060,7 +5113,7 @@ test_object_visit_soft_link(void)
             i = OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name3(subgroup_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
                 PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
@@ -5076,7 +5129,7 @@ test_object_visit_soft_link(void)
             i = OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC,
+            if (H5Ovisit_by_name3(group_id, OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1, H5_INDEX_NAME, H5_ITER_DEC,
                     object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
@@ -5103,7 +5156,7 @@ test_object_visit_soft_link(void)
             i = 2 * OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+            if (H5Ovisit_by_name3(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
                     object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
@@ -5120,7 +5173,7 @@ test_object_visit_soft_link(void)
             i = 2 * OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
+            if (H5Ovisit_by_name3(group_id, OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1, H5_INDEX_CRT_ORDER, H5_ITER_INC,
                     object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
@@ -5143,7 +5196,7 @@ test_object_visit_soft_link(void)
             i = 3 * OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
             /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_soft_link_callback,
+            if (H5Ovisit_by_name3(subgroup_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_soft_link_callback,
                     &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
@@ -5160,7 +5213,7 @@ test_object_visit_soft_link(void)
             i = 3 * OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED;
 
             /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER,
+            if (H5Ovisit_by_name3(group_id, OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1, H5_INDEX_CRT_ORDER,
                     H5_ITER_DEC, object_visit_soft_link_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
@@ -5181,6 +5234,8 @@ test_object_visit_soft_link(void)
 
     if (H5Pclose(gcpl_id) < 0)
         TEST_ERROR
+    if (H5Gclose(subgroup_id) < 0)
+        TEST_ERROR
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
     if (H5Gclose(container_group) < 0)
@@ -5195,240 +5250,9 @@ test_object_visit_soft_link(void)
 error:
     H5E_BEGIN_TRY {
         H5Pclose(gcpl_id);
+        H5Gclose(linked_group_id);
         H5Gclose(subgroup_id);
-        H5Gclose(group_id);
-        H5Gclose(container_group);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-static int
-test_object_visit_dangling_soft_link(void)
-{
-    hid_t file_id = H5I_INVALID_HID;
-    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t gcpl_id = H5I_INVALID_HID;
-
-    TESTING_MULTIPART("object visiting with dangling soft links");
-
-    TESTING_2("test setup")
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
-        goto error;
-    }
-
-    if ((container_group = H5Gopen2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open container group '%s'\n", OBJECT_TEST_GROUP_NAME);
-        goto error;
-    }
-
-    if ((gcpl_id = H5Pcreate(H5P_GROUP_CREATE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create a GCPL\n");
-        goto error;
-    }
-
-    if (H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't enable link creation order tracking and indexing on GCPL\n");
-        goto error;
-    }
-
-    if ((group_id = H5Gcreate2(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME,
-            H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create container sub-group '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME);
-        goto error;
-    }
-
-    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "/" "nonexistent_object",
-            group_id, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1);
-        goto error;
-    }
-
-    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "/" "nonexistent_object",
-            group_id, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2);
-        goto error;
-    }
-
-    if (H5Lcreate_soft("/" OBJECT_TEST_GROUP_NAME "/" OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "/" "nonexistent_object",
-            group_id, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3, H5P_DEFAULT, H5P_DEFAULT) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create soft link '%s'\n", OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3);
-        goto error;
-    }
-
-    PASSED();
-
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Ovisit_obj_name_increasing) {
-            TESTING_2("H5Ovisit by object name in increasing order")
-
-            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit by object name in increasing order failed\n");
-                PART_ERROR(H5Ovisit_obj_name_increasing);
-            }
-
-            PASSED();
-        } PART_END(H5Ovisit_obj_name_increasing);
-
-        PART_BEGIN(H5Ovisit_obj_name_decreasing) {
-            TESTING_2("H5Ovisit by object name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
-            if (H5Ovisit3(group_id, H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit by object name in decreasing order failed\n");
-                PART_ERROR(H5Ovisit_obj_name_decreasing);
-            }
-
-            PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Ovisit_obj_name_decreasing);
-#endif
-        } PART_END(H5Ovisit_obj_name_decreasing);
-
-        PART_BEGIN(H5Ovisit_create_order_increasing) {
-            TESTING_2("H5Ovisit by creation order in increasing order")
-
-            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit by creation order in increasing order failed\n");
-                PART_ERROR(H5Ovisit_create_order_increasing);
-            }
-
-            PASSED();
-        } PART_END(H5Ovisit_create_order_increasing);
-
-        PART_BEGIN(H5Ovisit_create_order_decreasing) {
-            TESTING_2("H5Ovisit by creation order in decreasing order")
-
-            if (H5Ovisit3(group_id, H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit by creation order in decreasing order failed\n");
-                PART_ERROR(H5Ovisit_create_order_decreasing);
-            }
-
-            PASSED();
-        } PART_END(H5Ovisit_create_order_decreasing);
-
-        PART_BEGIN(H5Ovisit_by_name_obj_name_increasing) {
-            TESTING_2("H5Ovisit_by_name by object name in increasing order")
-
-            /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
-            }
-
-            /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_INC,
-                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by object name in increasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_obj_name_increasing);
-            }
-
-            PASSED();
-        } PART_END(H5Ovisit_by_name_obj_name_increasing);
-
-        PART_BEGIN(H5Ovisit_by_name_obj_name_decreasing) {
-            TESTING_2("H5Ovisit_by_name by object name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
-            /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
-            }
-
-            /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_NAME, H5_ITER_DEC,
-                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by object name in decreasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_obj_name_decreasing);
-            }
-
-            PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Ovisit_by_name_obj_name_decreasing);
-#endif
-        } PART_END(H5Ovisit_by_name_obj_name_decreasing);
-
-        PART_BEGIN(H5Ovisit_by_name_create_order_increasing) {
-            TESTING_2("H5Ovisit_by_name by creation order in increasing order")
-
-            /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_create_order_increasing);
-            }
-
-            /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by creation order in increasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_create_order_increasing);
-            }
-
-            PASSED();
-        } PART_END(H5Ovisit_by_name_create_order_increasing);
-
-        PART_BEGIN(H5Ovisit_by_name_create_order_decreasing) {
-            TESTING_2("H5Ovisit_by_name by creation order in decreasing order")
-
-            /* First, test visiting using "." for the object name */
-            if (H5Ovisit_by_name3(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
-            }
-
-            /* Repeat the test using an indirect object name */
-            if (H5Ovisit_by_name3(container_group, OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME, H5_INDEX_CRT_ORDER, H5_ITER_DEC,
-                    object_visit_dangling_callback, NULL, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit_by_name by creation order in decreasing order failed\n");
-                PART_ERROR(H5Ovisit_by_name_create_order_decreasing);
-            }
-
-            PASSED();
-        } PART_END(H5Ovisit_by_name_create_order_decreasing);
-    } END_MULTIPART;
-
-    TESTING_2("test cleanup")
-
-    if (H5Pclose(gcpl_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(container_group) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Pclose(gcpl_id);
+        H5Gclose(subgroup_id2);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
@@ -6361,8 +6185,8 @@ object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info2_t *obj
 }
 
 /*
- * H5Ovisit callback for testing visiting of
- * objects pointed to by soft links.
+ * H5Ovisit callback for testing ignoring of
+ * soft links during object visiting.
  */
 static herr_t
 object_visit_soft_link_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
@@ -6373,37 +6197,7 @@ object_visit_soft_link_callback(hid_t o_id, const char *name, const H5O_info2_t 
 
     UNUSED(o_id);
 
-    if (!HDstrncmp(name, ".", strlen(".") + 1) &&
-            (counter_val == 0 || counter_val == 5 || counter_val == 10 || counter_val == 15)) {
-        if (H5O_TYPE_GROUP == object_info->type)
-            goto done;
-        else
-            HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
-    }
-    else if (!HDstrncmp(name, OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME,
-            strlen(OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME) + 1) &&
-            (counter_val == 1 || counter_val == 9 || counter_val == 11 || counter_val == 19)) {
-        if (H5O_TYPE_GROUP == object_info->type)
-            goto done;
-        else
-            HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
-    }
-    else if (!HDstrncmp(name, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME1, strlen(OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME1) + 1) &&
-            (counter_val == 2 || counter_val == 8 || counter_val == 12 || counter_val == 18)) {
-        if (H5O_TYPE_GROUP == object_info->type)
-            goto done;
-        else
-            HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
-    }
-    else if (!HDstrncmp(name, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME2, strlen(OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME2) + 1) &&
-            (counter_val == 3 || counter_val == 7 || counter_val == 13 || counter_val == 17)) {
-        if (H5O_TYPE_GROUP == object_info->type)
-            goto done;
-        else
-            HDprintf("    type for object '%s' was not H5O_TYPE_GROUP\n", name);
-    }
-    else if (!HDstrncmp(name, OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME3, strlen(OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME3) + 1) &&
-            (counter_val == 4 || counter_val == 6 || counter_val == 14 || counter_val == 16)) {
+    if (!HDstrncmp(name, ".", strlen(".") + 1) && (counter_val <= 5)) {
         if (H5O_TYPE_GROUP == object_info->type)
             goto done;
         else
@@ -6416,28 +6210,6 @@ object_visit_soft_link_callback(hid_t o_id, const char *name, const H5O_info2_t 
 
 done:
     (*i)++;
-
-    return ret_val;
-}
-
-/*
- * H5Ovisit callback for testing visiting of dangling soft links.
- */
-static herr_t
-object_visit_dangling_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
-{
-    herr_t ret_val = 0;
-
-    UNUSED(o_id);
-    UNUSED(object_info);
-    UNUSED(op_data);
-
-    if (   !HDstrncmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1, strlen(OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1) + 1)
-        || !HDstrncmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2, strlen(OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME2) + 1)
-        || !HDstrncmp(name, OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3, strlen(OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME3) + 1)) {
-        HDprintf("    object visit callback should not have been called on a dangling soft link!\n");
-        ret_val = -1;
-    }
 
     return ret_val;
 }

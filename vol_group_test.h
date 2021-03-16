@@ -44,7 +44,7 @@ int vol_group_test(void);
 
 #define GROUP_PROPERTY_LIST_TEST_GROUP_NAME1 "property_list_test_group1"
 #define GROUP_PROPERTY_LIST_TEST_GROUP_NAME2 "property_list_test_group2"
-#define GROUP_PROPERTY_LIST_TEST_DUMMY_VAL   100
+#define GROUP_PROPERTY_LIST_TEST_DUMMY_VAL   H5P_CRT_ORDER_TRACKED
 
 #define GROUP_GET_INFO_TEST_GROUP_NAME "group_info_test"
 #define GROUP_GET_INFO_TEST_GROUP_NUMB 16
