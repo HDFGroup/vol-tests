@@ -918,11 +918,11 @@ error:
 static int
 test_group_property_lists(void)
 {
-    size_t dummy_prop_val = GROUP_PROPERTY_LIST_TEST_DUMMY_VAL;
-    hid_t  file_id = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID;
-    hid_t  group_id1 = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
-    hid_t  gcpl_id1 = H5I_INVALID_HID, gcpl_id2 = H5I_INVALID_HID;
+    unsigned dummy_prop_val = GROUP_PROPERTY_LIST_TEST_DUMMY_VAL;
+    hid_t    file_id = H5I_INVALID_HID;
+    hid_t    container_group = H5I_INVALID_HID;
+    hid_t    group_id1 = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
+    hid_t    gcpl_id1 = H5I_INVALID_HID, gcpl_id2 = H5I_INVALID_HID;
 
     TESTING_MULTIPART("group property list operations")
 
@@ -946,7 +946,7 @@ test_group_property_lists(void)
         goto error;
     }
 
-    if (H5Pset_local_heap_size_hint(gcpl_id1, dummy_prop_val) < 0) {
+    if (H5Pset_link_creation_order(gcpl_id1, dummy_prop_val) < 0) {
         H5_FAILED();
         HDprintf("    couldn't set property on GCPL\n");
         goto error;
@@ -991,7 +991,7 @@ test_group_property_lists(void)
             /* Ensure that property list 1 has the property set and property list 2 does not */
             dummy_prop_val = 0;
 
-            if (H5Pget_local_heap_size_hint(gcpl_id1, &dummy_prop_val) < 0) {
+            if (H5Pget_link_creation_order(gcpl_id1, &dummy_prop_val) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't retrieve GCPL property value\n");
                 PART_ERROR(H5Gget_create_plist);
@@ -1006,7 +1006,7 @@ test_group_property_lists(void)
 
             dummy_prop_val = 0;
 
-            if (H5Pget_local_heap_size_hint(gcpl_id2, &dummy_prop_val) < 0) {
+            if (H5Pget_link_creation_order(gcpl_id2, &dummy_prop_val) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't retrieve GCPL property value\n");
                 PART_ERROR(H5Gget_create_plist);
@@ -1082,7 +1082,7 @@ test_group_property_lists(void)
             /* Re-check the property values */
             dummy_prop_val = 0;
 
-            if (H5Pget_local_heap_size_hint(gcpl_id1, &dummy_prop_val) < 0) {
+            if (H5Pget_link_creation_order(gcpl_id1, &dummy_prop_val) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't retrieve GCPL property value\n");
                 PART_ERROR(H5Gget_create_plist_reopened);
@@ -1097,7 +1097,7 @@ test_group_property_lists(void)
 
             dummy_prop_val = 0;
 
-            if (H5Pget_local_heap_size_hint(gcpl_id2, &dummy_prop_val) < 0) {
+            if (H5Pget_link_creation_order(gcpl_id2, &dummy_prop_val) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't retrieve GCPL property value\n");
                 PART_ERROR(H5Gget_create_plist_reopened);
