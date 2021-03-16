@@ -128,12 +128,16 @@ int vol_object_test(void);
 #define OBJECT_VISIT_TEST_DSET_NAME        "object_visit_test_dset"
 #define OBJECT_VISIT_TEST_TYPE_NAME        "object_visit_test_type"
 
-#define OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED 5
+#define OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED 1
 #define OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME    "object_visit_soft_link"
-#define OBJECT_VISIT_SOFT_LINK_TEST_LINKED_GRP_NAME  "linked_group"
+#define OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME1      "links_group"
+#define OBJECT_VISIT_SOFT_LINK_TEST_GROUP_NAME2      "objects_group"
 #define OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME1       "soft_link1"
 #define OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME2       "soft_link2"
 #define OBJECT_VISIT_SOFT_LINK_TEST_LINK_NAME3       "soft_link3"
+#define OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME1        "group1"
+#define OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME2        "group2"
+#define OBJECT_VISIT_SOFT_LINK_TEST_OBJ_NAME3        "group3"
 
 #define OBJECT_VISIT_DANGLING_LINK_TEST_SUBGROUP_NAME "object_visit_dangling_link_test"
 #define OBJECT_VISIT_DANGLING_LINK_TEST_LINK_NAME1    "dangling_link1"
