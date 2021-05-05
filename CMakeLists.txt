@@ -97,7 +97,7 @@ if(HDF5_FOUND)
   set(HDF5_C_SHARED_LIBRARY hdf5-shared)
   if(NOT TARGET ${HDF5_C_SHARED_LIBRARY})
       message(FATAL_ERROR "Could not find hdf5 shared target, please make "
-      "sure that HDF5 has ben compiled with shared libraries enabled.")
+      "sure that HDF5 has been compiled with shared libraries enabled.")
   endif()
   set(HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES
     ${HDF5_VOL_TEST_EXT_PKG_DEPENDENCIES}
