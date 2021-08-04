@@ -3124,16 +3124,16 @@ test_dataset_property_lists(void)
 
     TESTING_2("test setup")
 
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
     /** for DAOS VOL, this test is problematic since auto chunking can be selected, so skip for now */
     if (H5VLget_connector_name(file_id, vol_name, 5) < 0) {
         H5_FAILED();
         HDprintf("    couldn't get VOL NAME '%s'\n", DATASET_TEST_GROUP_NAME);
-        goto error;
-    }
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
         goto error;
     }
 
@@ -7784,6 +7784,14 @@ test_dataset_set_extent_invalid_params(void)
 
     TESTING_MULTIPART("H5Dset_extent with invalid parameters");
 
+    TESTING_2("test setup")
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
     /** for DAOS VOL, this test is problematic since auto chunking can be selected, so skip for now */
     if (H5VLget_connector_name(file_id, vol_name, 5) < 0) {
         H5_FAILED();
@@ -7791,16 +7799,10 @@ test_dataset_set_extent_invalid_params(void)
         goto error;
     }
     if (strcmp(vol_name, "daos") == 0) {
-        TESTING_2("Skipping test with DAOS VOL")
+        if (H5Fclose(file_id) < 0)
+            TEST_ERROR
+        SKIPPED();
 	return 0;
-    }
-
-    TESTING_2("test setup")
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
-        goto error;
     }
 
     if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
