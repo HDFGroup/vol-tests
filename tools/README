@@ -14,7 +14,7 @@ some manual work to run.
 
 1) Build the code in this repository.
 
-2) Make sure the h5delete tool you just built is in your path.
+2) Make sure the h5delete tool is in your path.
 
 3) Make sure that the HDF5 tools are on your path.
 
