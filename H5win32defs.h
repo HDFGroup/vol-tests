@@ -21,25 +21,6 @@
  *
  */
 #ifndef H5_HAVE_INTTYPES_H
-/* The following definitions should be suitable for 64-bit Windows, which is
- * LLP64, and for 32-bit Windows, which is ILP32.  Those are the only
- * platforms where <inttypes.h> is likely to be missing.  VS2015 and later
- * *may* provide these definitions.
- */
-#ifdef _WIN64
-#define PRIdPTR "lld"
-#define PRIoPTR "llo"
-#define PRIuPTR "llu"
-#define PRIxPTR "llx"
-#define PRIXPTR "llX"
-#else /* _WIN64 */
-#define PRIdPTR "ld"
-#define PRIoPTR "lo"
-#define PRIuPTR "lu"
-#define PRIxPTR "lx"
-#define PRIXPTR "lX"
-#endif /* _WIN64 */
-
 #define PRId8   "d"
 #define PRIo8   "o"
 #define PRIu8   "u"
@@ -55,16 +36,6 @@
 #define PRIu32  "u"
 #define PRIx32  "x"
 #define PRIX32  "X"
-#define PRId64  "lld"
-#define PRIo64  "llo"
-#define PRIu64  "llu"
-#define PRIx64  "llx"
-#define PRIX64  "llX"
-#define PRIdMAX "lld"
-#define PRIoMAX "llo"
-#define PRIuMAX "llu"
-#define PRIxMAX "llx"
-#define PRIXMAX "llX"
 #endif
 
 /*
