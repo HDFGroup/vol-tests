@@ -190,5 +190,5 @@ done:
     MPI_Finalize();
 #endif
 
-    HDexit((err_occurred ? EXIT_FAILURE : EXIT_SUCCESS));
+    HDexit(((err_occurred || n_tests_failed_g > 0) ? EXIT_FAILURE : EXIT_SUCCESS));
 }
