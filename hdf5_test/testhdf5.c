@@ -39,20 +39,6 @@ int nerrors = 0;
 
 char  *paraprefix = NULL;  /* for command line option para-prefix */
 
-/*
- * These are the letters that are appended to the file name when generating
- * names for the split and multi drivers. They are:
- *
- *   m: All meta data when using the split driver.
- *  s: The userblock, superblock, and driver info block
- *  b: B-tree nodes
- *  r: Dataset raw data
- *  g: Global heap
- *  l: local heap (object names)
- *  o: object headers
- */
-static const char *multi_letters = "msbrglo";
-
 /* Length of multi-file VFD filename buffers */
 #define H5TEST_MULTI_FILENAME_LEN       1024
 
@@ -211,10 +197,6 @@ h5_fileaccess(void)
     if((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
         goto error;
 
-    /* Attempt to set up a file driver first */
-    if(h5_get_vfd_fapl(fapl_id) < 0)
-        goto error;
-
     /* Finally, check for libver bounds */
     if(h5_get_libver_fapl(fapl_id) < 0)
         goto error;
@@ -226,141 +208,6 @@ error:
         H5Pclose(fapl_id);
     return H5I_INVALID_HID;
 } /* end h5_fileaccess() */
-
-/*-------------------------------------------------------------------------
- * Function:    h5_get_vfd_fapl
- *
- * Purpose:     Sets the file driver for a FAPL according to the value specified
- *              in the constant or environment variable "HDF5_DRIVER".
- *
- * Return:      Success:    0
- *              Failure:    -1
- *
- * Programmer:  Dana Robinson
- *              February 2016
- *
- *-------------------------------------------------------------------------
- */
-herr_t
-h5_get_vfd_fapl(hid_t fapl)
-{
-    const char  *env = NULL;    /* HDF5_DRIVER environment variable     */
-    const char  *tok = NULL;    /* strtok pointer                       */
-    char        *lasts = NULL;  /* Context pointer for strtok_r() call */
-    char        buf[1024];      /* buffer for tokenizing HDF5_DRIVER    */
-
-    /* Get the environment variable, if it exists */
-    env = HDgetenv("HDF5_DRIVER");
-#ifdef HDF5_DRIVER
-    /* Use the environment variable, then the compile-time constant */
-    if(!env)
-        env = HDF5_DRIVER;
-#endif
-
-    /* If the environment variable was not set, just return
-     * without modifying the FAPL.
-     */
-    if(!env || !*env)
-        goto done;
-
-    /* Get the first 'word' of the environment variable.
-     * If it's nothing (environment variable was whitespace)
-     * just return the default fapl.
-     */
-    HDstrncpy(buf, env, sizeof(buf));
-    buf[sizeof(buf) - 1] = '\0';
-    if(NULL == (tok = HDstrtok_r(buf, " \t\n\r", &lasts)))
-        goto done;
-
-    if(!HDstrcmp(tok, "sec2")) {
-        /* POSIX (section 2) read() and write() system calls */
-        if(H5Pset_fapl_sec2(fapl) < 0)
-            goto error;
-    } else if(!HDstrcmp(tok, "stdio")) {
-        /* Standard C fread() and fwrite() system calls */
-        if(H5Pset_fapl_stdio(fapl) < 0)
-            goto error;
-    } else if(!HDstrcmp(tok, "core")) {
-        /* In-memory driver settings (backing store on, 1 MB increment) */
-        if(H5Pset_fapl_core(fapl, (size_t)H5_MB, TRUE) < 0)
-            goto error;
-    } else if(!HDstrcmp(tok, "core_paged")) {
-        /* In-memory driver with write tracking and paging on */
-        if(H5Pset_fapl_core(fapl, (size_t)H5_MB, TRUE) < 0)
-            goto error;
-        if(H5Pset_core_write_tracking(fapl, TRUE, (size_t)4096) < 0)
-            goto error;
-     } else if(!HDstrcmp(tok, "split")) {
-        /* Split meta data and raw data each using default driver */
-        if(H5Pset_fapl_split(fapl, "-m.h5", H5P_DEFAULT, "-r.h5", H5P_DEFAULT) < 0)
-            goto error;
-    } else if(!HDstrcmp(tok, "multi")) {
-        /* Multi-file driver, general case of the split driver */
-        H5FD_mem_t  memb_map[H5FD_MEM_NTYPES];
-        hid_t       memb_fapl[H5FD_MEM_NTYPES];
-        const char  *memb_name[H5FD_MEM_NTYPES];
-        char        *sv[H5FD_MEM_NTYPES];
-        haddr_t     memb_addr[H5FD_MEM_NTYPES];
-        H5FD_mem_t  mt;
-
-        HDmemset(memb_map, 0, sizeof(memb_map));
-        HDmemset(memb_fapl, 0, sizeof(memb_fapl));
-        HDmemset(memb_name, 0, sizeof(memb_name));
-        HDmemset(memb_addr, 0, sizeof(memb_addr));
-
-        HDassert(HDstrlen(multi_letters) == H5FD_MEM_NTYPES);
-        for(mt = H5FD_MEM_DEFAULT; mt < H5FD_MEM_NTYPES; H5_INC_ENUM(H5FD_mem_t, mt)) {
-            memb_fapl[mt] = H5P_DEFAULT;
-            sv[mt] = (char *)HDmalloc(H5TEST_MULTI_FILENAME_LEN);
-            HDassert(sv[mt]);
-            HDsprintf(sv[mt], "%%s-%c.h5", multi_letters[mt]);
-            memb_name[mt] = sv[mt];
-            memb_addr[mt] = (haddr_t)MAX(mt - 1, 0) * (HADDR_MAX / 10);
-        } /* end for */
-
-        if(H5Pset_fapl_multi(fapl, memb_map, memb_fapl, memb_name, memb_addr, FALSE) < 0)
-            goto error;
-
-        for(mt = H5FD_MEM_DEFAULT; mt < H5FD_MEM_NTYPES; H5_INC_ENUM(H5FD_mem_t, mt))
-            HDfree(sv[mt]);
-    } else if(!HDstrcmp(tok, "family")) {
-        /* Family of files, each 1MB and using the default driver */
-        hsize_t fam_size = 100 * 1024 * 1024;   /* 100 MB */
-
-        /* Was a family size specified in the environment variable? */
-        if((tok = HDstrtok_r(NULL, " \t\n\r", &lasts)))
-            fam_size = (hsize_t)(HDstrtod(tok, NULL) * 1024 * 1024);
-        if(H5Pset_fapl_family(fapl, fam_size, H5P_DEFAULT) < 0)
-            goto error;
-    } else if(!HDstrcmp(tok, "log")) {
-        /* Log file access */
-        unsigned log_flags = H5FD_LOG_LOC_IO | H5FD_LOG_ALLOC;
-
-        /* Were special log file flags specified in the environment variable? */
-        if((tok = HDstrtok_r(NULL, " \t\n\r", &lasts)))
-            log_flags = (unsigned)HDstrtol(tok, NULL, 0);
-
-        if(H5Pset_fapl_log(fapl, NULL, log_flags, (size_t)0) < 0)
-            goto error;
-#ifdef H5_HAVE_DIRECT
-    } else if(!HDstrcmp(tok, "direct")) {
-        /* Linux direct read() and write() system calls.  Set memory boundary,
-         * file block size, and copy buffer size to the default values.
-         */
-        if(H5Pset_fapl_direct(fapl, 1024, 4096, 8 * 4096) < 0)
-            goto error;
-#endif
-    } else {
-        /* Unknown driver */
-        goto error;
-    } /* end if */
-
-done:
-    return 0;
-
-error:
-    return -1;
-} /* end h5_get_vfd_fapl() */
 
 /*-------------------------------------------------------------------------
  * Function:    h5_get_libver_fapl
@@ -431,53 +278,52 @@ static char *
 h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
     char *fullname, size_t size, hbool_t nest_printf, hbool_t subst_for_superblock)
 {
-    const char     *prefix = NULL;
-    const char     *env = NULL;    /* HDF5_DRIVER environment variable     */
-    char           *ptr, last = '\0';
-    const char     *suffix = _suffix;
-    size_t          i, j;
-    hid_t           driver = -1;
-    int             isppdriver = 0;  /* if the driver is MPI parallel */
+    const char *prefix         = NULL;
+    const char *driver_env_var = NULL; /* HDF5_DRIVER environment variable     */
+    char *      ptr, last = '\0';
+    const char *suffix = _suffix;
+    size_t      i, j;
+    hid_t       driver     = -1;
+    int         isppdriver = 0; /* if the driver is MPI parallel */
 
     if (!base_name || !fullname || size < 1)
         return NULL;
 
     HDmemset(fullname, 0, size);
 
+    /* Determine if driver is set by environment variable. If it is,
+     * only generate a suffix if fixing the filename for the superblock
+     * file. */
+    driver_env_var = HDgetenv(HDF5_DRIVER);
+    if (driver_env_var && (H5P_DEFAULT == fapl) && subst_for_superblock)
+        fapl = H5P_FILE_ACCESS_DEFAULT;
+
     /* figure out the suffix */
-    if(H5P_DEFAULT != fapl) {
-        if((driver = H5Pget_driver(fapl)) < 0)
+    if (H5P_DEFAULT != fapl) {
+        if ((driver = H5Pget_driver(fapl)) < 0)
             return NULL;
 
-        if(suffix) {
-            if(H5FD_FAMILY == driver) {
-                if(subst_for_superblock)
-                    suffix = "00000.h5";
+        if (suffix) {
+            if (H5FD_FAMILY == driver) {
+                if (subst_for_superblock)
+                    suffix = "-000000.h5";
                 else
-                    suffix = nest_printf ? "%%05d.h5" : "%05d.h5";
+                    suffix = nest_printf ? "-%%06d.h5" : "-%06d.h5";
             }
             else if (H5FD_MULTI == driver) {
 
-                /* Get the environment variable, if it exists, in case
+                /* Check the HDF5_DRIVER environment variable in case
                  * we are using the split driver since both of those
                  * use the multi VFD under the hood.
                  */
-                env = HDgetenv("HDF5_DRIVER");
-#ifdef HDF5_DRIVER
-                /* Use the environment variable, then the compile-time constant */
-                if(!env)
-                    env = HDF5_DRIVER;
-#endif
-                if(env && !HDstrcmp(env, "split")) {
+                if (driver_env_var && !HDstrcmp(driver_env_var, "split")) {
                     /* split VFD */
-                    if(subst_for_superblock)
-                        suffix = "-m.h5";
-                    else
-                        suffix = NULL;
+                    if (subst_for_superblock)
+                        suffix = ".h5.meta";
                 }
                 else {
                     /* multi VFD */
-                    if(subst_for_superblock)
+                    if (subst_for_superblock)
                         suffix = "-s.h5";
                     else
                         suffix = NULL;
@@ -489,19 +335,20 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
     /* Must first check fapl is not H5P_DEFAULT (-1) because H5FD_XXX
      * could be of value -1 if it is not defined.
      */
-    isppdriver = H5P_DEFAULT != fapl && (H5FD_MPIO == driver);
+    isppdriver = ((H5P_DEFAULT != fapl) || driver_env_var) && (H5FD_MPIO == driver);
 #if 0
     /* Check HDF5_NOCLEANUP environment setting.
      * (The #ifdef is needed to prevent compile failure in case MPI is not
      * configured.)
      */
-    if(isppdriver) {
+    if (isppdriver) {
 #ifdef H5_HAVE_PARALLEL
-        if(getenv_all(MPI_COMM_WORLD, 0, "HDF5_NOCLEANUP"))
+        if (getenv_all(MPI_COMM_WORLD, 0, HDF5_NOCLEANUP))
             SetTestNoCleanup();
-#endif  /* H5_HAVE_PARALLEL */
-    } else {
-        if(HDgetenv("HDF5_NOCLEANUP"))
+#endif /* H5_HAVE_PARALLEL */
+    }
+    else {
+        if (HDgetenv(HDF5_NOCLEANUP))
             SetTestNoCleanup();
     }
 #endif
@@ -511,7 +358,7 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
      * (The #ifdef is needed to prevent compile failure in case MPI is not
      * configured.)
      */
-    if(isppdriver) {
+    if (isppdriver) {
 #ifdef H5_HAVE_PARALLEL
         /*
          * For parallel:
@@ -524,30 +371,27 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
 
         if (!prefix && !explained) {
             /* print hint by process 0 once. */
-            int mpi_rank = 0, mpi_initialized, mpi_finalized;
+            int mpi_rank;
 
-            MPI_Initialized(&mpi_initialized);
-            MPI_Finalized(&mpi_finalized);
-
-            if(mpi_initialized && !mpi_finalized)
-                MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
             if (mpi_rank == 0)
                 HDprintf("*** Hint ***\n"
-                       "You can use environment variable HDF5_PARAPREFIX to "
-                       "run parallel test files in a\n"
-                       "different directory or to add file type prefix. e.g.,\n"
-                       "   HDF5_PARAPREFIX=pfs:/PFS/user/me\n"
-                       "   export HDF5_PARAPREFIX\n"
-                       "*** End of Hint ***\n");
+                         "You can use environment variable HDF5_PARAPREFIX to "
+                         "run parallel test files in a\n"
+                         "different directory or to add file type prefix. e.g.,\n"
+                         "   HDF5_PARAPREFIX=pfs:/PFS/user/me\n"
+                         "   export HDF5_PARAPREFIX\n"
+                         "*** End of Hint ***\n");
 
             explained = TRUE;
 #ifdef HDF5_PARAPREFIX
             prefix = HDF5_PARAPREFIX;
-#endif  /* HDF5_PARAPREFIX */
+#endif /* HDF5_PARAPREFIX */
         }
-#endif  /* H5_HAVE_PARALLEL */
-    } else {
+#endif /* H5_HAVE_PARALLEL */
+    }
+    else {
         /*
          * For serial:
          *      First use the environment variable, then try the constant
@@ -557,7 +401,7 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
 #ifdef HDF5_PREFIX
         if (!prefix)
             prefix = HDF5_PREFIX;
-#endif  /* HDF5_PREFIX */
+#endif /* HDF5_PREFIX */
     }
 
     /* Prepend the prefix value to the base name */
@@ -574,8 +418,8 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
                  */
                 char *user, *login;
 
-                user = HDgetenv("USER");
-                login = HDgetenv("LOGIN");
+                user   = HDgetenv("USER");
+                login  = HDgetenv("LOGIN");
                 subdir = (user ? user : login);
 
                 if (subdir) {
@@ -592,7 +436,7 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
             if (!fullname[0]) {
                 /* We didn't append the prefix yet */
                 HDstrncpy(fullname, prefix, size);
-                fullname[size -1] = '\0';
+                fullname[size - 1] = '\0';
             }
 
             if (HDstrlen(fullname) + HDstrlen(base_name) + 1 < size) {
@@ -614,19 +458,23 @@ h5_fixname_real(const char *base_name, hid_t fapl, const char *_suffix,
 
                 HDstrcat(fullname, "/");
                 HDstrcat(fullname, base_name);
-            } else {
+            }
+            else {
                 /* Buffer is too small */
                 return NULL;
             }
-        } else {
+        }
+        else {
             if (HDsnprintf(fullname, size, "%s/%s", prefix, base_name) == (int)size)
                 /* Buffer is too small */
                 return NULL;
         }
-    } else if (HDstrlen(base_name) >= size) {
+    }
+    else if (HDstrlen(base_name) >= size) {
         /* Buffer is too small */
         return NULL;
-    } else {
+    }
+    else {
         HDstrcpy(fullname, base_name);
     }
 
