@@ -12,7 +12,7 @@
 
 #include "vol_async_test.h"
 
-#ifdef _H5ESpublic_H
+#ifdef H5ESpublic_H
 
 static int test_one_dataset_io(void);
 static int test_multi_dataset_io(void);
@@ -2558,7 +2558,7 @@ vol_async_test(void)
     return nerrors;
 }
 
-#else /* _H5ESpublic_H */
+#else /* H5ESpublic_H */
 
 int
 vol_async_test(void)
@@ -2574,5 +2574,5 @@ vol_async_test(void)
     return 0;
 }
 
-#endif /* _H5ESpublic_H */
+#endif /* H5ESpublic_H */
 
