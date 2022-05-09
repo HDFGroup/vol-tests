@@ -92,6 +92,8 @@ include_directories(
 # External dependencies
 #------------------------------------------------------------------------------
 # HDF5
+# Save a copy of HDF5_DIR set by the user.
+SET(ORIG_HDF5_DIR ${HDF5_DIR})
 find_package(HDF5 NO_MODULE NAMES hdf5 COMPONENTS C shared)
 if(HDF5_FOUND)
   set(HDF5_C_SHARED_LIBRARY hdf5-shared)
@@ -104,8 +106,30 @@ if(HDF5_FOUND)
     ${HDF5_C_SHARED_LIBRARY}
   )
 else()
-  # Allow for HDF5 autotools builds
-  find_package(HDF5 MODULE REQUIRED)
+  if ("${ORIG_HDF5_DIR}" STREQUAL "")
+      message(FATAL_ERROR "Setting HDF5_DIR is required")
+  endif()
+
+  # If above find_package failed, then HDF5_DIR will be set to
+  # "HDF5_DIR-NOTFOUND". Thus, We must restore HDF5_DIR to the original
+  # HDF5_DIR set by user.
+  SET(HDF5_DIR ${ORIG_HDF5_DIR})
+  # Allow for HDF5 autotools builds. Note FindHDF5 module requires h5cc or h5pcc.
+  find_package(HDF5 MODULE)
+  if ("${HDF5_DIR}" STREQUAL "HDF5_DIR-NOTFOUND")
+      # FindHDF5 module fails to find h5cc or h5pcc under $PATH
+      SET(HDF5_DIR ${ORIG_HDF5_DIR})
+      find_path(HDF5_INCLUDE_DIRS NAMES hdf5.h PATHS ${HDF5_DIR}/include)
+      find_library(HDF5_LIBRARIES hdf5 PATHS ${HDF5_DIR}/lib)
+  endif()
+
+  if ("${HDF5_INCLUDE_DIRS}" STREQUAL "HDF5_INCLUDE_DIRS-NOTFOUND")
+      message(FATAL_ERROR "HDF5 header file 'hdf5.h' could not be found")
+  endif()
+  if ("${HDF5_LIBRARIES}" STREQUAL "HDF5_LIBRARIES-NOTFOUND")
+      message(FATAL_ERROR "HDF5 library file 'libhdf5.a' could not be found")
+  endif()
+
   set(HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES
     ${HDF5_VOL_TEST_EXT_INCLUDE_DEPENDENCIES}
     ${HDF5_INCLUDE_DIRS}
