@@ -65,7 +65,8 @@ test_one_dataset_io(void)
     hsize_t  stride[ONE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  count[ONE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  block[ONE_DATASET_IO_TEST_SPACE_RANK];
-    hbool_t  op_failed, is_native_vol;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   i, data_size, num_in_progress;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
@@ -710,7 +711,8 @@ test_multi_file_dataset_io(void)
     hsize_t  stride[MULTI_FILE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  count[MULTI_FILE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  block[MULTI_FILE_DATASET_IO_TEST_SPACE_RANK];
-    hbool_t  op_failed, is_native_vol;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   i, j, data_size, num_in_progress;
     hid_t    fapl_id = H5I_INVALID_HID;
     hid_t    file_id[MULTI_FILE_DATASET_IO_TEST_NFILES] =
@@ -1513,7 +1515,8 @@ test_set_extent(void)
     hsize_t  stride[SET_EXTENT_TEST_SPACE_RANK];
     hsize_t  count[SET_EXTENT_TEST_SPACE_RANK];
     hsize_t  block[SET_EXTENT_TEST_SPACE_RANK];
-    hbool_t  op_failed, is_native_vol;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol= false;
     size_t   i, j, data_size, num_in_progress;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
@@ -1832,7 +1835,8 @@ static int
 test_attribute_exists(void)
 {
     hsize_t *dims = NULL;
-    hbool_t  op_failed, is_native_vol;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   num_in_progress;
     hbool_t  exists1 = false;
     hbool_t  exists2 = false;
@@ -1968,7 +1972,8 @@ static int
 test_attribute_io(void)
 {
     hsize_t *dims = NULL;
-    hbool_t  op_failed, is_native_vol;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   num_in_progress;
     size_t   i, data_size;
     hid_t    file_id = H5I_INVALID_HID;
@@ -2900,7 +2905,8 @@ test_link(void)
     hbool_t existss2;
     hbool_t existss3;
     size_t num_in_progress;
-    hbool_t op_failed, is_native_vol;
+    hbool_t op_failed = false;
+    hbool_t is_native_vol = false;
 
     TESTING("link operations")
 
@@ -3139,7 +3145,8 @@ test_ocopy_orefresh(void)
     hid_t space_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
     size_t num_in_progress;
-    hbool_t op_failed, is_native_vol;
+    hbool_t op_failed = false;
+    hbool_t is_native_vol = false;
 
     TESTING("H5Ocopy() and H5Orefresh()")
 
