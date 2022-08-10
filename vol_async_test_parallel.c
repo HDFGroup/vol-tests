@@ -65,7 +65,8 @@ test_one_dataset_io(void)
     hsize_t  stride[ONE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  count[ONE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  block[ONE_DATASET_IO_TEST_SPACE_RANK];
-    hbool_t  op_failed;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   i, data_size, num_in_progress;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
@@ -96,6 +97,10 @@ test_one_dataset_io(void)
 
     /* Create file asynchronously */
     if((file_id = H5Fcreate_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Find out if the native connector is used */
+    if(H5VLobject_is_native(file_id, &is_native_vol) < 0)
         TEST_ERROR
 
     /* Create the dataset asynchronously */
@@ -252,8 +257,9 @@ test_one_dataset_io(void)
                 PART_TEST_ERROR(single_dset_dflush)
 
             /* Flush the dataset asynchronously.  This will effectively work as a
-             * barrier, guaranteeing the read takes place after the write. */
-            if(H5Oflush_async(dset_id, es_id) < 0)
+             * barrier, guaranteeing the read takes place after the write. Skip this
+             * function because it isn't supported for the native vol in parallel. */
+            if(!is_native_vol && H5Oflush_async(dset_id, es_id) < 0)
                 PART_TEST_ERROR(single_dset_dflush)
 
             /* Read the dataset asynchronously */
@@ -705,7 +711,8 @@ test_multi_file_dataset_io(void)
     hsize_t  stride[MULTI_FILE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  count[MULTI_FILE_DATASET_IO_TEST_SPACE_RANK];
     hsize_t  block[MULTI_FILE_DATASET_IO_TEST_SPACE_RANK];
-    hbool_t  op_failed;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   i, j, data_size, num_in_progress;
     hid_t    fapl_id = H5I_INVALID_HID;
     hid_t    file_id[MULTI_FILE_DATASET_IO_TEST_NFILES] =
@@ -835,11 +842,16 @@ test_multi_file_dataset_io(void)
                     PART_TEST_ERROR(multi_file_dset_open)
             } /* end for */
 
+            /* Find out if the native connector is used */
+            if(H5VLobject_is_native(file_id[0], &is_native_vol) < 0)
+                PART_TEST_ERROR(multi_file_dset_open)
+
             /* Loop over files */
             for(i = 0; i < MULTI_FILE_DATASET_IO_TEST_NFILES; i++) {
                 /* Flush the dataset asynchronously.  This will effectively work as a
-                 * barrier, guaranteeing the read takes place after the write. */
-                if(H5Oflush_async(dset_id[i], es_id) < 0)
+                 * barrier, guaranteeing the read takes place after the write. Skip this
+                 * function because it isn't supported for the native vol in parallel. */
+                if(!is_native_vol && H5Oflush_async(dset_id[i], es_id) < 0)
                     PART_TEST_ERROR(multi_file_dset_open)
 
                 /* Read the dataset asynchronously */
@@ -1503,7 +1515,8 @@ test_set_extent(void)
     hsize_t  stride[SET_EXTENT_TEST_SPACE_RANK];
     hsize_t  count[SET_EXTENT_TEST_SPACE_RANK];
     hsize_t  block[SET_EXTENT_TEST_SPACE_RANK];
-    hbool_t  op_failed;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol= false;
     size_t   i, j, data_size, num_in_progress;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
@@ -1562,6 +1575,10 @@ test_set_extent(void)
 
     /* Create file asynchronously */
     if((file_id = H5Fcreate_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Find out if the native connector is used */
+    if(H5VLobject_is_native(file_id, &is_native_vol) < 0)
         TEST_ERROR
 
     /* Create the dataset asynchronously */
@@ -1693,8 +1710,9 @@ test_set_extent(void)
     }
 
     /* Flush the dataset asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the read takes place after the write. */
-    if(H5Oflush_async(dset_id, es_id) < 0)
+     * barrier, guaranteeing the read takes place after the write. Skip this
+     * function because it isn't supported for the native vol in parallel. */
+    if(!is_native_vol && H5Oflush_async(dset_id, es_id) < 0)
         TEST_ERROR
 
     /* Read the entire dataset asynchronously */
@@ -1817,10 +1835,11 @@ static int
 test_attribute_exists(void)
 {
     hsize_t *dims = NULL;
-    hbool_t  op_failed;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   num_in_progress;
-    hbool_t  exists1;
-    hbool_t  exists2;
+    hbool_t  exists1 = false;
+    hbool_t  exists2 = false;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
     hid_t    dset_id = H5I_INVALID_HID;
@@ -1849,6 +1868,10 @@ test_attribute_exists(void)
     if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
         TEST_ERROR
 
+    /* Find out if the native connector is used */
+    if(H5VLobject_is_native(file_id, &is_native_vol) < 0)
+        TEST_ERROR
+
     /* Create the dataset asynchronously */
     if((dset_id = H5Dcreate_async(file_id, "attr_exists_dset", H5T_NATIVE_INT, space_id,
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
@@ -1859,9 +1882,10 @@ test_attribute_exists(void)
         TEST_ERROR
 
     /* Flush the dataset asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the create takes place after the existence check
+     * barrier, guaranteeing the create takes place after the existence check.
+     * Skip this function because it isn't supported for the native vol in parallel.
      */
-    if(H5Oflush_async(dset_id, es_id) < 0)
+    if(!is_native_vol && H5Oflush_async(dset_id, es_id) < 0)
         TEST_ERROR
 
     /* Create the attribute asynchronously */
@@ -1871,8 +1895,9 @@ test_attribute_exists(void)
 
     /* Flush the dataset asynchronously.  This will effectively work as a
      * barrier, guaranteeing the existence check takes place after the create.
+     * Skip this function because it isn't supported for the native vol in parallel.
      */
-    if(H5Oflush_async(dset_id, es_id) < 0)
+    if(!is_native_vol && H5Oflush_async(dset_id, es_id) < 0)
         TEST_ERROR
 
     /* Check if the attribute exists asynchronously */
@@ -1947,7 +1972,8 @@ static int
 test_attribute_io(void)
 {
     hsize_t *dims = NULL;
-    hbool_t  op_failed;
+    hbool_t  op_failed = false;
+    hbool_t  is_native_vol = false;
     size_t   num_in_progress;
     size_t   i, data_size;
     hid_t    file_id = H5I_INVALID_HID;
@@ -1978,6 +2004,10 @@ test_attribute_io(void)
 
     /* Open file asynchronously */
     if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
+        TEST_ERROR
+
+    /* Find out if the native connector is used */
+    if(H5VLobject_is_native(file_id, &is_native_vol) < 0)
         TEST_ERROR
 
     /* Create the dataset asynchronously */
@@ -2016,8 +2046,10 @@ test_attribute_io(void)
         TEST_ERROR
 
     /* Flush the dataset asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the read takes place after the write. */
-    if(H5Oflush_async(dset_id, es_id) < 0)
+     * barrier, guaranteeing the read takes place after the write.
+     * Skip this function because it isn't supported for the native vol in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(dset_id, es_id) < 0)
         TEST_ERROR
 
     /* Read the attribute asynchronously */
@@ -2873,7 +2905,8 @@ test_link(void)
     hbool_t existss2;
     hbool_t existss3;
     size_t num_in_progress;
-    hbool_t op_failed;
+    hbool_t op_failed = false;
+    hbool_t is_native_vol = false;
 
     TESTING("link operations")
 
@@ -2896,6 +2929,10 @@ test_link(void)
     if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
         TEST_ERROR
 
+    /* Find out if the native connector is used */
+    if(H5VLobject_is_native(file_id, &is_native_vol) < 0)
+        TEST_ERROR
+
     /* Create the parent group asynchronously */
     if((parent_group_id = H5Gcreate_async(file_id, "link_parent",
             H5P_DEFAULT, gcpl_id, H5P_DEFAULT, es_id)) < 0)
@@ -2910,8 +2947,9 @@ test_link(void)
 
     /* Flush the parent group asynchronously.  This will effectively work as a
      * barrier, guaranteeing the link to the subgroup is visible to later tasks.
+     * Skip this function for the native vol because it isn't supported in parallel.
      */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Create hard link asynchronously */
@@ -2921,8 +2959,9 @@ test_link(void)
 
     /* Flush the parent group asynchronously.  This will effectively work as a
      * barrier, guaranteeing the soft link create takes place after the hard
-     * link create. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * link create. Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Create soft link asynchronously */
@@ -2931,8 +2970,10 @@ test_link(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the read takes place after the writes. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the read takes place after the writes.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
@@ -2956,8 +2997,10 @@ test_link(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the delete takes place after the reads. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the delete takes place after the reads.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Delete soft link by index */
@@ -2966,8 +3009,10 @@ test_link(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the read takes place after the delete. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the read takes place after the delete.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
@@ -2991,8 +3036,10 @@ test_link(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the delete takes place after the reads. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the delete takes place after the reads.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Delete hard link */
@@ -3000,8 +3047,10 @@ test_link(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the read takes place after the delete. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the read takes place after the delete.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Wait for the event stack to complete */
@@ -3096,7 +3145,8 @@ test_ocopy_orefresh(void)
     hid_t space_id = H5I_INVALID_HID;
     hid_t es_id = H5I_INVALID_HID;
     size_t num_in_progress;
-    hbool_t op_failed;
+    hbool_t op_failed = false;
+    hbool_t is_native_vol = false;
 
     TESTING("H5Ocopy() and H5Orefresh()")
 
@@ -3119,6 +3169,10 @@ test_ocopy_orefresh(void)
     if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
         TEST_ERROR
 
+    /* Find out if the native connector is used */
+    if(H5VLobject_is_native(file_id, &is_native_vol) < 0)
+        TEST_ERROR
+
     /* Create the parent group asynchronously */
     if((parent_group_id = H5Gcreate_async(file_id, "ocopy_parent",
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT, es_id)) < 0)
@@ -3132,8 +3186,10 @@ test_ocopy_orefresh(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the copy takes place after dataset create. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the copy takes place after dataset create.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     /* Copy dataset */
@@ -3142,8 +3198,10 @@ test_ocopy_orefresh(void)
         TEST_ERROR
 
     /* Flush the parent group asynchronously.  This will effectively work as a
-     * barrier, guaranteeing the dataset open takes place copy. */
-    if(H5Oflush_async(parent_group_id, es_id) < 0)
+     * barrier, guaranteeing the dataset open takes place copy.
+     * Skip this function for the native vol because it isn't supported in parallel.
+     */
+    if(!is_native_vol && H5Oflush_async(parent_group_id, es_id) < 0)
         TEST_ERROR
 
     if(!coll_metadata_read) {
