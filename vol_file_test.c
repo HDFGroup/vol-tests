@@ -82,8 +82,16 @@ static int
 test_create_file(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    hid_t connector_id = H5I_INVALID_HID;
+    uint64_t vol_flags = 0, req_flags = H5VL_CAP_FLAG_FILE_BASIC;
 
     TESTING("H5Fcreate");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
 
     if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -116,6 +124,12 @@ test_create_file_invalid_params(void)
     hid_t file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Fcreate with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Fcreate_invalid_name) {
@@ -227,6 +241,12 @@ test_create_file_excl(void)
 
     TESTING("H5Fcreate with H5F_ACC_EXCL/H5F_ACC_TRUNC flag");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
+
     if ((file_id = H5Fcreate(FILE_CREATE_EXCL_FILE_NAME, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create first file\n");
@@ -282,6 +302,12 @@ test_open_file(void)
     hid_t file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Fopen");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Fopen_rdonly) {
@@ -347,6 +373,12 @@ test_open_file_invalid_params(void)
     hid_t file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Fopen with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
 
     BEGIN_MULTIPART {
         PART_BEGIN(H5Fopen_invalid_name) {
@@ -427,6 +459,12 @@ test_open_nonexistent_file(void)
 
     TESTING("for invalid opening of a non-existent file")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
+
     HDsnprintf(test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", NONEXISTENT_FILENAME);
 
     /* XXX: Make sure to first delete the file so we know for sure it doesn't exist */
@@ -467,6 +505,13 @@ test_file_permission(void)
     herr_t ret = -1;
 
     TESTING_MULTIPART("file permissions (invalid creation of objects in read-only file)");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_DATASET_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -644,6 +689,12 @@ test_reopen_file(void)
 
     TESTING("re-open of a file with H5Freopen")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
@@ -684,6 +735,12 @@ test_close_file_invalid_id(void)
 
     TESTING("H5Fclose with an invalid ID")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
+
     H5E_BEGIN_TRY {
         err_ret = H5Fclose(H5I_INVALID_HID);
     } H5E_END_TRY;
@@ -714,6 +771,12 @@ test_flush_file(void)
     unsigned u;
 
     TESTING_MULTIPART("H5Fflush")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_DATASET_BASIC | H5VL_CAP_FLAG_FLUSH_REFRESH))) {
+        SKIPPED();
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -803,6 +866,12 @@ test_file_is_accessible(void)
 
     TESTING_MULTIPART("H5Fis_accessible")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        return 0;
+    }
+
     BEGIN_MULTIPART {
         PART_BEGIN(H5Fis_accessible_valid_file) {
             TESTING_2("H5Fis_accessible on existing file")
@@ -861,6 +930,12 @@ test_file_property_lists(void)
     char    test_filename1[VOL_TEST_FILENAME_MAX_LENGTH], test_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("file property list operations")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_FILE_MORE))) {
+        SKIPPED();
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -1104,6 +1179,12 @@ test_get_file_intent(void)
 
     TESTING_MULTIPART("retrieval of file intent with H5Fget_intent")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_FILE_MORE))) {
+        SKIPPED();
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     HDsnprintf(test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", FILE_INTENT_TEST_FILENAME);
@@ -1232,6 +1313,14 @@ test_get_file_obj_count(void)
     hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("retrieval of open object number and IDs")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_FILE_MORE | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_STORED_DATATYPES |
+                           H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -1522,6 +1611,14 @@ test_file_open_overlap(void)
 #endif
 
     TESTING("overlapping file opens")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_FILE_MORE | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_GROUP_BASIC))) {
+        SKIPPED();
+        return 0;
+    }
+
 #ifndef NO_DOUBLE_OBJECT_OPENS
     if ((file_id = H5Fcreate(OVERLAPPING_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1635,6 +1732,13 @@ test_file_mounts(void)
 #endif
 
     TESTING("file mounting/unmounting")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_MOUNT | H5VL_CAP_FLAG_GROUP_BASIC))) {
+        SKIPPED();
+        return 0;
+    }
+
 #ifndef NO_FILE_MOUNTS
     if ((file_id = H5Fcreate(FILE_MOUNT_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1706,6 +1810,14 @@ test_get_file_name(void)
     char    *file_name_buf = NULL;
 
     TESTING_MULTIPART("retrieval of file name")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_FILE_MORE | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_STORED_DATATYPES |
+                           H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        return 0;
+    }
 
     TESTING_2("test setup")
 
