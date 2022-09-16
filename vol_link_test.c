@@ -190,6 +190,13 @@ test_create_hard_link(void)
 
     TESTING("hard link creation")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or hard link aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -264,6 +271,13 @@ test_create_hard_link_long_name(void)
     size_t u;               /* Local index variable */
 
     TESTING("hard link creation with a long name")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or hard link aren't supported with this connector\n");
+        return 0;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -364,6 +378,13 @@ test_create_hard_link_many(void)
 #endif
 
     TESTING("hard link creation of many links")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, or hard link aren't supported with this connector\n");
+        return 0;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -510,6 +531,13 @@ test_create_hard_link_same_loc(void)
 
     TESTING_MULTIPART("hard link creation with H5L_SAME_LOC")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or hard link aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -628,6 +656,13 @@ test_create_hard_link_invalid_params(void)
     hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("hard link creation with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or hard link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -883,6 +918,13 @@ test_create_soft_link_existing_relative(void)
 
     TESTING("soft link creation to existing object by relative path")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or soft link aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -975,6 +1017,13 @@ test_create_soft_link_existing_absolute(void)
 
     TESTING("soft link creation to existing object by absolute path")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or soft link aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -1056,6 +1105,13 @@ test_create_soft_link_dangling_relative(void)
     hid_t  object_id = H5I_INVALID_HID;
 
     TESTING("dangling soft link creation to object by relative path")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or soft link aren't supported with this connector\n");
+        return 0;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1160,6 +1216,13 @@ test_create_soft_link_dangling_absolute(void)
     hid_t  object_id = H5I_INVALID_HID;
 
     TESTING("dangling soft link creation to object by absolute path")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or soft link aren't supported with this connector\n");
+        return 0;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1267,6 +1330,13 @@ test_create_soft_link_long_name(void)
 
     TESTING("soft link creation with a long name")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or soft link aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -1369,6 +1439,14 @@ test_create_soft_link_many(void)
 #endif
 
     TESTING("soft link creation of many links")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or group, basic or soft link aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_SOFT_LINK_MANY_DANGLING
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1533,6 +1611,13 @@ test_create_soft_link_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("soft link creation with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -1720,6 +1805,14 @@ test_create_external_link(void)
 #endif
 
     TESTING("external link creation to existing object")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic link, or external link aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
@@ -1821,6 +1914,14 @@ test_create_external_link_dangling(void)
 #endif
 
     TESTING("dangling external link creation")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic link, or external link aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
 
@@ -1946,6 +2047,14 @@ test_create_external_link_multi(void)
 #endif
 
     TESTING_MULTIPART("external link creation to an object across several files")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or external link aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     BEGIN_MULTIPART {
         PART_BEGIN(H5Lcreate_external_first_file) {
@@ -2285,6 +2394,14 @@ test_create_external_link_ping_pong(void)
 #endif
 
     TESTING_MULTIPART("external link creation to an object in ping pong style")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or external link aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     HDsnprintf(ext_link_filename1, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_PING_PONG_NAME1);
     HDsnprintf(ext_link_filename2, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_PING_PONG_NAME2);
@@ -2516,6 +2633,13 @@ test_create_external_link_invalid_params(void)
 
     TESTING_MULTIPART("H5Lcreate_external with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or basic link or external link aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_INVALID_PARAMS_TEST_FILE_NAME);
@@ -2734,6 +2858,14 @@ test_create_user_defined_link(void)
 #endif
 
     TESTING("user-defined link creation")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_UD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or user-defined link aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_USER_DEFINED_LINKS
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2816,6 +2948,13 @@ test_create_user_defined_link_invalid_params(void)
     char    udata[UD_LINK_INVALID_PARAMS_TEST_UDATA_MAX_SIZE];
 
     TESTING_MULTIPART("H5Lcreate_ud with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_UD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -3017,6 +3156,15 @@ test_delete_link(void)
 #endif
 
     TESTING_MULTIPART("link deletion");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_EXTERNAL_LINKS |
+                           H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or link, hard, soft, or external link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -6083,6 +6231,15 @@ test_delete_link_reset_grp_max_crt_order(void)
 #endif
 
     TESTING_MULTIPART("H5Ldelete of all links in group resets group's maximum link creation order value")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_GROUP_MORE | H5VL_CAP_FLAG_LINK_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, basic and more group, or basic link aren't supported with this connector\n");
+        return 0;
+    }
+
+
 #ifndef NO_MAX_LINK_CRT_ORDER_RESET
     TESTING_2("test setup")
 
@@ -6301,6 +6458,14 @@ test_delete_link_invalid_params(void)
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Ldelete with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_BY_IDX | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -6578,6 +6743,15 @@ test_copy_link(void)
 #endif
 
     TESTING_MULTIPART("link copying")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_EXTERNAL_LINKS |
+                           H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or link, hard, soft, or external link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -7764,6 +7938,14 @@ test_copy_link_invalid_params(void)
 
     TESTING_MULTIPART("H5Lcopy with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or basic and more link aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -8039,6 +8221,15 @@ test_move_link(void)
     hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link moving")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_EXTERNAL_LINKS |
+                           H5VL_CAP_FLAG_SOFT_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or link, hard, soft, or external link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -9458,6 +9649,14 @@ test_move_links_into_group_with_links(void)
 
     TESTING("H5Lmove adjusting creation order values for moved links")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_MORE |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or basic or hard link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -9647,6 +9846,15 @@ test_move_link_reset_grp_max_crt_order(void)
 #endif
 
     TESTING("H5Lmove of all links out of group resets group's maximum link creation order value")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_GROUP_MORE |
+                           H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, more or hard link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_MAX_LINK_CRT_ORDER_RESET
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -9818,6 +10026,14 @@ test_move_link_invalid_params(void)
     hid_t  ext_file_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Lmove with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_MORE |
+                           H5VL_CAP_FLAG_HARD_LINKS))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, more or hard link aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -10162,6 +10378,15 @@ test_get_link_val(void)
 #endif
 
     TESTING_MULTIPART("link value retrieval");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_SOFT_LINKS |
+                           H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic, more, soft, external link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -12165,6 +12390,15 @@ test_get_link_val_invalid_params(void)
 
     TESTING_MULTIPART("link value retrieval with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_SOFT_LINKS |
+                           H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic, more, soft, external link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -12466,6 +12700,15 @@ test_get_link_info(void)
 #endif
 
     TESTING_MULTIPART("link info retrieval");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_LINK_MORE | H5VL_CAP_FLAG_SOFT_LINKS |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic, more, soft, hard, external link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -14835,6 +15078,15 @@ test_get_link_info_invalid_params(void)
 
     TESTING_MULTIPART("link info retrieval with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_LINK_MORE |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic, more, soft, hard, external link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -15108,6 +15360,16 @@ test_get_link_name(void)
 
     TESTING_MULTIPART("link name retrieval")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_LINK_MORE |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_SOFT_LINKS |
+                           H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic, more, soft, hard, external link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+ 
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -17081,6 +17343,16 @@ test_get_link_name_invalid_params(void)
 
     TESTING_MULTIPART("link name retrieval with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_LINK_MORE |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_SOFT_LINKS |
+                           H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic, more, soft, hard, external link, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -17293,6 +17565,14 @@ test_link_iterate_hard_links(void)
     hid_t  dset_dspace = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link iteration (only hard links)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, link, or iterate aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -17608,6 +17888,14 @@ test_link_iterate_soft_links(void)
 
     TESTING_MULTIPART("link iteration (only soft links)")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_SOFT_LINKS |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, or iterate aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -17907,6 +18195,15 @@ test_link_iterate_external_links(void)
 #endif
 
     TESTING_MULTIPART("link iteration (only external links)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS | 
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, or iterate aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     TESTING_2("test setup")
 
@@ -18251,6 +18548,16 @@ test_link_iterate_mixed_links(void)
 #endif
 
     TESTING_MULTIPART("link iteration (mixed link types)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS |
+                           H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, soft or external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
 #if !defined(NO_EXTERNAL_LINKS) && !defined(NO_USER_DEFINED_LINKS)
     TESTING_2("test setup")
 
@@ -18662,6 +18969,15 @@ test_link_iterate_invalid_params(void)
 
     TESTING_MULTIPART("link iteration with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_ITERATE |
+                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, link, soft or external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     HDsnprintf(ext_link_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", EXTERNAL_LINK_TEST_FILE_NAME);
@@ -19007,6 +19323,14 @@ test_link_iterate_0_links(void)
 
     TESTING_MULTIPART("link iteration on group with 0 links");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ITERATE |
+                           H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -19200,6 +19524,14 @@ test_link_visit_hard_links_no_cycles(void)
     hid_t  dset_dspace = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link visiting without cycles (only hard links)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -19541,6 +19873,14 @@ test_link_visit_soft_links_no_cycles(void)
 
     TESTING_MULTIPART("link visiting without cycles (only soft links)")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, soft link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -19864,6 +20204,15 @@ test_link_visit_external_links_no_cycles(void)
 #endif
 
     TESTING_MULTIPART("link visiting without cycles (only external links)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     TESTING_2("test setup")
 
@@ -20232,6 +20581,16 @@ test_link_visit_mixed_links_no_cycles(void)
 #endif
 
     TESTING_MULTIPART("link visiting without cycles (mixed link types)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_EXTERNAL_LINKS |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, hard, soft, external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
 #if !defined(NO_EXTERNAL_LINKS) && !defined(NO_USER_DEFINED_LINKS)
     TESTING_2("test setup")
 
@@ -20641,6 +21000,14 @@ test_link_visit_hard_links_cycles(void)
 
     TESTING_MULTIPART("link visiting with cycles (only hard links)")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, hard link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -20958,6 +21325,14 @@ test_link_visit_soft_links_cycles(void)
     hid_t  gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link visiting with cycles (only soft links)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, soft link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -21284,6 +21659,15 @@ test_link_visit_external_links_cycles(void)
 #endif
 
     TESTING_MULTIPART("link visiting with cycles (only external links)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
 #ifndef NO_EXTERNAL_LINKS
     TESTING_2("test setup")
 
@@ -21639,6 +22023,16 @@ test_link_visit_mixed_links_cycles(void)
 #endif
 
     TESTING_MULTIPART("link visiting with cycles (mixed link types)")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_HARD_LINKS | H5VL_CAP_FLAG_SOFT_LINKS | H5VL_CAP_FLAG_EXTERNAL_LINKS |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link, hard, soft, external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
+
 #if !defined(NO_EXTERNAL_LINKS) && !defined(NO_USER_DEFINED_LINKS)
     TESTING_2("test setup")
 
@@ -22017,6 +22411,15 @@ test_link_visit_invalid_params(void)
     char   ext_link_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("link visiting with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_LINK_BASIC |
+                           H5VL_CAP_FLAG_DATASET_BASIC | H5VL_CAP_FLAG_EXTERNAL_LINKS | H5VL_CAP_FLAG_ITERATE |
+                           H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, link, external link, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -22397,6 +22800,14 @@ test_link_visit_0_links(void)
     hid_t gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("link visiting on group with subgroups containing 0 links");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, link iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 

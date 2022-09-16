@@ -115,11 +115,10 @@ vol_test_run(void)
             (void)vol_test_func[i]();
 }
 
-static void
+static int
 get_vol_cap_flags(const char *connector_name)
 {
     hid_t connector_id, fapl_id;
-    uint64_t req_flags = H5VL_CAP_FLAG_FILE_BASIC;
 
     if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) {
         H5_FAILED();
@@ -147,23 +146,21 @@ get_vol_cap_flags(const char *connector_name)
         goto error;
     }
 
-    if (req_flags != (req_flags & vol_cap_flags)) {
-        H5_FAILED();
-        HDprintf("vol_cap_flags = %llu, req_flags = %llu\n", vol_cap_flags, req_flags);
-        goto error;
-    }
-
     if (H5Pclose(fapl_id) < 0)
         TEST_ERROR
 
     if (H5VLclose(connector_id) < 0)
         TEST_ERROR
 
+    return 0;
+
 error:
     H5E_BEGIN_TRY {
         H5Pclose(fapl_id);
         H5VLclose(connector_id);
     } H5E_END_TRY;
+
+    return -1;
 }
 
 /******************************************************************************/
@@ -224,7 +221,11 @@ int main(int argc, char **argv)
     }
 
     /* Retrieve the VOL cap flags */
-    get_vol_cap_flags(vol_connector_name);
+    if (get_vol_cap_flags(vol_connector_name) < 0) {
+        HDfprintf(stderr, "Unable to get VOL capacity flags\n");
+        err_occurred = TRUE;
+        goto done;
+    }
 
     /* Run all the tests that are enabled */
     vol_test_run();
