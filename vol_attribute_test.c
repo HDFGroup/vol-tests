@@ -123,6 +123,13 @@ test_create_attribute_on_root(void)
 
     TESTING_MULTIPART("attribute creation on the root group");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -244,6 +251,14 @@ test_create_attribute_on_dataset(void)
     hid_t  attr_space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute creation on a dataset");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
+                           H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -405,6 +420,14 @@ test_create_attribute_on_datatype(void)
 
     TESTING_MULTIPART("attribute creation on a committed datatype");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_STORED_DATATYPES |
+                           H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, stored datatype, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -557,6 +580,13 @@ test_create_attribute_with_null_space(void)
 
     TESTING("attribute creation with a NULL dataspace")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
@@ -655,6 +685,13 @@ test_create_attribute_with_scalar_space(void)
     hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("attribute creation with a SCALAR dataspace")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -757,6 +794,13 @@ test_create_attribute_with_space_in_name(void)
 
     TESTING("attribute creation with a space in attribute's name")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
@@ -846,6 +890,13 @@ test_create_attribute_invalid_params(void)
     hid_t  space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute creation with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -1221,6 +1272,13 @@ test_open_attribute(void)
 
     TESTING_MULTIPART("attribute opening");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -1571,6 +1629,13 @@ test_open_attribute_invalid_params(void)
     hid_t  attr_type = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute opening with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -1975,6 +2040,14 @@ test_write_attribute(void)
 
     TESTING("H5Awrite")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_FLUSH_REFRESH))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or file flush aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
@@ -2091,6 +2164,13 @@ test_write_attribute_invalid_params(void)
     void    *data = NULL;
 
     TESTING_MULTIPART("H5Awrite with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -2253,6 +2333,13 @@ test_read_attribute(void)
 
     TESTING("H5Aread")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -2394,6 +2481,13 @@ test_read_attribute_invalid_params(void)
     void    *read_buf = NULL;
 
     TESTING_MULTIPART("H5Aread with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -2576,6 +2670,13 @@ test_read_empty_attribute(void)
 
     TESTING("reading an empty attribute")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -2683,6 +2784,13 @@ test_close_attribute_invalid_id(void)
 
     TESTING("H5Aclose with an invalid attribute ID")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -2735,6 +2843,14 @@ test_get_attribute_space_and_type(void)
     hid_t   tmp_space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("retrieval of an attribute's dataspace and datatype");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -3006,6 +3122,14 @@ test_get_attribute_space_and_type_invalid_params(void)
 
     TESTING_MULTIPART("H5Aget_type/H5Aget_space with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -3141,6 +3265,14 @@ test_attribute_property_lists(void)
     hid_t      space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute property list operations");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_GET_PLIST))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or getting property list aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -3399,6 +3531,14 @@ test_get_attribute_name(void)
     char    *name_buf = NULL;
 
     TESTING_MULTIPART("retrieval of an attribute's name");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -3808,6 +3948,14 @@ test_get_attribute_name_invalid_params(void)
 
     TESTING_MULTIPART("retrieval of an attribute's name with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -4108,6 +4256,14 @@ test_get_attribute_info(void)
     hid_t      gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("retrieval of attribute info");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -4707,6 +4863,14 @@ test_get_attribute_info_invalid_params(void)
 
     TESTING_MULTIPART("retrieval of attribute info with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -5069,6 +5233,14 @@ test_rename_attribute(void)
 
     TESTING_MULTIPART("attribute renaming");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -5265,6 +5437,14 @@ test_rename_attribute_invalid_params(void)
     hid_t  attr_space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute renaming with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ATTR_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -5573,6 +5753,14 @@ test_attribute_iterate_group(void)
     hid_t  gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute iteration on a group");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -5903,6 +6091,14 @@ test_attribute_iterate_dataset(void)
     hid_t  dcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute iteration on a dataset");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_DATASET_BASIC | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, attribute, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -6252,6 +6448,14 @@ test_attribute_iterate_datatype(void)
     hid_t  tcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute iteration on a committed datatype");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_STORED_DATATYPES | H5VL_CAP_FLAG_ITERATE | H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, stored datatype, attribute, iterate, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -6606,6 +6810,14 @@ test_attribute_iterate_invalid_params(void)
 
     TESTING_MULTIPART("attribute iteration with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_ITERATE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or iterate aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -6948,6 +7160,14 @@ test_attribute_iterate_0_attributes(void)
 
     TESTING_MULTIPART("attribute iteration on object with 0 attributes")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_DATASET_BASIC | H5VL_CAP_FLAG_ITERATE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, attribute, or iterate aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -7117,6 +7337,14 @@ test_delete_attribute(void)
     hid_t  gcpl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute deletion");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_CREATION_ORDER))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or creation order aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -8206,6 +8434,13 @@ test_delete_attribute_invalid_params(void)
 
     TESTING_MULTIPART("attribute deletion with invalid parameters");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -8540,6 +8775,13 @@ test_attribute_exists(void)
 
     TESTING_MULTIPART("attribute existence")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     TESTING_2("test setup")
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
@@ -8662,6 +8904,13 @@ test_attribute_exists_invalid_params(void)
     hid_t  space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("attribute existence with invalid parameters");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -8890,6 +9139,13 @@ test_attribute_many(void)
 
     TESTING("creating many attributes")
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
@@ -8986,6 +9242,13 @@ test_attribute_duplicate_id(void)
     hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("duplicated IDs for an attribute")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        return 0;
+    }
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -9090,6 +9353,14 @@ test_get_number_attributes(void)
     hid_t      space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("retrieval of the number of attributes on an object")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_OBJECT_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, or object aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -9250,7 +9521,16 @@ test_attr_shared_dtype(void)
 #endif
 
     TESTING("shared datatype for attributes")
+
 #ifndef NO_SHARED_DATATYPES
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_ATTR_BASIC |
+                           H5VL_CAP_FLAG_STORED_DATATYPES | H5VL_CAP_FLAG_OBJECT_MORE))) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, attribute, stored datatype, or object aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
