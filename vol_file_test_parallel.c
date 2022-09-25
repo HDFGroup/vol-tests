@@ -37,6 +37,13 @@ test_create_file(void)
 
     TESTING("H5Fcreate");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        HDprintf("    API functions for basic file aren't supported with this connector\n");
+        return 0;
+    }
+
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
         TEST_ERROR
 
@@ -74,6 +81,13 @@ test_open_file(void)
     hid_t fapl_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("H5Fopen");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        HDprintf("    API functions for basic file aren't supported with this connector\n");
+        return 0;
+    }
 
     TESTING_2("test setup")
 
@@ -169,6 +183,13 @@ test_split_comm_file_access(void)
     int      err_occurred = 0;
 
     TESTING("file access with a split communicator")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        HDprintf("    API functions for basic file aren't supported with this connector\n");
+        return 0;
+    }
 
     /* set up MPI parameters */
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);

@@ -33,6 +33,7 @@ size_t n_tests_failed_g;
 size_t n_tests_skipped_g;
 
 int mpi_size, mpi_rank;
+uint64_t vol_cap_flags;
 
 /* X-macro to define the following for each test:
  * - enum type
@@ -166,6 +167,54 @@ error:
     return -1;
 }
 
+static int
+get_vol_cap_flags(const char *connector_name)
+{
+    hid_t connector_id, fapl_id;
+
+    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get the connector ID with name\n");
+        goto error;
+    }
+
+    if ((connector_id = H5VLregister_connector_by_name(connector_name, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get the connector ID with name\n");
+        goto error;
+    }
+
+    if (H5Pset_vol(fapl_id, connector_id, NULL) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get the connector ID with name\n");
+        goto error;
+    }
+
+    vol_cap_flags = 0L;
+
+    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't H5VLget_cap_flags\n");
+        goto error;
+    }
+
+    if (H5Pclose(fapl_id) < 0)
+        TEST_ERROR
+
+    if (H5VLclose(connector_id) < 0)
+        TEST_ERROR
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Pclose(fapl_id);
+        H5VLclose(connector_id);
+    } H5E_END_TRY;
+
+    return -1;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -227,6 +276,15 @@ main(int argc, char **argv)
             }
         }
     } END_INDEPENDENT_OP(create_test_container);
+
+    /* Retrieve the VOL cap flags */
+    BEGIN_INDEPENDENT_OP(get_capacity_flags) {
+        if (get_vol_cap_flags(vol_connector_name) < 0) {
+            if (MAINPROCESS)
+                HDfprintf(stderr, "Unable to get VOL capacity flags\n");
+            INDEPENDENT_OP_ERROR(get_capacity_flags);
+        }
+    } END_INDEPENDENT_OP(get_capacity_flags);
 
     /* Run all the tests that are enabled */
     vol_test_run();

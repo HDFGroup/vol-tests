@@ -97,5 +97,6 @@ hid_t create_mpi_fapl(MPI_Comm comm, MPI_Info info, hbool_t coll_md_read);
 int generate_random_parallel_dimensions(int space_rank, hsize_t **dims_out);
 
 extern int mpi_size, mpi_rank;
+extern uint64_t vol_cap_flags;
 
 #endif
