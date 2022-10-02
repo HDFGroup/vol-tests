@@ -18,6 +18,7 @@ static int test_absolute_vs_relative_path(void);
 static int test_dot_for_object_name(void);
 static int test_symbols_in_compound_field_name(void);
 static int test_double_init_term(void);
+static int test_unsupported_vol_cap_flag(void);
 
 /*
  * The array of miscellaneous tests to be performed.
@@ -29,6 +30,7 @@ static int (*misc_tests[])(void) = {
         test_dot_for_object_name,
         test_symbols_in_compound_field_name,
         test_double_init_term,
+        test_unsupported_vol_cap_flag
 };
 
 static int
@@ -901,6 +903,65 @@ error:
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+}
+
+/*
+ * A test to verify that the native connector doesn't support map object
+ */
+static int
+test_unsupported_vol_cap_flag(void)
+{
+    hid_t file_id = H5I_INVALID_HID;
+    char  vol_name[32];
+
+    TESTING("verifying map function isn't supported for the native connector")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        SKIPPED();
+        HDprintf("    API functions for basic file aren't supported with this connector\n");
+        return 0;
+    }
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file\n");
+        goto error;
+    }
+
+    if (H5VLget_connector_name(file_id, vol_name, 32) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get VOL NAME '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    /* Verify that the native connector doesn't support map object */
+    if (!strcmp(vol_name, "native")) {
+        if (vol_cap_flags & H5VL_CAP_FLAG_MAP_BASIC) {
+            H5_FAILED();
+            HDprintf("    native connector doesn't support map object\n");
+            goto error;
+        }
+    } else {
+        SKIPPED();
+        H5Fclose(file_id);
+        HDprintf("    the connector other than the native isn't tested in this case\n");
+        return 0;
+    }
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
         H5Fclose(file_id);
     } H5E_END_TRY;
 
