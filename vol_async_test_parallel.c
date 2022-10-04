@@ -2406,8 +2406,7 @@ test_attribute_io_compound(void)
         TEST_ERROR
 
     /* Open file asynchronously */
-    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, H5P_DEFAULT,
-            es_id)) < 0)
+    if((file_id = H5Fopen_async(PAR_ASYNC_VOL_TEST_FILE, H5F_ACC_RDWR, fapl_id, es_id)) < 0)
         TEST_ERROR
 
     /* Create the attribute asynchronously by name */
