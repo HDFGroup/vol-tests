@@ -44,7 +44,8 @@ test_open_link_without_leading_slash(void)
     TESTING("opening a link without a leading slash")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC))) {
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, or dataset aren't supported with this connector\n");
         return 0;
@@ -141,8 +142,9 @@ test_object_creation_by_absolute_path(void)
     TESTING_MULTIPART("object creation by absolute path")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
-                           H5VL_CAP_FLAG_LINK_BASIC | H5VL_CAP_FLAG_STORED_DATATYPES))) {
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_LINK_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, dataset, link, or stored datatype aren't supported with this connector\n");
         return 0;
@@ -333,8 +335,8 @@ test_absolute_vs_relative_path(void)
     TESTING_MULTIPART("absolute vs. relative pathnames")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
-                           H5VL_CAP_FLAG_LINK_BASIC))) {
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_LINK_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, dataset, or link aren't supported with this connector\n");
         return 0;
@@ -619,8 +621,8 @@ test_dot_for_object_name(void)
     TESTING_MULTIPART("creating objects with \".\" as the name");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC |
-                           H5VL_CAP_FLAG_STORED_DATATYPES))) {
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, dataset, or stored datatype aren't supported with this connector\n");
         return 0;
@@ -790,7 +792,8 @@ test_symbols_in_compound_field_name(void)
     TESTING("usage of '{', '}' and '\\\"' symbols in compound field name")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC | H5VL_CAP_FLAG_GROUP_BASIC | H5VL_CAP_FLAG_DATASET_BASIC))) {
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, or dataset aren't supported with this connector\n");
         return 0;
