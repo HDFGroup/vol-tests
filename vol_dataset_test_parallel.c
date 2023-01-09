@@ -6595,6 +6595,13 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
                 INDEPENDENT_OP_ERROR(dset_create);
             }
 
+            /* Set dataset space allocation time to Early to ensure all chunk-related metadata is available to all other processes when they open the dataset */
+            if (H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to set allocation time on DCPL\n");
+                INDEPENDENT_OP_ERROR(dset_create);
+            }
+
             if ((dset_id = H5Dcreate2(group_id, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_NAME, DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_DSET_DTYPE,
                     fspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -7054,6 +7061,13 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
             if (H5Pset_chunk(dcpl_id, DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_DSET_SPACE_RANK, chunk_dims) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to set chunking on DCPL\n");
+                INDEPENDENT_OP_ERROR(dset_create);
+            }
+
+            /* Set dataset space allocation time to Early to ensure all chunk-related metadata is available to all other processes when they open the dataset */
+            if (H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY) < 0) {
+                H5_FAILED();
+                HDprintf("    failed to set allocation time on DCPL\n");
                 INDEPENDENT_OP_ERROR(dset_create);
             }
 
