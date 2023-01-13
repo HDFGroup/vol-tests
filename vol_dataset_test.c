@@ -92,6 +92,8 @@ static int test_read_partial_chunk_all_selection(void);
 static int test_read_partial_chunk_hyperslab_selection(void);
 static int test_read_partial_chunk_point_selection(void);
 
+static int test_get_vlen_buf_size(void);
+
 /*
  * The array of dataset tests to be performed.
  */
@@ -167,6 +169,7 @@ static int (*dataset_tests[])(void) = {
         test_read_partial_chunk_all_selection,
         test_read_partial_chunk_hyperslab_selection,
         test_read_partial_chunk_point_selection,
+        test_get_vlen_buf_size,
 };
 
 /*
@@ -10662,6 +10665,124 @@ test_read_partial_chunk_point_selection(void)
 }
 #undef FIXED_DIMSIZE
 #undef FIXED_CHUNK_DIMSIZE
+
+/*
+ * A test to verify that H5Dvlen_get_buf_size returns
+ * correct size
+ */
+static int
+test_get_vlen_buf_size(void)
+{
+    hvl_t   wdata[DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM];  /* Information to write */
+    hid_t   file_id = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID;
+    hid_t   group_id = H5I_INVALID_HID;
+    hid_t   dataset = H5I_INVALID_HID;
+    hid_t   dspace_id = H5I_INVALID_HID;
+    hid_t   dtype_id = H5I_INVALID_HID;
+    hsize_t dims1[] = {DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM};
+    hsize_t size;         /* Number of bytes which will be used */
+    unsigned i, j;
+
+    TESTING("H5Dvlen_get_buf_size")
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, dataset, or more aren't supported with this connector\n");
+        return 0;
+    }
+
+    /* Allocate and initialize VL data to write */
+    for (i = 0; i < DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM; i++) {
+        wdata[i].p   = HDmalloc((i + 1) * sizeof(unsigned int));
+        wdata[i].len = i + 1;
+        for (j = 0; j < (i + 1); j++)
+            ((unsigned int *)wdata[i].p)[j] = i * 10 + j;
+    } /* end for */
+
+    /* Open the file */
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_GET_VLEN_BUF_SIZE_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_GET_VLEN_BUF_SIZE_GROUP_NAME);
+        goto error;
+    }
+
+    /* Create dataspace for dataset */
+    if ((dspace_id = H5Screate_simple(DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_RANK, dims1, NULL)) < 0)
+        TEST_ERROR
+
+    /* Create a datatype to refer to */
+    if ((dtype_id = H5Tvlen_create(H5T_NATIVE_UINT)) < 0)
+        TEST_ERROR
+
+    /* Create a dataset */
+    if ((dataset = H5Dcreate2(group_id, DATASET_GET_VLEN_BUF_SIZE_DSET_NAME, dtype_id, dspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0)
+        TEST_ERROR
+
+    /* Write dataset to disk */
+    if (H5Dwrite(dataset, dtype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, wdata) < 0)
+        TEST_ERROR
+
+    /* Make certain the correct amount of memory will be used */
+    if (H5Dvlen_get_buf_size(dataset, dtype_id, dspace_id, &size) < 0)
+        TEST_ERROR
+
+    /* 10 elements allocated = 1 + 2 + 3 + 4 elements for each array position */
+    if (size != ((DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM * (DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM + 1)) / 2) * sizeof(unsigned int)) {
+        H5_FAILED();
+        HDprintf("    H5Dvlen_get_buf_size returned wrong size (%lu), compared to the correct size (%lu)\n",
+            size, ((DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM * (DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM + 1)) / 2) * sizeof(unsigned int));
+        goto error;
+    }
+
+    if (H5Dclose(dataset) < 0)
+        TEST_ERROR
+
+    if (H5Tclose(dtype_id) < 0)
+        TEST_ERROR
+
+    if (H5Sclose(dspace_id) < 0)
+        TEST_ERROR
+
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR
+
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR
+
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY {
+        H5Sclose(dspace_id);
+        H5Tclose(dtype_id);
+        H5Dclose(dataset);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    } H5E_END_TRY;
+
+    return 1;
+} /* end test_get_vlen_buf_size() */
 
 int
 vol_dataset_test(void)
