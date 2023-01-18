@@ -319,4 +319,8 @@ int vol_dataset_test(void);
 #define DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_GROUP_NAME      "read_partial_chunk_hyper_sel_test"
 #define DATASET_PARTIAL_CHUNK_READ_HYPER_SEL_TEST_DSET_NAME       "read_partial_chunk_hyper_sel_dset"
 
+#define DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_RANK 1
+#define DATASET_GET_VLEN_BUF_SIZE_DSET_SPACE_DIM  4
+#define DATASET_GET_VLEN_BUF_SIZE_GROUP_NAME      "get_vlen_buffer_size_group"
+#define DATASET_GET_VLEN_BUF_SIZE_DSET_NAME       "get_vlen_buffer_size_dset"
 #endif
