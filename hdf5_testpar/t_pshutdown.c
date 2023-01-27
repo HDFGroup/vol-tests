@@ -48,6 +48,7 @@ main (int argc, char **argv)
     hsize_t     stride[RANK];
     hsize_t     block[RANK];
     DATATYPE   *data_array = NULL;	/* data buffer */
+    uint64_t    vol_cap_flags = 0L;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_size(comm, &mpi_size);
@@ -61,6 +62,24 @@ main (int argc, char **argv)
     /* Set up file access property list with parallel I/O access */
     fapl = H5Pcreate(H5P_FILE_ACCESS);
     VRFY((fapl >= 0), "H5Pcreate succeeded");
+
+    /* Get the capability flag of the VOL connector being used */
+    ret = H5Pget_vol_cap_flags(fapl, &vol_cap_flags);
+    VRFY((ret >= 0), "H5Pget_vol_cap_flags succeeded");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if(MAINPROCESS) {
+            puts("SKIPPED");
+            HDprintf("    API functions for basic file, group, or dataset aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        MPI_Finalize();
+        return 0;
+    }
+
     ret = H5Pset_fapl_mpio(fapl, comm, info);
     VRFY((ret >= 0), "");
 

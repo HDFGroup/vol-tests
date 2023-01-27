@@ -4940,6 +4940,7 @@ sschecker4(void)
 int main(int argc, char **argv)
 {
     int mpi_size, mpi_rank;                /* mpi variables */
+    uint64_t    vol_cap_flags = 0L;
 
 #ifndef H5_HAVE_WIN32_API
     /* Un-buffer the stdout and stderr */
@@ -4970,6 +4971,28 @@ int main(int argc, char **argv)
         if (MAINPROCESS) HDprintf("%d: Failed to turn off atexit processing. Continue.\n", mpi_rank);
     };
     H5open();
+
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
+
+    /* Get the capability flag of the VOL connector being used */
+    if (H5Pget_vol_cap_flags(fapl, &vol_cap_flags) < 0) {
+        if(MAINPROCESS)
+            HDprintf("Failed to get the capability flag of the VOL connector being used\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
+    /* Make sure the connector supports the API functions being tested.  This test only
+     * uses a few VOL functions, such as H5Fcreate/close/delete, H5Dcreate/write/read/close,
+     */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if(MAINPROCESS)
+            HDprintf("API functions for basic file and dataset aren't supported with this connector\n");
+
+        MPI_Finalize();
+        return 0;
+    }
 
     /* h5_show_hostname(); */
 
@@ -5055,7 +5078,6 @@ int main(int argc, char **argv)
     /* TestInfo(argv[0]); */
 
     /* setup file access property list */
-    fapl = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fapl_mpio(fapl, MPI_COMM_WORLD, MPI_INFO_NULL);
 
     /* Parse command line arguments */
