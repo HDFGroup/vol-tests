@@ -2546,6 +2546,13 @@ vol_async_test(void)
     HDprintf("*                                            *\n");
     HDprintf("**********************************************\n\n");
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_ASYNC)) {
+        SKIPPED();
+        HDprintf("    Async APIs aren't supported with this connector\n");
+        return 0;
+    }
+
     for (i = 0, nerrors = 0; i < ARRAY_LENGTH(async_tests); i++) {
         nerrors += (*async_tests[i])() ? 1 : 0;
     }
