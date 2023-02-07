@@ -56,6 +56,17 @@ test_split_comm_access(void)
     HDprintf("Split Communicator access test on file %s\n",
         filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -742,6 +753,17 @@ test_file_properties(void)
     herr_t ret;                 /* Generic return value */
     int mpi_ret;                /* MPI return value */
     int cmp;                    /* Compare value */
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     filename = (const char *)PARATESTFILE /* GetTestParameters() */;
 

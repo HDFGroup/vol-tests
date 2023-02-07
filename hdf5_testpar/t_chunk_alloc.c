@@ -479,6 +479,18 @@ test_chunk_alloc(void)
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     filename = (const char *)PARATESTFILE /* GetTestParameters() */;
     if (VERBOSE_MED)
         HDprintf("Extend Chunked allocation test on file %s\n", filename);

@@ -35,6 +35,7 @@ const char *FILENAME[NFILENAME]={
         NULL};
 char    filenames[NFILENAME][PATH_MAX];
 hid_t    fapl;                /* file access property list */
+uint64_t vol_cap_flags;
 
 /* On Lustre (and perhaps other parallel file systems?), we have severe
  * slow downs if two or more processes attempt to access the same file system
@@ -4940,7 +4941,6 @@ sschecker4(void)
 int main(int argc, char **argv)
 {
     int mpi_size, mpi_rank;                /* mpi variables */
-    uint64_t    vol_cap_flags = 0L;
 
 #ifndef H5_HAVE_WIN32_API
     /* Un-buffer the stdout and stderr */

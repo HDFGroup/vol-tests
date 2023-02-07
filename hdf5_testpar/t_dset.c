@@ -304,6 +304,18 @@ dataset_writeInd(void)
     if(VERBOSE_MED)
     HDprintf("Independent write test on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -449,6 +461,18 @@ dataset_readInd(void)
     if(VERBOSE_MED)
     HDprintf("Independent read test on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -578,6 +602,18 @@ dataset_writeAll(void)
     filename = PARATESTFILE /* GetTestParameters() */;
     if(VERBOSE_MED)
     HDprintf("Collective write test on file %s\n", filename);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -1110,6 +1146,18 @@ dataset_readAll(void)
     if(VERBOSE_MED)
     HDprintf("Collective read test on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -1523,6 +1571,18 @@ extend_writeInd(void)
     if(VERBOSE_MED)
     HDprintf("Extend independent write test on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -1746,6 +1806,18 @@ extend_writeInd2(void)
     if(VERBOSE_MED)
     HDprintf("Extend independent write test #2 on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -1910,6 +1982,18 @@ extend_readInd(void)
     filename = PARATESTFILE /* GetTestParameters() */;
     if(VERBOSE_MED)
     HDprintf("Extend independent read test on file %s\n", filename);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -2093,6 +2177,18 @@ extend_writeAll(void)
     filename = PARATESTFILE /* GetTestParameters() */;
     if(VERBOSE_MED)
     HDprintf("Extend independent write test on file %s\n", filename);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -2341,6 +2437,18 @@ extend_readAll(void)
     if(VERBOSE_MED)
     HDprintf("Extend independent read test on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -2547,6 +2655,17 @@ compress_readAll(void)
     if(VERBOSE_MED)
     HDprintf("Collective chunked dataset read test on file %s\n", filename);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file or dataset aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* Retrieve MPI parameters */
     MPI_Comm_size(comm,&mpi_size);
     MPI_Comm_rank(comm,&mpi_rank);
@@ -2737,6 +2856,17 @@ none_selection_chunk(void)
     filename = PARATESTFILE /* GetTestParameters() */;
     if(VERBOSE_MED)
     HDprintf("Extend independent write test on file %s\n", filename);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file or dataset aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -3028,6 +3158,17 @@ test_actual_io_mode(int selection_mode) {
         selection_mode != TEST_ACTUAL_IO_NO_COLLECTIVE);
 
     is_collective = selection_mode != TEST_ACTUAL_IO_NO_COLLECTIVE;
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) { 
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file or dataset aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* Set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
@@ -3846,6 +3987,18 @@ test_no_collective_cause_mode_filter(int selection_mode)
 #endif /* LATER */
     char message[256];
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /* Set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -4106,6 +4259,18 @@ dataset_atomicity(void)
     }
     if(VERBOSE_MED)
         HDprintf("atomic writes to file %s\n", filename);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, basic dataset, or more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* set up MPI parameters */
     MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -4410,6 +4575,18 @@ test_dense_attr(void)
     hsize_t atDims[1] = {10000};
     herr_t status;
     const char *filename;
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, group, dataset, or attribute aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     /* get filename */
     filename = (const char *)PARATESTFILE /* GetTestParameters() */;

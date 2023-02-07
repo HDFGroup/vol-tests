@@ -33,6 +33,7 @@ int ngroups = 512;                      /* number of groups to create in root
  * group. */
 int facc_type = FACC_MPIO;        /*Test file access type */
 int dxfer_coll_type = DXFER_COLLECTIVE_IO;
+uint64_t vol_cap_flags;
 
 H5E_auto2_t old_func;                /* previous error handler */
 void *old_client_data;            /* previous error handler arg.*/
@@ -314,6 +315,8 @@ create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type)
 int main(int argc, char **argv)
 {
     int mpi_size, mpi_rank;                /* mpi variables */
+    herr_t ret;
+
 #if 0
     H5Ptest_param_t ndsets_params, ngroups_params;
     H5Ptest_param_t collngroups_params;
@@ -349,6 +352,16 @@ int main(int argc, char **argv)
         HDprintf("Failed to turn off atexit processing. Continue.\n");
     };
     H5open();
+
+    /* Set up file access property list with parallel I/O access */
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
+    VRFY((fapl >= 0), "H5Pcreate succeeded");
+
+    vol_cap_flags = 0L;
+
+    /* Get the capability flag of the VOL connector being used */
+    ret = H5Pget_vol_cap_flags(fapl, &vol_cap_flags);
+    VRFY((ret >= 0), "H5Pget_vol_cap_flags succeeded");
 
     /* h5_show_hostname(); */
 
@@ -921,7 +934,6 @@ int main(int argc, char **argv)
     /* TestInfo(argv[0]); */
 
     /* setup file access property list */
-    fapl = H5Pcreate (H5P_FILE_ACCESS);
     H5Pset_fapl_mpio(fapl, MPI_COMM_WORLD, MPI_INFO_NULL);
 
     /* Parse command line arguments */

@@ -33,6 +33,8 @@ const char *FILENAME[] = {
     NULL
 };
 
+uint64_t vol_cap_flags;
+
 int
 main (int argc, char **argv)
 {
@@ -48,7 +50,6 @@ main (int argc, char **argv)
     hsize_t     stride[RANK];
     hsize_t     block[RANK];
     DATATYPE   *data_array = NULL;	/* data buffer */
-    uint64_t    vol_cap_flags = 0L;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_size(comm, &mpi_size);

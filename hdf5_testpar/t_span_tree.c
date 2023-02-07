@@ -58,9 +58,23 @@ static void coll_read_test(int chunk_factor);
 void
 coll_irregular_cont_write(void)
 {
+    int                 mpi_rank;
 
-  coll_write_test(0);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_write_test(0);
 }
 
 
@@ -83,11 +97,24 @@ coll_irregular_cont_write(void)
 void
 coll_irregular_cont_read(void)
 {
+    int                 mpi_rank;
 
-  coll_read_test(0);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_read_test(0);
 }
-
 
 /*-------------------------------------------------------------------------
  * Function:    coll_irregular_simple_chunk_write
@@ -107,12 +134,24 @@ coll_irregular_cont_read(void)
 void
 coll_irregular_simple_chunk_write(void)
 {
+    int                 mpi_rank;
 
-  coll_write_test(1);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_write_test(1);
 }
-
-
 
 /*-------------------------------------------------------------------------
  * Function:    coll_irregular_simple_chunk_read
@@ -132,9 +171,23 @@ coll_irregular_simple_chunk_write(void)
 void
 coll_irregular_simple_chunk_read(void)
 {
+    int                 mpi_rank;
 
-  coll_read_test(1);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_read_test(1);
 }
 
 /*-------------------------------------------------------------------------
@@ -155,12 +208,24 @@ coll_irregular_simple_chunk_read(void)
 void
 coll_irregular_complex_chunk_write(void)
 {
+    int                 mpi_rank;
 
-  coll_write_test(4);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+   coll_write_test(4);
 }
-
-
 
 /*-------------------------------------------------------------------------
  * Function:    coll_irregular_complex_chunk_read
@@ -180,11 +245,24 @@ coll_irregular_complex_chunk_write(void)
 void
 coll_irregular_complex_chunk_read(void)
 {
+    int                 mpi_rank;
 
-  coll_read_test(4);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file dataset, or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_read_test(4);
 }
-
 
 /*-------------------------------------------------------------------------
  * Function:    coll_write_test
@@ -2583,6 +2661,20 @@ lower_dim_size_comp_test(void)
     /* const char *fcnName = "lower_dim_size_comp_test()"; */
     int      chunk_edge_size = 0;
     int      use_collective_io;
+    int      mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file or dataset aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     HDcompile_assert(sizeof(uint32_t) == sizeof(unsigned));
     for(use_collective_io = 0; use_collective_io <= 1; use_collective_io++) {
@@ -2663,6 +2755,17 @@ link_chunk_collective_io_test(void)
     double     expected_value;
     double     local_data_written[LINK_CHUNK_COLLECTIVE_IO_TEST_CHUNK_SIZE];
     double     local_data_read[LINK_CHUNK_COLLECTIVE_IO_TEST_CHUNK_SIZE];
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file or dataset aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);

@@ -44,6 +44,8 @@ static int mpi_size_g, mpi_rank_g;
 hsize_t space_dim1 = SPACE_DIM1 * 256; // 4096
 hsize_t space_dim2 = SPACE_DIM2;
 
+uint64_t    vol_cap_flags;
+
 static void coll_chunktest(const char *filename, int chunk_factor, int select_factor, int api_option,
                            int file_selection, int mem_selection, int mode);
 
@@ -1747,7 +1749,6 @@ main(int argc, char **argv)
 {
     int ExpressMode = 0;
     hid_t acc_plist = H5I_INVALID_HID;
-    uint64_t    vol_cap_flags = 0L;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size_g);

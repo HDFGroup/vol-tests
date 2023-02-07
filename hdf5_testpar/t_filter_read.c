@@ -307,6 +307,20 @@ test_filter_read(void)
     if(VERBOSE_MED)
         HDprintf("Parallel reading of dataset written with filters %s\n", filename);
 
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_FILTERS)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or filter aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     /*----------------------------------------------------------
      * STEP 0: Test without filters.
      *----------------------------------------------------------

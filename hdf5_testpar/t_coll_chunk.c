@@ -76,6 +76,21 @@ void
 coll_chunk1(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 1, BYROW_CONT, API_NONE, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 1, BYROW_CONT, API_NONE, HYPER, POINT, OUT_OF_ORDER);
@@ -128,6 +143,21 @@ void
 coll_chunk2(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 1, BYROW_DISCONT, API_NONE, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 1, BYROW_DISCONT, API_NONE, HYPER, POINT, OUT_OF_ORDER);
@@ -182,8 +212,23 @@ coll_chunk3(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
     int mpi_size;
+    int mpi_rank;
 
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
     coll_chunktest(filename, mpi_size, BYROW_CONT, API_NONE, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, mpi_size, BYROW_CONT, API_NONE, HYPER, POINT, OUT_OF_ORDER);
     coll_chunktest(filename, mpi_size, BYROW_CONT, API_NONE, POINT, ALL, OUT_OF_ORDER);
@@ -235,6 +280,21 @@ void
 coll_chunk4(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 1, BYROW_SELECTNONE, API_NONE, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 1, BYROW_SELECTNONE, API_NONE, HYPER, POINT, OUT_OF_ORDER);
@@ -287,6 +347,21 @@ void
 coll_chunk5(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_LINK_HARD, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_LINK_HARD, HYPER, POINT, OUT_OF_ORDER);
@@ -341,6 +416,21 @@ void
 coll_chunk6(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_HARD, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_HARD, HYPER, POINT, OUT_OF_ORDER);
@@ -393,6 +483,21 @@ void
 coll_chunk7(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_LINK_TRUE, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_LINK_TRUE, HYPER, POINT, OUT_OF_ORDER);
@@ -445,6 +550,21 @@ void
 coll_chunk8(void)
 {
     const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
 
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_LINK_FALSE, HYPER, HYPER, OUT_OF_ORDER);
     coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_LINK_FALSE, HYPER, POINT, OUT_OF_ORDER);
@@ -496,17 +616,32 @@ coll_chunk8(void)
 void
 coll_chunk9(void)
 {
-  const char *filename = PARATESTFILE /* GetTestParameters() */;
+    const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
 
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, HYPER, HYPER, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, HYPER, POINT, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, ALL, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, POINT, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, HYPER, OUT_OF_ORDER);
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
 
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, ALL, IN_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, POINT, IN_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, HYPER, IN_ORDER);
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, HYPER, HYPER, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, HYPER, POINT, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, ALL, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, POINT, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, HYPER, OUT_OF_ORDER);
+
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, ALL, IN_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, POINT, IN_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTUNBALANCE, API_MULTI_COLL, POINT, HYPER, IN_ORDER);
 }
 
 /*-------------------------------------------------------------------------
@@ -548,17 +683,32 @@ coll_chunk9(void)
 void
 coll_chunk10(void)
 {
-  const char *filename = PARATESTFILE /* GetTestParameters() */;
+    const char *filename = PARATESTFILE /* GetTestParameters() */;
+    int mpi_rank;
 
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, HYPER, HYPER, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, HYPER, POINT, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, ALL, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, POINT, OUT_OF_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, HYPER, OUT_OF_ORDER);
+    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
 
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, ALL, IN_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, POINT, IN_ORDER);
-  coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, HYPER, IN_ORDER);
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if (MAINPROCESS) {
+            puts("SKIPPED");
+            printf("    API functions for basic file, dataset or dataset more aren't supported with this connector\n");
+            fflush(stdout);
+        }
+
+        return;
+    }
+
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, HYPER, HYPER, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, HYPER, POINT, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, ALL, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, POINT, OUT_OF_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, HYPER, OUT_OF_ORDER);
+
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, ALL, IN_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, POINT, IN_ORDER);
+    coll_chunktest(filename, 4, BYROW_SELECTINCHUNK, API_MULTI_IND, POINT, HYPER, IN_ORDER);
 }
 
 
