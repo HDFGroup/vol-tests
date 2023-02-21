@@ -44,6 +44,8 @@ static int mpi_size_g, mpi_rank_g;
 hsize_t space_dim1 = SPACE_DIM1 * 256; // 4096
 hsize_t space_dim2 = SPACE_DIM2;
 
+uint64_t    vol_cap_flags;
+
 static void coll_chunktest(const char *filename, int chunk_factor, int select_factor, int api_option,
                            int file_selection, int mem_selection, int mode);
 
@@ -1761,6 +1763,29 @@ main(int argc, char **argv)
         HDprintf("Failed to turn off atexit processing. Continue.\n");
     };
 
+    acc_plist = create_faccess_plist(MPI_COMM_WORLD, MPI_INFO_NULL, facc_type);
+
+    /* Get the capability flag of the VOL connector being used */
+    if (H5Pget_vol_cap_flags(acc_plist, &vol_cap_flags) < 0) {
+        if(MAIN_PROCESS)
+            HDprintf("Failed to get the capability flag of the VOL connector being used\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
+    /* Make sure the connector supports the API functions being tested.  This test only
+     * uses a few VOL functions, such as H5Fcreate/open/close/delete, H5Dcreate/write/read/close,
+     * and H5Dget_space. */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
+        if(MAIN_PROCESS)
+            HDprintf("API functions for basic file, dataset basic or more aren't supported with this connector\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
     dataset_big_write();
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -1780,8 +1805,6 @@ main(int argc, char **argv)
         MPI_Barrier(MPI_COMM_WORLD);
         single_rank_independent_io();
     }
-
-    acc_plist = create_faccess_plist(MPI_COMM_WORLD, MPI_INFO_NULL, facc_type);
 
     H5Fdelete(FILENAME[0], acc_plist);
 

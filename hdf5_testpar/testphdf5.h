@@ -248,6 +248,7 @@ extern H5E_auto2_t old_func;            /* previous error handler */
 extern void *old_client_data;            /*previous error handler arg.*/
 extern int facc_type;                /*Test file access type */
 extern int dxfer_coll_type;
+extern uint64_t vol_cap_flags;
 
 /* Test program prototypes */
 void test_plist_ed(void);

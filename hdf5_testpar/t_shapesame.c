@@ -35,6 +35,7 @@ const char *FILENAME[NFILENAME]={
         NULL};
 char    filenames[NFILENAME][PATH_MAX];
 hid_t    fapl;                /* file access property list */
+uint64_t vol_cap_flags;
 
 /* On Lustre (and perhaps other parallel file systems?), we have severe
  * slow downs if two or more processes attempt to access the same file system
@@ -4971,6 +4972,28 @@ int main(int argc, char **argv)
     };
     H5open();
 
+    fapl = H5Pcreate(H5P_FILE_ACCESS);
+
+    /* Get the capability flag of the VOL connector being used */
+    if (H5Pget_vol_cap_flags(fapl, &vol_cap_flags) < 0) {
+        if(MAINPROCESS)
+            HDprintf("Failed to get the capability flag of the VOL connector being used\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
+    /* Make sure the connector supports the API functions being tested.  This test only
+     * uses a few VOL functions, such as H5Fcreate/close/delete, H5Dcreate/write/read/close,
+     */
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        if(MAINPROCESS)
+            HDprintf("API functions for basic file and dataset aren't supported with this connector\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
     /* h5_show_hostname(); */
 
     /* Initialize testing framework */
@@ -5055,7 +5078,6 @@ int main(int argc, char **argv)
     /* TestInfo(argv[0]); */
 
     /* setup file access property list */
-    fapl = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fapl_mpio(fapl, MPI_COMM_WORLD, MPI_INFO_NULL);
 
     /* Parse command line arguments */
