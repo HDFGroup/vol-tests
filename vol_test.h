@@ -40,14 +40,13 @@
  */
 H5TEST_DLLVAR char *paraprefix;
 #ifdef H5_HAVE_PARALLEL
-H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
+H5TEST_DLLVAR MPI_Info h5_io_info_g; /* MPI INFO object for IO */
 #endif
 
 /*
  * Print the current location on the standard output stream.
  */
-#define AT()     printf ("   at %s:%d in %s()...\n",        \
-        __FILE__, __LINE__, __func__);
+#define AT() printf("   at %s:%d in %s()...\n", __FILE__, __LINE__, __func__);
 
 /*
  * The name of the test is printed by saying TESTING("something") which will
@@ -58,37 +57,96 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
  * spaces.  If the h5_errors() is used for automatic error handling then
  * the H5_FAILED() macro is invoked automatically when an API function fails.
  */
-#define TESTING(WHAT)  {printf("Testing %-62s",WHAT); n_tests_run_g++; fflush(stdout);}
-#define TESTING_2(WHAT)  {printf("  Testing %-60s",WHAT); n_tests_run_g++; fflush(stdout);}
-#define PASSED()  {puts(" PASSED"); n_tests_passed_g++; fflush(stdout);}
-#define H5_FAILED()  {puts("*FAILED*");n_tests_failed_g++;fflush(stdout);}
-#define H5_WARNING()  {puts("*WARNING*");fflush(stdout);}
-#define SKIPPED()  {puts(" -SKIP-");n_tests_skipped_g++;fflush(stdout);}
-#define PUTS_ERROR(s)   {puts(s); AT(); goto error;}
-#define TEST_ERROR      {H5_FAILED(); AT(); goto error;}
-#define STACK_ERROR     {H5Eprint2(H5E_DEFAULT, stdout); goto error;}
-#define FAIL_STACK_ERROR {H5_FAILED(); AT(); H5Eprint2(H5E_DEFAULT, stdout); \
-    goto error;}
-#define FAIL_PUTS_ERROR(s) {H5_FAILED(); AT(); puts(s); goto error;}
+#define TESTING(WHAT)                                                                                        \
+    {                                                                                                        \
+        printf("Testing %-62s", WHAT);                                                                       \
+        n_tests_run_g++;                                                                                     \
+        fflush(stdout);                                                                                      \
+    }
+#define TESTING_2(WHAT)                                                                                      \
+    {                                                                                                        \
+        printf("  Testing %-60s", WHAT);                                                                     \
+        n_tests_run_g++;                                                                                     \
+        fflush(stdout);                                                                                      \
+    }
+#define PASSED()                                                                                             \
+    {                                                                                                        \
+        puts(" PASSED");                                                                                     \
+        n_tests_passed_g++;                                                                                  \
+        fflush(stdout);                                                                                      \
+    }
+#define H5_FAILED()                                                                                          \
+    {                                                                                                        \
+        puts("*FAILED*");                                                                                    \
+        n_tests_failed_g++;                                                                                  \
+        fflush(stdout);                                                                                      \
+    }
+#define H5_WARNING()                                                                                         \
+    {                                                                                                        \
+        puts("*WARNING*");                                                                                   \
+        fflush(stdout);                                                                                      \
+    }
+#define SKIPPED()                                                                                            \
+    {                                                                                                        \
+        puts(" -SKIP-");                                                                                     \
+        n_tests_skipped_g++;                                                                                 \
+        fflush(stdout);                                                                                      \
+    }
+#define PUTS_ERROR(s)                                                                                        \
+    {                                                                                                        \
+        puts(s);                                                                                             \
+        AT();                                                                                                \
+        goto error;                                                                                          \
+    }
+#define TEST_ERROR                                                                                           \
+    {                                                                                                        \
+        H5_FAILED();                                                                                         \
+        AT();                                                                                                \
+        goto error;                                                                                          \
+    }
+#define STACK_ERROR                                                                                          \
+    {                                                                                                        \
+        H5Eprint2(H5E_DEFAULT, stdout);                                                                      \
+        goto error;                                                                                          \
+    }
+#define FAIL_STACK_ERROR                                                                                     \
+    {                                                                                                        \
+        H5_FAILED();                                                                                         \
+        AT();                                                                                                \
+        H5Eprint2(H5E_DEFAULT, stdout);                                                                      \
+        goto error;                                                                                          \
+    }
+#define FAIL_PUTS_ERROR(s)                                                                                   \
+    {                                                                                                        \
+        H5_FAILED();                                                                                         \
+        AT();                                                                                                \
+        puts(s);                                                                                             \
+        goto error;                                                                                          \
+    }
 
 /*
  * Macros used for multipart tests
  */
-#define TESTING_MULTIPART(WHAT)  {printf("Testing %-62s",WHAT); HDputs(""); fflush(stdout);}
+#define TESTING_MULTIPART(WHAT)                                                                              \
+    {                                                                                                        \
+        printf("Testing %-62s", WHAT);                                                                       \
+        HDputs("");                                                                                          \
+        fflush(stdout);                                                                                      \
+    }
 
 /*
  * Begin and end an entire section of multipart tests. By placing all the
  * parts of a test between these macros, skipping to the 'error' cleanup
  * section of a test is deferred until all parts have finished.
  */
-#define BEGIN_MULTIPART \
-{                       \
-    int nerrors = 0;
+#define BEGIN_MULTIPART                                                                                      \
+    {                                                                                                        \
+        int nerrors = 0;
 
-#define END_MULTIPART \
-    if (nerrors > 0)  \
-        goto error;   \
-}
+#define END_MULTIPART                                                                                        \
+    if (nerrors > 0)                                                                                         \
+        goto error;                                                                                          \
+    }
 
 /*
  * Begin, end and handle errors within a single part of a multipart test.
@@ -99,17 +157,32 @@ H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
  * knows to skip to the test's 'error' label once all test parts have finished.
  */
 #define PART_BEGIN(part_name) {
-#define PART_END(part_name) } part_##part_name##_end:
-#define PART_ERROR(part_name) { nerrors++; goto part_##part_name##_end; }
-#define PART_EMPTY(part_name) { goto part_##part_name##_end; }
-#define PART_TEST_ERROR(part_name) {H5_FAILED(); AT(); nerrors++; goto part_##part_name##_end;}
+#define PART_END(part_name)                                                                                  \
+    }                                                                                                        \
+    part_##part_name##_end:
+#define PART_ERROR(part_name)                                                                                \
+    {                                                                                                        \
+        nerrors++;                                                                                           \
+        goto part_##part_name##_end;                                                                         \
+    }
+#define PART_EMPTY(part_name)                                                                                \
+    {                                                                                                        \
+        goto part_##part_name##_end;                                                                         \
+    }
+#define PART_TEST_ERROR(part_name)                                                                           \
+    {                                                                                                        \
+        H5_FAILED();                                                                                         \
+        AT();                                                                                                \
+        nerrors++;                                                                                           \
+        goto part_##part_name##_end;                                                                         \
+    }
 
 /*
  * Alarm definitions to wait up (terminate) a test that runs too long.
  */
-#define H5_ALARM_SEC  1200  /* default is 20 minutes */
-#define ALARM_ON  TestAlarmOn()
-#define ALARM_OFF  HDalarm(0)
+#define H5_ALARM_SEC 1200 /* default is 20 minutes */
+#define ALARM_ON     TestAlarmOn()
+#define ALARM_OFF    HDalarm(0)
 
 /******************************************************************************/
 
@@ -130,7 +203,7 @@ extern char vol_test_filename[];
 
 #define ARRAY_LENGTH(array) sizeof(array) / sizeof(array[0])
 
-#define UNUSED(o) (void) (o);
+#define UNUSED(o) (void)(o);
 
 #define VOL_TEST_FILENAME_MAX_LENGTH 1024
 

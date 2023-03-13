@@ -23,7 +23,7 @@ int vol_async_test_parallel(void);
  *                                                      *
  ********************************************************/
 
-#define PAR_ASYNC_VOL_TEST_FILE "async_vol_test_parallel.h5"
+#define PAR_ASYNC_VOL_TEST_FILE        "async_vol_test_parallel.h5"
 #define PAR_ASYNC_VOL_TEST_FILE_PRINTF "async_vol_test_parallel_%d.h5"
 
 #endif /* VOL_ASYNC_TEST_PARALLEL_H_ */

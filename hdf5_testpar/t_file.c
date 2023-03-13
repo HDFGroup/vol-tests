@@ -18,7 +18,7 @@
 #include "hdf5.h"
 #include "testphdf5.h"
 
-#define NUM_DSETS               5
+#define NUM_DSETS 5
 
 int mpi_size, mpi_rank;
 
@@ -42,19 +42,18 @@ static int open_file(const char *filename, hid_t fapl, int metadata_write_strate
 void
 test_split_comm_access(void)
 {
-    MPI_Comm comm;
-    MPI_Info info = MPI_INFO_NULL;
-    int is_old, mrc;
-    int newrank, newprocs;
-    hid_t fid;            /* file IDs */
-    hid_t acc_tpl;        /* File access properties */
-    herr_t ret;            /* generic return value */
+    MPI_Comm    comm;
+    MPI_Info    info = MPI_INFO_NULL;
+    int         is_old, mrc;
+    int         newrank, newprocs;
+    hid_t       fid;     /* file IDs */
+    hid_t       acc_tpl; /* File access properties */
+    herr_t      ret;     /* generic return value */
     const char *filename;
 
     filename = (const char *)PARATESTFILE /* GetTestParameters()*/;
     if (VERBOSE_MED)
-    HDprintf("Split Communicator access test on file %s\n",
-        filename);
+        HDprintf("Split Communicator access test on file %s\n", filename);
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
@@ -68,47 +67,48 @@ test_split_comm_access(void)
     }
 
     /* set up MPI parameters */
-    MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
-    MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
-    is_old = mpi_rank%2;
-    mrc = MPI_Comm_split(MPI_COMM_WORLD, is_old, mpi_rank, &comm);
-    VRFY((mrc==MPI_SUCCESS), "");
-    MPI_Comm_size(comm,&newprocs);
-    MPI_Comm_rank(comm,&newrank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    is_old = mpi_rank % 2;
+    mrc    = MPI_Comm_split(MPI_COMM_WORLD, is_old, mpi_rank, &comm);
+    VRFY((mrc == MPI_SUCCESS), "");
+    MPI_Comm_size(comm, &newprocs);
+    MPI_Comm_rank(comm, &newrank);
 
-    if (is_old){
-    /* odd-rank processes */
-    mrc = MPI_Barrier(comm);
-    VRFY((mrc==MPI_SUCCESS), "");
-    }else{
-    /* even-rank processes */
-    int sub_mpi_rank;    /* rank in the sub-comm */
-    MPI_Comm_rank(comm,&sub_mpi_rank);
+    if (is_old) {
+        /* odd-rank processes */
+        mrc = MPI_Barrier(comm);
+        VRFY((mrc == MPI_SUCCESS), "");
+    }
+    else {
+        /* even-rank processes */
+        int sub_mpi_rank; /* rank in the sub-comm */
+        MPI_Comm_rank(comm, &sub_mpi_rank);
 
-    /* setup file access template */
-    acc_tpl = create_faccess_plist(comm, info, facc_type);
-    VRFY((acc_tpl >= 0), "");
+        /* setup file access template */
+        acc_tpl = create_faccess_plist(comm, info, facc_type);
+        VRFY((acc_tpl >= 0), "");
 
-    /* create the file collectively */
-    fid=H5Fcreate(filename,H5F_ACC_TRUNC,H5P_DEFAULT,acc_tpl);
-    VRFY((fid >= 0), "H5Fcreate succeeded");
+        /* create the file collectively */
+        fid = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, acc_tpl);
+        VRFY((fid >= 0), "H5Fcreate succeeded");
 
-    /* close the file */
-    ret=H5Fclose(fid);
-    VRFY((ret >= 0), "");
+        /* close the file */
+        ret = H5Fclose(fid);
+        VRFY((ret >= 0), "");
 
-    /* delete the test file */
-    ret = H5Fdelete(filename, acc_tpl);
-    VRFY((ret >= 0), "H5Fdelete succeeded");
+        /* delete the test file */
+        ret = H5Fdelete(filename, acc_tpl);
+        VRFY((ret >= 0), "H5Fdelete succeeded");
 
-    /* Release file-access template */
-    ret=H5Pclose(acc_tpl);
-    VRFY((ret >= 0), "");
+        /* Release file-access template */
+        ret = H5Pclose(acc_tpl);
+        VRFY((ret >= 0), "");
     }
     mrc = MPI_Comm_free(&comm);
-    VRFY((mrc==MPI_SUCCESS), "MPI_Comm_free succeeded");
+    VRFY((mrc == MPI_SUCCESS), "MPI_Comm_free succeeded");
     mrc = MPI_Barrier(MPI_COMM_WORLD);
-    VRFY((mrc==MPI_SUCCESS), "final MPI_Barrier succeeded");
+    VRFY((mrc == MPI_SUCCESS), "final MPI_Barrier succeeded");
 }
 
 #if 0
@@ -733,26 +733,26 @@ open_file(const char *filename, hid_t fapl, int metadata_write_strategy,
 #endif
 
 /*
- * NOTE:  See HDFFV-10894 and add tests later to verify MPI-specific properties in the 
+ * NOTE:  See HDFFV-10894 and add tests later to verify MPI-specific properties in the
  *        incoming fapl that could conflict with the existing values in H5F_shared_t on
  *        multiple opens of the same file.
  */
 void
 test_file_properties(void)
 {
-    hid_t fid = H5I_INVALID_HID;            /* HDF5 file ID */
-    hid_t fapl_id = H5I_INVALID_HID;        /* File access plist */
-    hid_t fapl_copy_id = H5I_INVALID_HID;   /* File access plist */
-    hbool_t is_coll;
-    htri_t are_equal;
+    hid_t       fid          = H5I_INVALID_HID; /* HDF5 file ID */
+    hid_t       fapl_id      = H5I_INVALID_HID; /* File access plist */
+    hid_t       fapl_copy_id = H5I_INVALID_HID; /* File access plist */
+    hbool_t     is_coll;
+    htri_t      are_equal;
     const char *filename;
-    MPI_Comm comm = MPI_COMM_WORLD;
-    MPI_Info info = MPI_INFO_NULL;
-    MPI_Comm comm_out = MPI_COMM_NULL;
-    MPI_Info info_out = MPI_INFO_NULL;
-    herr_t ret;                 /* Generic return value */
-    int mpi_ret;                /* MPI return value */
-    int cmp;                    /* Compare value */
+    MPI_Comm    comm     = MPI_COMM_WORLD;
+    MPI_Info    info     = MPI_INFO_NULL;
+    MPI_Comm    comm_out = MPI_COMM_NULL;
+    MPI_Info    info_out = MPI_INFO_NULL;
+    herr_t      ret;     /* Generic return value */
+    int         mpi_ret; /* MPI return value */
+    int         cmp;     /* Compare value */
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
@@ -793,7 +793,7 @@ test_file_properties(void)
 
     /* Check the communicator */
     VRFY((comm != comm_out), "Communicators should not be bitwise identical");
-    cmp = MPI_UNEQUAL;
+    cmp     = MPI_UNEQUAL;
     mpi_ret = MPI_Comm_compare(comm, comm_out, &cmp);
     VRFY((ret >= 0), "MPI_Comm_compare succeeded");
     VRFY((cmp == MPI_CONGRUENT), "Communicators should be congruent via MPI_Comm_compare");
@@ -940,4 +940,3 @@ test_file_properties(void)
     VRFY((mpi_ret >= 0), "MPI_Info_free succeeded");
 
 } /* end test_file_properties() */
-

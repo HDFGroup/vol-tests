@@ -22,7 +22,7 @@
 //#include "h5test.h"
 
 /* Constants definitions */
-#define MAX_ERR_REPORT  10      /* Maximum number of errors reported */
+#define MAX_ERR_REPORT 10 /* Maximum number of errors reported */
 
 /* Define some handy debugging shorthands, routines, ... */
 /* debugging tools */
@@ -30,9 +30,9 @@
 /* Print message mesg if verbose level is at least medium and
  * mesg is not an empty string.
  */
-#define MESG(mesg)                                                     \
-    if (VERBOSE_MED && *mesg != '\0')                                  \
-	printf("%s\n", mesg)
+#define MESG(mesg)                                                                                           \
+    if (VERBOSE_MED && *mesg != '\0')                                                                        \
+    printf("%s\n", mesg)
 
 /*
  * VRFY: Verify if the condition val is true.
@@ -93,7 +93,7 @@
         }                                                                                                    \
     } while (0)
 
-#define MAINPROCESS     (!mpi_rank) /* define process 0 as main process */
+#define MAINPROCESS (!mpi_rank) /* define process 0 as main process */
 
 #define SYNC(comm)                                                                                           \
     do {                                                                                                     \
