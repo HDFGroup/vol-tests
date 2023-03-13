@@ -63,10 +63,12 @@ test_create_file(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Pclose(fapl_id);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -96,8 +98,10 @@ test_open_file(void)
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Fopen_rdonly) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Fopen_rdonly)
+        {
             TESTING_2("H5Fopen in read-only mode")
 
             if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDONLY, fapl_id)) < 0) {
@@ -107,16 +111,20 @@ test_open_file(void)
             }
 
             PASSED();
-        } PART_END(H5Fopen_rdonly);
+        }
+        PART_END(H5Fopen_rdonly);
 
         if (file_id >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Fclose(file_id);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             file_id = H5I_INVALID_HID;
         }
 
-        PART_BEGIN(H5Fopen_rdwrite) {
+        PART_BEGIN(H5Fopen_rdwrite)
+        {
             TESTING_2("H5Fopen in read-write mode")
 
             if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
@@ -126,19 +134,23 @@ test_open_file(void)
             }
 
             PASSED();
-        } PART_END(H5Fopen_rdwrite);
+        }
+        PART_END(H5Fopen_rdwrite);
 
         if (file_id >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Fclose(file_id);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             file_id = H5I_INVALID_HID;
         }
 
         /*
          * XXX: SWMR open flags
          */
-    } END_MULTIPART;
+    }
+    END_MULTIPART;
 
     TESTING_2("test cleanup")
 
@@ -150,10 +162,12 @@ test_open_file(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Pclose(fapl_id);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -175,7 +189,7 @@ static int
 test_split_comm_file_access(void)
 {
     MPI_Comm comm;
-    MPI_Info info = MPI_INFO_NULL;
+    MPI_Info info    = MPI_INFO_NULL;
     hid_t    file_id = H5I_INVALID_HID;
     hid_t    fapl_id = H5I_INVALID_HID;
     int      is_old;
@@ -210,7 +224,7 @@ test_split_comm_file_access(void)
     }
     else {
         /* even-rank processes */
-        int sub_mpi_rank;   /* rank in the sub-comm */
+        int sub_mpi_rank; /* rank in the sub-comm */
 
         MPI_Comm_rank(comm, &sub_mpi_rank);
 
@@ -261,7 +275,8 @@ access_end:
 
     if (err_occurred) {
         H5_FAILED();
-        HDprintf("    an error occurred on only some ranks during split-communicator file access! - collectively failing\n");
+        HDprintf("    an error occurred on only some ranks during split-communicator file access! - "
+                 "collectively failing\n");
         goto error;
     }
 
@@ -282,10 +297,12 @@ access_end:
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Pclose(fapl_id);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }

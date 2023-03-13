@@ -36,7 +36,7 @@
 #include "vol_object_test.h"
 #include "vol_misc_test.h"
 #ifdef H5VL_TEST_HAS_ASYNC
-#    include "vol_async_test.h"
+#include "vol_async_test.h"
 #endif
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
@@ -55,43 +55,43 @@ uint64_t vol_cap_flags;
  * - enabled by default
  */
 #ifdef H5VL_TEST_HAS_ASYNC
-#define VOL_TESTS                                               \
-    X(VOL_TEST_NULL,       "",         NULL,               0)   \
-    X(VOL_TEST_FILE,      "file",      vol_file_test,      1)   \
-    X(VOL_TEST_GROUP,     "group",     vol_group_test,     1)   \
-    X(VOL_TEST_DATASET,   "dataset",   vol_dataset_test,   1)   \
-    X(VOL_TEST_DATATYPE,  "datatype",  vol_datatype_test,  1)   \
-    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test, 1)   \
-    X(VOL_TEST_LINK,      "link",      vol_link_test,      1)   \
-    X(VOL_TEST_OBJECT,    "object",    vol_object_test,    1)   \
-    X(VOL_TEST_MISC,      "misc",      vol_misc_test,      1)   \
-    X(VOL_TEST_ASYNC,     "async",     vol_async_test,     1)   \
-    X(VOL_TEST_MAX,       "",          NULL,               0)
+#define VOL_TESTS                                                                                            \
+    X(VOL_TEST_NULL, "", NULL, 0)                                                                            \
+    X(VOL_TEST_FILE, "file", vol_file_test, 1)                                                               \
+    X(VOL_TEST_GROUP, "group", vol_group_test, 1)                                                            \
+    X(VOL_TEST_DATASET, "dataset", vol_dataset_test, 1)                                                      \
+    X(VOL_TEST_DATATYPE, "datatype", vol_datatype_test, 1)                                                   \
+    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test, 1)                                                \
+    X(VOL_TEST_LINK, "link", vol_link_test, 1)                                                               \
+    X(VOL_TEST_OBJECT, "object", vol_object_test, 1)                                                         \
+    X(VOL_TEST_MISC, "misc", vol_misc_test, 1)                                                               \
+    X(VOL_TEST_ASYNC, "async", vol_async_test, 1)                                                            \
+    X(VOL_TEST_MAX, "", NULL, 0)
 #else
-#define VOL_TESTS                                               \
-    X(VOL_TEST_NULL,       "",         NULL,               0)   \
-    X(VOL_TEST_FILE,      "file",      vol_file_test,      1)   \
-    X(VOL_TEST_GROUP,     "group",     vol_group_test,     1)   \
-    X(VOL_TEST_DATASET,   "dataset",   vol_dataset_test,   1)   \
-    X(VOL_TEST_DATATYPE,  "datatype",  vol_datatype_test,  1)   \
-    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test, 1)   \
-    X(VOL_TEST_LINK,      "link",      vol_link_test,      1)   \
-    X(VOL_TEST_OBJECT,    "object",    vol_object_test,    1)   \
-    X(VOL_TEST_MISC,      "misc",      vol_misc_test,      1)   \
-    X(VOL_TEST_MAX,       "",          NULL,               0)
+#define VOL_TESTS                                                                                            \
+    X(VOL_TEST_NULL, "", NULL, 0)                                                                            \
+    X(VOL_TEST_FILE, "file", vol_file_test, 1)                                                               \
+    X(VOL_TEST_GROUP, "group", vol_group_test, 1)                                                            \
+    X(VOL_TEST_DATASET, "dataset", vol_dataset_test, 1)                                                      \
+    X(VOL_TEST_DATATYPE, "datatype", vol_datatype_test, 1)                                                   \
+    X(VOL_TEST_ATTRIBUTE, "attribute", vol_attribute_test, 1)                                                \
+    X(VOL_TEST_LINK, "link", vol_link_test, 1)                                                               \
+    X(VOL_TEST_OBJECT, "object", vol_object_test, 1)                                                         \
+    X(VOL_TEST_MISC, "misc", vol_misc_test, 1)                                                               \
+    X(VOL_TEST_MAX, "", NULL, 0)
 #endif
 
 #define X(a, b, c, d) a,
 enum vol_test_type { VOL_TESTS };
 #undef X
 #define X(a, b, c, d) b,
-static char * const vol_test_name[] = { VOL_TESTS };
+static char *const vol_test_name[] = {VOL_TESTS};
 #undef X
 #define X(a, b, c, d) c,
-static int (*vol_test_func[])(void) = { VOL_TESTS };
+static int (*vol_test_func[])(void) = {VOL_TESTS};
 #undef X
 #define X(a, b, c, d) d,
-static int vol_test_enabled[] = { VOL_TESTS };
+static int vol_test_enabled[] = {VOL_TESTS};
 #undef X
 
 static enum vol_test_type
@@ -99,10 +99,10 @@ vol_test_name_to_type(const char *test_name)
 {
     enum vol_test_type i = 0;
 
-    while(strcmp(vol_test_name[i], test_name) && i != VOL_TEST_MAX)
+    while (strcmp(vol_test_name[i], test_name) && i != VOL_TEST_MAX)
         i++;
 
-    return((i == VOL_TEST_MAX) ? VOL_TEST_NULL : i);
+    return ((i == VOL_TEST_MAX) ? VOL_TEST_NULL : i);
 }
 
 static void
@@ -155,19 +155,22 @@ get_vol_cap_flags(const char *connector_name)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Pclose(fapl_id);
         H5VLclose(connector_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return -1;
 }
 
 /******************************************************************************/
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-    char *vol_connector_name;
+    char   *vol_connector_name;
     hbool_t err_occurred = FALSE;
 
     /* Simple argument checking, TODO can improve that later */
@@ -191,12 +194,12 @@ int main(int argc, char **argv)
 
     /* h5_reset(); */
 
-    n_tests_run_g = 0;
-    n_tests_passed_g = 0;
-    n_tests_failed_g = 0;
+    n_tests_run_g     = 0;
+    n_tests_passed_g  = 0;
+    n_tests_failed_g  = 0;
     n_tests_skipped_g = 0;
 
-    srand((unsigned) HDtime(NULL));
+    srand((unsigned)HDtime(NULL));
 
     HDsnprintf(vol_test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", TEST_FILE_NAME);
 
@@ -233,12 +236,15 @@ int main(int argc, char **argv)
     HDprintf("Cleaning up testing files\n");
     H5Fdelete(vol_test_filename, H5P_DEFAULT);
 
-    HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n",
-            (long) n_tests_passed_g, (long) n_tests_run_g, ((float) n_tests_passed_g / (float) n_tests_run_g * 100.0), vol_connector_name);
-    HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n",
-            (long) n_tests_failed_g, (long) n_tests_run_g, ((float) n_tests_failed_g / (float) n_tests_run_g * 100.0), vol_connector_name);
-    HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n",
-            (long) n_tests_skipped_g, (long) n_tests_run_g, ((float) n_tests_skipped_g / (float) n_tests_run_g * 100.0), vol_connector_name);
+    HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n", (long)n_tests_passed_g,
+             (long)n_tests_run_g, ((float)n_tests_passed_g / (float)n_tests_run_g * 100.0),
+             vol_connector_name);
+    HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n", (long)n_tests_failed_g,
+             (long)n_tests_run_g, ((float)n_tests_failed_g / (float)n_tests_run_g * 100.0),
+             vol_connector_name);
+    HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n", (long)n_tests_skipped_g,
+             (long)n_tests_run_g, ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0),
+             vol_connector_name);
 
 done:
     H5close();

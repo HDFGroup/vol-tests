@@ -12,14 +12,10 @@
 
 #include "vol_datatype_test_parallel.h"
 
-
-
 /*
  * The array of parallel datatype tests to be performed.
  */
-static int (*par_datatype_tests[])(void) = {
-    NULL
-};
+static int (*par_datatype_tests[])(void) = {NULL};
 
 int
 vol_datatype_test_parallel(void)

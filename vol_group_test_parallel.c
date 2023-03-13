@@ -12,14 +12,10 @@
 
 #include "vol_group_test_parallel.h"
 
-
-
 /*
  * The array of parallel group tests to be performed.
  */
-static int (*par_group_tests[])(void) = {
-    NULL
-};
+static int (*par_group_tests[])(void) = {NULL};
 
 int
 vol_group_test_parallel(void)

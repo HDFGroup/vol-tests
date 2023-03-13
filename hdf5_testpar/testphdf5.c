@@ -19,24 +19,24 @@
 #include "testphdf5.h"
 
 #ifndef PATH_MAX
-#define PATH_MAX    512
-#endif  /* !PATH_MAX */
+#define PATH_MAX 512
+#endif /* !PATH_MAX */
 
 /* global variables */
 int dim0;
 int dim1;
 int chunkdim0;
 int chunkdim1;
-int nerrors = 0;            /* errors count */
-int ndatasets = 300;            /* number of datasets to create*/
-int ngroups = 512;                      /* number of groups to create in root
- * group. */
-int facc_type = FACC_MPIO;        /*Test file access type */
-int dxfer_coll_type = DXFER_COLLECTIVE_IO;
+int nerrors   = 0;                    /* errors count */
+int ndatasets = 300;                  /* number of datasets to create*/
+int ngroups   = 512;                  /* number of groups to create in root
+                                       * group. */
+int      facc_type       = FACC_MPIO; /*Test file access type */
+int      dxfer_coll_type = DXFER_COLLECTIVE_IO;
 uint64_t vol_cap_flags;
 
-H5E_auto2_t old_func;                /* previous error handler */
-void *old_client_data;            /* previous error handler arg.*/
+H5E_auto2_t old_func;        /* previous error handler */
+void       *old_client_data; /* previous error handler arg.*/
 
 /* other option flags */
 
@@ -47,11 +47,9 @@ void *old_client_data;            /* previous error handler arg.*/
  */
 #define NFILENAME 2
 /* #define PARATESTFILE filenames[0] */
-const char *FILENAME[NFILENAME]={
-        "ParaTest.h5",
-        NULL};
-char    filenames[NFILENAME][PATH_MAX];
-hid_t    fapl;                /* file access property list */
+const char *FILENAME[NFILENAME] = {"ParaTest.h5", NULL};
+char        filenames[NFILENAME][PATH_MAX];
+hid_t       fapl; /* file access property list */
 
 #ifdef USE_PAUSE
 /* pause the process for a moment to allow debugger to attach if desired. */
@@ -60,15 +58,16 @@ hid_t    fapl;                /* file access property list */
 #include <sys/types.h>
 #include <sys/stat.h>
 
-void pause_proc(void)
+void
+pause_proc(void)
 {
 
-    int pid;
-    h5_stat_t    statbuf;
-    char greenlight[] = "go";
-    int maxloop = 10;
-    int loops = 0;
-    int time_int = 10;
+    int       pid;
+    h5_stat_t statbuf;
+    char      greenlight[] = "go";
+    int       maxloop      = 10;
+    int       loops        = 0;
+    int       time_int     = 10;
 
     /* mpi variables */
     int  mpi_size, mpi_rank;
@@ -81,10 +80,10 @@ void pause_proc(void)
     MPI_Get_processor_name(mpi_name, &mpi_namelen);
 
     if (MAINPROCESS)
-        while ((HDstat(greenlight, &statbuf) == -1) && loops < maxloop){
-            if (!loops++){
-                HDprintf("Proc %d (%*s, %d): to debug, attach %d\n",
-                        mpi_rank, mpi_namelen, mpi_name, pid, pid);
+        while ((HDstat(greenlight, &statbuf) == -1) && loops < maxloop) {
+            if (!loops++) {
+                HDprintf("Proc %d (%*s, %d): to debug, attach %d\n", mpi_rank, mpi_namelen, mpi_name, pid,
+                         pid);
             }
             HDprintf("waiting(%ds) for file %s ...\n", time_int, greenlight);
             HDfflush(stdout);
@@ -94,15 +93,15 @@ void pause_proc(void)
 }
 
 /* Use the Profile feature of MPI to call the pause_proc() */
-int MPI_Init(int *argc, char ***argv)
+int
+MPI_Init(int *argc, char ***argv)
 {
     int ret_code;
-    ret_code=PMPI_Init(argc, argv);
+    ret_code = PMPI_Init(argc, argv);
     pause_proc();
     return (ret_code);
 }
-#endif    /* USE_PAUSE */
-
+#endif /* USE_PAUSE */
 
 /*
  * Show command usage
@@ -111,21 +110,20 @@ static void
 usage(void)
 {
     HDprintf("    [-r] [-w] [-m<n_datasets>] [-n<n_groups>] "
-            "[-o] [-f <prefix>] [-d <dim0> <dim1>]\n");
+             "[-o] [-f <prefix>] [-d <dim0> <dim1>]\n");
     HDprintf("\t-m<n_datasets>"
-            "\tset number of datasets for the multiple dataset test\n");
+             "\tset number of datasets for the multiple dataset test\n");
     HDprintf("\t-n<n_groups>"
-            "\tset number of groups for the multiple group test\n");
+             "\tset number of groups for the multiple group test\n");
 #if 0
     HDprintf("\t-f <prefix>\tfilename prefix\n");
 #endif
     HDprintf("\t-2\t\tuse Split-file together with MPIO\n");
-    HDprintf("\t-d <factor0> <factor1>\tdataset dimensions factors. Defaults (%d,%d)\n",
-            ROW_FACTOR, COL_FACTOR);
+    HDprintf("\t-d <factor0> <factor1>\tdataset dimensions factors. Defaults (%d,%d)\n", ROW_FACTOR,
+             COL_FACTOR);
     HDprintf("\t-c <dim0> <dim1>\tdataset chunk dimensions. Defaults (dim0/10,dim1/10)\n");
     HDprintf("\n");
 }
-
 
 /*
  * parse the command line options
@@ -133,33 +131,36 @@ usage(void)
 static int
 parse_options(int argc, char **argv)
 {
-    int mpi_size, mpi_rank;                /* mpi variables */
+    int mpi_size, mpi_rank; /* mpi variables */
 
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
     /* setup default chunk-size. Make sure sizes are > 0 */
 
-    chunkdim0 = (dim0+9)/10;
-    chunkdim1 = (dim1+9)/10;
+    chunkdim0 = (dim0 + 9) / 10;
+    chunkdim1 = (dim1 + 9) / 10;
 
-    while (--argc){
-        if (**(++argv) != '-'){
+    while (--argc) {
+        if (**(++argv) != '-') {
             break;
-        }else{
-            switch(*(*argv+1)){
-            case 'm':   ndatasets = atoi((*argv+1)+1);
-            if (ndatasets < 0){
-                nerrors++;
-                return(1);
-            }
-            break;
-            case 'n':   ngroups = atoi((*argv+1)+1);
-            if (ngroups < 0){
-                nerrors++;
-                return(1);
-            }
-            break;
+        }
+        else {
+            switch (*(*argv + 1)) {
+                case 'm':
+                    ndatasets = atoi((*argv + 1) + 1);
+                    if (ndatasets < 0) {
+                        nerrors++;
+                        return (1);
+                    }
+                    break;
+                case 'n':
+                    ngroups = atoi((*argv + 1) + 1);
+                    if (ngroups < 0) {
+                        nerrors++;
+                        return (1);
+                    }
+                    break;
 #if 0
             case 'f':   if (--argc < 1) {
                 nerrors++;
@@ -172,72 +173,72 @@ parse_options(int argc, char **argv)
             paraprefix = *argv;
             break;
 #endif
-            case 'i':   /* Collective MPI-IO access with independent IO  */
-                dxfer_coll_type = DXFER_INDEPENDENT_IO;
-                break;
-            case '2':   /* Use the split-file driver with MPIO access */
-                /* Can use $HDF5_METAPREFIX to define the */
-                /* meta-file-prefix. */
-                facc_type = FACC_MPIO | FACC_SPLIT;
-                break;
-            case 'd':   /* dimensizes */
-                if (--argc < 2){
+                case 'i': /* Collective MPI-IO access with independent IO  */
+                    dxfer_coll_type = DXFER_INDEPENDENT_IO;
+                    break;
+                case '2': /* Use the split-file driver with MPIO access */
+                    /* Can use $HDF5_METAPREFIX to define the */
+                    /* meta-file-prefix. */
+                    facc_type = FACC_MPIO | FACC_SPLIT;
+                    break;
+                case 'd': /* dimensizes */
+                    if (--argc < 2) {
+                        nerrors++;
+                        return (1);
+                    }
+                    dim0 = atoi(*(++argv)) * mpi_size;
+                    argc--;
+                    dim1 = atoi(*(++argv)) * mpi_size;
+                    /* set default chunkdim sizes too */
+                    chunkdim0 = (dim0 + 9) / 10;
+                    chunkdim1 = (dim1 + 9) / 10;
+                    break;
+                case 'c': /* chunk dimensions */
+                    if (--argc < 2) {
+                        nerrors++;
+                        return (1);
+                    }
+                    chunkdim0 = atoi(*(++argv));
+                    argc--;
+                    chunkdim1 = atoi(*(++argv));
+                    break;
+                case 'h': /* print help message--return with nerrors set */
+                    return (1);
+                default:
+                    HDprintf("Illegal option(%s)\n", *argv);
                     nerrors++;
-                    return(1);
-                }
-                dim0 = atoi(*(++argv))*mpi_size;
-                argc--;
-                dim1 = atoi(*(++argv))*mpi_size;
-                /* set default chunkdim sizes too */
-                chunkdim0 = (dim0+9)/10;
-                chunkdim1 = (dim1+9)/10;
-                break;
-            case 'c':   /* chunk dimensions */
-                if (--argc < 2){
-                    nerrors++;
-                    return(1);
-                }
-                chunkdim0 = atoi(*(++argv));
-                argc--;
-                chunkdim1 = atoi(*(++argv));
-                break;
-            case 'h':   /* print help message--return with nerrors set */
-                return(1);
-            default:    HDprintf("Illegal option(%s)\n", *argv);
-            nerrors++;
-            return(1);
+                    return (1);
             }
         }
     } /*while*/
 
     /* check validity of dimension and chunk sizes */
-    if (dim0 <= 0 || dim1 <= 0){
+    if (dim0 <= 0 || dim1 <= 0) {
         HDprintf("Illegal dim sizes (%d, %d)\n", dim0, dim1);
         nerrors++;
-        return(1);
+        return (1);
     }
-    if (chunkdim0 <= 0 || chunkdim1 <= 0){
+    if (chunkdim0 <= 0 || chunkdim1 <= 0) {
         HDprintf("Illegal chunkdim sizes (%d, %d)\n", chunkdim0, chunkdim1);
         nerrors++;
-        return(1);
+        return (1);
     }
 
     /* Make sure datasets can be divided into equal portions by the processes */
-    if ((dim0 % mpi_size) || (dim1 % mpi_size)){
+    if ((dim0 % mpi_size) || (dim1 % mpi_size)) {
         if (MAINPROCESS)
-            HDprintf("dim0(%d) and dim1(%d) must be multiples of processes(%d)\n",
-                    dim0, dim1, mpi_size);
+            HDprintf("dim0(%d) and dim1(%d) must be multiples of processes(%d)\n", dim0, dim1, mpi_size);
         nerrors++;
-        return(1);
+        return (1);
     }
 
     /* compose the test filenames */
     {
         int i, n;
 
-        n = sizeof(FILENAME)/sizeof(FILENAME[0]) - 1;    /* exclude the NULL */
+        n = sizeof(FILENAME) / sizeof(FILENAME[0]) - 1; /* exclude the NULL */
 
-        for (i=0; i < n; i++)
+        for (i = 0; i < n; i++)
             strncpy(filenames[i], FILENAME[i], PATH_MAX);
 #if 0 /* no support for VFDs right now */
             if (h5_fixname(FILENAME[i],fapl,filenames[i],sizeof(filenames[i]))
@@ -249,14 +250,13 @@ parse_options(int argc, char **argv)
 #endif
         if (MAINPROCESS) {
             HDprintf("Test filenames are:\n");
-            for (i=0; i < n; i++)
+            for (i = 0; i < n; i++)
                 HDprintf("    %s\n", filenames[i]);
         }
     }
 
-    return(0);
+    return (0);
 }
-
 
 /*
  * Create the appropriate File access property list
@@ -264,20 +264,20 @@ parse_options(int argc, char **argv)
 hid_t
 create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type)
 {
-    hid_t ret_pl = -1;
-    herr_t ret;                 /* generic return value */
-    int mpi_rank;        /* mpi variables */
+    hid_t  ret_pl = -1;
+    herr_t ret;      /* generic return value */
+    int    mpi_rank; /* mpi variables */
 
     /* need the rank for error checking macros */
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-    ret_pl = H5Pcreate (H5P_FILE_ACCESS);
+    ret_pl = H5Pcreate(H5P_FILE_ACCESS);
     VRFY((ret_pl >= 0), "H5P_FILE_ACCESS");
 
     if (l_facc_type == FACC_DEFAULT)
         return (ret_pl);
 
-    if (l_facc_type == FACC_MPIO){
+    if (l_facc_type == FACC_MPIO) {
         /* set Parallel access with communicator */
         ret = H5Pset_fapl_mpio(ret_pl, comm, info);
         VRFY((ret >= 0), "");
@@ -285,36 +285,36 @@ create_faccess_plist(MPI_Comm comm, MPI_Info info, int l_facc_type)
         VRFY((ret >= 0), "");
         ret = H5Pset_coll_metadata_write(ret_pl, TRUE);
         VRFY((ret >= 0), "");
-        return(ret_pl);
+        return (ret_pl);
     }
 
-    if (l_facc_type == (FACC_MPIO | FACC_SPLIT)){
+    if (l_facc_type == (FACC_MPIO | FACC_SPLIT)) {
         hid_t mpio_pl;
 
-        mpio_pl = H5Pcreate (H5P_FILE_ACCESS);
+        mpio_pl = H5Pcreate(H5P_FILE_ACCESS);
         VRFY((mpio_pl >= 0), "");
         /* set Parallel access with communicator */
         ret = H5Pset_fapl_mpio(mpio_pl, comm, info);
         VRFY((ret >= 0), "");
 
         /* setup file access template */
-        ret_pl = H5Pcreate (H5P_FILE_ACCESS);
+        ret_pl = H5Pcreate(H5P_FILE_ACCESS);
         VRFY((ret_pl >= 0), "");
         /* set Parallel access with communicator */
         ret = H5Pset_fapl_split(ret_pl, ".meta", mpio_pl, ".raw", mpio_pl);
         VRFY((ret >= 0), "H5Pset_fapl_split succeeded");
         H5Pclose(mpio_pl);
-        return(ret_pl);
+        return (ret_pl);
     }
 
     /* unknown file access types */
     return (ret_pl);
 }
 
-
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-    int mpi_size, mpi_rank;                /* mpi variables */
+    int    mpi_size, mpi_rank; /* mpi variables */
     herr_t ret;
 
 #if 0
@@ -334,21 +334,21 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-    dim0 = ROW_FACTOR*mpi_size;
-    dim1 = COL_FACTOR*mpi_size;
+    dim0 = ROW_FACTOR * mpi_size;
+    dim1 = COL_FACTOR * mpi_size;
 
-    if (MAINPROCESS){
+    if (MAINPROCESS) {
         HDprintf("===================================\n");
         HDprintf("PHDF5 TESTS START\n");
         HDprintf("===================================\n");
     }
 
     /* Attempt to turn off atexit post processing so that in case errors
-    * happen during the test and the process is aborted, it will not get
-    * hang in the atexit post processing in which it may try to make MPI
-    * calls.  By then, MPI calls may not work.
-    */
-    if (H5dont_atexit() < 0){
+     * happen during the test and the process is aborted, it will not get
+     * hang in the atexit post processing in which it may try to make MPI
+     * calls.  By then, MPI calls may not work.
+     */
+    if (H5dont_atexit() < 0) {
         HDprintf("Failed to turn off atexit processing. Continue.\n");
     };
     H5open();
@@ -637,7 +637,7 @@ int main(int argc, char **argv)
     }
     coll_chunk4();
 
-    if((mpi_size < 3) && MAINPROCESS ) {
+    if ((mpi_size < 3) && MAINPROCESS) {
         HDprintf("Collective chunk IO optimization APIs ");
         HDprintf("needs at least 3 processes to participate\n");
         HDprintf("Collective chunk IO API tests will be skipped \n");
@@ -664,7 +664,7 @@ int main(int argc, char **argv)
             "multiple chunk collective IO transferring to independent IO",PARATESTFILE);
 #endif
 
-    if(mpi_size >= 3) {
+    if (mpi_size >= 3) {
         if (MAINPROCESS) {
             printf("linked chunk collective IO without optimization\n");
             fflush(stdout);
@@ -776,12 +776,12 @@ int main(int argc, char **argv)
     }
     io_mode_confusion();
 
-    if((mpi_size < 3) && MAINPROCESS) {
+    if ((mpi_size < 3) && MAINPROCESS) {
         HDprintf("rr_obj_hdr_flush_confusion test needs at least 3 processes.\n");
         HDprintf("rr_obj_hdr_flush_confusion test will be skipped \n");
     }
 
-    if(mpi_size > 2) {
+    if (mpi_size > 2) {
 #if 0
         rr_obj_flush_confusion_params.name = PARATESTFILE;
         rr_obj_flush_confusion_params.count = 0; /* value not used */
@@ -856,7 +856,7 @@ int main(int argc, char **argv)
     }
     test_plist_ed();
 
-    if((mpi_size < 2) && MAINPROCESS) {
+    if ((mpi_size < 2) && MAINPROCESS) {
         HDprintf("File Image Ops daisy chain test needs at least 2 processes.\n");
         HDprintf("File Image Ops daisy chain test will be skipped \n");
     }
@@ -874,14 +874,14 @@ int main(int argc, char **argv)
         /* file_image_daisy_chain_test(); */
     }
 
-    if((mpi_size < 2)&& MAINPROCESS ) {
+    if ((mpi_size < 2) && MAINPROCESS) {
         HDprintf("Atomicity tests need at least 2 processes to participate\n");
         HDprintf("8 is more recommended.. Atomicity tests will be skipped \n");
     }
     else if (facc_type != FACC_MPIO && MAINPROCESS) {
         HDprintf("Atomicity tests will not work with a non MPIO VFD\n");
     }
-    else if(mpi_size >= 2 && facc_type == FACC_MPIO){
+    else if (mpi_size >= 2 && facc_type == FACC_MPIO) {
 #if 0
         AddTest("atomicity", dataset_atomicity, NULL,
                 "dataset atomic updates", PARATESTFILE);
@@ -939,19 +939,18 @@ int main(int argc, char **argv)
     /* Parse command line arguments */
     /* TestParseCmdLine(argc, argv); */
 
-    if (dxfer_coll_type == DXFER_INDEPENDENT_IO && MAINPROCESS){
+    if (dxfer_coll_type == DXFER_INDEPENDENT_IO && MAINPROCESS) {
         HDprintf("===================================\n"
-                "   Using Independent I/O with file set view to replace collective I/O \n"
-                "===================================\n");
+                 "   Using Independent I/O with file set view to replace collective I/O \n"
+                 "===================================\n");
     }
-
 
     /* Perform requested testing */
     /* PerformTests(); */
 
     /* make sure all processes are finished before final report, cleanup
-    * and exit.
-    */
+     * and exit.
+     */
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Display test summary, if requested */
@@ -969,10 +968,10 @@ int main(int argc, char **argv)
     {
         int temp;
         MPI_Allreduce(&nerrors, &temp, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-        nerrors=temp;
+        nerrors = temp;
     }
 
-    if (MAINPROCESS){        /* only process 0 reports */
+    if (MAINPROCESS) { /* only process 0 reports */
         HDprintf("===================================\n");
         if (nerrors)
             HDprintf("***PHDF5 tests detected %d errors***\n", nerrors);
@@ -991,6 +990,5 @@ int main(int argc, char **argv)
     MPI_Finalize();
 
     /* cannot just return (nerrors) because exit code is limited to 1byte */
-    return(nerrors != 0);
+    return (nerrors != 0);
 }
-

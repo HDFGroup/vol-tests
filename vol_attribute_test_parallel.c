@@ -12,14 +12,10 @@
 
 #include "vol_attribute_test_parallel.h"
 
-
-
 /*
  * The array of parallel attribute tests to be performed.
  */
-static int (*par_attribute_tests[])(void) = {
-    NULL
-};
+static int (*par_attribute_tests[])(void) = {NULL};
 
 int
 vol_attribute_test_parallel(void)

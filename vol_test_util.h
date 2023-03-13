@@ -17,6 +17,6 @@
 
 hid_t generate_random_datatype(H5T_class_t parent_class, hbool_t is_compact);
 hid_t generate_random_dataspace(int rank, const hsize_t *max_dims, hsize_t *dims_out, hbool_t is_compact);
-int create_test_container(char *filename);
+int   create_test_container(char *filename);
 
 #endif /* VOL_TEST_UTIL_H_ */

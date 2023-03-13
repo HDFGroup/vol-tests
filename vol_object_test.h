@@ -32,9 +32,9 @@ int vol_object_test(void);
 #define OBJECT_OPEN_INVALID_PARAMS_TEST_GROUP_NAME "object_open_invalid_params_test"
 #define OBJECT_OPEN_INVALID_PARAMS_TEST_GRP_NAME   "object_open_invalid_params_test_group"
 
-#define OBJECT_CLOSE_INVALID_TEST_GROUP_NAME "object_close_invalid_params_test"
+#define OBJECT_CLOSE_INVALID_TEST_GROUP_NAME     "object_close_invalid_params_test"
 #define OBJECT_CLOSE_INVALID_TEST_ATTRIBUTE_NAME "object_close_invalid_test_attribute"
-#define OBJECT_CLOSE_INVALID_TEST_SPACE_RANK 2
+#define OBJECT_CLOSE_INVALID_TEST_SPACE_RANK     2
 
 #define OBJECT_EXISTS_TEST_DSET_SPACE_RANK    2
 #define OBJECT_EXISTS_TEST_SUBGROUP_NAME      "object_exists_test"
@@ -159,28 +159,28 @@ int vol_object_test(void);
 #define OBJECT_LINK_TEST_DTYPE_NAME  "object_link_test_datatype"
 #define OBJECT_LINK_TEST_SPACE_RANK  2
 
-#define OBJECT_LINK_INVALID_PARAMS_TEST_GROUP_NAME  "object_link_invalid_params_test_group"
+#define OBJECT_LINK_INVALID_PARAMS_TEST_GROUP_NAME "object_link_invalid_params_test_group"
 
 #define OBJ_REF_GET_TYPE_TEST_SUBGROUP_NAME "obj_ref_get_obj_type_test"
-#define OBJ_REF_GET_TYPE_TEST_DSET_NAME "ref_dset"
-#define OBJ_REF_GET_TYPE_TEST_TYPE_NAME "ref_dtype"
-#define OBJ_REF_GET_TYPE_TEST_SPACE_RANK 2
+#define OBJ_REF_GET_TYPE_TEST_DSET_NAME     "ref_dset"
+#define OBJ_REF_GET_TYPE_TEST_TYPE_NAME     "ref_dtype"
+#define OBJ_REF_GET_TYPE_TEST_SPACE_RANK    2
 
-#define OBJ_REF_DATASET_WRITE_TEST_SUBGROUP_NAME  "obj_ref_write_test"
-#define OBJ_REF_DATASET_WRITE_TEST_REF_DSET_NAME  "ref_dset"
-#define OBJ_REF_DATASET_WRITE_TEST_REF_TYPE_NAME  "ref_dtype"
-#define OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK     1
-#define OBJ_REF_DATASET_WRITE_TEST_DSET_NAME      "obj_ref_dset"
+#define OBJ_REF_DATASET_WRITE_TEST_SUBGROUP_NAME "obj_ref_write_test"
+#define OBJ_REF_DATASET_WRITE_TEST_REF_DSET_NAME "ref_dset"
+#define OBJ_REF_DATASET_WRITE_TEST_REF_TYPE_NAME "ref_dtype"
+#define OBJ_REF_DATASET_WRITE_TEST_SPACE_RANK    1
+#define OBJ_REF_DATASET_WRITE_TEST_DSET_NAME     "obj_ref_dset"
 
-#define OBJ_REF_DATASET_READ_TEST_SUBGROUP_NAME  "obj_ref_read_test"
-#define OBJ_REF_DATASET_READ_TEST_REF_DSET_NAME  "ref_dset"
-#define OBJ_REF_DATASET_READ_TEST_REF_TYPE_NAME  "ref_dtype"
-#define OBJ_REF_DATASET_READ_TEST_SPACE_RANK     1
-#define OBJ_REF_DATASET_READ_TEST_DSET_NAME      "obj_ref_dset"
+#define OBJ_REF_DATASET_READ_TEST_SUBGROUP_NAME "obj_ref_read_test"
+#define OBJ_REF_DATASET_READ_TEST_REF_DSET_NAME "ref_dset"
+#define OBJ_REF_DATASET_READ_TEST_REF_TYPE_NAME "ref_dtype"
+#define OBJ_REF_DATASET_READ_TEST_SPACE_RANK    1
+#define OBJ_REF_DATASET_READ_TEST_DSET_NAME     "obj_ref_dset"
 
-#define OBJ_REF_DATASET_EMPTY_WRITE_TEST_SUBGROUP_NAME  "obj_ref_empty_write_test"
-#define OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK     1
-#define OBJ_REF_DATASET_EMPTY_WRITE_TEST_DSET_NAME      "obj_ref_dset"
+#define OBJ_REF_DATASET_EMPTY_WRITE_TEST_SUBGROUP_NAME "obj_ref_empty_write_test"
+#define OBJ_REF_DATASET_EMPTY_WRITE_TEST_SPACE_RANK    1
+#define OBJ_REF_DATASET_EMPTY_WRITE_TEST_DSET_NAME     "obj_ref_dset"
 
 #define OBJECT_REF_COUNT_TEST_SUBGROUP_NAME   "ref_count_test"
 #define OBJECT_REF_COUNT_TEST_GRP_NAME        "ref_count_test_group"

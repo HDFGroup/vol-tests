@@ -23,7 +23,7 @@ int vol_async_test(void);
  *                                              *
  ************************************************/
 
-#define ASYNC_VOL_TEST_FILE "async_vol_test.h5"
+#define ASYNC_VOL_TEST_FILE        "async_vol_test.h5"
 #define ASYNC_VOL_TEST_FILE_PRINTF "async_vol_test_%d.h5"
 
 #endif

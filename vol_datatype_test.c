@@ -47,31 +47,31 @@ static int test_cant_modify_committed_type(void);
  * The array of datatype tests to be performed.
  */
 static int (*datatype_tests[])(void) = {
-        test_create_committed_datatype,
-        test_create_committed_datatype_invalid_params,
-        test_create_anonymous_committed_datatype,
-        test_create_anonymous_committed_datatype_invalid_params,
+    test_create_committed_datatype,
+    test_create_committed_datatype_invalid_params,
+    test_create_anonymous_committed_datatype,
+    test_create_anonymous_committed_datatype_invalid_params,
 #ifndef PROBLEMATIC_TESTS
-        test_create_committed_datatype_empty_types,
+    test_create_committed_datatype_empty_types,
 #endif
-        test_recommit_committed_type,
-        test_open_committed_datatype,
-        test_open_committed_datatype_invalid_params,
-        test_reopen_committed_datatype_indirect,
-        test_close_committed_datatype_invalid_id,
-        test_datatype_property_lists,
-        test_create_dataset_with_committed_type,
-        test_create_attribute_with_committed_type,
-        test_delete_committed_type,
-        test_resurrect_datatype,
-        test_flush_committed_datatype,
-        test_flush_committed_datatype_invalid_params,
-        test_refresh_committed_datatype,
-        test_refresh_committed_datatype_invalid_params,
+    test_recommit_committed_type,
+    test_open_committed_datatype,
+    test_open_committed_datatype_invalid_params,
+    test_reopen_committed_datatype_indirect,
+    test_close_committed_datatype_invalid_id,
+    test_datatype_property_lists,
+    test_create_dataset_with_committed_type,
+    test_create_attribute_with_committed_type,
+    test_delete_committed_type,
+    test_resurrect_datatype,
+    test_flush_committed_datatype,
+    test_flush_committed_datatype_invalid_params,
+    test_refresh_committed_datatype,
+    test_refresh_committed_datatype_invalid_params,
 #ifndef PROBLEMATIC_TESTS
-        test_cant_commit_predefined,
+    test_cant_commit_predefined,
 #endif
-        test_cant_modify_committed_type,
+    test_cant_modify_committed_type,
 };
 
 /*
@@ -80,7 +80,7 @@ static int (*datatype_tests[])(void) = {
 static int
 test_create_committed_datatype(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t type_id = H5I_INVALID_HID;
 
@@ -90,7 +90,8 @@ test_create_committed_datatype(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -106,7 +107,8 @@ test_create_committed_datatype(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                               H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_CREATE_TEST_GROUP_NAME);
         goto error;
@@ -118,7 +120,8 @@ test_create_committed_datatype(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATATYPE_CREATE_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATATYPE_CREATE_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) <
+        0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATATYPE_CREATE_TEST_TYPE_NAME);
         goto error;
@@ -138,12 +141,14 @@ test_create_committed_datatype(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -155,8 +160,8 @@ error:
 static int
 test_create_committed_datatype_invalid_params(void)
 {
-    herr_t err_ret = -1;
-    hid_t  file_id = H5I_INVALID_HID;
+    herr_t err_ret         = -1;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
@@ -166,7 +171,8 @@ test_create_committed_datatype_invalid_params(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -184,9 +190,11 @@ test_create_committed_datatype_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_CREATE_INVALID_PARAMS_TEST_GROUP_NAME);
+        HDprintf("    couldn't create container sub-group '%s'\n",
+                 DATATYPE_CREATE_INVALID_PARAMS_TEST_GROUP_NAME);
         goto error;
     }
 
@@ -198,14 +206,18 @@ test_create_committed_datatype_invalid_params(void)
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Tcommit2_invalid_loc_id) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Tcommit2_invalid_loc_id)
+        {
             TESTING_2("H5Tcommit2 with an invalid loc_id")
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(H5I_INVALID_HID, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+                                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -214,14 +226,18 @@ test_create_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit2_invalid_loc_id);
+        }
+        PART_END(H5Tcommit2_invalid_loc_id);
 
-        PART_BEGIN(H5Tcommit2_invalid_type_name) {
+        PART_BEGIN(H5Tcommit2_invalid_type_name)
+        {
             TESTING_2("H5Tcommit2 with an invalid datatype name");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(group_id, NULL, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -229,9 +245,11 @@ test_create_committed_datatype_invalid_params(void)
                 PART_ERROR(H5Tcommit2_invalid_type_name);
             }
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(group_id, "", type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -240,15 +258,19 @@ test_create_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit2_invalid_type_name);
+        }
+        PART_END(H5Tcommit2_invalid_type_name);
 
-        PART_BEGIN(H5Tcommit2_invalid_type_id) {
+        PART_BEGIN(H5Tcommit2_invalid_type_id)
+        {
             TESTING_2("H5Tcommit2 with an invalid datatype ID");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, H5I_INVALID_HID,
-                        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+                                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -257,15 +279,19 @@ test_create_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit2_invalid_type_id);
+        }
+        PART_END(H5Tcommit2_invalid_type_id);
 
-        PART_BEGIN(H5Tcommit2_invalid_lcpl) {
+        PART_BEGIN(H5Tcommit2_invalid_lcpl)
+        {
             TESTING_2("H5Tcommit2 with an invalid LCPL");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                        H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+                                     H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -274,15 +300,19 @@ test_create_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit2_invalid_lcpl);
+        }
+        PART_END(H5Tcommit2_invalid_lcpl);
 
-        PART_BEGIN(H5Tcommit2_invalid_tcpl) {
+        PART_BEGIN(H5Tcommit2_invalid_tcpl)
+        {
             TESTING_2("H5Tcommit2 with an invalid TCPL");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                        H5P_DEFAULT, H5I_INVALID_HID, H5P_DEFAULT);
-            } H5E_END_TRY;
+                                     H5P_DEFAULT, H5I_INVALID_HID, H5P_DEFAULT);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -291,15 +321,19 @@ test_create_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit2_invalid_tcpl);
+        }
+        PART_END(H5Tcommit2_invalid_tcpl);
 
-        PART_BEGIN(H5Tcommit2_invalid_tapl) {
+        PART_BEGIN(H5Tcommit2_invalid_tapl)
+        {
             TESTING_2("H5Tcommit2 with an invalid TAPL");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_INVALID_PARAMS_TEST_TYPE_NAME, type_id,
-                        H5P_DEFAULT, H5P_DEFAULT, H5I_INVALID_HID);
-            } H5E_END_TRY;
+                                     H5P_DEFAULT, H5P_DEFAULT, H5I_INVALID_HID);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -308,8 +342,10 @@ test_create_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit2_invalid_tapl);
-    } END_MULTIPART;
+        }
+        PART_END(H5Tcommit2_invalid_tapl);
+    }
+    END_MULTIPART;
 
     TESTING_2("test cleanup")
 
@@ -327,12 +363,14 @@ test_create_committed_datatype_invalid_params(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -344,7 +382,7 @@ error:
 static int
 test_create_anonymous_committed_datatype(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t type_id = H5I_INVALID_HID;
 
@@ -354,7 +392,8 @@ test_create_anonymous_committed_datatype(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -370,7 +409,8 @@ test_create_anonymous_committed_datatype(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_ANONYMOUS_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_ANONYMOUS_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_CREATE_ANONYMOUS_GROUP_NAME);
         goto error;
@@ -402,12 +442,14 @@ test_create_anonymous_committed_datatype(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -419,8 +461,8 @@ error:
 static int
 test_create_anonymous_committed_datatype_invalid_params(void)
 {
-    herr_t err_ret = -1;
-    hid_t  file_id = H5I_INVALID_HID;
+    herr_t err_ret         = -1;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
@@ -430,7 +472,8 @@ test_create_anonymous_committed_datatype_invalid_params(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -448,9 +491,11 @@ test_create_anonymous_committed_datatype_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_ANONYMOUS_INVALID_PARAMS_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_ANONYMOUS_INVALID_PARAMS_GROUP_NAME,
+                               H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_CREATE_ANONYMOUS_INVALID_PARAMS_GROUP_NAME);
+        HDprintf("    couldn't create container sub-group '%s'\n",
+                 DATATYPE_CREATE_ANONYMOUS_INVALID_PARAMS_GROUP_NAME);
         goto error;
     }
 
@@ -462,13 +507,17 @@ test_create_anonymous_committed_datatype_invalid_params(void)
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Tcommit_anon_invalid_loc_id) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Tcommit_anon_invalid_loc_id)
+        {
             TESTING_2("H5Tcommit_anon with an invalid loc_id");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit_anon(H5I_INVALID_HID, type_id, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -477,14 +526,18 @@ test_create_anonymous_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit_anon_invalid_loc_id);
+        }
+        PART_END(H5Tcommit_anon_invalid_loc_id);
 
-        PART_BEGIN(H5Tcommit_anon_invalid_type_id) {
+        PART_BEGIN(H5Tcommit_anon_invalid_type_id)
+        {
             TESTING_2("H5Tcommit_anon with an invalid datatype ID")
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit_anon(group_id, H5I_INVALID_HID, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -493,14 +546,18 @@ test_create_anonymous_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit_anon_invalid_type_id);
+        }
+        PART_END(H5Tcommit_anon_invalid_type_id);
 
-        PART_BEGIN(H5Tcommit_anon_invalid_tcpl) {
+        PART_BEGIN(H5Tcommit_anon_invalid_tcpl)
+        {
             TESTING_2("H5Tcommit_anon with an invalid TCPL")
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit_anon(group_id, type_id, H5I_INVALID_HID, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -509,14 +566,18 @@ test_create_anonymous_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit_anon_invalid_tcpl);
+        }
+        PART_END(H5Tcommit_anon_invalid_tcpl);
 
-        PART_BEGIN(H5Tcommit_anon_invalid_tapl) {
+        PART_BEGIN(H5Tcommit_anon_invalid_tapl)
+        {
             TESTING_2("H5Tcommit_anon with an invalid TAPL")
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 err_ret = H5Tcommit_anon(group_id, type_id, H5P_DEFAULT, H5I_INVALID_HID);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -525,8 +586,10 @@ test_create_anonymous_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Tcommit_anon_invalid_tapl);
-    } END_MULTIPART;
+        }
+        PART_END(H5Tcommit_anon_invalid_tapl);
+    }
+    END_MULTIPART;
 
     TESTING_2("test cleanup")
 
@@ -544,12 +607,14 @@ test_create_anonymous_committed_datatype_invalid_params(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -562,8 +627,8 @@ error:
 static int
 test_create_committed_datatype_empty_types(void)
 {
-    herr_t err_ret = FAIL;
-    hid_t  file_id = H5I_INVALID_HID;
+    herr_t err_ret         = FAIL;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
@@ -573,7 +638,8 @@ test_create_committed_datatype_empty_types(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -591,27 +657,34 @@ test_create_committed_datatype_empty_types(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME);
+        HDprintf("    couldn't create container sub-group '%s'\n",
+                 DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME);
         goto error;
     }
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Tcommit_empty_compound_type) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Tcommit_empty_compound_type)
+        {
             TESTING_2("creation of committed datatype with empty compound type")
 
-            if ((type_id = H5Tcreate(H5T_COMPOUND, (size_t) 32)) < 0) {
+            if ((type_id = H5Tcreate(H5T_COMPOUND, (size_t)32)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create compound type\n");
                 PART_ERROR(H5Tcommit_empty_compound_type);
             }
 
-            H5E_BEGIN_TRY {
-                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_CMPD_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+            H5E_BEGIN_TRY
+            {
+                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_CMPD_TYPE_NAME, type_id,
+                                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -620,30 +693,35 @@ test_create_committed_datatype_empty_types(void)
             }
 
             /* Add a field to the compound datatype */
-            if (H5Tinsert(type_id, "a", (size_t) 0, H5T_NATIVE_INT) < 0) {
+            if (H5Tinsert(type_id, "a", (size_t)0, H5T_NATIVE_INT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to insert field into compound datatype\n");
                 PART_ERROR(H5Tcommit_empty_compound_type);
             }
 
             /* Attempt to commit the now non-empty compound datatype */
-            if (H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_CMPD_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_CMPD_TYPE_NAME, type_id, H5P_DEFAULT,
+                           H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to commit non-empty compound datatype\n");
                 PART_ERROR(H5Tcommit_empty_compound_type);
             }
 
             PASSED();
-        } PART_END(H5Tcommit_empty_compound_type);
+        }
+        PART_END(H5Tcommit_empty_compound_type);
 
         if (type_id >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Tclose(type_id);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             type_id = H5I_INVALID_HID;
         }
 
-        PART_BEGIN(H5Tcommit_empty_enum_type) {
+        PART_BEGIN(H5Tcommit_empty_enum_type)
+        {
             int enum_val = 1;
 
             TESTING_2("creation of committed datatype with empty enum type")
@@ -654,9 +732,12 @@ test_create_committed_datatype_empty_types(void)
                 PART_ERROR(H5Tcommit_empty_enum_type);
             }
 
-            H5E_BEGIN_TRY {
-                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_ENUM_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-            } H5E_END_TRY;
+            H5E_BEGIN_TRY
+            {
+                err_ret = H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_ENUM_TYPE_NAME, type_id,
+                                     H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            }
+            H5E_END_TRY;
 
             if (err_ret >= 0) {
                 H5_FAILED();
@@ -672,22 +753,27 @@ test_create_committed_datatype_empty_types(void)
             }
 
             /* Attempt to commit the now non-empty enum datatype */
-            if (H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_ENUM_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            if (H5Tcommit2(group_id, DATATYPE_CREATE_EMPTY_TYPES_TEST_ENUM_TYPE_NAME, type_id, H5P_DEFAULT,
+                           H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to commit non-empty enum datatype\n");
                 PART_ERROR(H5Tcommit_empty_enum_type);
             }
 
             PASSED();
-        } PART_END(H5Tcommit_empty_enum_type);
+        }
+        PART_END(H5Tcommit_empty_enum_type);
 
         if (type_id >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Tclose(type_id);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             type_id = H5I_INVALID_HID;
         }
-    } END_MULTIPART;
+    }
+    END_MULTIPART;
 
     if (H5Gclose(group_id) < 0)
         TEST_ERROR
@@ -697,12 +783,14 @@ test_create_committed_datatype_empty_types(void)
         TEST_ERROR
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -716,7 +804,7 @@ test_recommit_committed_type(void)
 {
     htri_t is_committed = FALSE;
     herr_t err_ret;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
@@ -726,7 +814,8 @@ test_recommit_committed_type(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -742,7 +831,8 @@ test_recommit_committed_type(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, RECOMMIT_COMMITTED_TYPE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, RECOMMIT_COMMITTED_TYPE_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", RECOMMIT_COMMITTED_TYPE_TEST_GROUP_NAME);
         goto error;
@@ -774,9 +864,11 @@ test_recommit_committed_type(void)
     }
 
     /* We should not be able to re-commit a committed type */
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         err_ret = H5Tcommit2(group_id, "native_int", type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     if (err_ret >= 0) {
         H5_FAILED();
@@ -798,12 +890,14 @@ test_recommit_committed_type(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -815,7 +909,7 @@ error:
 static int
 test_open_committed_datatype(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t type_id = H5I_INVALID_HID;
 
@@ -825,7 +919,8 @@ test_open_committed_datatype(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -841,7 +936,8 @@ test_open_committed_datatype(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_OPEN_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_OPEN_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                               H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_OPEN_TEST_GROUP_NAME);
         goto error;
@@ -853,7 +949,8 @@ test_open_committed_datatype(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATATYPE_OPEN_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATATYPE_OPEN_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) <
+        0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATATYPE_OPEN_TEST_TYPE_NAME);
         goto error;
@@ -882,12 +979,14 @@ test_open_committed_datatype(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -899,7 +998,7 @@ error:
 static int
 test_open_committed_datatype_invalid_params(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t type_id = H5I_INVALID_HID;
 
@@ -909,7 +1008,8 @@ test_open_committed_datatype_invalid_params(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -927,9 +1027,11 @@ test_open_committed_datatype_invalid_params(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_OPEN_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_OPEN_INVALID_PARAMS_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_OPEN_INVALID_PARAMS_TEST_GROUP_NAME);
+        HDprintf("    couldn't create container sub-group '%s'\n",
+                 DATATYPE_OPEN_INVALID_PARAMS_TEST_GROUP_NAME);
         goto error;
     }
 
@@ -939,7 +1041,8 @@ test_open_committed_datatype_invalid_params(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT,
+                   H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME);
         goto error;
@@ -950,13 +1053,17 @@ test_open_committed_datatype_invalid_params(void)
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Topen2_invalid_loc_id) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Topen2_invalid_loc_id)
+        {
             TESTING_2("H5Topen2 with an invalid location ID");
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 type_id = H5Topen2(H5I_INVALID_HID, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (type_id >= 0) {
                 H5_FAILED();
@@ -966,14 +1073,18 @@ test_open_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Topen2_invalid_loc_id);
+        }
+        PART_END(H5Topen2_invalid_loc_id);
 
-        PART_BEGIN(H5Topen2_invalid_type_name) {
+        PART_BEGIN(H5Topen2_invalid_type_name)
+        {
             TESTING_2("H5Topen2 with an invalid datatype name")
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 type_id = H5Topen2(group_id, NULL, H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (type_id >= 0) {
                 H5_FAILED();
@@ -982,9 +1093,11 @@ test_open_committed_datatype_invalid_params(void)
                 PART_ERROR(H5Topen2_invalid_type_name);
             }
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 type_id = H5Topen2(group_id, "", H5P_DEFAULT);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (type_id >= 0) {
                 H5_FAILED();
@@ -994,14 +1107,18 @@ test_open_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Topen2_invalid_type_name);
+        }
+        PART_END(H5Topen2_invalid_type_name);
 
-        PART_BEGIN(H5Topen2_invalid_tapl) {
+        PART_BEGIN(H5Topen2_invalid_tapl)
+        {
             TESTING_2("H5Topen2 with an invalid TAPL")
 
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 type_id = H5Topen2(group_id, DATATYPE_OPEN_INVALID_PARAMS_TEST_TYPE_NAME, H5I_INVALID_HID);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (type_id >= 0) {
                 H5_FAILED();
@@ -1011,8 +1128,10 @@ test_open_committed_datatype_invalid_params(void)
             }
 
             PASSED();
-        } PART_END(H5Topen2_invalid_tapl);
-    } END_MULTIPART;
+        }
+        PART_END(H5Topen2_invalid_tapl);
+    }
+    END_MULTIPART;
 
     TESTING_2("test cleanup")
 
@@ -1028,12 +1147,14 @@ test_open_committed_datatype_invalid_params(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -1045,13 +1166,13 @@ error:
 static int
 test_reopen_committed_datatype_indirect(void)
 {
-    size_t dt_size = 0;
-    hid_t  file_id = H5I_INVALID_HID;
+    size_t dt_size         = 0;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID;
-    hid_t  group_id = H5I_INVALID_HID;
-    hid_t  dset_id = H5I_INVALID_HID;
+    hid_t  group_id        = H5I_INVALID_HID;
+    hid_t  dset_id         = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID, reopened_type_id = H5I_INVALID_HID;
-    hid_t  strtype = H5I_INVALID_HID;
+    hid_t  strtype  = H5I_INVALID_HID;
     hid_t  space_id = H5I_INVALID_HID;
 
     TESTING_MULTIPART("reopening open committed datatypes using H5Dget_type")
@@ -1061,7 +1182,8 @@ test_reopen_committed_datatype_indirect(void)
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, dataset, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, dataset, or stored datatype aren't supported with "
+                 "this connector\n");
         return 0;
     }
 
@@ -1079,7 +1201,8 @@ test_reopen_committed_datatype_indirect(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_REOPEN_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_REOPEN_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                               H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_REOPEN_TEST_GROUP_NAME);
         goto error;
@@ -1090,8 +1213,10 @@ test_reopen_committed_datatype_indirect(void)
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(reopen_compound_type) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(reopen_compound_type)
+        {
             TESTING_2("re-open of compound datatype")
 
             if ((strtype = H5Tcopy(H5T_C_S1)) < 0) {
@@ -1112,7 +1237,7 @@ test_reopen_committed_datatype_indirect(void)
                 PART_ERROR(reopen_compound_type);
             }
 
-            if (H5Tinsert(type_id, "vlstr", (size_t) 0, strtype) < 0) {
+            if (H5Tinsert(type_id, "vlstr", (size_t)0, strtype) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to insert field into compound datatype\n");
                 PART_ERROR(reopen_compound_type);
@@ -1145,7 +1270,8 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             /* Create dataset with compound type */
-            if ((dset_id = H5Dcreate2(group_id, "cmpd_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dcreate2(group_id, "cmpd_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT,
+                                      H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create dataset using committed datatype\n");
                 PART_ERROR(reopen_compound_type);
@@ -1165,16 +1291,24 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             PASSED();
-        } PART_END(reopen_compound_type);
+        }
+        PART_END(reopen_compound_type);
 
-        H5E_BEGIN_TRY {
-            H5Tclose(strtype); strtype = H5I_INVALID_HID;
-            H5Tclose(type_id); type_id = H5I_INVALID_HID;
-            H5Tclose(reopened_type_id); reopened_type_id = H5I_INVALID_HID;
-            H5Dclose(dset_id); dset_id = H5I_INVALID_HID;
-        } H5E_END_TRY;
+        H5E_BEGIN_TRY
+        {
+            H5Tclose(strtype);
+            strtype = H5I_INVALID_HID;
+            H5Tclose(type_id);
+            type_id = H5I_INVALID_HID;
+            H5Tclose(reopened_type_id);
+            reopened_type_id = H5I_INVALID_HID;
+            H5Dclose(dset_id);
+            dset_id = H5I_INVALID_HID;
+        }
+        H5E_END_TRY;
 
-        PART_BEGIN(reopen_enum_type) {
+        PART_BEGIN(reopen_enum_type)
+        {
             int enum_value;
 
             TESTING_2("re-open of enum datatype")
@@ -1220,7 +1354,8 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             /* Create dataset with enum type */
-            if ((dset_id = H5Dcreate2(group_id, "enum_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dcreate2(group_id, "enum_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT,
+                                      H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create dataset using committed datatype\n");
                 PART_ERROR(reopen_enum_type);
@@ -1240,15 +1375,22 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             PASSED();
-        } PART_END(reopen_enum_type);
+        }
+        PART_END(reopen_enum_type);
 
-        H5E_BEGIN_TRY {
-            H5Tclose(type_id); type_id = H5I_INVALID_HID;
-            H5Tclose(reopened_type_id); reopened_type_id = H5I_INVALID_HID;
-            H5Dclose(dset_id); dset_id = H5I_INVALID_HID;
-        } H5E_END_TRY;
+        H5E_BEGIN_TRY
+        {
+            H5Tclose(type_id);
+            type_id = H5I_INVALID_HID;
+            H5Tclose(reopened_type_id);
+            reopened_type_id = H5I_INVALID_HID;
+            H5Dclose(dset_id);
+            dset_id = H5I_INVALID_HID;
+        }
+        H5E_END_TRY;
 
-        PART_BEGIN(reopen_vlen_type) {
+        PART_BEGIN(reopen_vlen_type)
+        {
             TESTING_2("reopen of a variable-length datatype")
 
             if ((type_id = H5Tvlen_create(H5T_NATIVE_INT)) < 0) {
@@ -1278,7 +1420,8 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             /* Create dataset with variable-length type */
-            if ((dset_id = H5Dcreate2(group_id, "vlen_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dcreate2(group_id, "vlen_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT,
+                                      H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create dataset using committed datatype\n");
                 PART_ERROR(reopen_vlen_type);
@@ -1298,20 +1441,27 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             PASSED();
-        } PART_END(reopen_vlen_type);
+        }
+        PART_END(reopen_vlen_type);
 
-        H5E_BEGIN_TRY {
-            H5Tclose(type_id); type_id = H5I_INVALID_HID;
-            H5Tclose(reopened_type_id); reopened_type_id = H5I_INVALID_HID;
-            H5Dclose(dset_id); dset_id = H5I_INVALID_HID;
-        } H5E_END_TRY;
+        H5E_BEGIN_TRY
+        {
+            H5Tclose(type_id);
+            type_id = H5I_INVALID_HID;
+            H5Tclose(reopened_type_id);
+            reopened_type_id = H5I_INVALID_HID;
+            H5Dclose(dset_id);
+            dset_id = H5I_INVALID_HID;
+        }
+        H5E_END_TRY;
 
-        PART_BEGIN(reopen_opaque_type) {
+        PART_BEGIN(reopen_opaque_type)
+        {
             const char *tag = "opaque_tag";
 
             TESTING_2("reopen of an opaque datatype")
 
-            if ((type_id = H5Tcreate(H5T_OPAQUE, (size_t) 13)) < 0) {
+            if ((type_id = H5Tcreate(H5T_OPAQUE, (size_t)13)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create opaque datatype\n");
                 PART_ERROR(reopen_opaque_type);
@@ -1344,7 +1494,8 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             /* Create dataset with opaque type */
-            if ((dset_id = H5Dcreate2(group_id, "opaque_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dcreate2(group_id, "opaque_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT,
+                                      H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create dataset using committed datatype\n");
                 PART_ERROR(reopen_opaque_type);
@@ -1364,16 +1515,23 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             PASSED();
-        } PART_END(reopen_opaque_type);
+        }
+        PART_END(reopen_opaque_type);
 
-        H5E_BEGIN_TRY {
-            H5Tclose(type_id); type_id = H5I_INVALID_HID;
-            H5Tclose(reopened_type_id); reopened_type_id = H5I_INVALID_HID;
-            H5Dclose(dset_id); dset_id = H5I_INVALID_HID;
-        } H5E_END_TRY;
+        H5E_BEGIN_TRY
+        {
+            H5Tclose(type_id);
+            type_id = H5I_INVALID_HID;
+            H5Tclose(reopened_type_id);
+            reopened_type_id = H5I_INVALID_HID;
+            H5Dclose(dset_id);
+            dset_id = H5I_INVALID_HID;
+        }
+        H5E_END_TRY;
 
-        PART_BEGIN(reopen_array_type) {
-            hsize_t array_dims[] = { 2, 3 };
+        PART_BEGIN(reopen_array_type)
+        {
+            hsize_t array_dims[] = {2, 3};
 
             TESTING_2("reopen of an array datatype")
 
@@ -1404,7 +1562,8 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             /* Create dataset with array type */
-            if ((dset_id = H5Dcreate2(group_id, "array_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+            if ((dset_id = H5Dcreate2(group_id, "array_dset", type_id, space_id, H5P_DEFAULT, H5P_DEFAULT,
+                                      H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    failed to create dataset using committed datatype\n");
                 PART_ERROR(reopen_array_type);
@@ -1424,14 +1583,21 @@ test_reopen_committed_datatype_indirect(void)
             }
 
             PASSED();
-        } PART_END(reopen_array_type);
+        }
+        PART_END(reopen_array_type);
 
-        H5E_BEGIN_TRY {
-            H5Tclose(type_id); type_id = H5I_INVALID_HID;
-            H5Tclose(reopened_type_id); reopened_type_id = H5I_INVALID_HID;
-            H5Dclose(dset_id); dset_id = H5I_INVALID_HID;
-        } H5E_END_TRY;
-    } END_MULTIPART;
+        H5E_BEGIN_TRY
+        {
+            H5Tclose(type_id);
+            type_id = H5I_INVALID_HID;
+            H5Tclose(reopened_type_id);
+            reopened_type_id = H5I_INVALID_HID;
+            H5Dclose(dset_id);
+            dset_id = H5I_INVALID_HID;
+        }
+        H5E_END_TRY;
+    }
+    END_MULTIPART;
 
     TESTING_2("test cleanup")
 
@@ -1449,7 +1615,8 @@ test_reopen_committed_datatype_indirect(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Sclose(space_id);
         H5Tclose(strtype);
         H5Tclose(type_id);
@@ -1458,7 +1625,8 @@ error:
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -1478,7 +1646,8 @@ test_close_committed_datatype_invalid_id(void)
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file or stored datatype aren't supported with this connector\n");
+        HDprintf(
+            "    API functions for basic file or stored datatype aren't supported with this connector\n");
         return 0;
     }
 
@@ -1488,9 +1657,11 @@ test_close_committed_datatype_invalid_id(void)
         goto error;
     }
 
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         err_ret = H5Tclose(H5I_INVALID_HID);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     if (err_ret >= 0) {
         H5_FAILED();
@@ -1506,9 +1677,11 @@ test_close_committed_datatype_invalid_id(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -1521,7 +1694,7 @@ error:
 static int
 test_datatype_property_lists(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t type_id1 = H5I_INVALID_HID, type_id2 = H5I_INVALID_HID;
     hid_t tcpl_id1 = H5I_INVALID_HID, tcpl_id2 = H5I_INVALID_HID;
@@ -1532,7 +1705,8 @@ test_datatype_property_lists(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_GET_PLIST)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, stored datatype, or getting property list aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, stored datatype, or getting property list aren't "
+                 "supported with this connector\n");
         return 0;
     }
 
@@ -1550,7 +1724,8 @@ test_datatype_property_lists(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_PROPERTY_LIST_TEST_SUBGROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_PROPERTY_LIST_TEST_SUBGROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_PROPERTY_LIST_TEST_SUBGROUP_NAME);
         goto error;
@@ -1576,13 +1751,15 @@ test_datatype_property_lists(void)
 
     /* Currently no TCPL routines are defined */
 
-    if (H5Tcommit2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1, type_id1, H5P_DEFAULT, tcpl_id1, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1, type_id1, H5P_DEFAULT, tcpl_id1,
+                   H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1);
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2, type_id2, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0 ) {
+    if (H5Tcommit2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2, type_id2, H5P_DEFAULT, H5P_DEFAULT,
+                   H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2);
         goto error;
@@ -1593,8 +1770,10 @@ test_datatype_property_lists(void)
 
     PASSED();
 
-    BEGIN_MULTIPART {
-        PART_BEGIN(H5Tget_create_plist) {
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Tget_create_plist)
+        {
             TESTING_2("H5Tget_create_plist")
 
             /* Try to receive copies for the two property lists */
@@ -1611,46 +1790,58 @@ test_datatype_property_lists(void)
             }
 
             PASSED();
-        } PART_END(H5Tget_create_plist);
+        }
+        PART_END(H5Tget_create_plist);
 
         /* Now close the property lists and datatypes and see if we can still retieve copies of
          * the property lists upon opening (instead of creating) a datatype
          */
         if (tcpl_id1 >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Pclose(tcpl_id1);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             tcpl_id1 = H5I_INVALID_HID;
         }
         if (tcpl_id2 >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Pclose(tcpl_id2);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             tcpl_id2 = H5I_INVALID_HID;
         }
         if (type_id1 >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Tclose(type_id1);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             type_id1 = H5I_INVALID_HID;
         }
         if (type_id2 >= 0) {
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 H5Tclose(type_id2);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
             type_id2 = H5I_INVALID_HID;
         }
 
-        PART_BEGIN(H5Tget_create_plist_reopened) {
+        PART_BEGIN(H5Tget_create_plist_reopened)
+        {
             TESTING_2("H5Tget_create_plist after re-opening committed datatype")
 
-            if ((type_id1 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1, H5P_DEFAULT)) < 0) {
+            if ((type_id1 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1, H5P_DEFAULT)) <
+                0) {
                 H5_FAILED();
                 HDprintf("    couldn't open datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME1);
                 PART_ERROR(H5Tget_create_plist_reopened);
             }
 
-            if ((type_id2 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2, H5P_DEFAULT)) < 0) {
+            if ((type_id2 = H5Topen2(group_id, DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2, H5P_DEFAULT)) <
+                0) {
                 H5_FAILED();
                 HDprintf("    couldn't open datatype '%s'\n", DATATYPE_PROPERTY_LIST_TEST_DATATYPE_NAME2);
                 PART_ERROR(H5Tget_create_plist_reopened);
@@ -1669,8 +1860,10 @@ test_datatype_property_lists(void)
             }
 
             PASSED();
-        } PART_END(H5Tget_create_plist_reopened);
-    } END_MULTIPART;
+        }
+        PART_END(H5Tget_create_plist_reopened);
+    }
+    END_MULTIPART;
 
     TESTING_2("test cleanup")
 
@@ -1694,7 +1887,8 @@ test_datatype_property_lists(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Pclose(tcpl_id1);
         H5Pclose(tcpl_id2);
         H5Tclose(type_id1);
@@ -1702,7 +1896,8 @@ error:
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -1714,10 +1909,10 @@ error:
 static int
 test_create_dataset_with_committed_type(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t dset_id = H5I_INVALID_HID;
-    hid_t type_id = H5I_INVALID_HID;
+    hid_t dset_id   = H5I_INVALID_HID;
+    hid_t type_id   = H5I_INVALID_HID;
     hid_t fspace_id = H5I_INVALID_HID;
 
     TESTING("dataset creation with a committed datatype")
@@ -1726,7 +1921,8 @@ test_create_dataset_with_committed_type(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, dataset, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, dataset, or stored datatype aren't supported with "
+                 "this connector\n");
         return 0;
     }
 
@@ -1742,8 +1938,8 @@ test_create_dataset_with_committed_type(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME,
-            H5P_DEFAULT,  H5P_DEFAULT,  H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container group '%s'\n", DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME);
         goto error;
@@ -1755,8 +1951,8 @@ test_create_dataset_with_committed_type(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATASET_CREATE_WITH_DATATYPE_TEST_TYPE_NAME, type_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATASET_CREATE_WITH_DATATYPE_TEST_TYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT,
+                   H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATASET_CREATE_WITH_DATATYPE_TEST_TYPE_NAME);
         goto error;
@@ -1783,7 +1979,8 @@ test_create_dataset_with_committed_type(void)
         goto error;
     }
 
-    if ((group_id = H5Gopen2(container_group, DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gopen2(container_group, DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT)) <
+        0) {
         H5_FAILED();
         HDprintf("    couldn't open container group '%s'\n", DATASET_CREATE_WITH_DATATYPE_TEST_GROUP_NAME);
         goto error;
@@ -1799,9 +1996,10 @@ test_create_dataset_with_committed_type(void)
         TEST_ERROR
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_CREATE_WITH_DATATYPE_TEST_DSET_NAME, type_id, fspace_id,
-            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+                              H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create dataset '%s' using committed datatype\n", DATASET_CREATE_WITH_DATATYPE_TEST_DSET_NAME);
+        HDprintf("    couldn't create dataset '%s' using committed datatype\n",
+                 DATASET_CREATE_WITH_DATATYPE_TEST_DSET_NAME);
         goto error;
     }
 
@@ -1832,14 +2030,16 @@ test_create_dataset_with_committed_type(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Sclose(fspace_id);
         H5Dclose(dset_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -1852,10 +2052,10 @@ static int
 test_create_attribute_with_committed_type(void)
 {
     htri_t attr_exists;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  attr_id = H5I_INVALID_HID;
-    hid_t  type_id = H5I_INVALID_HID;
+    hid_t  attr_id  = H5I_INVALID_HID;
+    hid_t  type_id  = H5I_INVALID_HID;
     hid_t  space_id = H5I_INVALID_HID;
 
     TESTING("attribute creation with a committed datatype")
@@ -1864,10 +2064,11 @@ test_create_attribute_with_committed_type(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, attribute, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, attribute, or stored datatype aren't supported "
+                 "with this connector\n");
         return 0;
     }
-  
+
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
@@ -1880,10 +2081,11 @@ test_create_attribute_with_committed_type(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_GROUP_NAME,
-            H5P_DEFAULT,  H5P_DEFAULT,  H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create container group '%s'\n", ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_GROUP_NAME);
+        HDprintf("    couldn't create container group '%s'\n",
+                 ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_GROUP_NAME);
         goto error;
     }
 
@@ -1893,7 +2095,8 @@ test_create_attribute_with_committed_type(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_DTYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_DTYPE_NAME, type_id, H5P_DEFAULT,
+                   H5P_DEFAULT, H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_DTYPE_NAME);
         goto error;
@@ -1904,15 +2107,17 @@ test_create_attribute_with_committed_type(void)
 
     if ((type_id = H5Topen2(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_DTYPE_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open committed datatype '%s'\n", ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_DTYPE_NAME);
+        HDprintf("    couldn't open committed datatype '%s'\n",
+                 ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_DTYPE_NAME);
         goto error;
     }
 
-    if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
+    if ((space_id =
+             generate_random_dataspace(ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
         TEST_ERROR
 
-    if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME, type_id,
-            space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME, type_id, space_id,
+                              H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create attribute '%s'\n", ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME);
         goto error;
@@ -1921,7 +2126,8 @@ test_create_attribute_with_committed_type(void)
     /* Verify the attribute has been created */
     if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't determine if attribute '%s' exists\n", ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME);
+        HDprintf("    couldn't determine if attribute '%s' exists\n",
+                 ATTRIBUTE_CREATE_WITH_DATATYPE_TEST_ATTR_NAME);
         goto error;
     }
 
@@ -1958,14 +2164,16 @@ test_create_attribute_with_committed_type(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Sclose(space_id);
         H5Aclose(attr_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -1978,7 +2186,7 @@ static int
 test_delete_committed_type(void)
 {
     htri_t type_exists;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  type_id = H5I_INVALID_HID;
 
@@ -1988,7 +2196,8 @@ test_delete_committed_type(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_LINK_BASIC)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, attribute, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, attribute, or stored datatype aren't supported "
+                 "with this connector\n");
         return 0;
     }
 
@@ -2004,8 +2213,8 @@ test_delete_committed_type(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_DELETE_TEST_GROUP_NAME,
-            H5P_DEFAULT,  H5P_DEFAULT,  H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_DELETE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                               H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container group '%s'\n", DATATYPE_DELETE_TEST_GROUP_NAME);
         goto error;
@@ -2017,7 +2226,8 @@ test_delete_committed_type(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATATYPE_DELETE_TEST_DTYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATATYPE_DELETE_TEST_DTYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT,
+                   H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    couldn't commit datatype '%s'\n", DATATYPE_DELETE_TEST_DTYPE_NAME);
         goto error;
@@ -2067,12 +2277,14 @@ test_delete_committed_type(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -2085,10 +2297,10 @@ static int
 test_resurrect_datatype(void)
 {
 #ifndef NO_ID_PREVENTS_OBJ_DELETE
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID;
-    hid_t group_id = H5I_INVALID_HID;
-    hid_t type_id = H5I_INVALID_HID;
+    hid_t group_id        = H5I_INVALID_HID;
+    hid_t type_id         = H5I_INVALID_HID;
 #endif /* NO_ID_PREVENTS_OBJ_DELETE */
 
     TESTING("resurrecting datatype after deletion")
@@ -2099,7 +2311,8 @@ test_resurrect_datatype(void)
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_LINK_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_HARD_LINKS)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, link, hard link, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, link, hard link, or stored datatype aren't "
+                 "supported with this connector\n");
         return 0;
     }
 
@@ -2115,7 +2328,8 @@ test_resurrect_datatype(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, DATATYPE_RESURRECT_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, DATATYPE_RESURRECT_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                               H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", DATATYPE_RESURRECT_TEST_GROUP_NAME);
         goto error;
@@ -2128,7 +2342,8 @@ test_resurrect_datatype(void)
         goto error;
     }
 
-    if (H5Tcommit2(group_id, DATATYPE_RESURRECT_TEST_DTYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Tcommit2(group_id, DATATYPE_RESURRECT_TEST_DTYPE_NAME, type_id, H5P_DEFAULT, H5P_DEFAULT,
+                   H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    failed to commit datatype\n");
         goto error;
@@ -2150,7 +2365,8 @@ test_resurrect_datatype(void)
 #endif
 
     /* Re-link the datatype to the group hierarchy (shouldn't get deleted now) */
-    if (H5Lcreate_hard(type_id, ".", group_id, DATATYPE_RESURRECT_TEST_DTYPE_NAME2, H5P_DEFAULT, H5P_DEFAULT) < 0) {
+    if (H5Lcreate_hard(type_id, ".", group_id, DATATYPE_RESURRECT_TEST_DTYPE_NAME2, H5P_DEFAULT,
+                       H5P_DEFAULT) < 0) {
         H5_FAILED();
         HDprintf("    failed to create new link for deleted datatype\n");
         goto error;
@@ -2202,7 +2418,7 @@ test_resurrect_datatype(void)
         TEST_ERROR
 
     PASSED();
-#else /* NO_ID_PREVENTS_OBJ_DELETE */
+#else  /* NO_ID_PREVENTS_OBJ_DELETE */
     SKIPPED();
 #endif /* NO_ID_PREVENTS_OBJ_DELETE */
 
@@ -2210,12 +2426,14 @@ test_resurrect_datatype(void)
 
 #ifndef NO_ID_PREVENTS_OBJ_DELETE
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 #endif /* NO_ID_PREVENTS_OBJ_DELETE */
@@ -2271,9 +2489,9 @@ static int
 test_cant_commit_predefined(void)
 {
     herr_t err_ret;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID;
-    hid_t  group_id = H5I_INVALID_HID;
+    hid_t  group_id        = H5I_INVALID_HID;
 
     TESTING("inability to commit predefined types directly")
 
@@ -2281,7 +2499,8 @@ test_cant_commit_predefined(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -2297,15 +2516,19 @@ test_cant_commit_predefined(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, PREDEFINED_TYPE_COMMIT_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, PREDEFINED_TYPE_COMMIT_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", PREDEFINED_TYPE_COMMIT_TEST_GROUP_NAME);
         goto error;
     }
 
-    H5E_BEGIN_TRY {
-        err_ret = H5Tcommit2(group_id, "committed_predefined_type", H5T_NATIVE_INT, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    } H5E_END_TRY;
+    H5E_BEGIN_TRY
+    {
+        err_ret = H5Tcommit2(group_id, "committed_predefined_type", H5T_NATIVE_INT, H5P_DEFAULT, H5P_DEFAULT,
+                             H5P_DEFAULT);
+    }
+    H5E_END_TRY;
 
     if (err_ret >= 0) {
         H5_FAILED();
@@ -2325,11 +2548,13 @@ test_cant_commit_predefined(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
@@ -2343,10 +2568,10 @@ test_cant_modify_committed_type(void)
 {
     htri_t is_committed = FALSE;
     herr_t err_ret;
-    hid_t  file_id = H5I_INVALID_HID;
+    hid_t  file_id         = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID;
-    hid_t  group_id = H5I_INVALID_HID;
-    hid_t  type_id = H5I_INVALID_HID;
+    hid_t  group_id        = H5I_INVALID_HID;
+    hid_t  type_id         = H5I_INVALID_HID;
 
     TESTING("inability to modify a committed datatype")
 
@@ -2354,7 +2579,8 @@ test_cant_modify_committed_type(void)
     if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or stored datatype aren't supported with this "
+                 "connector\n");
         return 0;
     }
 
@@ -2370,7 +2596,8 @@ test_cant_modify_committed_type(void)
         goto error;
     }
 
-    if ((group_id = H5Gcreate2(container_group, MODIFY_COMMITTED_TYPE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((group_id = H5Gcreate2(container_group, MODIFY_COMMITTED_TYPE_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create container sub-group '%s'\n", MODIFY_COMMITTED_TYPE_TEST_GROUP_NAME);
         goto error;
@@ -2402,9 +2629,11 @@ test_cant_modify_committed_type(void)
     }
 
     /* We should not be able to modify a type after it has been committed. */
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         err_ret = H5Tset_precision(type_id, (size_t)256);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     if (err_ret >= 0) {
         H5_FAILED();
@@ -2426,12 +2655,14 @@ test_cant_modify_committed_type(void)
     return 0;
 
 error:
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         H5Tclose(type_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
-    } H5E_END_TRY;
+    }
+    H5E_END_TRY;
 
     return 1;
 }
