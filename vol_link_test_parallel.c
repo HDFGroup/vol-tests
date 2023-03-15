@@ -12,14 +12,10 @@
 
 #include "vol_link_test_parallel.h"
 
-
-
 /*
  * The array of parallel link tests to be performed.
  */
-static int (*par_link_tests[])(void) = {
-    NULL
-};
+static int (*par_link_tests[])(void) = {NULL};
 
 int
 vol_link_test_parallel(void)

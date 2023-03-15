@@ -12,14 +12,10 @@
 
 #include "vol_misc_test_parallel.h"
 
-
-
 /*
  * The array of parallel miscellaneous tests to be performed.
  */
-static int (*par_misc_tests[])(void) = {
-    NULL
-};
+static int (*par_misc_tests[])(void) = {NULL};
 
 int
 vol_misc_test_parallel(void)

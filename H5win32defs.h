@@ -21,21 +21,21 @@
  *
  */
 #ifndef H5_HAVE_INTTYPES_H
-#define PRId8   "d"
-#define PRIo8   "o"
-#define PRIu8   "u"
-#define PRIx8   "x"
-#define PRIX8   "X"
-#define PRId16  "d"
-#define PRIo16  "o"
-#define PRIu16  "u"
-#define PRIx16  "x"
-#define PRIX16  "X"
-#define PRId32  "d"
-#define PRIo32  "o"
-#define PRIu32  "u"
-#define PRIx32  "x"
-#define PRIX32  "X"
+#define PRId8  "d"
+#define PRIo8  "o"
+#define PRIu8  "u"
+#define PRIx8  "x"
+#define PRIX8  "X"
+#define PRId16 "d"
+#define PRIo16 "o"
+#define PRIu16 "u"
+#define PRIx16 "x"
+#define PRIX16 "X"
+#define PRId32 "d"
+#define PRIo32 "o"
+#define PRIu32 "u"
+#define PRIx32 "x"
+#define PRIX32 "X"
 #endif
 
 /*
@@ -139,14 +139,14 @@ struct timespec {
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-H5_DLL int    Wgettimeofday(struct timeval *tv, struct timezone *tz);
-H5_DLL int    Wsetenv(const char *name, const char *value, int overwrite);
-H5_DLL int    Wflock(int fd, int operation);
-H5_DLL char * Wgetlogin(void);
-H5_DLL int    c99_snprintf(char *str, size_t size, const char *format, ...);
-H5_DLL int    c99_vsnprintf(char *str, size_t size, const char *format, va_list ap);
-H5_DLL int    Wnanosleep(const struct timespec *req, struct timespec *rem);
-H5_DLL herr_t H5_expand_windows_env_vars(char **env_var);
+H5_DLL int            Wgettimeofday(struct timeval *tv, struct timezone *tz);
+H5_DLL int            Wsetenv(const char *name, const char *value, int overwrite);
+H5_DLL int            Wflock(int fd, int operation);
+H5_DLL char          *Wgetlogin(void);
+H5_DLL int            c99_snprintf(char *str, size_t size, const char *format, ...);
+H5_DLL int            c99_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+H5_DLL int            Wnanosleep(const struct timespec *req, struct timespec *rem);
+H5_DLL herr_t         H5_expand_windows_env_vars(char **env_var);
 H5_DLL const wchar_t *H5_get_utf16_str(const char *s);
 H5_DLL int            Wopen_utf8(const char *path, int oflag, ...);
 H5_DLL int            Wremove_utf8(const char *path);

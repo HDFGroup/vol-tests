@@ -44,7 +44,7 @@ static int mpi_size_g, mpi_rank_g;
 hsize_t space_dim1 = SPACE_DIM1 * 256; // 4096
 hsize_t space_dim2 = SPACE_DIM2;
 
-uint64_t    vol_cap_flags;
+uint64_t vol_cap_flags;
 
 static void coll_chunktest(const char *filename, int chunk_factor, int select_factor, int api_option,
                            int file_selection, int mem_selection, int mode);
@@ -468,7 +468,7 @@ dataset_big_write(void)
     hsize_t     start[RANK];               /* for hyperslab setting */
     hsize_t     count[RANK], stride[RANK]; /* for hyperslab setting */
     hsize_t     block[RANK];               /* for hyperslab setting */
-    hsize_t *   coords = NULL;
+    hsize_t    *coords = NULL;
     herr_t      ret;     /* Generic return value */
     hid_t       fid;     /* HDF5 file ID */
     hid_t       acc_tpl; /* File access templates */
@@ -777,7 +777,7 @@ dataset_big_read(void)
     hsize_t     count[RANK], stride[RANK]; /* for hyperslab setting */
     hsize_t     block[RANK];               /* for hyperslab setting */
     size_t      num_points;
-    hsize_t *   coords = NULL;
+    hsize_t    *coords = NULL;
     herr_t      ret; /* Generic return value */
 
     /* allocate memory for data buffer */
@@ -1114,7 +1114,7 @@ single_rank_independent_io(void)
         hid_t   dset_id   = -1;
         hid_t   fspace_id = -1;
         hid_t   mspace_id = -1;
-        void *  data      = NULL;
+        void   *data      = NULL;
 
         fapl_id = H5Pcreate(H5P_FILE_ACCESS);
         VRFY_G((fapl_id >= 0), "H5P_FILE_ACCESS");
@@ -1409,8 +1409,8 @@ coll_chunktest(const char *filename, int chunk_factor, int select_factor, int ap
     hid_t acc_plist, xfer_plist, crp_plist;
 
     hsize_t dims[RANK], chunk_dims[RANK];
-    int *   data_array1  = NULL;
-    int *   data_origin1 = NULL;
+    int    *data_array1  = NULL;
+    int    *data_origin1 = NULL;
 
     hsize_t start[RANK], count[RANK], stride[RANK], block[RANK];
 
@@ -1747,8 +1747,8 @@ coll_chunktest(const char *filename, int chunk_factor, int select_factor, int ap
 int
 main(int argc, char **argv)
 {
-    int ExpressMode = 0;
-    hid_t acc_plist = H5I_INVALID_HID;
+    int   ExpressMode = 0;
+    hid_t acc_plist   = H5I_INVALID_HID;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size_g);
@@ -1767,7 +1767,7 @@ main(int argc, char **argv)
 
     /* Get the capability flag of the VOL connector being used */
     if (H5Pget_vol_cap_flags(acc_plist, &vol_cap_flags) < 0) {
-        if(MAIN_PROCESS)
+        if (MAIN_PROCESS)
             HDprintf("Failed to get the capability flag of the VOL connector being used\n");
 
         MPI_Finalize();
@@ -1779,8 +1779,9 @@ main(int argc, char **argv)
      * and H5Dget_space. */
     if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
         !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_MORE)) {
-        if(MAIN_PROCESS)
-            HDprintf("API functions for basic file, dataset basic or more aren't supported with this connector\n");
+        if (MAIN_PROCESS)
+            HDprintf(
+                "API functions for basic file, dataset basic or more aren't supported with this connector\n");
 
         MPI_Finalize();
         return 0;
