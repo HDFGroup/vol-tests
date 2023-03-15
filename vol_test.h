@@ -43,6 +43,8 @@ H5TEST_DLLVAR char *paraprefix;
 H5TEST_DLLVAR MPI_Info h5_io_info_g;         /* MPI INFO object for IO */
 #endif
 
+extern char *test_path_prefix;
+
 /*
  * Print the current location on the standard output stream.
  */
@@ -133,6 +135,10 @@ extern char vol_test_filename[];
 #define UNUSED(o) (void) (o);
 
 #define VOL_TEST_FILENAME_MAX_LENGTH 1024
+
+#define VOL_TEST_PATH_MAX_LENGTH 1024
+
+#define VOL_TEST_TOTAL_MAX_LENGTH = VOL_TEST_FILENAME_MAX_LENGTH + VOL_TEST_PATH_MAX_LENGTH
 
 /* The maximum size of a dimension in an HDF5 dataspace as allowed
  * for this testing suite so as not to try to create too large

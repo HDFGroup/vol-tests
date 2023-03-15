@@ -92,9 +92,15 @@ test_create_file(void)
         return 0;
     }
 
-    if ((file_id = H5Fcreate(FILE_CREATE_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    size_t file_create_test_filepath_len = strlen(test_path_prefix) + strlen(FILE_CREATE_TEST_FILENAME);
+
+    char file_create_test_filepath[file_create_test_filepath_len];
+
+    snprintf(file_create_test_filepath, file_create_test_filepath_len, "%s%s", test_path_prefix, FILE_CREATE_TEST_FILENAME);
+
+    if ((file_id = H5Fcreate(file_create_test_filepath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
+        HDprintf("    couldn't create file '%s'\n", file_create_test_filepath);
         goto error;
     }
 
@@ -2873,7 +2879,11 @@ error:
 static void
 cleanup_files(void)
 {
-    H5Fdelete(FILE_CREATE_TEST_FILENAME, H5P_DEFAULT);
+    size_t file_create_test_filepath_len = strlen(test_path_prefix) + strlen(FILE_CREATE_TEST_FILENAME);
+    char file_create_test_filepath[file_create_test_filepath_len];
+    snprintf(file_create_test_filepath, file_create_test_filepath_len, "%s%s", test_path_prefix, FILE_CREATE_TEST_FILENAME);
+
+    H5Fdelete(file_create_test_filepath, H5P_DEFAULT);
     H5Fdelete(FILE_CREATE_EXCL_FILE_NAME, H5P_DEFAULT);
 
     /* The below file should not get created */
