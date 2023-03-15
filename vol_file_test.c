@@ -92,15 +92,11 @@ test_create_file(void)
         return 0;
     }
 
-    size_t file_create_test_filepath_len = strlen(test_path_prefix) + strlen(FILE_CREATE_TEST_FILENAME);
+    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_TEST_FILENAME)
 
-    char file_create_test_filepath[file_create_test_filepath_len];
-
-    snprintf(file_create_test_filepath, file_create_test_filepath_len, "%s%s", test_path_prefix, FILE_CREATE_TEST_FILENAME);
-
-    if ((file_id = H5Fcreate(file_create_test_filepath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", file_create_test_filepath);
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -254,7 +250,9 @@ test_create_file_excl(void)
         return 0;
     }
 
-    if ((file_id = H5Fcreate(FILE_CREATE_EXCL_FILE_NAME, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_EXCL_FILE_NAME)
+
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create first file\n");
         goto error;
@@ -268,7 +266,7 @@ test_create_file_excl(void)
      * exists on disk from the previous steps.
      */
     H5E_BEGIN_TRY {
-        file_id = H5Fcreate(FILE_CREATE_EXCL_FILE_NAME, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
+        file_id = H5Fcreate(prefixed_filename, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
     } H5E_END_TRY;
 
     if (file_id >= 0) {
@@ -278,7 +276,7 @@ test_create_file_excl(void)
     }
 
     /* Test creating with H5F_ACC_TRUNC. This will truncate the existing file on disk. */
-    if((file_id = H5Fcreate(FILE_CREATE_EXCL_FILE_NAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't truncate the existing file\n");
         goto error;
@@ -2879,12 +2877,13 @@ error:
 static void
 cleanup_files(void)
 {
-    size_t file_create_test_filepath_len = strlen(test_path_prefix) + strlen(FILE_CREATE_TEST_FILENAME);
-    char file_create_test_filepath[file_create_test_filepath_len];
-    snprintf(file_create_test_filepath, file_create_test_filepath_len, "%s%s", test_path_prefix, FILE_CREATE_TEST_FILENAME);
+    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_TEST_FILENAME)
 
-    H5Fdelete(file_create_test_filepath, H5P_DEFAULT);
-    H5Fdelete(FILE_CREATE_EXCL_FILE_NAME, H5P_DEFAULT);
+    H5Fdelete(prefixed_filename, H5P_DEFAULT);
+
+    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_EXCL_FILE_NAME)
+
+    H5Fdelete(prefixed_filename, H5P_DEFAULT);
 
     /* The below file should not get created */
     /* H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT); */

@@ -138,7 +138,9 @@ extern char vol_test_filename[];
 
 #define VOL_TEST_PATH_MAX_LENGTH 1024
 
-#define VOL_TEST_TOTAL_MAX_LENGTH = VOL_TEST_FILENAME_MAX_LENGTH + VOL_TEST_PATH_MAX_LENGTH
+extern char prefixed_filename[];
+
+#define PREFIX_FILENAME(prefix, filename) snprintf(prefixed_filename, VOL_TEST_FILENAME_MAX_LENGTH + VOL_TEST_PATH_MAX_LENGTH, "%s%s", prefix, filename);
 
 /* The maximum size of a dimension in an HDF5 dataspace as allowed
  * for this testing suite so as not to try to create too large

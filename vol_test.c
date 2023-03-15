@@ -50,6 +50,8 @@ size_t n_tests_skipped_g;
 
 uint64_t vol_cap_flags;
 
+char prefixed_filename[VOL_TEST_FILENAME_MAX_LENGTH + VOL_TEST_PATH_MAX_LENGTH];
+
 /* X-macro to define the following for each test:
  * - enum type
  * - name
