@@ -174,28 +174,18 @@ int main(int argc, char **argv)
     char *vol_connector_name;
     hbool_t err_occurred = FALSE;
 
-    for (size_t optind = 1; optind < argc; optind++) {
-        if ((strcmp(argv[optind], "-t") == 0) && argc > optind) {
-            enum vol_test_type i = vol_test_name_to_type(argv[optind + 1]);
-            if (i != VOL_TEST_NULL) {
-                /* Run only specific VOL test */
-                memset(vol_test_enabled, 0, sizeof(vol_test_enabled));
-                vol_test_enabled[i] = 1;
-            }
-            optind++;
+    /* Simple argument checking, TODO can improve that later */
+    if (argc > 1) {
+        enum vol_test_type i = vol_test_name_to_type(argv[1]);
+        if (i != VOL_TEST_NULL) {
+            /* Run only specific VOL test */
+            memset(vol_test_enabled, 0, sizeof(vol_test_enabled));
+            vol_test_enabled[i] = 1;
         }
+    }
 
-        if ((strcmp(argv[optind], "-p") == 0) && argc > optind) {
-            test_path_prefix = argv[optind + 1];
-
-            if (strlen(test_path_prefix) > VOL_TEST_PATH_MAX_LENGTH) {
-                HDfprintf(stderr, "Path for test file creation longer than %zu characters \n", VOL_TEST_PATH_MAX_LENGTH);
-                err_occurred = TRUE;
-                goto done;
-            }
-            
-            optind++;
-        }
+    if (NULL == (test_path_prefix = getenv("HSDS_PATH"))) {
+        test_path_prefix = "";
     }
 
 #ifdef H5_HAVE_PARALLEL
