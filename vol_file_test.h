@@ -31,8 +31,8 @@ int vol_file_test(void);
 
 #define NONEXISTENT_FILENAME "nonexistent_file.h5"
 
-#define OVERLAPPING_FILENAME "overlapping_file.h5"
-#define OVERLAPPING_OPEN_TEST_GRP_NAME "group"
+#define OVERLAPPING_FILENAME            "overlapping_file.h5"
+#define OVERLAPPING_OPEN_TEST_GRP_NAME  "group"
 #define OVERLAPPING_OPEN_TEST_DSET_NAME "dataset"
 
 #define FILE_PERMISSION_TEST_FILENAME    "file_permission.h5"

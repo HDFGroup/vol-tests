@@ -23,9 +23,9 @@ int vol_datatype_test(void);
  *                                               *
  *************************************************/
 
-#define DATATYPE_CREATE_TEST_DATASET_DIMS  2
-#define DATATYPE_CREATE_TEST_GROUP_NAME    "committed_datatype_creation_test"
-#define DATATYPE_CREATE_TEST_TYPE_NAME     "test_type"
+#define DATATYPE_CREATE_TEST_DATASET_DIMS 2
+#define DATATYPE_CREATE_TEST_GROUP_NAME   "committed_datatype_creation_test"
+#define DATATYPE_CREATE_TEST_TYPE_NAME    "test_type"
 
 #define DATATYPE_CREATE_INVALID_PARAMS_TEST_SPACE_RANK 2
 #define DATATYPE_CREATE_INVALID_PARAMS_TEST_GROUP_NAME "committed_datatype_creation_invalid_params_test"
@@ -38,7 +38,7 @@ int vol_datatype_test(void);
 
 #define DATATYPE_CREATE_EMPTY_TYPES_TEST_CMPD_TYPE_NAME "compound_type"
 #define DATATYPE_CREATE_EMPTY_TYPES_TEST_ENUM_TYPE_NAME "enum_type"
-#define DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME "committed_datatype_empty_types_test"
+#define DATATYPE_CREATE_EMPTY_TYPES_TEST_GROUP_NAME     "committed_datatype_empty_types_test"
 
 #define RECOMMIT_COMMITTED_TYPE_TEST_GROUP_NAME "recommit_committed_type_test"
 

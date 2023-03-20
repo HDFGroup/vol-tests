@@ -12,14 +12,10 @@
 
 #include "vol_object_test_parallel.h"
 
-
-
 /*
  * The array of parallel object tests to be performed.
  */
-static int (*par_object_tests[])(void) = {
-    NULL
-};
+static int (*par_object_tests[])(void) = {NULL};
 
 int
 vol_object_test_parallel(void)

@@ -12,12 +12,12 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /***********************************************************
-*
-* Test program:     th5o
-*
-* Test public H5O functions for accessing
-*
-*************************************************************/
+ *
+ * Test program:     th5o
+ *
+ * Test public H5O functions for accessing
+ *
+ *************************************************************/
 
 #include "testhdf5.h"
 
@@ -30,7 +30,6 @@
 #define TEST6_DIM1 100
 #define TEST6_DIM2 100
 
-
 /****************************************************************
 **
 **  test_h5o_open(): Test H5Oopen function.
@@ -39,13 +38,13 @@
 static void
 test_h5o_open(void)
 {
-    hid_t       fid;                        /* HDF5 File ID      */
-    hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
+    hid_t       fid;                      /* HDF5 File ID      */
+    hid_t       grp, dset, dtype, dspace; /* Object identifiers */
     hsize_t     dims[RANK];
-    H5I_type_t  id_type;                    /* Type of IDs returned from H5Oopen */
-    H5G_info_t  ginfo;                      /* Group info struct */
-    H5T_class_t type_class;                 /* Class of the datatype */
-    herr_t      ret;                        /* Value returned from API calls */
+    H5I_type_t  id_type;    /* Type of IDs returned from H5Oopen */
+    H5G_info_t  ginfo;      /* Group info struct */
+    H5T_class_t type_class; /* Class of the datatype */
+    herr_t      ret;        /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing H5Oopen\n"));
@@ -72,7 +71,7 @@ test_h5o_open(void)
     /* Create the data space for the dataset. */
     dims[0] = DIM0;
     dims[1] = DIM1;
-    dspace = H5Screate_simple(RANK, dims, NULL);
+    dspace  = H5Screate_simple(RANK, dims, NULL);
     CHECK(dspace, FAIL, "H5Screate_simple");
 
     /* Create the dataset. */
@@ -122,27 +121,29 @@ test_h5o_open(void)
     CHECK(ret, FAIL, "H5Dclose");
 
     /* Trying to open objects with bogus names should fail gracefully */
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         grp = H5Oopen(fid, "bogus_group", H5P_DEFAULT);
         VERIFY(grp, FAIL, "H5Oopen");
         dtype = H5Oopen(fid, "group/bogus_datatype", H5P_DEFAULT);
         VERIFY(dtype, FAIL, "H5Oopen");
         dset = H5Oopen(fid, "/bogus_dataset", H5P_DEFAULT);
         VERIFY(dset, FAIL, "H5Oopen");
-    } H5E_END_TRY
+    }
+    H5E_END_TRY
 
     /* Close the file */
     ret = H5Fclose(fid);
     CHECK(ret, FAIL, "H5Fclose");
 
     /* Trying to open an object with a bogus file ID should fail */
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         dset = H5Oopen(fid, "dataset", H5P_DEFAULT);
         VERIFY(dset, FAIL, "H5Oopen");
-    } H5E_END_TRY
+    }
+    H5E_END_TRY
 } /* test_h5o_open() */
-
-
 
 /****************************************************************
 **
@@ -152,10 +153,10 @@ test_h5o_open(void)
 static void
 test_h5o_close(void)
 {
-    hid_t       fid;                        /* HDF5 File ID      */
-    hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
-    hsize_t     dims[RANK];
-    herr_t      ret;                        /* Value returned from API calls */
+    hid_t   fid;                      /* HDF5 File ID      */
+    hid_t   grp, dset, dtype, dspace; /* Object identifiers */
+    hsize_t dims[RANK];
+    herr_t  ret; /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing H5Oclose\n"));
@@ -183,7 +184,7 @@ test_h5o_close(void)
     /* Create the data space for the dataset. */
     dims[0] = DIM0;
     dims[1] = DIM1;
-    dspace = H5Screate_simple(RANK, dims, NULL);
+    dspace  = H5Screate_simple(RANK, dims, NULL);
     CHECK(dspace, FAIL, "H5Screate_simple");
 
     /* Create the dataset. */
@@ -193,10 +194,12 @@ test_h5o_close(void)
     CHECK(ret, FAIL, "H5Oclose");
 
     /* Attempting to close the data space with H5Oclose should fail */
-    H5E_BEGIN_TRY {
-       ret = H5Oclose(dspace);
-       VERIFY(ret, FAIL, "H5Oclose");
-    } H5E_END_TRY
+    H5E_BEGIN_TRY
+    {
+        ret = H5Oclose(dspace);
+        VERIFY(ret, FAIL, "H5Oclose");
+    }
+    H5E_END_TRY
     /* Close the dataspace for real */
     ret = H5Sclose(dspace);
     CHECK(ret, FAIL, "H5Sclose");
@@ -236,7 +239,6 @@ test_h5o_close(void)
     CHECK(ret, FAIL, "H5Fclose");
 }
 
-
 /****************************************************************
 **
 **  test_h5o_open_by_token(): Test H5Oopen_by_token function.
@@ -245,17 +247,17 @@ test_h5o_close(void)
 static void
 test_h5o_open_by_token(void)
 {
-    hid_t       fid;                        /* HDF5 File ID      */
-    hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
-    H5L_info2_t li;                         /* Buffer for H5Lget_info2 */
-    H5O_token_t grp_token;                  /* Tokens for objects */
+    hid_t       fid;                      /* HDF5 File ID      */
+    hid_t       grp, dset, dtype, dspace; /* Object identifiers */
+    H5L_info2_t li;                       /* Buffer for H5Lget_info2 */
+    H5O_token_t grp_token;                /* Tokens for objects */
     H5O_token_t dset_token;
     H5O_token_t dtype_token;
     hsize_t     dims[RANK];
-    H5I_type_t  id_type;                    /* Type of IDs returned from H5Oopen */
-    H5G_info_t  ginfo;                      /* Group info struct */
-    H5T_class_t type_class;                 /* Class of the datatype */
-    herr_t      ret;                        /* Value returned from API calls */
+    H5I_type_t  id_type;    /* Type of IDs returned from H5Oopen */
+    H5G_info_t  ginfo;      /* Group info struct */
+    H5T_class_t type_class; /* Class of the datatype */
+    herr_t      ret;        /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing H5Oopen_by_token\n"));
@@ -282,7 +284,7 @@ test_h5o_open_by_token(void)
     /* Create the data space for the dataset. */
     dims[0] = DIM0;
     dims[1] = DIM1;
-    dspace = H5Screate_simple(RANK, dims, NULL);
+    dspace  = H5Screate_simple(RANK, dims, NULL);
     CHECK(dspace, FAIL, "H5Screate_simple");
 
     /* Create the dataset. */
@@ -297,10 +299,10 @@ test_h5o_open_by_token(void)
     ret = H5Lget_info2(fid, "group", &li, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Lget_info2");
     grp_token = li.u.token;
-    ret = H5Lget_info2(fid, "group/datatype", &li, H5P_DEFAULT);
+    ret       = H5Lget_info2(fid, "group/datatype", &li, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Lget_info2");
     dtype_token = li.u.token;
-    ret = H5Lget_info2(fid, "dataset", &li, H5P_DEFAULT);
+    ret         = H5Lget_info2(fid, "dataset", &li, H5P_DEFAULT);
     CHECK(ret, FAIL, "H5Lget_info2");
     dset_token = li.u.token;
 
@@ -346,12 +348,13 @@ test_h5o_open_by_token(void)
     CHECK(ret, FAIL, "H5Fclose");
 
     /* Also, trying to open an object without a valid location should fail */
-    H5E_BEGIN_TRY{
-      dtype = H5Oopen_by_token(fid, dtype_token);
-    }H5E_END_TRY
+    H5E_BEGIN_TRY
+    {
+        dtype = H5Oopen_by_token(fid, dtype_token);
+    }
+    H5E_END_TRY
     VERIFY(dtype, FAIL, "H5Oopen_by_token");
 } /* test_h5o_open_by_token() */
-
 
 /****************************************************************
 **
@@ -361,11 +364,11 @@ test_h5o_open_by_token(void)
 static void
 test_h5o_refcount(void)
 {
-    hid_t       fid;                        /* HDF5 File ID      */
-    hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
-    H5O_info2_t  oinfo;                      /* Object info struct */
+    hid_t       fid;                      /* HDF5 File ID      */
+    hid_t       grp, dset, dtype, dspace; /* Object identifiers */
+    H5O_info2_t oinfo;                    /* Object info struct */
     hsize_t     dims[RANK];
-    herr_t      ret;                        /* Value returned from API calls */
+    herr_t      ret; /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing retrieval of object reference count with H5Oget_info\n"));
@@ -388,7 +391,7 @@ test_h5o_refcount(void)
     /* Create the data space for the dataset. */
     dims[0] = DIM0;
     dims[1] = DIM1;
-    dspace = H5Screate_simple(RANK, dims, NULL);
+    dspace  = H5Screate_simple(RANK, dims, NULL);
     CHECK(dspace, FAIL, "H5Screate_simple");
 
     /* Create the dataset. */
@@ -530,7 +533,8 @@ test_h5o_refcount(void)
     CHECK(ret, FAIL, "H5Dclose");
 
     /* Make sure that bogus IDs return errors properly */
-    H5E_BEGIN_TRY {
+    H5E_BEGIN_TRY
+    {
         ret = H5Oincr_refcount(grp);
         VERIFY(ret, FAIL, "H5Oincr_refcount");
         ret = H5Oincr_refcount(dtype);
@@ -543,13 +547,13 @@ test_h5o_refcount(void)
         VERIFY(ret, FAIL, "H5Odecr_refcount");
         ret = H5Odecr_refcount(dset);
         VERIFY(ret, FAIL, "H5Odecr_refcount");
-    } H5E_END_TRY
+    }
+    H5E_END_TRY
 
     /* Close the file */
     ret = H5Fclose(fid);
     CHECK(ret, FAIL, "H5Fclose");
 } /* test_h5o_refcount() */
-
 
 /****************************************************************
 **
@@ -559,13 +563,13 @@ test_h5o_refcount(void)
 static void
 test_h5o_plist(void)
 {
-    hid_t       fid;                        /* HDF5 File ID      */
-    hid_t       grp, dset, dtype, dspace;   /* Object identifiers */
-    hid_t       fapl;                       /* File access property list */
-    hid_t       gcpl, dcpl, tcpl;           /* Object creation properties */
-    unsigned    def_max_compact, def_min_dense; /* Default phase change parameters */
-    unsigned    max_compact, min_dense;         /* Actual phase change parameters */
-    herr_t      ret;                        /* Value returned from API calls */
+    hid_t    fid;                            /* HDF5 File ID      */
+    hid_t    grp, dset, dtype, dspace;       /* Object identifiers */
+    hid_t    fapl;                           /* File access property list */
+    hid_t    gcpl, dcpl, tcpl;               /* Object creation properties */
+    unsigned def_max_compact, def_min_dense; /* Default phase change parameters */
+    unsigned max_compact, min_dense;         /* Actual phase change parameters */
+    herr_t   ret;                            /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing Object creation properties\n"));
@@ -747,7 +751,6 @@ test_h5o_plist(void)
     CHECK(ret, FAIL, "H5Pclose");
 } /* test_h5o_plist() */
 
-
 /****************************************************************
 **
 **  test_h5o_link(): Test creating link to object
@@ -756,20 +759,20 @@ test_h5o_plist(void)
 static void
 test_h5o_link(void)
 {
-    hid_t file_id=-1;
-    hid_t group_id=-1;
-    hid_t space_id=-1;
-    hid_t dset_id=-1;
-    hid_t type_id=-1;
-    hid_t fapl_id=-1;
-    hid_t lcpl_id=-1;
-    hsize_t dims[2] = {TEST6_DIM1, TEST6_DIM2};
-    htri_t committed;           /* Whether the named datatype is committed */
+    hid_t        file_id  = -1;
+    hid_t        group_id = -1;
+    hid_t        space_id = -1;
+    hid_t        dset_id  = -1;
+    hid_t        type_id  = -1;
+    hid_t        fapl_id  = -1;
+    hid_t        lcpl_id  = -1;
+    hsize_t      dims[2]  = {TEST6_DIM1, TEST6_DIM2};
+    htri_t       committed; /* Whether the named datatype is committed */
     H5F_libver_t low, high; /* File format bounds */
-    int *wdata;
-    int *rdata;
-    int i, n;
-    herr_t ret;                 /* Value returned from API calls */
+    int         *wdata;
+    int         *rdata;
+    int          i, n;
+    herr_t       ret; /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing H5Olink\n"));
@@ -782,11 +785,11 @@ test_h5o_link(void)
     CHECK_PTR(rdata, "HDmalloc");
 
     /* Initialize the raw data */
-    for(i = n = 0; i < (TEST6_DIM1 * TEST6_DIM2); i++)
-      wdata[i] = n++;
+    for (i = n = 0; i < (TEST6_DIM1 * TEST6_DIM2); i++)
+        wdata[i] = n++;
 
     /* Create the dataspace */
-    space_id = H5Screate_simple(2 ,dims, NULL);
+    space_id = H5Screate_simple(2, dims, NULL);
     CHECK(space_id, FAIL, "H5Screate_simple");
 
     /* Create LCPL with intermediate group creation flag set */
@@ -800,13 +803,15 @@ test_h5o_link(void)
     CHECK(fapl_id, FAIL, "H5Pcreate");
 
     /* Loop through all the combinations of low/high library format bounds */
-    for(low = H5F_LIBVER_EARLIEST; low < H5F_LIBVER_NBOUNDS; H5_INC_ENUM(H5F_libver_t, low)) {
-        for(high = H5F_LIBVER_EARLIEST; high < H5F_LIBVER_NBOUNDS; H5_INC_ENUM(H5F_libver_t, high)) {
+    for (low = H5F_LIBVER_EARLIEST; low < H5F_LIBVER_NBOUNDS; H5_INC_ENUM(H5F_libver_t, low)) {
+        for (high = H5F_LIBVER_EARLIEST; high < H5F_LIBVER_NBOUNDS; H5_INC_ENUM(H5F_libver_t, high)) {
 
             /* Set version bounds */
-            H5E_BEGIN_TRY {
+            H5E_BEGIN_TRY
+            {
                 ret = H5Pset_libver_bounds(fapl_id, low, high);
-            } H5E_END_TRY;
+            }
+            H5E_END_TRY;
 
             if (ret < 0) /* Invalid low/high combinations */
                 continue;
@@ -842,7 +847,7 @@ test_h5o_link(void)
             CHECK(ret, FAIL, "H5Dread");
 
             /* Verify the data */
-            for(i = 0; i < (TEST6_DIM1 * TEST6_DIM2); i++)
+            for (i = 0; i < (TEST6_DIM1 * TEST6_DIM2); i++)
                 VERIFY(wdata[i], rdata[i], "H5Dread");
 
             /* Create a group with no name*/
@@ -880,7 +885,7 @@ test_h5o_link(void)
             /* Read data from dataset */
             ret = H5Dread(dset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
             CHECK(ret, FAIL, "H5Dread");
-            for(i = 0; i < (TEST6_DIM1 * TEST6_DIM2); i++)
+            for (i = 0; i < (TEST6_DIM1 * TEST6_DIM2); i++)
                 VERIFY(wdata[i], rdata[i], "H5Dread");
 
             /* Close open IDs */
@@ -891,7 +896,7 @@ test_h5o_link(void)
             ret = H5Fclose(file_id);
             CHECK(ret, FAIL, "H5Fclose");
         } /* for high */
-    } /* for low */
+    }     /* for low */
 
     /* Close remaining IDs */
     ret = H5Sclose(space_id);
@@ -1245,10 +1250,10 @@ test_h5o_comment_by_name(void)
 static void
 test_h5o_getinfo_same_file(void)
 {
-    hid_t       fid1, fid2;             /* HDF5 File ID */
-    hid_t       gid1, gid2;             /* Group IDs */
-    H5O_info2_t  oinfo1, oinfo2;         /* Object info structs */
-    herr_t      ret;                    /* Value returned from API calls */
+    hid_t       fid1, fid2;     /* HDF5 File ID */
+    hid_t       gid1, gid2;     /* Group IDs */
+    H5O_info2_t oinfo1, oinfo2; /* Object info structs */
+    herr_t      ret;            /* Value returned from API calls */
 
     /* Output message about test being performed */
     MESSAGE(5, ("Testing H5Oget_info on objects in same file\n"));
@@ -1294,7 +1299,6 @@ test_h5o_getinfo_same_file(void)
     CHECK(ret, FAIL, "H5Gclose");
     ret = H5Fclose(fid1);
     CHECK(ret, FAIL, "H5Fclose");
-
 
     /* Open file twice */
     fid1 = H5Fopen(TEST_FILENAME, H5F_ACC_RDWR, H5P_DEFAULT);
@@ -1478,7 +1482,6 @@ test_h5o_getinfo_visit(void)
 #endif
 #endif /* H5_NO_DEPRECATED_SYMBOLS */
 
-
 /****************************************************************
 **
 **  test_h5o(): Main H5O (generic object) testing routine.
@@ -1490,12 +1493,12 @@ test_h5o(void)
     /* Output message about test being performed */
     MESSAGE(5, ("Testing Objects\n"));
 
-    test_h5o_open();              /* Test generic open function */
-    test_h5o_open_by_token();      /* Test opening objects by token */
-    test_h5o_close();             /* Test generic close function */
-    test_h5o_refcount();          /* Test incrementing and decrementing reference count */
-    test_h5o_plist();             /* Test object creation properties */
-    test_h5o_link();              /* Test object link routine */
+    test_h5o_open();          /* Test generic open function */
+    test_h5o_open_by_token(); /* Test opening objects by token */
+    test_h5o_close();         /* Test generic close function */
+    test_h5o_refcount();      /* Test incrementing and decrementing reference count */
+    test_h5o_plist();         /* Test object creation properties */
+    test_h5o_link();          /* Test object link routine */
 #if 0
     test_h5o_comment();           /* Test routines for comment */
     test_h5o_comment_by_name();   /* Test routines for comment by name */
@@ -1507,7 +1510,6 @@ test_h5o(void)
 #endif
 #endif
 } /* test_h5o() */
-
 
 /*-------------------------------------------------------------------------
  * Function:    cleanup_h5o
@@ -1526,4 +1528,3 @@ cleanup_h5o(void)
 {
     H5Fdelete(TEST_FILENAME, H5P_DEFAULT);
 }
-

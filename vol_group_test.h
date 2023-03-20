@@ -32,13 +32,13 @@ int vol_group_test(void);
 
 #define GROUP_CREATE_ANONYMOUS_GROUP_NAME "anon_group"
 
-#define GROUP_CREATE_INTMD_REL_INTMD_NAME "rel_intmd"
-#define GROUP_CREATE_INTMD_REL_END_NAME "rel_end"
-#define GROUP_CREATE_INTMD_ABS_INTMD_NAME "abs_intmd"
-#define GROUP_CREATE_INTMD_ABS_END_NAME "abs_end"
+#define GROUP_CREATE_INTMD_REL_INTMD_NAME   "rel_intmd"
+#define GROUP_CREATE_INTMD_REL_END_NAME     "rel_end"
+#define GROUP_CREATE_INTMD_ABS_INTMD_NAME   "abs_intmd"
+#define GROUP_CREATE_INTMD_ABS_END_NAME     "abs_end"
 #define GROUP_CREATE_INTMD_MULT_INTMD1_NAME "mult_intmd1"
 #define GROUP_CREATE_INTMD_MULT_INTMD2_NAME "mult_intmd2"
-#define GROUP_CREATE_INTMD_MULT_END_NAME "mult_end"
+#define GROUP_CREATE_INTMD_MULT_END_NAME    "mult_end"
 
 #define OPEN_NONEXISTENT_GROUP_TEST_GNAME "/nonexistent_group"
 
@@ -54,12 +54,12 @@ int vol_group_test(void);
 #define GROUP_REFRESH_GNAME "group_refresh_test"
 
 #define NAME_BUF_SIZE 64
-#define GROUP_NUMB 16
+#define GROUP_NUMB    16
 
 #define MANY_GROUP_CREATIONS_GNAME "home_for_many_groups"
-#define GROUP_NUMB_MANY	100u
+#define GROUP_NUMB_MANY            100u
 
 #define DEEP_GROUP_CREATIONS_GNAME "home_for_deep_groups"
-#define GROUP_DEPTH 100u
+#define GROUP_DEPTH                100u
 
 #endif
