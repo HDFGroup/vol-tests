@@ -94,7 +94,6 @@ include_directories(
 # HDF5
 # Save a copy of HDF5_DIR set by the user.
 SET(ORIG_HDF5_DIR ${HDF5_DIR})
-message( hd5_dir = ${HDF5_DIR})
 find_package(HDF5 NO_MODULE NAMES hdf5 COMPONENTS C shared)
 if(HDF5_FOUND)
   set(HDF5_C_SHARED_LIBRARY hdf5-shared)
