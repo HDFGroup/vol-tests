@@ -8,13 +8,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout vol-tests
+      uses: actions/checkout@v3
     - name: Checkout HDF5
       uses: actions/checkout@v3
       with:
         repository: HDFGroup/hdf5
         path: hdf5    
-    - name: Checkout vol-tests
-      uses: actions/checkout@v3
     - name: Checkout REST VOL
       uses: actions/checkout@v3
       with:
