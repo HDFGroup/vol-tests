@@ -1,0 +1,67 @@
+name: Test HDF5 Log-based VOL
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout vol-tests
+      uses: actions/checkout@v3
+    - name: Checkout HDF5
+      uses: actions/checkout@v3
+      with:
+        repository: HDFGroup/hdf5
+        path: hdf5
+    - name: Checkout Log-based VOL
+      uses: actions/checkout@v3
+      with:
+        repository: DataLib-ECP/vol-log-based
+        path: vol-log-based
+    - name: Install dependencies
+      run: sudo apt-get install ninja-build automake autoconf libtool libtool-bin mpich zlib1g-dev 
+    - name: Install HDF5
+      run: |
+        # mkdir hdf5/build
+        # cd hdf5/build
+        # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DHDF5_ENABLE_PARALLEL:BOOL=ON ..
+        cd hdf5
+        export HDF5_LIBTOOL=/usr/bin/libtoolize
+        ./autogen.sh
+        ./configure --prefix=/usr/local --enable-parallel CC=mpicc
+        make -j && sudo make -j install
+        git rev-parse HEAD > git.txt
+    - name: Install Log-based VOL
+      env:
+        CXX: mpic++
+        CC: mpicc
+        HDF5_PLUGIN_PATH: /usr/local/lib
+        HDF5_VOL_CONNECTOR: LOG under_vol=0\;under_info={}
+      run: |
+        cd vol-log-based
+        autoreconf -i
+        ./configure --prefix=/usr/local --with-hdf5=/usr/local --enable-shared --enable-zlib
+        make -j2
+        sudo make -j2 install
+        export HDF5_PLUGIN_PATH=/usr/local/lib        
+        export HDF5_VOL_CONNECTOR="LOG under_vol=0;under_info={}"        
+        make check
+    - name: Test performance
+      env:
+        HDF5_PLUGIN_PATH: /usr/local/lib
+        HDF5_VOL_CONNECTOR: LOG under_vol=0\;under_info={}
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DHDF5_DIR=/usr/local -DHDF5_VOL_TEST_ENABLE_PARALLEL:BOOL=ON -DHDF5_VOL_TEST_ENABLE_ASYNC:BOOL=ON -DHDF5_VOL_TEST_ENABLE_PART:BOOL=ON
+        make
+        ctest
+        pwd
+        ls
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: git.txt
+        path: ${{ runner.workspace }}/vol-tests/hdf5/git.txt
