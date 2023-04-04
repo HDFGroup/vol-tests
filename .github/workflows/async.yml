@@ -27,7 +27,7 @@ jobs:
     - name: Checkout vol-async
       uses: actions/checkout@v3
       with:
-        repository: HDFGroup/vol-async
+        repository: hpc-io/vol-async
         path: vol-async
     
     - name: Install dependencies
