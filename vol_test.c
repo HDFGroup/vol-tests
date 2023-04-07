@@ -50,8 +50,6 @@ size_t n_tests_skipped_g;
 
 uint64_t vol_cap_flags;
 
-char prefixed_filename_buffer[0];
-
 /* X-macro to define the following for each test:
  * - enum type
  * - name

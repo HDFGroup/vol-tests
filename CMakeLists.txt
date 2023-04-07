@@ -182,7 +182,7 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/h5vl_test_config.h
 )
 
-#add_subdirectory(driver)
+add_subdirectory(driver)
 
 #-----------------------------------------------------------------------------
 # Define Sources and tests
