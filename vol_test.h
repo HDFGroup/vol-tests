@@ -211,9 +211,15 @@ extern char vol_test_filename[];
 
 #define VOL_TEST_PATH_MAX_LENGTH 1024
 
-extern char prefixed_filename[];
+/* Globally declare buffer name to let macro be used multiple times in same scope */
+extern char prefixed_filename_buffer[0];
 
-#define PREFIX_FILENAME(prefix, filename) snprintf(prefixed_filename, VOL_TEST_FILENAME_MAX_LENGTH + VOL_TEST_PATH_MAX_LENGTH, "%s%s", prefix, filename);
+/* Prepend prefix to filename in dynamically allocated buffer, use user-declared pointer to return result. */
+#define PREFIX_FILENAME(buf, prefix, filename) \
+prefixed_filename_buffer[strlen(prefix) + strlen(filename) + 1]; \
+buf = prefixed_filename_buffer; \
+strcpy(buf, prefix); \
+strcat(buf, filename) 
 
 /* The maximum size of a dimension in an HDF5 dataspace as allowed
  * for this testing suite so as not to try to create too large

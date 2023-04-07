@@ -50,7 +50,7 @@ size_t n_tests_skipped_g;
 
 uint64_t vol_cap_flags;
 
-char prefixed_filename[VOL_TEST_FILENAME_MAX_LENGTH + VOL_TEST_PATH_MAX_LENGTH];
+char prefixed_filename_buffer[0];
 
 /* X-macro to define the following for each test:
  * - enum type
@@ -187,7 +187,7 @@ main(int argc, char **argv)
         }
     }
 
-    if (NULL == (test_path_prefix = getenv("HSDS_PATH"))) {
+    if (NULL == (test_path_prefix = getenv("HDF5_API_TEST_PATH_PREFIX"))) {
         test_path_prefix = "";
     }
 

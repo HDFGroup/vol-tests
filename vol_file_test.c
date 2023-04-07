@@ -82,6 +82,7 @@ static int
 test_create_file(void)
 {
     hid_t file_id = H5I_INVALID_HID;
+    char *prefixed_filename = NULL;
 
     TESTING("H5Fcreate");
 
@@ -92,7 +93,9 @@ test_create_file(void)
         return 0;
     }
 
-    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_TEST_FILENAME)
+    
+
+    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_TEST_FILENAME);
 
     if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -268,6 +271,7 @@ static int
 test_create_file_excl(void)
 {
     hid_t file_id = H5I_INVALID_HID, file_id2 = H5I_INVALID_HID;
+    char *prefixed_filename = NULL;
 
     TESTING("H5Fcreate with H5F_ACC_EXCL/H5F_ACC_TRUNC flag");
 
@@ -278,7 +282,7 @@ test_create_file_excl(void)
         return 0;
     }
 
-    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_EXCL_FILE_NAME)
+    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_EXCL_FILE_NAME);
 
     if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3126,11 +3130,13 @@ error:
 static void
 cleanup_files(void)
 {
-    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_TEST_FILENAME)
+    char *prefixed_filename = NULL;
+
+    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_TEST_FILENAME);
 
     H5Fdelete(prefixed_filename, H5P_DEFAULT);
 
-    PREFIX_FILENAME(test_path_prefix, FILE_CREATE_EXCL_FILE_NAME)
+    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_EXCL_FILE_NAME);
 
     H5Fdelete(prefixed_filename, H5P_DEFAULT);
 
