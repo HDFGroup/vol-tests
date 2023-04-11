@@ -1,0 +1,65 @@
+name: Test HDF5 external pass-through VOL
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout vol-tests
+      uses: actions/checkout@v3
+    - name: Checkout HDF5
+      uses: actions/checkout@v3
+      with:
+        repository: HDFGroup/hdf5
+        path: hdf5
+    - name: Checkout vol-external-passthrough
+      uses: actions/checkout@v3
+      with:
+        repository: hpc-io/vol-external-passthrough
+        path: vol-external-passthrough
+    
+    - name: Install dependencies
+      run: sudo apt-get install ninja-build automake autoconf libtool libtool-bin libopenmpi-dev
+    - name: Install HDF5
+      run: |
+        mkdir hdf5/build
+        cd hdf5/build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DHDF5_ENABLE_PARALLEL:BOOL=ON -DHDF5_ENABLE_THREADSAFE:BOOL=ON -DALLOW_UNSUPPORTED:BOOL=ON ..        
+        sudo make -j2 install
+        cd ..
+        git rev-parse HEAD > git.txt
+    - name: Install vol-external-passthrough
+      env:
+        CXX: mpic++
+        CC: mpicc
+        HDF5_PLUGIN_PATH: /usr/local/lib
+        HDF5_VOL_CONNECTOR: pass_through_ext under_vol=0;under_info={};
+      run: |
+        mkdir vol-external-passthrough/build
+        cd vol-external-passthrough/build
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=ON -DCMAKE_INSTALL_PREFIX=/usr/local ..
+        sudo make -j2 install
+        cd ..
+         
+    - name: Test performance
+      env:
+        HDF5_PLUGIN_PATH: /usr/local/lib
+        HDF5_VOL_CONNECTOR: pass_through_ext under_vol=0;under_info={};
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DHDF5_DIR=/usr/local -DHDF5_VOL_TEST_ENABLE_PARALLEL:BOOL=ON -DHDF5_VOL_TEST_ENABLE_ASYNC:BOOL=ON -DHDF5_VOL_TEST_ENABLE_PART:BOOL=ON
+        make
+        ctest
+        pwd
+        ls
+        
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: git.txt
+        path: ${{ runner.workspace }}/vol-tests/hdf5/git.txt
+

@@ -1,3 +1,10 @@
+[![Test HDF5 ADIOS2 VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/adios2.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/adios2.yml)
+[![Test HDF5 async VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/async.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/async.yml)
+[![Test HDF5 cache VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/cache.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/cache.yml)
+[![Test HDF5 Log-based VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/log.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/log.yml)
+[![Test HDF5 external pass-through VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/pass.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/pass.yml)
+[![Test HDF5 REST VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/rest.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/rest.yml)
+
 # HDF5 VOL Tests
 
 This repository contains several test applications that exercise [HDF5](https://github.com/HDFGroup/hdf5)'s
