@@ -118,7 +118,8 @@ vol_test_run(void)
 static int
 get_vol_cap_flags(const char *connector_name)
 {
-    hid_t connector_id, fapl_id;
+    hid_t connector_id = H5I_INVALID_HID;
+    hid_t fapl_id      = H5I_INVALID_HID;
 
     if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) {
         H5_FAILED();
