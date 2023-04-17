@@ -1474,7 +1474,18 @@ static void kwsysProcessVolatileFree(volatile void* p)
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wcast-qual"
 #endif
+
+#if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 406)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
   free((void*)p); /* The cast will silence most compilers, but not clang.  */
+
+#if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 406)
+#  pragma GCC diagnostic pop
+#endif
+
 #if defined(__clang__) && !defined(__INTEL_COMPILER)
 #  pragma clang diagnostic pop
 #endif

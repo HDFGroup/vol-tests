@@ -1,3 +1,4 @@
+[![HDF5 API test CI](https://github.com/HDFGroup/vol-tests/actions/workflows/main.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/main.yml)
 [![Test HDF5 ADIOS2 VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/adios2.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/adios2.yml)
 [![Test HDF5 async VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/async.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/async.yml)
 [![Test HDF5 cache VOL](https://github.com/HDFGroup/vol-tests/actions/workflows/cache.yml/badge.svg)](https://github.com/HDFGroup/vol-tests/actions/workflows/cache.yml)
