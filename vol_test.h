@@ -43,6 +43,8 @@ H5TEST_DLLVAR char *paraprefix;
 H5TEST_DLLVAR MPI_Info h5_io_info_g; /* MPI INFO object for IO */
 #endif
 
+extern char *test_path_prefix;
+
 /*
  * Print the current location on the standard output stream.
  */
@@ -206,6 +208,15 @@ extern char vol_test_filename[];
 #define UNUSED(o) (void)(o);
 
 #define VOL_TEST_FILENAME_MAX_LENGTH 1024
+
+/* Prepend prefix to filename in dynamically allocated buffer, use user-declared pointer to return result.
+ * User must free allocated memory after use. */
+#define PREFIX_FILENAME(buf, prefix, filename)                                                               \
+    if (NULL == (buf = malloc(strlen(prefix) + strlen(filename) + 1))) {                                     \
+        TEST_ERROR                                                                                           \
+    }                                                                                                        \
+    strcpy(buf, prefix);                                                                                     \
+    strcat(buf, filename)
 
 /* The maximum size of a dimension in an HDF5 dataspace as allowed
  * for this testing suite so as not to try to create too large
