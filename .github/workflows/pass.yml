@@ -53,7 +53,7 @@ jobs:
         cd build
         cmake .. -DHDF5_DIR=/usr/local -DHDF5_VOL_TEST_ENABLE_PARALLEL:BOOL=ON -DHDF5_VOL_TEST_ENABLE_ASYNC:BOOL=ON -DHDF5_VOL_TEST_ENABLE_PART:BOOL=ON
         make
-        ctest
+        ctest -V
         pwd
         ls
         
