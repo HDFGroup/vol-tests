@@ -242,15 +242,17 @@ main(int argc, char **argv)
     HDprintf("Cleaning up testing files\n");
     H5Fdelete(vol_test_filename, H5P_DEFAULT);
 
-    HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n", (long)n_tests_passed_g,
-             (long)n_tests_run_g, ((float)n_tests_passed_g / (float)n_tests_run_g * 100.0),
-             vol_connector_name);
-    HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n", (long)n_tests_failed_g,
-             (long)n_tests_run_g, ((float)n_tests_failed_g / (float)n_tests_run_g * 100.0),
-             vol_connector_name);
-    HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n", (long)n_tests_skipped_g,
-             (long)n_tests_run_g, ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0),
-             vol_connector_name);
+    if (n_tests_run_g > 0) {
+        HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n", (long)n_tests_passed_g,
+                 (long)n_tests_run_g, ((float)n_tests_passed_g / (float)n_tests_run_g * 100.0),
+                 vol_connector_name);
+        HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n", (long)n_tests_failed_g,
+                 (long)n_tests_run_g, ((float)n_tests_failed_g / (float)n_tests_run_g * 100.0),
+                 vol_connector_name);
+        HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n", (long)n_tests_skipped_g,
+                 (long)n_tests_run_g, ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0),
+                 vol_connector_name);
+    }
 
 done:
     H5close();
