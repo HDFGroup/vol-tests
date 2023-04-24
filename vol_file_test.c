@@ -207,8 +207,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id =
-                    H5Fcreate(prefixed_filename, H5F_ACC_CREAT, H5P_DEFAULT, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_CREAT, H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -221,8 +220,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id =
-                    H5Fcreate(prefixed_filename, H5F_ACC_SWMR_READ, H5P_DEFAULT, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_SWMR_READ, H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -243,8 +241,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id =
-                    H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5I_INVALID_HID, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5I_INVALID_HID, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -641,8 +638,7 @@ test_file_permission(void)
         goto error;
     }
 
-    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT,
-                             H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
@@ -961,8 +957,7 @@ test_flush_file(void)
         goto error;
     }
 
-    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) <
-        0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
@@ -1639,8 +1634,7 @@ test_get_file_obj_count(void)
         goto error;
     }
 
-    if ((file_id =
-             H5Fcreate(prefixed_filename1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fcreate(prefixed_filename1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename1);
         goto error;
@@ -1654,8 +1648,7 @@ test_get_file_obj_count(void)
     }
 
     /* Create a second file while keeping the first file open */
-    if ((file_id2 =
-             H5Fcreate(prefixed_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((file_id2 = H5Fcreate(prefixed_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename2);
         goto error;
@@ -2126,8 +2119,7 @@ test_file_mounts(void)
         goto error;
     }
 
-    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) <
-        0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
@@ -2227,8 +2219,7 @@ test_get_file_name(void)
         goto error;
     }
 
-    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) <
-        0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;

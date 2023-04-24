@@ -680,30 +680,32 @@ create_test_container(char *filename, uint64_t vol_cap_flags)
         /* Create container groups for each of the test interfaces
          * (group, attribute, dataset, etc.).
          */
-        if ((group_id = H5Gcreate2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
+        if ((group_id = H5Gcreate2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
+            0) {
             HDprintf("    created container group for Group tests\n");
             H5Gclose(group_id);
         }
 
-        if ((group_id = H5Gcreate2(file_id, ATTRIBUTE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-            0) {
+        if ((group_id = H5Gcreate2(file_id, ATTRIBUTE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                                   H5P_DEFAULT)) >= 0) {
             HDprintf("    created container group for Attribute tests\n");
             H5Gclose(group_id);
         }
 
-        if ((group_id = H5Gcreate2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-            0) {
+        if ((group_id =
+                 H5Gcreate2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
             HDprintf("    created container group for Dataset tests\n");
             H5Gclose(group_id);
         }
 
-        if ((group_id = H5Gcreate2(file_id, DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-            0) {
+        if ((group_id =
+                 H5Gcreate2(file_id, DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
             HDprintf("    created container group for Datatype tests\n");
             H5Gclose(group_id);
         }
 
-        if ((group_id = H5Gcreate2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
+        if ((group_id = H5Gcreate2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
+            0) {
             HDprintf("    created container group for Link tests\n");
             H5Gclose(group_id);
         }
@@ -772,8 +774,7 @@ prefix_filename(const char *prefix, const char *filename, char **filename_out)
         goto done;
     }
 
-    HDsnprintf(out_buf, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s",
-               prefix, filename);
+    HDsnprintf(out_buf, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", prefix, filename);
 
     *filename_out = out_buf;
 

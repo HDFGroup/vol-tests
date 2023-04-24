@@ -257,7 +257,8 @@ main(int argc, char **argv)
     if (NULL == (test_path_prefix = HDgetenv(HDF5_API_TEST_PATH_PREFIX)))
         test_path_prefix = "";
 
-    HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, PARALLEL_TEST_FILE_NAME);
+    HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix,
+               PARALLEL_TEST_FILE_NAME);
 
     if (NULL == (vol_connector_name = HDgetenv("HDF5_VOL_CONNECTOR"))) {
         if (MAINPROCESS)
@@ -317,8 +318,8 @@ main(int argc, char **argv)
             HDprintf("The below statistics are minimum values due to the possibility of some ranks failing a "
                      "test while others pass:\n");
 
-        if (MPI_SUCCESS !=
-            MPI_Allreduce(MPI_IN_PLACE, &n_tests_passed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN, MPI_COMM_WORLD)) {
+        if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &n_tests_passed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN,
+                                         MPI_COMM_WORLD)) {
             if (MAINPROCESS)
                 HDprintf("    failed to collect consensus about the minimum number of tests that passed -- "
                          "reporting rank 0's (possibly inaccurate) value\n");
@@ -329,8 +330,8 @@ main(int argc, char **argv)
                      n_tests_passed_g > 0 ? "At least " : "", (long)n_tests_passed_g, (long)n_tests_run_g,
                      ((float)n_tests_passed_g / (float)n_tests_run_g * 100.0), vol_connector_name);
 
-        if (MPI_SUCCESS !=
-            MPI_Allreduce(MPI_IN_PLACE, &n_tests_failed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN, MPI_COMM_WORLD)) {
+        if (MPI_SUCCESS != MPI_Allreduce(MPI_IN_PLACE, &n_tests_failed_g, 1, MPI_UNSIGNED_LONG_LONG, MPI_MIN,
+                                         MPI_COMM_WORLD)) {
             if (MAINPROCESS)
                 HDprintf("    failed to collect consensus about the minimum number of tests that failed -- "
                          "reporting rank 0's (possibly inaccurate) value\n");
@@ -341,9 +342,9 @@ main(int argc, char **argv)
                      n_tests_failed_g > 0 ? "At least " : "", (long)n_tests_failed_g, (long)n_tests_run_g,
                      ((float)n_tests_failed_g / (float)n_tests_run_g * 100.0), vol_connector_name);
 
-            HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n", (long)n_tests_skipped_g,
-                     (long)n_tests_run_g, ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0),
-                     vol_connector_name);
+            HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n",
+                     (long)n_tests_skipped_g, (long)n_tests_run_g,
+                     ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0), vol_connector_name);
         }
     }
 
