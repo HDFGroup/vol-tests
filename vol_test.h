@@ -229,5 +229,5 @@ extern size_t n_tests_passed_g;
 extern size_t n_tests_failed_g;
 extern size_t n_tests_skipped_g;
 
-extern uint64_t vol_cap_flags;
+extern uint64_t vol_cap_flags_g;
 #endif

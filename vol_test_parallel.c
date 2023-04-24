@@ -35,7 +35,7 @@ size_t n_tests_failed_g;
 size_t n_tests_skipped_g;
 
 int      mpi_size, mpi_rank;
-uint64_t vol_cap_flags;
+uint64_t vol_cap_flags_g;
 
 /* X-macro to define the following for each test:
  * - enum type
@@ -193,9 +193,9 @@ get_vol_cap_flags(const char *connector_name)
         goto error;
     }
 
-    vol_cap_flags = 0L;
+    vol_cap_flags_g = 0L;
 
-    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags) < 0) {
+    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags_g) < 0) {
         H5_FAILED();
         HDprintf("    couldn't H5VLget_cap_flags\n");
         goto error;
@@ -292,7 +292,7 @@ main(int argc, char **argv)
     BEGIN_INDEPENDENT_OP(create_test_container)
     {
         if (MAINPROCESS) {
-            if (create_test_container(vol_test_parallel_filename, vol_cap_flags) < 0) {
+            if (create_test_container(vol_test_parallel_filename, vol_cap_flags_g) < 0) {
                 HDprintf("    failed to create testing container file '%s'\n", vol_test_parallel_filename);
                 INDEPENDENT_OP_ERROR(create_test_container);
             }

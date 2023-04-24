@@ -65,7 +65,7 @@ test_create_file(void)
     TESTING("H5Fcreate");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -118,7 +118,7 @@ test_create_file_invalid_params(void)
     TESTING_MULTIPART("H5Fcreate with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -271,7 +271,7 @@ test_create_file_excl(void)
     TESTING("H5Fcreate with H5F_ACC_EXCL/H5F_ACC_TRUNC flag");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -349,7 +349,7 @@ test_open_file(void)
     TESTING_MULTIPART("H5Fopen");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -433,7 +433,7 @@ test_open_file_invalid_params(void)
     TESTING_MULTIPART("H5Fopen with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -535,7 +535,7 @@ test_open_nonexistent_file(void)
     TESTING("for invalid opening of a non-existent file")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -599,9 +599,9 @@ test_file_permission(void)
     TESTING_MULTIPART("file permissions (invalid creation of objects in read-only file)");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, dataset, attribute, stored datatype aren't "
                  "supported with this connector\n");
@@ -828,7 +828,7 @@ test_reopen_file(void)
     TESTING("re-open of a file with H5Freopen")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -877,7 +877,7 @@ test_close_file_invalid_id(void)
     TESTING("H5Fclose with an invalid ID")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -919,8 +919,8 @@ test_flush_file(void)
     TESTING_MULTIPART("H5Fflush")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
         SKIPPED();
         HDprintf("    API functions for basic file, dataset, or file flush aren't supported with this "
                  "connector\n");
@@ -1037,7 +1037,7 @@ test_file_is_accessible(void)
     TESTING_MULTIPART("H5Fis_accessible")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -1128,8 +1128,8 @@ test_file_property_lists(void)
     TESTING_MULTIPART("file property list operations")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_GET_PLIST)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_GET_PLIST)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file or get property list aren't supported with this "
                  "connector\n");
@@ -1424,7 +1424,7 @@ test_get_file_intent(void)
     TESTING_MULTIPART("retrieval of file intent with H5Fget_intent")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file aren't supported with this connector\n");
         return 0;
@@ -1590,9 +1590,10 @@ test_get_file_obj_count(void)
     TESTING_MULTIPART("retrieval of open object number and IDs")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file,  basic dataset, group, datatype, or attribute "
                  "aren't supported with this connector\n");
@@ -1940,8 +1941,8 @@ test_file_open_overlap(void)
     TESTING("overlapping file opens")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file, dataset, or group aren't supported with this "
                  "connector\n");
@@ -2082,8 +2083,8 @@ test_file_mounts(void)
     TESTING("file mounting/unmounting")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_MOUNT) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_MOUNT) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file,  file mount, or basic group aren't supported with this "
                  "connector\n");
@@ -2180,9 +2181,10 @@ test_get_file_name(void)
     TESTING_MULTIPART("retrieval of file name")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file, basic dataset, group, datatype, or attribute "
                  "aren't supported with this connector\n");

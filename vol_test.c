@@ -48,7 +48,7 @@ size_t n_tests_passed_g;
 size_t n_tests_failed_g;
 size_t n_tests_skipped_g;
 
-uint64_t vol_cap_flags;
+uint64_t vol_cap_flags_g;
 
 /* X-macro to define the following for each test:
  * - enum type
@@ -141,9 +141,9 @@ get_vol_cap_flags(const char *connector_name)
         goto error;
     }
 
-    vol_cap_flags = 0L;
+    vol_cap_flags_g = 0L;
 
-    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags) < 0) {
+    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags_g) < 0) {
         H5_FAILED();
         HDprintf("    couldn't H5VLget_cap_flags\n");
         goto error;
@@ -230,7 +230,7 @@ main(int argc, char **argv)
      * Create the file that will be used for all of the tests,
      * except for those which test file creation.
      */
-    if (create_test_container(vol_test_filename, vol_cap_flags) < 0) {
+    if (create_test_container(vol_test_filename, vol_cap_flags_g) < 0) {
         HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
         err_occurred = TRUE;
         goto done;

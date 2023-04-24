@@ -38,7 +38,7 @@ test_create_file(void)
     TESTING("H5Fcreate");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -85,7 +85,7 @@ test_open_file(void)
     TESTING_MULTIPART("H5Fopen");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -199,7 +199,7 @@ test_split_comm_file_access(void)
     TESTING("file access with a split communicator")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
