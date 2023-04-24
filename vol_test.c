@@ -219,19 +219,19 @@ main(int argc, char **argv)
     HDprintf("  - Test file name: '%s'\n", vol_test_filename);
     HDprintf("\n\n");
 
-    /*
-     * Create the file that will be used for all of the tests,
-     * except for those which test file creation.
-     */
-    if (create_test_container(vol_test_filename) < 0) {
-        HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
+    /* Retrieve the VOL cap flags */
+    if (get_vol_cap_flags(vol_connector_name) < 0) {
+        HDfprintf(stderr, "Unable to get VOL capacity flags\n");
         err_occurred = TRUE;
         goto done;
     }
 
-    /* Retrieve the VOL cap flags */
-    if (get_vol_cap_flags(vol_connector_name) < 0) {
-        HDfprintf(stderr, "Unable to get VOL capacity flags\n");
+    /*
+     * Create the file that will be used for all of the tests,
+     * except for those which test file creation.
+     */
+    if (create_test_container(vol_test_filename, vol_cap_flags) < 0) {
+        HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
         err_occurred = TRUE;
         goto done;
     }

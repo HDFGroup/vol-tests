@@ -221,12 +221,6 @@ extern const char *test_path_prefix;
 #define MAX_DIM_SIZE 16
 
 /*
- * XXX: Set of compatibility macros that should be replaced once the
- * VOL connector feature support situation is resolved.
- */
-#define GROUP_CREATION_IS_SUPPORTED
-
-/*
  * Global variables to keep track of statistics on the
  * number of tests skipped, failed and run total.
  */

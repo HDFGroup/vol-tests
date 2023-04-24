@@ -273,6 +273,17 @@ main(int argc, char **argv)
         HDprintf("\n\n");
     }
 
+    /* Retrieve the VOL cap flags */
+    BEGIN_INDEPENDENT_OP(get_capability_flags)
+    {
+        if (get_vol_cap_flags(vol_connector_name) < 0) {
+            if (MAINPROCESS)
+                HDfprintf(stderr, "Unable to get VOL capability flags\n");
+            INDEPENDENT_OP_ERROR(get_capability_flags);
+        }
+    }
+    END_INDEPENDENT_OP(get_capability_flags);
+
     /*
      * Create the file that will be used for all of the tests,
      * except for those which test file creation.
@@ -280,24 +291,13 @@ main(int argc, char **argv)
     BEGIN_INDEPENDENT_OP(create_test_container)
     {
         if (MAINPROCESS) {
-            if (create_test_container(vol_test_parallel_filename) < 0) {
+            if (create_test_container(vol_test_parallel_filename, vol_cap_flags) < 0) {
                 HDprintf("    failed to create testing container file '%s'\n", vol_test_parallel_filename);
                 INDEPENDENT_OP_ERROR(create_test_container);
             }
         }
     }
     END_INDEPENDENT_OP(create_test_container);
-
-    /* Retrieve the VOL cap flags */
-    BEGIN_INDEPENDENT_OP(get_capacity_flags)
-    {
-        if (get_vol_cap_flags(vol_connector_name) < 0) {
-            if (MAINPROCESS)
-                HDfprintf(stderr, "Unable to get VOL capacity flags\n");
-            INDEPENDENT_OP_ERROR(get_capacity_flags);
-        }
-    }
-    END_INDEPENDENT_OP(get_capacity_flags);
 
     /* Run all the tests that are enabled */
     vol_test_run();
