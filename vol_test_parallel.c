@@ -27,6 +27,8 @@
 
 char vol_test_parallel_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
+const char *test_path_prefix;
+
 size_t n_tests_run_g;
 size_t n_tests_passed_g;
 size_t n_tests_failed_g;
@@ -251,7 +253,10 @@ main(int argc, char **argv)
 
     srand((unsigned)HDtime(NULL));
 
-    HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", PARALLEL_TEST_FILE_NAME);
+    if (NULL == (test_path_prefix = HDgetenv(HDF5_API_TEST_PATH_PREFIX)))
+        test_path_prefix = "";
+
+    HDsnprintf(vol_test_parallel_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, PARALLEL_TEST_FILE_NAME);
 
     if (NULL == (vol_connector_name = HDgetenv("HDF5_VOL_CONNECTOR"))) {
         if (MAINPROCESS)

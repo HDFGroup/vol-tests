@@ -41,7 +41,7 @@
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-char *test_path_prefix = "";
+const char *test_path_prefix;
 
 size_t n_tests_run_g;
 size_t n_tests_passed_g;
@@ -186,10 +186,6 @@ main(int argc, char **argv)
         }
     }
 
-    if (NULL == (test_path_prefix = getenv("HDF5_API_TEST_PATH_PREFIX"))) {
-        test_path_prefix = "";
-    }
-
 #ifdef H5_HAVE_PARALLEL
     /* If HDF5 was built with parallel enabled, go ahead and call MPI_Init before
      * running these tests. Even though these are meant to be serial tests, they will
@@ -212,6 +208,9 @@ main(int argc, char **argv)
         HDprintf("No VOL connector selected; using native VOL connector\n");
         vol_connector_name = "native";
     }
+
+    if (NULL == (test_path_prefix = HDgetenv(HDF5_API_TEST_PATH_PREFIX)))
+        test_path_prefix = "";
 
     HDsnprintf(vol_test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, TEST_FILE_NAME);
 
