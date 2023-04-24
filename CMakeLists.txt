@@ -373,9 +373,9 @@ if(HDF5_VOL_TEST_SERVER)
       ${HDF5_VOL_TEST_DRIVER_EXTRA_FLAGS}
     )
   else()
-    foreach(vol_test ${vol_tests})
-      set(last_vol_test "")
+    set(last_vol_test "")
 
+    foreach(vol_test ${vol_tests})
       add_test(NAME "h5vl_test_${vol_test}"
         COMMAND $<TARGET_FILE:h5vl_test_driver>
         --server ${HDF5_VOL_TEST_SERVER}
