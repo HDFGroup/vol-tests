@@ -30,7 +30,7 @@ jobs:
       run: |
         mkdir hdf5/build
         cd hdf5/build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_STATIC_LIBS=OFF ..
         sudo make -j install
         cd ..
         git rev-parse HEAD > git.txt

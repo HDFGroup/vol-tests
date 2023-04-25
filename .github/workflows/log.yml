@@ -26,7 +26,7 @@ jobs:
       run: |
         # mkdir hdf5/build
         # cd hdf5/build
-        # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DHDF5_ENABLE_PARALLEL:BOOL=ON ..
+        # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_STATIC_LIBS=OFF -DHDF5_ENABLE_PARALLEL:BOOL=ON ..
         cd hdf5
         export HDF5_LIBTOOL=/usr/bin/libtoolize
         ./autogen.sh
