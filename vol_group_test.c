@@ -68,7 +68,7 @@ test_create_group_under_root(void)
     TESTING("creation of group under the root group")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -122,7 +122,7 @@ test_create_group_under_existing_group(void)
     TESTING("creation of group under existing group using a relative path")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -200,7 +200,7 @@ test_create_many_groups(void)
     TESTING("H5Gcreate many groups")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -278,7 +278,7 @@ test_create_deep_groups(void)
     TESTING("H5Gcreate groups of great depths")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -387,7 +387,7 @@ test_create_intermediate_group(void)
     TESTING("H5Gcreate group with intermediate group creation")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -534,7 +534,7 @@ test_create_group_invalid_params(void)
     TESTING_MULTIPART("H5Gcreate with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -709,7 +709,7 @@ test_create_anonymous_group(void)
     TESTING("creation of anonymous group")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -769,7 +769,7 @@ test_create_anonymous_group_invalid_params(void)
     TESTING_MULTIPART("H5Gcreate_anon with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -894,7 +894,7 @@ test_open_nonexistent_group(void)
     TESTING("for invalid opening of a nonexistent group")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -949,7 +949,7 @@ test_open_group_invalid_params(void)
     TESTING_MULTIPART("H5Gopen with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group aren't supported with this connector\n");
         return 0;
@@ -1077,7 +1077,7 @@ test_close_group_invalid_id(void)
     TESTING("H5Gclose with an invalid group ID")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic group aren't supported with this connector\n");
         return 0;
@@ -1119,8 +1119,8 @@ test_group_property_lists(void)
     TESTING_MULTIPART("group property list operations")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_GET_PLIST) || !(vol_cap_flags & H5VL_CAP_FLAG_CREATION_ORDER)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_GET_PLIST) || !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, property list, creation order aren't supported "
                  "with this connector\n");
@@ -1391,8 +1391,8 @@ test_get_group_info(void)
     TESTING_MULTIPART("retrieval of group info");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_MORE) || !(vol_cap_flags & H5VL_CAP_FLAG_CREATION_ORDER)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_MORE) || !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
         SKIPPED();
         HDprintf("    API functions for basic file or group, creation order aren't supported with this "
                  "connector\n");
@@ -1810,8 +1810,8 @@ test_get_group_info_invalid_params(void)
     TESTING_MULTIPART("retrieval of group info with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_CREATION_ORDER)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
         SKIPPED();
         HDprintf("    API functions for basic file, more group, creation order aren't supported with this "
                  "connector\n");
@@ -2168,8 +2168,8 @@ test_flush_group(void)
     TESTING("H5Gflush")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
         SKIPPED();
         HDprintf("    API functions for basic file, more group, creation order aren't supported with this "
                  "connector\n");
@@ -2237,7 +2237,7 @@ test_flush_group_invalid_params(void)
     TESTING("H5Gflush with invalid parameters")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
         SKIPPED();
         HDprintf("    API functions for group flush aren't supported with this connector\n");
         return 0;
@@ -2276,8 +2276,8 @@ test_refresh_group(void)
     TESTING("H5Grefresh")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
         SKIPPED();
         HDprintf(
             "    API functions for basic file, group, or refresh aren't supported with this connector\n");
@@ -2345,7 +2345,7 @@ test_refresh_group_invalid_params(void)
     TESTING("H5Grefresh with invalid parameters")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
         SKIPPED();
         HDprintf("    API functions for group refresh aren't supported with this connector\n");
         return 0;

@@ -23,14 +23,14 @@ jobs:
         submodules: recursive
     - name: Install dependencies
       run: |
-        sudo apt-get install ninja-build automake autoconf libtool libtool-bin libopenmpi-dev
-        sudo apt-get update -y	
+        sudo apt-get install ninja-build automake autoconf libtool libtool-bin
+        sudo apt-get update -y
         sudo apt-get install -y libyajl-dev libcurl4-openssl-dev
     - name: Install HDF5
       run: |
         mkdir hdf5/build
         cd hdf5/build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DHDF5_ENABLE_PARALLEL:BOOL=ON -DHDF5_ENABLE_THREADSAFE:BOOL=ON -DALLOW_UNSUPPORTED:BOOL=ON ..        
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_STATIC_LIBS=OFF ..
         sudo make -j install
         cd ..
         git rev-parse HEAD > git.txt

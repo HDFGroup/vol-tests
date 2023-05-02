@@ -41,14 +41,14 @@
 
 char vol_test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
-char *test_path_prefix = "";
+const char *test_path_prefix;
 
 size_t n_tests_run_g;
 size_t n_tests_passed_g;
 size_t n_tests_failed_g;
 size_t n_tests_skipped_g;
 
-uint64_t vol_cap_flags;
+uint64_t vol_cap_flags_g;
 
 /* X-macro to define the following for each test:
  * - enum type
@@ -117,63 +117,13 @@ vol_test_run(void)
             (void)vol_test_func[i]();
 }
 
-static int
-get_vol_cap_flags(const char *connector_name)
-{
-    hid_t connector_id = H5I_INVALID_HID;
-    hid_t fapl_id      = H5I_INVALID_HID;
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get the connector ID with name\n");
-        goto error;
-    }
-
-    if ((connector_id = H5VLregister_connector_by_name(connector_name, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get the connector ID with name\n");
-        goto error;
-    }
-
-    if (H5Pset_vol(fapl_id, connector_id, NULL) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get the connector ID with name\n");
-        goto error;
-    }
-
-    vol_cap_flags = 0L;
-
-    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't H5VLget_cap_flags\n");
-        goto error;
-    }
-
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-
-    if (H5VLclose(connector_id) < 0)
-        TEST_ERROR
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY
-    {
-        H5Pclose(fapl_id);
-        H5VLclose(connector_id);
-    }
-    H5E_END_TRY;
-
-    return -1;
-}
-
 /******************************************************************************/
 
 int
 main(int argc, char **argv)
 {
     char   *vol_connector_name;
+    hid_t   fapl_id      = H5I_INVALID_HID;
     hbool_t err_occurred = FALSE;
 
     /* Simple argument checking, TODO can improve that later */
@@ -184,10 +134,6 @@ main(int argc, char **argv)
             memset(vol_test_enabled, 0, sizeof(vol_test_enabled));
             vol_test_enabled[i] = 1;
         }
-    }
-
-    if (NULL == (test_path_prefix = getenv("HDF5_API_TEST_PATH_PREFIX"))) {
-        test_path_prefix = "";
     }
 
 #ifdef H5_HAVE_PARALLEL
@@ -213,6 +159,9 @@ main(int argc, char **argv)
         vol_connector_name = "native";
     }
 
+    if (NULL == (test_path_prefix = HDgetenv(HDF5_API_TEST_PATH_PREFIX)))
+        test_path_prefix = "";
+
     HDsnprintf(vol_test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, TEST_FILE_NAME);
 
     HDprintf("Running VOL tests with VOL connector '%s'\n\n", vol_connector_name);
@@ -220,19 +169,28 @@ main(int argc, char **argv)
     HDprintf("  - Test file name: '%s'\n", vol_test_filename);
     HDprintf("\n\n");
 
-    /*
-     * Create the file that will be used for all of the tests,
-     * except for those which test file creation.
+    /* Retrieve the VOL cap flags - work around an HDF5
+     * library issue by creating a FAPL
      */
-    if (create_test_container(vol_test_filename) < 0) {
-        HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
+    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0) {
+        HDfprintf(stderr, "Unable to create FAPL\n");
         err_occurred = TRUE;
         goto done;
     }
 
-    /* Retrieve the VOL cap flags */
-    if (get_vol_cap_flags(vol_connector_name) < 0) {
-        HDfprintf(stderr, "Unable to get VOL capacity flags\n");
+    vol_cap_flags_g = H5VL_CAP_FLAG_NONE;
+    if (H5Pget_vol_cap_flags(fapl_id, &vol_cap_flags_g) < 0) {
+        HDfprintf(stderr, "Unable to retrieve VOL connector capability flags\n");
+        err_occurred = TRUE;
+        goto done;
+    }
+
+    /*
+     * Create the file that will be used for all of the tests,
+     * except for those which test file creation.
+     */
+    if (create_test_container(vol_test_filename, vol_cap_flags_g) < 0) {
+        HDfprintf(stderr, "Unable to create testing container file '%s'\n", vol_test_filename);
         err_occurred = TRUE;
         goto done;
     }
@@ -241,19 +199,26 @@ main(int argc, char **argv)
     vol_test_run();
 
     HDprintf("Cleaning up testing files\n");
-    H5Fdelete(vol_test_filename, H5P_DEFAULT);
+    H5Fdelete(vol_test_filename, fapl_id);
 
-    HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n", (long)n_tests_passed_g,
-             (long)n_tests_run_g, ((float)n_tests_passed_g / (float)n_tests_run_g * 100.0),
-             vol_connector_name);
-    HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n", (long)n_tests_failed_g,
-             (long)n_tests_run_g, ((float)n_tests_failed_g / (float)n_tests_run_g * 100.0),
-             vol_connector_name);
-    HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n", (long)n_tests_skipped_g,
-             (long)n_tests_run_g, ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0),
-             vol_connector_name);
+    if (n_tests_run_g > 0) {
+        HDprintf("%ld/%ld (%.2f%%) VOL tests passed with VOL connector '%s'\n", (long)n_tests_passed_g,
+                 (long)n_tests_run_g, ((float)n_tests_passed_g / (float)n_tests_run_g * 100.0),
+                 vol_connector_name);
+        HDprintf("%ld/%ld (%.2f%%) VOL tests did not pass with VOL connector '%s'\n", (long)n_tests_failed_g,
+                 (long)n_tests_run_g, ((float)n_tests_failed_g / (float)n_tests_run_g * 100.0),
+                 vol_connector_name);
+        HDprintf("%ld/%ld (%.2f%%) VOL tests were skipped with VOL connector '%s'\n", (long)n_tests_skipped_g,
+                 (long)n_tests_run_g, ((float)n_tests_skipped_g / (float)n_tests_run_g * 100.0),
+                 vol_connector_name);
+    }
 
 done:
+    if (fapl_id >= 0 && H5Pclose(fapl_id) < 0) {
+        HDfprintf(stderr, "Unable to close FAPL\n");
+        err_occurred = TRUE;
+    }
+
     H5close();
 
 #ifdef H5_HAVE_PARALLEL

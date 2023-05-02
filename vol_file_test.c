@@ -29,17 +29,6 @@ static int test_get_file_intent(void);
 static int test_get_file_obj_count(void);
 static int test_file_mounts(void);
 static int test_get_file_name(void);
-#if 0  /* for native VOL connector test only */
-static int test_filespace_info(void);
-static int test_get_file_id(void);
-static int test_file_close_degree(void);
-static int test_get_file_free_sections(void);
-static int test_get_file_size(void);
-static int test_get_file_image(void);
-static int test_get_file_info(void);
-static int test_get_file_vfd_handle(void);
-static int test_double_group_open(void);
-#endif /* for native VOL connector test only */
 
 /*
  * The array of file tests to be performed.
@@ -62,17 +51,6 @@ static int (*file_tests[])(void) = {
     test_get_file_obj_count,
     test_file_mounts,
     test_get_file_name,
-#if 0  /* for native VOL connector test only */
-        test_filespace_info,
-        test_get_file_id,
-        test_file_close_degree,
-        test_get_file_free_sections,
-        test_get_file_size,
-        test_get_file_image,
-        test_get_file_info,
-        test_get_file_vfd_handle,
-        test_double_group_open
-#endif /* for native VOL connector test only */
 };
 
 /*
@@ -87,13 +65,17 @@ test_create_file(void)
     TESTING("H5Fcreate");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
     }
 
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_TEST_FILENAME);
+    if (prefix_filename(test_path_prefix, FILE_CREATE_TEST_FILENAME, &prefixed_filename) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
 
     if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -104,7 +86,8 @@ test_create_file(void)
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
-    free(prefixed_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -114,9 +97,10 @@ error:
     H5E_BEGIN_TRY
     {
         H5Fclose(file_id);
-        free(prefixed_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 }
@@ -128,18 +112,22 @@ error:
 static int
 test_create_file_invalid_params(void)
 {
-    hid_t file_id                          = H5I_INVALID_HID;
-    char *prefixed_invalid_params_filename = NULL;
-
-    PREFIX_FILENAME(prefixed_invalid_params_filename, test_path_prefix, FILE_CREATE_INVALID_PARAMS_FILE_NAME);
+    hid_t file_id           = H5I_INVALID_HID;
+    char *prefixed_filename = NULL;
 
     TESTING_MULTIPART("H5Fcreate with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
+    }
+
+    if (prefix_filename(test_path_prefix, FILE_CREATE_INVALID_PARAMS_FILE_NAME, &prefixed_filename) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
     }
 
     BEGIN_MULTIPART
@@ -184,7 +172,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id = H5Fcreate(prefixed_invalid_params_filename, H5F_ACC_RDWR, H5P_DEFAULT, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_RDWR, H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -197,8 +185,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id =
-                    H5Fcreate(prefixed_invalid_params_filename, H5F_ACC_CREAT, H5P_DEFAULT, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_CREAT, H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -211,8 +198,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id =
-                    H5Fcreate(prefixed_invalid_params_filename, H5F_ACC_SWMR_READ, H5P_DEFAULT, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_SWMR_READ, H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -233,8 +219,7 @@ test_create_file_invalid_params(void)
 
             H5E_BEGIN_TRY
             {
-                file_id =
-                    H5Fcreate(prefixed_invalid_params_filename, H5F_ACC_TRUNC, H5I_INVALID_HID, H5P_DEFAULT);
+                file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5I_INVALID_HID, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
@@ -251,20 +236,23 @@ test_create_file_invalid_params(void)
     }
     END_MULTIPART;
 
-    free(prefixed_invalid_params_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
+
     return 0;
 
 error:
     H5E_BEGIN_TRY
     {
         /* Attempt to remove the file if it ended up being created. */
-        H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT);
+        H5Fdelete(prefixed_filename, H5P_DEFAULT);
 
         H5Fclose(file_id);
-
-        free(prefixed_invalid_params_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     return 1;
 }
@@ -276,19 +264,24 @@ error:
 static int
 test_create_file_excl(void)
 {
-    hid_t file_id = H5I_INVALID_HID, file_id2 = H5I_INVALID_HID;
+    hid_t file_id           = H5I_INVALID_HID;
+    hid_t file_id2          = H5I_INVALID_HID;
     char *prefixed_filename = NULL;
 
     TESTING("H5Fcreate with H5F_ACC_EXCL/H5F_ACC_TRUNC flag");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
     }
 
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_EXCL_FILE_NAME);
+    if (prefix_filename(test_path_prefix, FILE_CREATE_EXCL_FILE_NAME, &prefixed_filename) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
 
     if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -325,7 +318,8 @@ test_create_file_excl(void)
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
-    free(prefixed_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -336,9 +330,10 @@ error:
     {
         H5Fclose(file_id);
         H5Fclose(file_id2);
-        free(prefixed_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 }
@@ -354,7 +349,7 @@ test_open_file(void)
     TESTING_MULTIPART("H5Fopen");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -438,7 +433,7 @@ test_open_file_invalid_params(void)
     TESTING_MULTIPART("H5Fopen with invalid parameters");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -534,25 +529,29 @@ error:
 static int
 test_open_nonexistent_file(void)
 {
-    hid_t file_id = H5I_INVALID_HID;
-    char  test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    hid_t file_id           = H5I_INVALID_HID;
+    char *prefixed_filename = NULL;
 
     TESTING("for invalid opening of a non-existent file")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
     }
 
-    HDsnprintf(test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", NONEXISTENT_FILENAME);
+    if (prefix_filename(test_path_prefix, NONEXISTENT_FILENAME, &prefixed_filename) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
 
     /* XXX: Make sure to first delete the file so we know for sure it doesn't exist */
 
     H5E_BEGIN_TRY
     {
-        file_id = H5Fopen(test_filename, H5F_ACC_RDWR, H5P_DEFAULT);
+        file_id = H5Fopen(prefixed_filename, H5F_ACC_RDWR, H5P_DEFAULT);
     }
     H5E_END_TRY;
 
@@ -561,6 +560,9 @@ test_open_nonexistent_file(void)
         HDprintf("    non-existent file was opened!\n");
         goto error;
     }
+
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -573,6 +575,8 @@ error:
     }
     H5E_END_TRY;
 
+    HDfree(prefixed_filename);
+
     return 1;
 }
 
@@ -583,20 +587,21 @@ error:
 static int
 test_file_permission(void)
 {
-    hid_t  file_id = H5I_INVALID_HID;
-    hid_t  dset_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
-    hid_t  group_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
-    hid_t  dtype_id = H5I_INVALID_HID;
-    herr_t ret      = -1;
-
-    char *prefixed_file_permission_test_filename;
+    hid_t  file_id           = H5I_INVALID_HID;
+    hid_t  dset_id           = H5I_INVALID_HID;
+    hid_t  dspace_id         = H5I_INVALID_HID;
+    hid_t  group_id          = H5I_INVALID_HID;
+    hid_t  attr_id           = H5I_INVALID_HID;
+    hid_t  dtype_id          = H5I_INVALID_HID;
+    char  *prefixed_filename = NULL;
+    herr_t h5_ret            = FAIL;
 
     TESTING_MULTIPART("file permissions (invalid creation of objects in read-only file)");
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
         HDprintf("    API functions for basic file, group, dataset, attribute, stored datatype aren't "
                  "supported with this connector\n");
@@ -605,12 +610,15 @@ test_file_permission(void)
 
     TESTING_2("test setup")
 
-    PREFIX_FILENAME(prefixed_file_permission_test_filename, test_path_prefix, FILE_PERMISSION_TEST_FILENAME);
-
-    if ((file_id = H5Fcreate(prefixed_file_permission_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT,
-                             H5P_DEFAULT)) < 0) {
+    if (prefix_filename(test_path_prefix, FILE_PERMISSION_TEST_FILENAME, &prefixed_filename) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", prefixed_file_permission_test_filename);
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -633,7 +641,7 @@ test_file_permission(void)
         TEST_ERROR
 
     /* Open the file (with read-only permission) */
-    if ((file_id = H5Fopen(prefixed_file_permission_test_filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fopen(prefixed_filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file\n");
         goto error;
@@ -746,12 +754,12 @@ test_file_permission(void)
             /* Commit a datatype with the read-only file handle (should fail) */
             H5E_BEGIN_TRY
             {
-                ret = H5Tcommit2(file_id, FILE_PERMISSION_TEST_NAMED_DTYPE, dtype_id, H5P_DEFAULT,
-                                 H5P_DEFAULT, H5P_DEFAULT);
+                h5_ret = H5Tcommit2(file_id, FILE_PERMISSION_TEST_NAMED_DTYPE, dtype_id, H5P_DEFAULT,
+                                    H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
-            if (ret >= 0) {
+            if (h5_ret >= 0) {
                 H5_FAILED();
                 HDprintf("    a named datatype was committed in a read-only file!\n");
                 PART_ERROR(H5Tcommit_rdonly_file);
@@ -759,11 +767,11 @@ test_file_permission(void)
 
             H5E_BEGIN_TRY
             {
-                ret = H5Tcommit_anon(file_id, dtype_id, H5P_DEFAULT, H5P_DEFAULT);
+                h5_ret = H5Tcommit_anon(file_id, dtype_id, H5P_DEFAULT, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
-            if (ret >= 0) {
+            if (h5_ret >= 0) {
                 H5_FAILED();
                 HDprintf("    a named datatype was committed in a read-only file!\n");
                 PART_ERROR(H5Tcommit_rdonly_file);
@@ -784,7 +792,8 @@ test_file_permission(void)
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
-    free(prefixed_file_permission_test_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -799,9 +808,10 @@ error:
         H5Tclose(dtype_id);
         H5Gclose(group_id);
         H5Fclose(file_id);
-        free(prefixed_file_permission_test_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 }
@@ -812,12 +822,13 @@ error:
 static int
 test_reopen_file(void)
 {
-    hid_t file_id = H5I_INVALID_HID, file_id2 = H5I_INVALID_HID;
+    hid_t file_id  = H5I_INVALID_HID;
+    hid_t file_id2 = H5I_INVALID_HID;
 
     TESTING("re-open of a file with H5Freopen")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -866,7 +877,7 @@ test_close_file_invalid_id(void)
     TESTING("H5Fclose with an invalid ID")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
@@ -898,17 +909,18 @@ error:
 static int
 test_flush_file(void)
 {
-    hid_t    file_id   = H5I_INVALID_HID;
-    hid_t    dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
+    hid_t    file_id           = H5I_INVALID_HID;
+    hid_t    dspace_id         = H5I_INVALID_HID;
+    hid_t    dset_id           = H5I_INVALID_HID;
+    char    *prefixed_filename = NULL;
     char     dset_name[32];
-    char    *prefixed_file_flush_test_filename = NULL;
     unsigned u;
 
     TESTING_MULTIPART("H5Fflush")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_FLUSH_REFRESH)) {
         SKIPPED();
         HDprintf("    API functions for basic file, dataset, or file flush aren't supported with this "
                  "connector\n");
@@ -917,12 +929,15 @@ test_flush_file(void)
 
     TESTING_2("test setup")
 
-    PREFIX_FILENAME(prefixed_file_flush_test_filename, test_path_prefix, FILE_FLUSH_TEST_FILENAME);
-
-    if ((file_id = H5Fcreate(prefixed_file_flush_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) <
-        0) {
+    if (prefix_filename(test_path_prefix, FILE_FLUSH_TEST_FILENAME, &prefixed_filename) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", prefixed_file_flush_test_filename);
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -988,7 +1003,8 @@ test_flush_file(void)
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
 
-    free(prefixed_file_flush_test_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -1000,9 +1016,10 @@ error:
         H5Sclose(dspace_id);
         H5Dclose(dset_id);
         H5Fclose(file_id);
-        free(prefixed_file_flush_test_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 }
@@ -1013,16 +1030,23 @@ error:
 static int
 test_file_is_accessible(void)
 {
-    const char *const fake_filename = "nonexistent_file.h5";
-    htri_t            is_accessible = -1;
+    const char *const fake_filename     = "nonexistent_file.h5";
+    char             *prefixed_filename = NULL;
+    htri_t            is_accessible     = FAIL;
 
     TESTING_MULTIPART("H5Fis_accessible")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file aren't supported with this connector\n");
         return 0;
+    }
+
+    if (prefix_filename(test_path_prefix, fake_filename, &prefixed_filename) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
     }
 
     BEGIN_MULTIPART
@@ -1056,14 +1080,14 @@ test_file_is_accessible(void)
 
             H5E_BEGIN_TRY
             {
-                is_accessible = H5Fis_accessible(fake_filename, H5P_DEFAULT);
+                is_accessible = H5Fis_accessible(prefixed_filename, H5P_DEFAULT);
             }
             H5E_END_TRY;
 
             if (is_accessible > 0) {
                 H5_FAILED();
                 HDprintf("    non-existent file '%s' was accessible with VOL connector: is_accessible=%d!\n",
-                         fake_filename, is_accessible);
+                         prefixed_filename, is_accessible);
                 PART_ERROR(H5Fis_accessible_invalid_file);
             }
 
@@ -1073,9 +1097,14 @@ test_file_is_accessible(void)
     }
     END_MULTIPART;
 
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
+
     return 0;
 
 error:
+    HDfree(prefixed_filename);
+
     return 1;
 }
 
@@ -1086,19 +1115,21 @@ error:
 static int
 test_file_property_lists(void)
 {
-    hsize_t prop_val = 0;
-    hid_t   file_id1 = H5I_INVALID_HID, file_id2 = H5I_INVALID_HID;
-    hid_t   fcpl_id1 = H5I_INVALID_HID, fcpl_id2 = H5I_INVALID_HID;
-    hid_t   fapl_id1 = H5I_INVALID_HID, fapl_id2 = H5I_INVALID_HID;
-    char    test_filename1[VOL_TEST_FILENAME_MAX_LENGTH], test_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
-    char   *prefixed_test_filename1 = NULL;
-    char   *prefixed_test_filename2 = NULL;
+    hsize_t prop_val           = 0;
+    hid_t   file_id1           = H5I_INVALID_HID;
+    hid_t   file_id2           = H5I_INVALID_HID;
+    hid_t   fcpl_id1           = H5I_INVALID_HID;
+    hid_t   fcpl_id2           = H5I_INVALID_HID;
+    hid_t   fapl_id1           = H5I_INVALID_HID;
+    hid_t   fapl_id2           = H5I_INVALID_HID;
+    char   *prefixed_filename1 = NULL;
+    char   *prefixed_filename2 = NULL;
 
     TESTING_MULTIPART("file property list operations")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_GET_PLIST)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_GET_PLIST)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file or get property list aren't supported with this "
                  "connector\n");
@@ -1107,11 +1138,16 @@ test_file_property_lists(void)
 
     TESTING_2("test setup")
 
-    HDsnprintf(test_filename1, VOL_TEST_FILENAME_MAX_LENGTH, "%s", FILE_PROPERTY_LIST_TEST_FNAME1);
-    PREFIX_FILENAME(prefixed_test_filename1, test_path_prefix, test_filename1);
-
-    HDsnprintf(test_filename2, VOL_TEST_FILENAME_MAX_LENGTH, "%s", FILE_PROPERTY_LIST_TEST_FNAME2);
-    PREFIX_FILENAME(prefixed_test_filename2, test_path_prefix, test_filename2);
+    if (prefix_filename(test_path_prefix, FILE_PROPERTY_LIST_TEST_FNAME1, &prefixed_filename1) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+    if (prefix_filename(test_path_prefix, FILE_PROPERTY_LIST_TEST_FNAME2, &prefixed_filename2) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
 
     if ((fcpl_id1 = H5Pcreate(H5P_FILE_CREATE)) < 0) {
         H5_FAILED();
@@ -1125,13 +1161,13 @@ test_file_property_lists(void)
         goto error;
     }
 
-    if ((file_id1 = H5Fcreate(prefixed_test_filename1, H5F_ACC_TRUNC, fcpl_id1, H5P_DEFAULT)) < 0) {
+    if ((file_id1 = H5Fcreate(prefixed_filename1, H5F_ACC_TRUNC, fcpl_id1, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file\n");
         goto error;
     }
 
-    if ((file_id2 = H5Fcreate(prefixed_test_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((file_id2 = H5Fcreate(prefixed_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create file\n");
         goto error;
@@ -1278,13 +1314,13 @@ test_file_property_lists(void)
         {
             TESTING_2("H5Fget_create_plist after re-opening file")
 
-            if ((file_id1 = H5Fopen(test_filename1, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+            if ((file_id1 = H5Fopen(prefixed_filename1, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't open file\n");
                 PART_ERROR(H5Fget_create_plist_reopened);
             }
 
-            if ((file_id2 = H5Fopen(test_filename2, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+            if ((file_id2 = H5Fopen(prefixed_filename2, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't open file\n");
                 PART_ERROR(H5Fget_create_plist_reopened);
@@ -1348,8 +1384,10 @@ test_file_property_lists(void)
     if (H5Fclose(file_id2) < 0)
         TEST_ERROR
 
-    free(prefixed_test_filename1);
-    free(prefixed_test_filename2);
+    HDfree(prefixed_filename1);
+    prefixed_filename1 = NULL;
+    HDfree(prefixed_filename2);
+    prefixed_filename2 = NULL;
 
     PASSED();
 
@@ -1364,10 +1402,11 @@ error:
         H5Pclose(fapl_id2);
         H5Fclose(file_id1);
         H5Fclose(file_id2);
-        free(prefixed_test_filename1);
-        free(prefixed_test_filename2);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename1);
+    HDfree(prefixed_filename2);
 
     return 1;
 }
@@ -1379,14 +1418,13 @@ static int
 test_get_file_intent(void)
 {
     unsigned file_intent;
-    hid_t    file_id = H5I_INVALID_HID;
-    char     test_filename[VOL_TEST_FILENAME_MAX_LENGTH];
-    char    *prefixed_test_filename = NULL;
+    hid_t    file_id           = H5I_INVALID_HID;
+    char    *prefixed_filename = NULL;
 
     TESTING_MULTIPART("retrieval of file intent with H5Fget_intent")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file aren't supported with this connector\n");
         return 0;
@@ -1394,13 +1432,16 @@ test_get_file_intent(void)
 
     TESTING_2("test setup")
 
-    HDsnprintf(test_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s", FILE_INTENT_TEST_FILENAME);
-    PREFIX_FILENAME(prefixed_test_filename, test_path_prefix, test_filename);
+    if (prefix_filename(test_path_prefix, FILE_INTENT_TEST_FILENAME, &prefixed_filename) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
 
     /* Test that file intent retrieval works correctly for file create */
-    if ((file_id = H5Fcreate(prefixed_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", test_filename);
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -1510,7 +1551,8 @@ test_get_file_intent(void)
     }
     END_MULTIPART;
 
-    free(prefixed_test_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     return 0;
 
@@ -1518,9 +1560,10 @@ error:
     H5E_BEGIN_TRY
     {
         H5Fclose(file_id);
-        free(prefixed_test_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 }
@@ -1533,20 +1576,24 @@ static int
 test_get_file_obj_count(void)
 {
     ssize_t obj_count;
-    hid_t   file_id  = H5I_INVALID_HID;
-    hid_t   file_id2 = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID, object_id = H5I_INVALID_HID;
-    hid_t   named_dtype_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
-    hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
-    char   *prefixed_get_obj_count_test_filename1 = NULL;
-    char   *prefixed_get_obj_count_test_filename2 = NULL;
+    hid_t   file_id            = H5I_INVALID_HID;
+    hid_t   file_id2           = H5I_INVALID_HID;
+    hid_t   group_id           = H5I_INVALID_HID;
+    hid_t   object_id          = H5I_INVALID_HID;
+    hid_t   named_dtype_id     = H5I_INVALID_HID;
+    hid_t   attr_id            = H5I_INVALID_HID;
+    hid_t   dspace_id          = H5I_INVALID_HID;
+    hid_t   dset_id            = H5I_INVALID_HID;
+    char   *prefixed_filename1 = NULL;
+    char   *prefixed_filename2 = NULL;
 
     TESTING_MULTIPART("retrieval of open object number and IDs")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file,  basic dataset, group, datatype, or attribute "
                  "aren't supported with this connector\n");
@@ -1554,13 +1601,21 @@ test_get_file_obj_count(void)
     }
 
     TESTING_2("test setup")
-    PREFIX_FILENAME(prefixed_get_obj_count_test_filename1, test_path_prefix, GET_OBJ_COUNT_TEST_FILENAME1);
-    PREFIX_FILENAME(prefixed_get_obj_count_test_filename2, test_path_prefix, GET_OBJ_COUNT_TEST_FILENAME2);
 
-    if ((file_id =
-             H5Fcreate(prefixed_get_obj_count_test_filename1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if (prefix_filename(test_path_prefix, GET_OBJ_COUNT_TEST_FILENAME1, &prefixed_filename1) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", GET_OBJ_COUNT_TEST_FILENAME1);
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+    if (prefix_filename(test_path_prefix, GET_OBJ_COUNT_TEST_FILENAME2, &prefixed_filename2) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+
+    if ((file_id = H5Fcreate(prefixed_filename1, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename1);
         goto error;
     }
 
@@ -1572,10 +1627,9 @@ test_get_file_obj_count(void)
     }
 
     /* Create a second file while keeping the first file open */
-    if ((file_id2 =
-             H5Fcreate(prefixed_get_obj_count_test_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if ((file_id2 = H5Fcreate(prefixed_filename2, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", GET_OBJ_COUNT_TEST_FILENAME2);
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename2);
         goto error;
     }
 
@@ -1839,8 +1893,10 @@ test_get_file_obj_count(void)
     if (H5Fclose(file_id2) < 0)
         TEST_ERROR
 
-    free(prefixed_get_obj_count_test_filename1);
-    free(prefixed_get_obj_count_test_filename2);
+    HDfree(prefixed_filename1);
+    prefixed_filename1 = NULL;
+    HDfree(prefixed_filename2);
+    prefixed_filename2 = NULL;
 
     PASSED();
 
@@ -1856,10 +1912,11 @@ error:
         H5Dclose(dset_id);
         H5Fclose(file_id);
         H5Fclose(file_id2);
-        free(prefixed_get_obj_count_test_filename1);
-        free(prefixed_get_obj_count_test_filename2);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename1);
+    HDfree(prefixed_filename2);
 
     return 1;
 }
@@ -1873,18 +1930,19 @@ test_file_open_overlap(void)
 {
 #ifndef NO_DOUBLE_OBJECT_OPENS
     ssize_t obj_count;
-    hid_t   file_id   = H5I_INVALID_HID;
-    hid_t   file_id2  = H5I_INVALID_HID;
-    hid_t   group_id  = H5I_INVALID_HID;
-    hid_t   dspace_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
-    char   *prefixed_overlapping_filename = NULL;
+    hid_t   file_id           = H5I_INVALID_HID;
+    hid_t   file_id2          = H5I_INVALID_HID;
+    hid_t   group_id          = H5I_INVALID_HID;
+    hid_t   dspace_id         = H5I_INVALID_HID;
+    hid_t   dset_id           = H5I_INVALID_HID;
+    char   *prefixed_filename = NULL;
 #endif
 
     TESTING("overlapping file opens")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file, dataset, or group aren't supported with this "
                  "connector\n");
@@ -1892,17 +1950,21 @@ test_file_open_overlap(void)
     }
 
 #ifndef NO_DOUBLE_OBJECT_OPENS
-    PREFIX_FILENAME(prefixed_overlapping_filename, test_path_prefix, OVERLAPPING_FILENAME);
-
-    if ((file_id = H5Fcreate(prefixed_overlapping_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+    if (prefix_filename(test_path_prefix, OVERLAPPING_FILENAME, &prefixed_filename) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", prefixed_overlapping_filename);
+        HDprintf("    couldn't prefix filename\n");
         goto error;
     }
 
-    if ((file_id2 = H5Fopen(prefixed_overlapping_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
+        goto error;
+    }
+
+    if ((file_id2 = H5Fopen(prefixed_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -1977,7 +2039,8 @@ test_file_open_overlap(void)
     if (H5Fclose(file_id2) < 0)
         TEST_ERROR
 
-    free(prefixed_overlapping_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -1991,9 +2054,10 @@ error:
         H5Dclose(dset_id);
         H5Fclose(file_id);
         H5Fclose(file_id2);
-        free(prefixed_overlapping_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 #else
@@ -2010,16 +2074,17 @@ static int
 test_file_mounts(void)
 {
 #ifndef NO_FILE_MOUNTS
-    hid_t file_id   = H5I_INVALID_HID;
-    hid_t child_fid = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    char *prefixed_file_mount_test_filename = NULL;
+    hid_t file_id           = H5I_INVALID_HID;
+    hid_t child_fid         = H5I_INVALID_HID;
+    hid_t group_id          = H5I_INVALID_HID;
+    char *prefixed_filename = NULL;
 #endif
 
     TESTING("file mounting/unmounting")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags & H5VL_CAP_FLAG_MOUNT) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC)) {
+    if (!(vol_cap_flags_g & (H5VL_CAP_FLAG_FILE_BASIC)) || !(vol_cap_flags_g & H5VL_CAP_FLAG_MOUNT) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic file,  file mount, or basic group aren't supported with this "
                  "connector\n");
@@ -2027,12 +2092,15 @@ test_file_mounts(void)
     }
 
 #ifndef NO_FILE_MOUNTS
-    PREFIX_FILENAME(prefixed_file_mount_test_filename, test_path_prefix, FILE_MOUNT_TEST_FILENAME);
-
-    if ((file_id = H5Fcreate(prefixed_file_mount_test_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) <
-        0) {
+    if (prefix_filename(test_path_prefix, FILE_MOUNT_TEST_FILENAME, &prefixed_filename) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_GET_ID_TEST_FILENAME);
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -2069,7 +2137,9 @@ test_file_mounts(void)
     if (H5Fclose(child_fid) < 0)
         TEST_ERROR
 
-    free(prefixed_file_mount_test_filename);
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
+
     PASSED();
 
     return 0;
@@ -2080,9 +2150,10 @@ error:
         H5Gclose(group_id);
         H5Fclose(file_id);
         H5Fclose(child_fid);
-        free(prefixed_file_mount_test_filename);
     }
     H5E_END_TRY;
+
+    HDfree(prefixed_filename);
 
     return 1;
 #else
@@ -2099,18 +2170,21 @@ test_get_file_name(void)
 {
     ssize_t file_name_buf_len = 0;
     hid_t   file_id           = H5I_INVALID_HID;
-    hid_t   group_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
-    hid_t   dspace_id = H5I_INVALID_HID, attr_id = H5I_INVALID_HID;
-    hid_t   named_dtype_id                    = H5I_INVALID_HID;
-    char   *file_name_buf                     = NULL;
-    char   *prefixed_get_file_name_test_fname = NULL;
+    hid_t   group_id          = H5I_INVALID_HID;
+    hid_t   dset_id           = H5I_INVALID_HID;
+    hid_t   dspace_id         = H5I_INVALID_HID;
+    hid_t   attr_id           = H5I_INVALID_HID;
+    hid_t   named_dtype_id    = H5I_INVALID_HID;
+    char   *prefixed_filename = NULL;
+    char   *file_name_buf     = NULL;
 
     TESTING_MULTIPART("retrieval of file name")
 
     /* Make sure the connector supports the API functions being tested */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_FILE_MORE) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags & H5VL_CAP_FLAG_STORED_DATATYPES) || !(vol_cap_flags & H5VL_CAP_FLAG_ATTR_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_MORE) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
         HDprintf("    API functions for basic or more file, basic dataset, group, datatype, or attribute "
                  "aren't supported with this connector\n");
@@ -2119,12 +2193,15 @@ test_get_file_name(void)
 
     TESTING_2("test setup")
 
-    PREFIX_FILENAME(prefixed_get_file_name_test_fname, test_path_prefix, GET_FILE_NAME_TEST_FNAME);
-
-    if ((file_id = H5Fcreate(prefixed_get_file_name_test_fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) <
-        0) {
+    if (prefix_filename(test_path_prefix, GET_FILE_NAME_TEST_FNAME, &prefixed_filename) < 0) {
         H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", GET_FILE_NAME_TEST_FNAME);
+        HDprintf("    couldn't prefix filename\n");
+        goto error;
+    }
+
+    if ((file_id = H5Fcreate(prefixed_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
     }
 
@@ -2149,14 +2226,14 @@ test_get_file_name(void)
             /* Retrieve the actual file name */
             if (H5Fget_name(file_id, file_name_buf, (size_t)file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
+                HDprintf("    couldn't get file name %s\n", prefixed_filename);
                 PART_ERROR(H5Fget_name_file_id);
             }
 
-            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t)file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, prefixed_filename, (size_t)file_name_buf_len)) {
                 H5_FAILED();
                 HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf,
-                         GET_FILE_NAME_TEST_FNAME);
+                         prefixed_filename);
                 PART_ERROR(H5Fget_name_file_id);
             }
 
@@ -2180,14 +2257,14 @@ test_get_file_name(void)
 
             if (H5Fget_name(group_id, file_name_buf, (size_t)file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
+                HDprintf("    couldn't get file name %s\n", prefixed_filename);
                 PART_ERROR(H5Fget_name_grp_id);
             }
 
-            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t)file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, prefixed_filename, (size_t)file_name_buf_len)) {
                 H5_FAILED();
                 HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf,
-                         GET_FILE_NAME_TEST_FNAME);
+                         prefixed_filename);
                 PART_ERROR(H5Fget_name_grp_id);
             }
 
@@ -2225,14 +2302,14 @@ test_get_file_name(void)
             /* Get and verify file name from the dataset */
             if (H5Fget_name(dset_id, file_name_buf, (size_t)file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
+                HDprintf("    couldn't get file name %s\n", prefixed_filename);
                 PART_ERROR(H5Fget_name_dset_id);
             }
 
-            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t)file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, prefixed_filename, (size_t)file_name_buf_len)) {
                 H5_FAILED();
                 HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf,
-                         GET_FILE_NAME_TEST_FNAME);
+                         prefixed_filename);
                 PART_ERROR(H5Fget_name_dset_id);
             }
 
@@ -2278,14 +2355,14 @@ test_get_file_name(void)
             /* Get and verify file name from the attribute */
             if (H5Fget_name(attr_id, file_name_buf, (size_t)file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
+                HDprintf("    couldn't get file name %s\n", prefixed_filename);
                 PART_ERROR(H5Fget_name_attr_id);
             }
 
-            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t)file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, prefixed_filename, (size_t)file_name_buf_len)) {
                 H5_FAILED();
                 HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf,
-                         GET_FILE_NAME_TEST_FNAME);
+                         prefixed_filename);
                 PART_ERROR(H5Fget_name_attr_id);
             }
 
@@ -2331,14 +2408,14 @@ test_get_file_name(void)
             /* Get and verify file name from the committed datatype */
             if (H5Fget_name(named_dtype_id, file_name_buf, (size_t)file_name_buf_len + 1) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get file name %s\n", GET_FILE_NAME_TEST_FNAME);
+                HDprintf("    couldn't get file name %s\n", prefixed_filename);
                 PART_ERROR(H5Fget_name_dtype_id);
             }
 
-            if (HDstrncmp(file_name_buf, GET_FILE_NAME_TEST_FNAME, (size_t)file_name_buf_len)) {
+            if (HDstrncmp(file_name_buf, prefixed_filename, (size_t)file_name_buf_len)) {
                 H5_FAILED();
                 HDprintf("    file name '%s' didn't match expected name '%s'\n", file_name_buf,
-                         GET_FILE_NAME_TEST_FNAME);
+                         prefixed_filename);
                 PART_ERROR(H5Fget_name_dtype_id);
             }
 
@@ -2403,10 +2480,11 @@ test_get_file_name(void)
         file_name_buf = NULL;
     }
 
-    free(prefixed_get_file_name_test_fname);
-
     if (H5Fclose(file_id) < 0)
         TEST_ERROR
+
+    HDfree(prefixed_filename);
+    prefixed_filename = NULL;
 
     PASSED();
 
@@ -2423,775 +2501,13 @@ error:
         H5Aclose(attr_id);
         H5Gclose(group_id);
         H5Fclose(file_id);
-        free(prefixed_get_file_name_test_fname);
     }
     H5E_END_TRY;
 
-    return 1;
-}
-
-#if 0 /* for native VOL connector test only */
-/*
- * Tests that H5Pget/set_file_space_strategy() and H5Pget/set_file_space_page_size()
- * work correctly.
- */
-static int
-test_filespace_info(void)
-{
-    hid_t file_id = H5I_INVALID_HID;
-    hid_t fcpl_id = H5I_INVALID_HID, fcpl_id2 = H5I_INVALID_HID;
-    hsize_t threshold = 1, threshold_out;
-    H5F_fspace_strategy_t strategy;     /* File space strategy */
-    hbool_t persist;                    /* Persist free-space or not */
-    hsize_t fsp_size;                   /* File space page size */
-
-    TESTING("retrieval of filespace info")
-
-    if ((fcpl_id = H5Pcreate(H5P_FILE_CREATE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't a file creation property list\n");
-        goto error;
-    }
-
-    /* Set file space information */
-    if (H5Pset_file_space_strategy(fcpl_id, H5F_FSPACE_STRATEGY_FSM_AGGR, TRUE, threshold) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file space strategy\n");
-        goto error;
-    }
-
-    if (H5Pset_file_space_page_size(fcpl_id, FSP_SIZE512) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file space page size\n");
-        goto error;
-    }
-
-    if ((file_id = H5Fcreate(FILESPACE_INFO_FILENAME, H5F_ACC_TRUNC, fcpl_id, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
-        goto error;
-    }
-
-    if ((fcpl_id2 = H5Fget_create_plist(file_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get file creation property list\n");
-        goto error;
-    }
-
-    if (H5Pget_file_space_strategy(fcpl_id2, &strategy, &persist, &threshold_out) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get file space strategy\n");
-        goto error;
-    }
-
-    if (strategy != H5F_FSPACE_STRATEGY_FSM_AGGR || persist != TRUE || threshold_out != threshold) {
-        H5_FAILED();
-        HDprintf("    wrong file space strategy\n");
-        goto error;
-    }
-
-    if (H5Pget_file_space_page_size(fcpl_id2, &fsp_size) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get file space page size\n");
-        goto error;
-    }
-
-    if (fsp_size != FSP_SIZE512) {
-        H5_FAILED();
-        HDprintf("    wrong file space page size\n");
-        goto error;
-    }
-
-    if (H5Pclose(fcpl_id) < 0)
-        TEST_ERROR
-    if (H5Pclose(fcpl_id2) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fcpl_id);
-        H5Pclose(fcpl_id2);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
+    HDfree(prefixed_filename);
 
     return 1;
 }
-
-/*
- * A test to check H5Iget_file_id()
- */
-static int
-test_get_file_id(void)
-{
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   new_fid = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-
-    TESTING("retrieval of file ID")
-
-    if ((file_id = H5Fcreate(FILE_GET_ID_TEST_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    if ((group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", GRP_NAME);
-        goto error;
-    }
-
-    /* Return a duplicated file ID and verify it.  Need to close the new file ID. */
-    if ((new_fid = H5Iget_file_id(group_id)) < 0 || new_fid != file_id) {
-        H5_FAILED();
-        HDprintf("    couldn't get new ID for the file '%s'\n", vol_test_filename);
-        goto error;
-    }
-
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(new_fid) < 0)
-        TEST_ERROR
-
-    /* Open the file again to test H5Iget_file_id() */
-    if ((file_id = H5Fopen(FILE_GET_ID_TEST_FILENAME, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
-        goto error;
-    }
-
-    if ((group_id = H5Gopen2(file_id, GRP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open group '%s'\n", GRP_NAME);
-        goto error;
-    }
-
-    /* Return a duplicated file ID and verify it.  Need to close the new file ID. */
-    if ((new_fid = H5Iget_file_id(group_id)) < 0 || new_fid != file_id) {
-        H5_FAILED();
-        HDprintf("    couldn't get new ID for the file '%s'\n", vol_test_filename);
-        goto error;
-    }
-
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(new_fid) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Gclose(group_id);
-        H5Fclose(new_fid);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test to check the file close degree
- */
-static int
-test_file_close_degree(void)
-{
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    hid_t    file_id2 = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-
-    TESTING("file close degree")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fcreate(FILE_CLOSE_DEGREE_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    if (H5Pset_fclose_degree(fapl_id, H5F_CLOSE_STRONG) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file close degree\n");
-        goto error;
-    }
-
-    /* Trying to open the same file should fail */
-    H5E_BEGIN_TRY {
-        file_id2 = H5Fopen(FILE_CLOSE_DEGREE_FILENAME, H5F_ACC_RDWR, fapl_id);
-    } H5E_END_TRY;
-
-    if (file_id2 >= 0) {
-        H5_FAILED();
-        HDprintf("    file was opened with a wrong close degree!\n");
-        goto error;
-    }
-
-    /* Allow objects in file remain open after file is closed */
-    if (H5Pset_fclose_degree(fapl_id, H5F_CLOSE_WEAK) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file close degree\n");
-        goto error;
-    }
-
-    /* Trying to open the same file should succeed */
-    if ((file_id2 = H5Fopen(FILE_CLOSE_DEGREE_FILENAME, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    /* Close the second opening of the file */
-    if (H5Fclose(file_id2) < 0)
-        TEST_ERROR
-
-    /* Create a group in the file */
-    if ((group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", GRP_NAME);
-        goto error;
-    }
-
-    /* Close the file */
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    /* Verify the group ID is still valid */
-    if (H5Iis_valid(group_id) <= 0) {
-        H5_FAILED();
-        HDprintf("    group ID is not valid anymore\n");
-        goto error;
-    }
-
-    /* Verify the ID is a group */
-    if (H5Iget_type(group_id) != H5I_GROUP) {
-        H5_FAILED();
-        HDprintf("    ID is not a group\n");
-        goto error;
-    }
-
-    /* The group should still be open and can be closed now */
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Gclose(group_id);
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-        H5Fclose(file_id2);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test to check H5Fget_free_sections and H5Fget_freespace
- */
-static int
-test_get_file_free_sections(void)
-{
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    hid_t    dcpl_id = H5I_INVALID_HID, dset_id = H5I_INVALID_HID;
-    hid_t    fcpl_id = H5I_INVALID_HID, dspace_id = H5I_INVALID_HID;
-    hsize_t  dims[1];
-    hssize_t free_space = 0;
-    ssize_t  numb_sections = 0;
-    H5F_sect_info_t *section_info = NULL;  /* buffer to hold free-space information for all types of data */
-    hsize_t  total = 0;                    /* sum of the free-space section sizes */
-    char     dset_name[32];
-    unsigned u;
-
-    TESTING("retrieval of file free sections and free space")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    /* Create file-creation template */
-    if ((fcpl_id = H5Pcreate(H5P_FILE_CREATE)) < 0)
-        TEST_ERROR
-
-    if (H5Pset_libver_bounds(fapl_id, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) < 0)
-        TEST_ERROR
-
-    if (H5Pset_file_space_strategy(fcpl_id, H5F_FSPACE_STRATEGY_PAGE, TRUE, (hsize_t)1) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fcreate(GET_FREE_SECTIONS_FILENAME, H5F_ACC_TRUNC, fcpl_id, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create dataset creation property list\n");
-        goto error;
-    }
-
-    if (H5Pset_alloc_time(dcpl_id, H5D_ALLOC_TIME_EARLY) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't allocation time property\n");
-        goto error;
-    }
-
-    /* Create a large dataset */
-    dims[0] = 1200;
-
-    if ((dspace_id = H5Screate_simple(1, dims, NULL)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create data space\n");
-        goto error;
-    }
-
-    if ((dset_id = H5Dcreate2(file_id, DSET_NAME, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create data set: %s\n", DSET_NAME);
-        goto error;
-    }
-
-    if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
-
-    if (H5Sclose(dspace_id) < 0)
-        TEST_ERROR
-
-    /* Create multiple small datasets in file */
-    if ((dspace_id = H5Screate(H5S_SCALAR)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create data space\n");
-        goto error;
-    }
-
-    for(u = 0; u < 10; u++) {
-        HDsprintf(dset_name, "Dataset %u", u);
-
-        if ((dset_id = H5Dcreate2(file_id, dset_name, H5T_STD_U32LE, dspace_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't create data set: %s\n", dset_name);
-            goto error;
-        }
-
-        if (H5Dclose(dset_id) < 0)
-            TEST_ERROR
-    }
-
-    if (H5Pclose(dcpl_id) < 0)
-        TEST_ERROR
-
-    if (H5Sclose(dspace_id) < 0)
-        TEST_ERROR
-
-    /* Delete odd-numbered datasets in file */
-    for(u = 0; u < 10; u = u + 2) {
-        HDsprintf(dset_name, "Dataset %u", u);
-
-        if (H5Ldelete(file_id, dset_name, H5P_DEFAULT) < 0) {
-            H5_FAILED();
-            HDprintf("    couldn't delete data set: %s\n", dset_name);
-            goto error;
-        }
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(GET_FREE_SECTIONS_FILENAME, H5F_ACC_RDONLY, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    if ((free_space = H5Fget_freespace(file_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get free space\n");
-        goto error;
-    }
-
-    if ((numb_sections = H5Fget_free_sections(file_id, H5FD_MEM_DEFAULT, (size_t)0, NULL)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get the number of free sections\n");
-        goto error;
-    }
-
-    section_info = (H5F_sect_info_t *)HDmalloc(numb_sections*sizeof(H5F_sect_info_t));
-
-    if (H5Fget_free_sections(file_id, H5FD_MEM_DEFAULT, (size_t)numb_sections, section_info) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get free sections info\n");
-        goto error;
-    }
-
-    /* Verify the amount of free-space is correct */
-    for(u = 0; u < numb_sections; u++)
-        total += section_info[u].size;
-
-    if (free_space != total) {
-        H5_FAILED();
-        HDprintf("    wrong sum of free section sizes\n");
-        goto error;
-    }
-
-    if (H5Pclose(fcpl_id) < 0)
-        TEST_ERROR
-    if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    if(section_info) {
-        HDfree(section_info);
-        section_info = NULL;
-    }
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        if(section_info)
-            HDfree(section_info);
-
-        H5Sclose(dset_id);
-        H5Sclose(dspace_id);
-        H5Pclose(dcpl_id);
-        H5Pclose(fcpl_id);
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test for H5Fget_filesize.
- */
-static int
-test_get_file_size(void)
-{
-    hsize_t file_size;
-    hid_t   file_id = H5I_INVALID_HID;
-
-    TESTING("retrieval of file size")
-
-    if ((file_id = H5Fcreate(FILE_SIZE_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
-        goto error;
-    }
-
-    if (H5Fget_filesize(file_id, &file_size) < 0) {
-        H5_FAILED();
-        HDprintf("    unable to get file size\n");
-        goto error;
-    }
-
-    /* There is no guarantee the size of metadata in file is constant.
-     * Just try to check if it's reasonable.
-     *
-     * Currently it should be around 2 KB.
-     */
-    if(file_size < 1 * KB || file_size > 4 * KB) {
-        H5_FAILED();
-        HDprintf("    wrong file size\n");
-        goto error;
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test for H5Fget_file_image.
- */
-static int
-test_get_file_image(void)
-{
-    ssize_t file_image_size;
-    hid_t   file_id = H5I_INVALID_HID;
-    void    *buf = NULL;
-
-    TESTING("retrieval of file image")
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
-        goto error;
-    }
-
-    /* Get the image size first */
-    if ((file_image_size = H5Fget_file_image(file_id, NULL, 0)) < 0) {
-        H5_FAILED();
-        HDprintf("    unable to get file image size\n");
-        goto error;
-    }
-
-    if (file_image_size > 0) {
-        buf = HDmalloc(file_image_size);
-
-        if (H5Fget_file_image(file_id, buf, (size_t)file_image_size) < 0) {
-            H5_FAILED();
-            HDprintf("    unable to get file image\n");
-            goto error;
-        }
-
-        if (buf) {
-            HDfree(buf);
-            buf = NULL;
-        }
-    }
-
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        if (buf)
-            HDfree(buf);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test for H5Fget_info.
- */
-static int
-test_get_file_info(void)
-{
-    H5F_info2_t file_info;
-    hid_t       file_id = H5I_INVALID_HID;
-    hid_t       fcpl_id = H5I_INVALID_HID;
-    hsize_t     threshold = 1;
-
-    TESTING("retrieval of file info with H5Fget_info")
-
-    if ((fcpl_id = H5Pcreate(H5P_FILE_CREATE)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't a file creation property list\n");
-        goto error;
-    }
-
-    /* Set a property in the FCPL that will push the superblock version up */
-    if (H5Pset_file_space_strategy(fcpl_id, H5F_FSPACE_STRATEGY_FSM_AGGR, TRUE, threshold) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file space strategy\n");
-        goto error;
-    }
-
-    if (H5Pset_file_space_page_size(fcpl_id, FSP_SIZE512) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file space page size\n");
-        goto error;
-    }
-
-#if 0
-    if (H5Pset_alignment(fapl_id, (hsize_t)1, (hsize_t)1024) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set file space alignment\n");
-        goto error;
-    }
-#endif
-
-    /* Creating a file with the non-default file creation property list should
-     * create a version 2 superblock
-     */
-    if ((file_id = H5Fcreate(FILE_INFO_FILENAME, H5F_ACC_TRUNC, fcpl_id, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_CREATE_TEST_FILENAME);
-        goto error;
-    }
-
-    /* Get and verify the file's version information */
-    if (H5Fget_info2(file_id, &file_info) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't get file info\n");
-        goto error;
-    }
-
-    if (file_info.super.super_ext_size != 152 || file_info.sohm.hdr_size != 0 ||
-        file_info.sohm.msgs_info.index_size != 0 || file_info.sohm.msgs_info.heap_size != 0) {
-        H5_FAILED();
-        HDprintf("    wrong file info\n");
-        goto error;
-    }
-
-
-    if (H5Pclose(fcpl_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fcpl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test to check that the VFD handle can be retrieved using
- * the native VOL connector.
- */
-static int
-test_get_file_vfd_handle(void)
-{
-    hid_t    file_id = H5I_INVALID_HID, fapl_id = H5I_INVALID_HID;
-    void     *vfd_handle = NULL;
-
-    TESTING("retrieval of VFD handle")
-
-    if ((fapl_id = H5Pcreate(H5P_FILE_ACCESS)) < 0)
-        TEST_ERROR
-
-    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
-        goto error;
-    }
-
-    if (H5Fget_vfd_handle(file_id, fapl_id, &vfd_handle) < 0 || !vfd_handle) {
-        H5_FAILED();
-        HDprintf("    unable to get VFD handle\n");
-        goto error;
-    }
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Pclose(fapl_id);
-        H5Fclose(file_id);
-    } H5E_END_TRY;
-
-    return 1;
-}
-
-/*
- * A test to check whether opening the same group from
- * two different files works correctly.
- */
-static int
-test_double_group_open(void)
-{
-    hid_t   file_id = H5I_INVALID_HID;
-    hid_t   file_id2 = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t   group_id2 = H5I_INVALID_HID;
-
-    TESTING("double group open")
-
-    if ((file_id = H5Fcreate(DOUBLE_GROUP_OPEN_FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    /* Open the file for the second time for read-only */
-    if ((file_id2 = H5Fopen(DOUBLE_GROUP_OPEN_FILENAME, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open file '%s'\n", FILE_GET_ID_TEST_FILENAME);
-        goto error;
-    }
-
-    /* Open the root group in the first file open */
-    if ((group_id2 = H5Gopen2(file_id, "/", H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open the root group\n");
-        goto error;
-    }
-
-    /* Open the root group in the second file open */
-    if ((group_id2 = H5Gopen2(file_id2, "/", H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open the root group\n");
-        goto error;
-    }
-
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
-
-    if ((group_id = H5Gcreate2(file_id, GRP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't create group '%s'\n", GRP_NAME);
-        goto error;
-    }
-
-    /* Open the group in the second file open */
-    if ((group_id2 = H5Gopen2(file_id2, GRP_NAME, H5P_DEFAULT)) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't open the group '%s'\n", GRP_NAME);
-        goto error;
-    }
-
-    if (H5Gclose(group_id) < 0)
-        TEST_ERROR
-    if (H5Gclose(group_id2) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id) < 0)
-        TEST_ERROR
-    if (H5Fclose(file_id2) < 0)
-        TEST_ERROR
-
-    PASSED();
-
-    return 0;
-
-error:
-    H5E_BEGIN_TRY {
-        H5Gclose(group_id);
-        H5Gclose(group_id2);
-        H5Fclose(file_id);
-        H5Fclose(file_id2);
-    } H5E_END_TRY;
-
-    return 1;
-}
-#endif /* for native VOL connector test only */
 
 /*
  * Cleanup temporary test files
@@ -3199,54 +2515,26 @@ error:
 static void
 cleanup_files(void)
 {
-    char *prefixed_filename = NULL;
-
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_TEST_FILENAME);
-    H5Fdelete(prefixed_filename, H5P_DEFAULT);
-    free(prefixed_filename);
-
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_CREATE_EXCL_FILE_NAME);
-    H5Fdelete(prefixed_filename, H5P_DEFAULT);
-    free(prefixed_filename);
+    remove_test_file(test_path_prefix, FILE_CREATE_TEST_FILENAME);
+    remove_test_file(test_path_prefix, FILE_CREATE_EXCL_FILE_NAME);
 
     /* The below file should not get created */
-    /* H5Fdelete(FILE_CREATE_INVALID_PARAMS_FILE_NAME, H5P_DEFAULT); */
+    /* remove_test_file(test_path_prefix, FILE_CREATE_INVALID_PARAMS_FILE_NAME); */
 
 #ifndef NO_DOUBLE_OBJECT_OPENS
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, OVERLAPPING_FILENAME);
-    H5Fdelete(OVERLAPPING_FILENAME, H5P_DEFAULT);
-    free(prefixed_filename);
+    remove_test_file(test_path_prefix, OVERLAPPING_FILENAME);
 #endif
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_PERMISSION_TEST_FILENAME);
-    H5Fdelete(prefixed_filename, H5P_DEFAULT);
-    free(prefixed_filename);
-
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_FLUSH_TEST_FILENAME);
-    H5Fdelete(prefixed_filename, H5P_DEFAULT);
-    free(prefixed_filename);
-
-    H5Fdelete(FILE_PROPERTY_LIST_TEST_FNAME1, H5P_DEFAULT);
-    H5Fdelete(FILE_PROPERTY_LIST_TEST_FNAME2, H5P_DEFAULT);
-    H5Fdelete(FILE_INTENT_TEST_FILENAME, H5P_DEFAULT);
-    H5Fdelete(GET_OBJ_COUNT_TEST_FILENAME1, H5P_DEFAULT);
-    H5Fdelete(GET_OBJ_COUNT_TEST_FILENAME2, H5P_DEFAULT);
+    remove_test_file(test_path_prefix, FILE_PERMISSION_TEST_FILENAME);
+    remove_test_file(test_path_prefix, FILE_FLUSH_TEST_FILENAME);
+    remove_test_file(test_path_prefix, FILE_PROPERTY_LIST_TEST_FNAME1);
+    remove_test_file(test_path_prefix, FILE_PROPERTY_LIST_TEST_FNAME2);
+    remove_test_file(test_path_prefix, FILE_INTENT_TEST_FILENAME);
+    remove_test_file(test_path_prefix, GET_OBJ_COUNT_TEST_FILENAME1);
+    remove_test_file(test_path_prefix, GET_OBJ_COUNT_TEST_FILENAME2);
 #ifndef NO_FILE_MOUNTS
-    PREFIX_FILENAME(prefixed_filename, test_path_prefix, FILE_MOUNT_TEST_FILENAME);
-    H5Fdelete(prefixed_filename, H5P_DEFAULT);
-    free(prefixed_filename);
+    remove_test_file(test_path_prefix, FILE_MOUNT_TEST_FILENAME);
 #endif
-    H5Fdelete(GET_FILE_NAME_TEST_FNAME, H5P_DEFAULT);
-#if 0  /* for native VOL connector test only */
-    HDremove(FILESPACE_INFO_FILENAME);
-    HDremove(FILE_GET_ID_TEST_FILENAME);
-    HDremove(FILE_CLOSE_DEGREE_FILENAME);
-    HDremove(GET_FREE_SECTIONS_FILENAME);
-    HDremove(FILE_SIZE_FILENAME);
-    HDremove(FILE_INFO_FILENAME);
-    HDremove(DOUBLE_GROUP_OPEN_FILENAME);
-#endif /* for native VOL connector test only */
-
-error:
+    remove_test_file(test_path_prefix, GET_FILE_NAME_TEST_FNAME);
 }
 
 int

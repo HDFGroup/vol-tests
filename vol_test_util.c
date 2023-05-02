@@ -661,62 +661,67 @@ error:
 }
 
 int
-create_test_container(char *filename)
+create_test_container(char *filename, uint64_t vol_cap_flags)
 {
-    hid_t file_id = H5I_INVALID_HID;
-#ifdef GROUP_CREATION_IS_SUPPORTED
+    hid_t file_id  = H5I_INVALID_HID;
     hid_t group_id = H5I_INVALID_HID;
-#endif
+
+    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC)) {
+        HDprintf("   VOL connector doesn't support file creation\n");
+        goto error;
+    }
 
     if ((file_id = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         HDprintf("    couldn't create testing container file '%s'\n", filename);
         goto error;
     }
 
-#ifdef GROUP_CREATION_IS_SUPPORTED
-    /* Create container groups for each of the test interfaces
-     * (group, attribute, dataset, etc.).
-     */
-    if ((group_id = H5Gcreate2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
-        HDprintf("    created container group for Group tests\n");
-        H5Gclose(group_id);
-    }
+    if (vol_cap_flags & H5VL_CAP_FLAG_GROUP_BASIC) {
+        /* Create container groups for each of the test interfaces
+         * (group, attribute, dataset, etc.).
+         */
+        if ((group_id = H5Gcreate2(file_id, GROUP_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
+            0) {
+            HDprintf("    created container group for Group tests\n");
+            H5Gclose(group_id);
+        }
 
-    if ((group_id = H5Gcreate2(file_id, ATTRIBUTE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-        0) {
-        HDprintf("    created container group for Attribute tests\n");
-        H5Gclose(group_id);
-    }
+        if ((group_id = H5Gcreate2(file_id, ATTRIBUTE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                                   H5P_DEFAULT)) >= 0) {
+            HDprintf("    created container group for Attribute tests\n");
+            H5Gclose(group_id);
+        }
 
-    if ((group_id = H5Gcreate2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-        0) {
-        HDprintf("    created container group for Dataset tests\n");
-        H5Gclose(group_id);
-    }
+        if ((group_id =
+                 H5Gcreate2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
+            HDprintf("    created container group for Dataset tests\n");
+            H5Gclose(group_id);
+        }
 
-    if ((group_id = H5Gcreate2(file_id, DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-        0) {
-        HDprintf("    created container group for Datatype tests\n");
-        H5Gclose(group_id);
-    }
+        if ((group_id =
+                 H5Gcreate2(file_id, DATATYPE_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
+            HDprintf("    created container group for Datatype tests\n");
+            H5Gclose(group_id);
+        }
 
-    if ((group_id = H5Gcreate2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >= 0) {
-        HDprintf("    created container group for Link tests\n");
-        H5Gclose(group_id);
-    }
+        if ((group_id = H5Gcreate2(file_id, LINK_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
+            0) {
+            HDprintf("    created container group for Link tests\n");
+            H5Gclose(group_id);
+        }
 
-    if ((group_id = H5Gcreate2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
-        0) {
-        HDprintf("    created container group for Object tests\n");
-        H5Gclose(group_id);
-    }
+        if ((group_id = H5Gcreate2(file_id, OBJECT_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) >=
+            0) {
+            HDprintf("    created container group for Object tests\n");
+            H5Gclose(group_id);
+        }
 
-    if ((group_id = H5Gcreate2(file_id, MISCELLANEOUS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
-                               H5P_DEFAULT)) >= 0) {
-        HDprintf("    created container group for Miscellaneous tests\n");
-        H5Gclose(group_id);
+        if ((group_id = H5Gcreate2(file_id, MISCELLANEOUS_TEST_GROUP_NAME, H5P_DEFAULT, H5P_DEFAULT,
+                                   H5P_DEFAULT)) >= 0) {
+            HDprintf("    created container group for Miscellaneous tests\n");
+            H5Gclose(group_id);
+        }
     }
-#endif
 
     if (H5Fclose(file_id) < 0) {
         HDprintf("    failed to close testing container\n");
@@ -728,12 +733,87 @@ create_test_container(char *filename)
 error:
     H5E_BEGIN_TRY
     {
-#ifdef GROUP_CREATION_IS_SUPPORTED
         H5Gclose(group_id);
-#endif
         H5Fclose(file_id);
     }
     H5E_END_TRY;
 
     return -1;
+}
+
+/*
+ * Add a prefix to the given filename. The caller
+ * is responsible for freeing the returned filename
+ * pointer with HDfree().
+ */
+herr_t
+prefix_filename(const char *prefix, const char *filename, char **filename_out)
+{
+    char  *out_buf   = NULL;
+    herr_t ret_value = SUCCEED;
+
+    if (!prefix) {
+        HDprintf("    invalid file prefix\n");
+        ret_value = FAIL;
+        goto done;
+    }
+    if (!filename || (*filename == '\0')) {
+        HDprintf("    invalid filename\n");
+        ret_value = FAIL;
+        goto done;
+    }
+    if (!filename_out) {
+        HDprintf("    invalid filename_out buffer\n");
+        ret_value = FAIL;
+        goto done;
+    }
+
+    if (NULL == (out_buf = HDmalloc(VOL_TEST_FILENAME_MAX_LENGTH))) {
+        HDprintf("    couldn't allocated filename buffer\n");
+        ret_value = FAIL;
+        goto done;
+    }
+
+    HDsnprintf(out_buf, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", prefix, filename);
+
+    *filename_out = out_buf;
+
+done:
+    return ret_value;
+}
+
+/*
+ * Calls H5Fdelete on the given filename. If a prefix string
+ * is given, adds that prefix string to the filename before
+ * calling H5Fdelete
+ */
+herr_t
+remove_test_file(const char *prefix, const char *filename)
+{
+    const char *test_file;
+    char       *prefixed_filename = NULL;
+    herr_t      ret_value         = SUCCEED;
+
+    if (prefix) {
+        if (prefix_filename(prefix, filename, &prefixed_filename) < 0) {
+            HDprintf("    couldn't prefix filename\n");
+            ret_value = FAIL;
+            goto done;
+        }
+
+        test_file = prefixed_filename;
+    }
+    else
+        test_file = filename;
+
+    if (H5Fdelete(test_file, H5P_DEFAULT) < 0) {
+        HDprintf("    couldn't remove file '%s'\n", test_file);
+        ret_value = FAIL;
+        goto done;
+    }
+
+done:
+    HDfree(prefixed_filename);
+
+    return ret_value;
 }

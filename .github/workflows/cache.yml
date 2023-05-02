@@ -34,14 +34,14 @@ jobs:
       with:
         repository: hpc-io/vol-cache
         path: vol-cache
-    
+
     - name: Install dependencies
       run: sudo apt-get install ninja-build automake autoconf libtool libtool-bin libopenmpi-dev
     - name: Install HDF5
       run: |
         mkdir hdf5/build
         cd hdf5/build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DHDF5_ENABLE_PARALLEL:BOOL=ON -DHDF5_ENABLE_THREADSAFE:BOOL=ON -DALLOW_UNSUPPORTED:BOOL=ON ..        
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_STATIC_LIBS=OFF -DHDF5_ENABLE_PARALLEL:BOOL=ON -DHDF5_ENABLE_THREADSAFE:BOOL=ON -DALLOW_UNSUPPORTED:BOOL=ON ..
         sudo make -j2 install
         cd ..
         git rev-parse HEAD > git.txt
@@ -57,8 +57,6 @@ jobs:
       env:
         CXX: mpic++
         CC: mpicc
-        HDF5_PLUGIN_PATH: /usr/local/lib
-        HDF5_VOL_CONNECTOR: async under_vol=0;under_info={}
       run: |
         mkdir vol-async/build
         cd vol-async/build
@@ -69,17 +67,16 @@ jobs:
       env:
         CXX: mpic++
         CC: mpicc
-        HDF5_PLUGIN_PATH: /usr/local/lib
-        HDF5_VOL_CONNECTOR: async under_vol=0;under_info={}
       run: |
         mkdir vol-cache/build
         cd vol-cache/build
         cmake -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=ON -DCMAKE_INSTALL_PREFIX=/usr/local ..
         sudo make -j2 install
         cd ..
-         
+
     - name: Test performance
       env:
+        LD_LIBRARY_PATH: /usr/local/lib
         HDF5_PLUGIN_PATH: /usr/local/lib
         HDF5_VOL_CONNECTOR: cache_ext config=config1.dat;under_vol=0;under_info={};
       run: |
@@ -94,7 +91,7 @@ jobs:
         ctest -V
         pwd
         ls
-        
+
     - name: Upload
       uses: actions/upload-artifact@v2
       with:

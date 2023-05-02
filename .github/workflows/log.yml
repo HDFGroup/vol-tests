@@ -26,7 +26,7 @@ jobs:
       run: |
         # mkdir hdf5/build
         # cd hdf5/build
-        # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DHDF5_ENABLE_PARALLEL:BOOL=ON ..
+        # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_STATIC_LIBS=OFF -DHDF5_ENABLE_PARALLEL:BOOL=ON ..
         cd hdf5
         export HDF5_LIBTOOL=/usr/bin/libtoolize
         ./autogen.sh
@@ -37,6 +37,7 @@ jobs:
       env:
         CXX: mpic++
         CC: mpicc
+        LD_LIBRARY_PATH: /usr/local/lib
         HDF5_PLUGIN_PATH: /usr/local/lib
         HDF5_VOL_CONNECTOR: LOG under_vol=0\;under_info={}
       run: |
@@ -45,11 +46,12 @@ jobs:
         ./configure --prefix=/usr/local --with-hdf5=/usr/local --enable-shared --enable-zlib
         make -j2
         sudo make -j2 install
-        export HDF5_PLUGIN_PATH=/usr/local/lib        
-        export HDF5_VOL_CONNECTOR="LOG under_vol=0;under_info={}"        
+        export HDF5_PLUGIN_PATH=/usr/local/lib
+        export HDF5_VOL_CONNECTOR="LOG under_vol=0;under_info={}"
         make check
     - name: Test performance
       env:
+        LD_LIBRARY_PATH: /usr/local/lib
         HDF5_PLUGIN_PATH: /usr/local/lib
         HDF5_VOL_CONNECTOR: LOG under_vol=0\;under_info={}
       run: |
