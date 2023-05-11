@@ -7936,7 +7936,7 @@ test_dataset_set_extent_chunked_unlimited(void)
 
         if (H5Sget_simple_extent_dims(fspace_id, new_dims, NULL) < 0) {
             H5_FAILED();
-            HDprintf("    failed to retreive dataset dimensionality\n");
+            HDprintf("    failed to retrieve dataset dimensionality\n");
             goto error;
         }
 
