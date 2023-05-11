@@ -172,10 +172,11 @@ error:
 int
 main(int argc, char **argv)
 {
-    hid_t fapl_id = H5I_INVALID_HID;
-    char *vol_connector_name;
-    int   required = MPI_THREAD_MULTIPLE;
-    int   provided;
+    const char *vol_connector_name;
+    unsigned    seed;
+    hid_t       fapl_id  = H5I_INVALID_HID;
+    int         required = MPI_THREAD_MULTIPLE;
+    int         provided;
 
     /*
      * Attempt to initialize with MPI_THREAD_MULTIPLE for VOL connectors
@@ -216,7 +217,19 @@ main(int argc, char **argv)
     n_tests_failed_g  = 0;
     n_tests_skipped_g = 0;
 
-    srand((unsigned)HDtime(NULL));
+    if (MAINPROCESS) {
+        seed = (unsigned)HDtime(NULL);
+    }
+
+    if (mpi_size > 1) {
+        if (MPI_SUCCESS != MPI_Bcast(&seed, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD)) {
+            if (MAINPROCESS)
+                HDprintf("Couldn't broadcast test seed\n");
+            goto error;
+        }
+    }
+
+    srand(seed);
 
     if (NULL == (test_path_prefix = HDgetenv(HDF5_API_TEST_PATH_PREFIX)))
         test_path_prefix = "";
@@ -235,6 +248,7 @@ main(int argc, char **argv)
         HDprintf("Test parameters:\n");
         HDprintf("  - Test file name: '%s'\n", vol_test_parallel_filename);
         HDprintf("  - Number of MPI ranks: %d\n", mpi_size);
+        HDprintf("  - Test seed: %u\n", seed);
         HDprintf("\n\n");
     }
 

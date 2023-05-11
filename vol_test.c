@@ -122,9 +122,10 @@ vol_test_run(void)
 int
 main(int argc, char **argv)
 {
-    char   *vol_connector_name;
-    hid_t   fapl_id      = H5I_INVALID_HID;
-    hbool_t err_occurred = FALSE;
+    const char *vol_connector_name;
+    unsigned    seed;
+    hid_t       fapl_id      = H5I_INVALID_HID;
+    hbool_t     err_occurred = FALSE;
 
     /* Simple argument checking, TODO can improve that later */
     if (argc > 1) {
@@ -152,7 +153,8 @@ main(int argc, char **argv)
     n_tests_failed_g  = 0;
     n_tests_skipped_g = 0;
 
-    srand((unsigned)HDtime(NULL));
+    seed = (unsigned)HDtime(NULL);
+    srand(seed);
 
     if (NULL == (vol_connector_name = HDgetenv("HDF5_VOL_CONNECTOR"))) {
         HDprintf("No VOL connector selected; using native VOL connector\n");
@@ -167,6 +169,7 @@ main(int argc, char **argv)
     HDprintf("Running VOL tests with VOL connector '%s'\n\n", vol_connector_name);
     HDprintf("Test parameters:\n");
     HDprintf("  - Test file name: '%s'\n", vol_test_filename);
+    HDprintf("  - Test seed: %u\n", seed);
     HDprintf("\n\n");
 
     /* Retrieve the VOL cap flags - work around an HDF5
