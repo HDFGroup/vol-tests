@@ -70,27 +70,56 @@ jobs:
       run: |
         mkdir vol-cache/build
         cd vol-cache/build
-        cmake -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=ON -DCMAKE_INSTALL_PREFIX=/usr/local ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=ON -DCMAKE_INSTALL_PREFIX=/usr/local ..
         sudo make -j2 install
         cd ..
-
-    - name: Test performance
-      env:
-        LD_LIBRARY_PATH: /usr/local/lib
-        HDF5_PLUGIN_PATH: /usr/local/lib
-        HDF5_VOL_CONNECTOR: cache_ext config=config1.dat;under_vol=0;under_info={};
+    - name: Build VOL tests
       run: |
         pwd
         ls
         ls /usr/local/lib
         set
-        mkdir build
+        mkdir -p build
         cd build
         cmake .. -DHDF5_DIR=/usr/local -DHDF5_VOL_TEST_ENABLE_PARALLEL:BOOL=ON -DHDF5_VOL_TEST_ENABLE_ASYNC:BOOL=ON -DHDF5_VOL_TEST_ENABLE_PART:BOOL=ON
-        make
+        make -j2
+
+    - name: Test against VOL tests (setup environment)
+      run: |
+        echo "HDF5_PLUGIN_PATH=/usr/local/lib" >> "$GITHUB_ENV"
+        echo "HDF5_VOL_CONNECTOR=cache_ext config=$GITHUB_WORKSPACE/config1.cfg;under_vol=0;under_info={};" >> "$GITHUB_ENV"
+    - name: Test against VOL tests
+      env:
+        LD_LIBRARY_PATH: /usr/local/lib
+        HDF5_PLUGIN_PATH: /usr/local/lib
+      run: |
+        mkdir -p $GITHUB_WORKSPACE/scratch
+        touch $GITHUB_WORKSPACE/config1.cfg
+        echo "HDF5_CACHE_STORAGE_SCOPE: LOCAL" >> $GITHUB_WORKSPACE/config1.cfg
+        echo "HDF5_CACHE_STORAGE_PATH: $GITHUB_WORKSPACE/scratch" >> $GITHUB_WORKSPACE/config1.cfg
+        echo "HDF5_CACHE_STORAGE_SIZE: 4294967296" >> $GITHUB_WORKSPACE/config1.cfg
+        echo "HDF5_CACHE_STORAGE_TYPE: SSD" >> $GITHUB_WORKSPACE/config1.cfg
+        echo "HDF5_CACHE_REPLACEMENT_POLICY: LRU" >> $GITHUB_WORKSPACE/config1.cfg
+        cd build
         ctest -V
-        pwd
-        ls
+    - name: Test against VOL tests (stacked on top of Async VOL) (setup environment)
+      run: |
+        echo "HDF5_PLUGIN_PATH=/usr/local/lib" >> "$GITHUB_ENV"
+        echo "HDF5_VOL_CONNECTOR=cache_ext config=$GITHUB_WORKSPACE/config2.cfg;under_vol=512;under_info={under_vol=0;under_info={}};" >> $GITHUB_ENV
+    - name: Test against VOL tests (stacked on top of Async VOL)
+      env:
+        LD_LIBRARY_PATH: /usr/local/lib
+        HDF5_PLUGIN_PATH: /usr/local/lib
+      run: |       
+        mkdir -p $GITHUB_WORKSPACE/scratch
+        touch $GITHUB_WORKSPACE/config2.cfg
+        echo "HDF5_CACHE_STORAGE_SCOPE: LOCAL" >> $GITHUB_WORKSPACE/config2.cfg
+        echo "HDF5_CACHE_STORAGE_PATH: $GITHUB_WORKSPACE/scratch" >> $GITHUB_WORKSPACE/config2.cfg
+        echo "HDF5_CACHE_STORAGE_SIZE: 4294967296" >> $GITHUB_WORKSPACE/config2.cfg
+        echo "HDF5_CACHE_STORAGE_TYPE: SSD" >> $GITHUB_WORKSPACE/config2.cfg
+        echo "HDF5_CACHE_REPLACEMENT_POLICY: LRU" >> $GITHUB_WORKSPACE/config2.cfg
+        cd build
+        ctest -V
 
     - name: Upload
       uses: actions/upload-artifact@v2
