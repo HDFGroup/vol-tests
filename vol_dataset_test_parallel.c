@@ -120,10 +120,10 @@ test_write_dataset_data_verification(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -145,10 +145,10 @@ test_write_dataset_data_verification(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_DATA_VERIFY_TEST_DSET_NAME1,
                               DATASET_WRITE_DATA_VERIFY_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT, H5P_DEFAULT,
@@ -200,7 +200,7 @@ test_write_dataset_data_verification(void)
         {
             hbool_t op_failed = FALSE;
 
-            TESTING_2("H5Dwrite using H5S_ALL then H5Dread")
+            TESTING_2("H5Dwrite using H5S_ALL then H5Dread");
 
             if ((dset_id = H5Dopen2(group_id, DATASET_WRITE_DATA_VERIFY_TEST_DSET_NAME1, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -374,7 +374,7 @@ test_write_dataset_data_verification(void)
 
         PART_BEGIN(H5Dwrite_hyperslab_read)
         {
-            TESTING_2("H5Dwrite using hyperslab selection then H5Dread")
+            TESTING_2("H5Dwrite using hyperslab selection then H5Dread");
 
             for (i = 1, data_size = 1; i < DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK; i++)
                 data_size *= dims[i];
@@ -597,7 +597,7 @@ test_write_dataset_data_verification(void)
 
         PART_BEGIN(H5Dwrite_point_sel_read)
         {
-            TESTING_2("H5Dwrite using point selection then H5Dread")
+            TESTING_2("H5Dwrite using point selection then H5Dread");
 
             for (i = 1, data_size = 1; i < DATASET_WRITE_DATA_VERIFY_TEST_SPACE_RANK; i++)
                 data_size *= dims[i];
@@ -835,7 +835,7 @@ test_write_dataset_data_verification(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (read_buf) {
         HDfree(read_buf);
@@ -858,13 +858,13 @@ test_write_dataset_data_verification(void)
     }
 
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -927,7 +927,7 @@ test_write_dataset_independent(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("independent writing to different datasets by different ranks")
+    TESTING("independent writing to different datasets by different ranks");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -939,7 +939,7 @@ test_write_dataset_independent(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -965,10 +965,10 @@ test_write_dataset_independent(void)
      * to the MPI rank.
      */
     if (generate_random_parallel_dimensions(DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_INDEPENDENT_WRITE_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* create a dataset collectively */
     if ((dset_id1 = H5Dcreate2(group_id, DATASET_INDEPENDENT_WRITE_TEST_DSET_NAME1,
@@ -1198,19 +1198,19 @@ test_write_dataset_independent(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1267,7 +1267,7 @@ test_write_dataset_one_proc_0_selection(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with one rank selecting 0 rows")
+    TESTING("write to dataset with one rank selecting 0 rows");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -1279,7 +1279,7 @@ test_write_dataset_one_proc_0_selection(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -1302,10 +1302,10 @@ test_write_dataset_one_proc_0_selection(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ONE_PROC_0_SEL_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_ONE_PROC_0_SEL_TEST_DSET_NAME,
                               DATASET_WRITE_ONE_PROC_0_SEL_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -1501,17 +1501,17 @@ test_write_dataset_one_proc_0_selection(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1567,7 +1567,7 @@ test_write_dataset_one_proc_none_selection(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with one rank using 'none' selection")
+    TESTING("write to dataset with one rank using 'none' selection");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -1579,7 +1579,7 @@ test_write_dataset_one_proc_none_selection(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -1602,10 +1602,10 @@ test_write_dataset_one_proc_none_selection(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_DSET_NAME,
                               DATASET_WRITE_ONE_PROC_NONE_SEL_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -1815,17 +1815,17 @@ test_write_dataset_one_proc_none_selection(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1878,7 +1878,7 @@ test_write_dataset_one_proc_all_selection(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with one rank using all selection; others none selection")
+    TESTING("write to dataset with one rank using all selection; others none selection");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -1890,7 +1890,7 @@ test_write_dataset_one_proc_all_selection(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -1913,10 +1913,10 @@ test_write_dataset_one_proc_all_selection(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DSET_NAME,
                               DATASET_WRITE_ONE_PROC_ALL_SEL_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -2104,17 +2104,17 @@ test_write_dataset_one_proc_all_selection(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -2175,7 +2175,7 @@ test_write_dataset_hyper_file_all_mem(void)
     void    *read_buf  = NULL;
 #endif
 
-    TESTING("write to dataset with hyperslab sel. for file space; all sel. for memory")
+    TESTING("write to dataset with hyperslab sel. for file space; all sel. for memory");
 
 #ifdef BROKEN
     /* Make sure the connector supports the API functions being tested */
@@ -2188,7 +2188,7 @@ test_write_dataset_hyper_file_all_mem(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -2211,10 +2211,10 @@ test_write_dataset_hyper_file_all_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_DSET_NAME,
                               DATASET_WRITE_HYPER_FILE_ALL_MEM_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -2377,17 +2377,17 @@ test_write_dataset_hyper_file_all_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 #else
@@ -2445,7 +2445,7 @@ test_write_dataset_all_file_hyper_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with all sel. for file space; hyperslab sel. for memory")
+    TESTING("write to dataset with all sel. for file space; hyperslab sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -2457,7 +2457,7 @@ test_write_dataset_all_file_hyper_mem(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -2480,10 +2480,10 @@ test_write_dataset_all_file_hyper_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_DSET_NAME,
                               DATASET_WRITE_ALL_FILE_HYPER_MEM_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -2675,17 +2675,17 @@ test_write_dataset_all_file_hyper_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -2721,7 +2721,7 @@ error:
 static int
 test_write_dataset_point_file_all_mem(void)
 {
-    TESTING("write to dataset with point sel. for file space; all sel. for memory")
+    TESTING("write to dataset with point sel. for file space; all sel. for memory");
 
     SKIPPED();
 
@@ -2754,7 +2754,7 @@ test_write_dataset_all_file_point_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with all sel. for file space; point sel. for memory")
+    TESTING("write to dataset with all sel. for file space; point sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -2766,7 +2766,7 @@ test_write_dataset_all_file_point_mem(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -2789,10 +2789,10 @@ test_write_dataset_all_file_point_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_DSET_NAME,
                               DATASET_WRITE_ALL_FILE_POINT_MEM_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -3000,17 +3000,17 @@ test_write_dataset_all_file_point_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3070,7 +3070,7 @@ test_write_dataset_hyper_file_point_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with hyperslab sel. for file space; point sel. for memory")
+    TESTING("write to dataset with hyperslab sel. for file space; point sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -3082,7 +3082,7 @@ test_write_dataset_hyper_file_point_mem(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -3105,10 +3105,10 @@ test_write_dataset_hyper_file_point_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_DSET_NAME,
                               DATASET_WRITE_HYPER_FILE_POINT_MEM_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -3325,17 +3325,17 @@ test_write_dataset_hyper_file_point_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3391,7 +3391,7 @@ test_write_dataset_point_file_hyper_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("write to dataset with point sel. for file space; hyperslab sel. for memory")
+    TESTING("write to dataset with point sel. for file space; hyperslab sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -3403,7 +3403,7 @@ test_write_dataset_point_file_hyper_mem(void)
     }
 
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
@@ -3426,10 +3426,10 @@ test_write_dataset_point_file_hyper_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = H5Screate_simple(DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK, dims, NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_DSET_NAME,
                               DATASET_WRITE_POINT_FILE_HYPER_MEM_TEST_DSET_DTYPE, fspace_id, H5P_DEFAULT,
@@ -3644,17 +3644,17 @@ test_write_dataset_point_file_hyper_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3712,7 +3712,7 @@ test_read_dataset_one_proc_0_selection(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with one rank selecting 0 rows")
+    TESTING("read from dataset with one rank selecting 0 rows");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -3724,7 +3724,7 @@ test_read_dataset_one_proc_0_selection(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_ONE_PROC_0_SEL_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -3859,7 +3859,7 @@ test_read_dataset_one_proc_0_selection(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -3979,19 +3979,19 @@ test_read_dataset_one_proc_0_selection(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -4047,7 +4047,7 @@ test_read_dataset_one_proc_none_selection(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with one rank using 'none' selection")
+    TESTING("read from dataset with one rank using 'none' selection");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -4059,7 +4059,7 @@ test_read_dataset_one_proc_none_selection(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_ONE_PROC_NONE_SEL_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4196,7 +4196,7 @@ test_read_dataset_one_proc_none_selection(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -4330,19 +4330,19 @@ test_read_dataset_one_proc_none_selection(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -4395,7 +4395,7 @@ test_read_dataset_one_proc_all_selection(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with one rank using all selection; others none selection")
+    TESTING("read from dataset with one rank using all selection; others none selection");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -4407,7 +4407,7 @@ test_read_dataset_one_proc_all_selection(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_ONE_PROC_ALL_SEL_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4544,7 +4544,7 @@ test_read_dataset_one_proc_all_selection(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -4670,19 +4670,19 @@ test_read_dataset_one_proc_all_selection(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -4718,7 +4718,7 @@ error:
 static int
 test_read_dataset_hyper_file_all_mem(void)
 {
-    TESTING("read from dataset with hyperslab sel. for file space; all sel. for memory")
+    TESTING("read from dataset with hyperslab sel. for file space; all sel. for memory");
 
     SKIPPED();
 
@@ -4750,7 +4750,7 @@ test_read_dataset_all_file_hyper_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with all sel. for file space; hyperslab sel. for memory")
+    TESTING("read from dataset with all sel. for file space; hyperslab sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -4762,7 +4762,7 @@ test_read_dataset_all_file_hyper_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_ALL_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -4901,7 +4901,7 @@ test_read_dataset_all_file_hyper_mem(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -5021,17 +5021,17 @@ test_read_dataset_all_file_hyper_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -5067,7 +5067,7 @@ error:
 static int
 test_read_dataset_point_file_all_mem(void)
 {
-    TESTING("read from dataset with point sel. for file space; all sel. for memory")
+    TESTING("read from dataset with point sel. for file space; all sel. for memory");
 
     SKIPPED();
 
@@ -5100,7 +5100,7 @@ test_read_dataset_all_file_point_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with all sel. for file space; point sel. for memory")
+    TESTING("read from dataset with all sel. for file space; point sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -5112,7 +5112,7 @@ test_read_dataset_all_file_point_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_ALL_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -5251,7 +5251,7 @@ test_read_dataset_all_file_point_mem(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -5384,17 +5384,17 @@ test_read_dataset_all_file_point_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -5454,7 +5454,7 @@ test_read_dataset_hyper_file_point_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with hyperslab sel. for file space; point sel. for memory")
+    TESTING("read from dataset with hyperslab sel. for file space; point sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -5466,7 +5466,7 @@ test_read_dataset_hyper_file_point_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_HYPER_FILE_POINT_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -5605,7 +5605,7 @@ test_read_dataset_hyper_file_point_mem(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -5743,17 +5743,17 @@ test_read_dataset_hyper_file_point_mem(void)
     }
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -5809,7 +5809,7 @@ test_read_dataset_point_file_hyper_mem(void)
     void    *write_buf = NULL;
     void    *read_buf  = NULL;
 
-    TESTING("read from dataset with point sel. for file space; hyperslab sel. for memory")
+    TESTING("read from dataset with point sel. for file space; hyperslab sel. for memory");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -5821,7 +5821,7 @@ test_read_dataset_point_file_hyper_mem(void)
     }
 
     if (generate_random_parallel_dimensions(DATASET_READ_POINT_FILE_HYPER_MEM_TEST_SPACE_RANK, &dims) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /*
      * Have rank 0 create the dataset and completely fill it with data.
@@ -5960,7 +5960,7 @@ test_read_dataset_point_file_hyper_mem(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -6099,19 +6099,19 @@ test_read_dataset_point_file_hyper_mem(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -6176,7 +6176,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
     void    *write_buf = NULL;
     int      read_buf[1][DATASET_MULTI_CHUNK_WRITE_SAME_SPACE_READ_TEST_FIXED_CHUNK_DIMSIZE];
 
-    TESTING("write to dataset with multiple chunks using same shaped dataspaces")
+    TESTING("write to dataset with multiple chunks using same shaped dataspaces");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -6438,7 +6438,7 @@ test_write_multi_chunk_dataset_same_shape_read(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -6561,19 +6561,19 @@ test_write_multi_chunk_dataset_same_shape_read(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -6640,7 +6640,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     int      read_buf[DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE]
                 [DATASET_MULTI_CHUNK_WRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE];
 
-    TESTING("write to dataset with multiple chunks using differently shaped dataspaces")
+    TESTING("write to dataset with multiple chunks using differently shaped dataspaces");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -6902,7 +6902,7 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -7027,19 +7027,19 @@ test_write_multi_chunk_dataset_diff_shape_read(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -7106,7 +7106,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
     void    *write_buf = NULL;
     int      read_buf[1][DATASET_MULTI_CHUNK_OVERWRITE_SAME_SPACE_READ_TEST_FIXED_CHUNK_DIMSIZE];
 
-    TESTING("several overwrites to dataset with multiple chunks using same shaped dataspaces")
+    TESTING("several overwrites to dataset with multiple chunks using same shaped dataspaces");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -7304,7 +7304,7 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -7554,15 +7554,15 @@ test_overwrite_multi_chunk_dataset_same_shape_read(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -7632,7 +7632,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     int      read_buf[DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE]
                 [DATASET_MULTI_CHUNK_OVERWRITE_DIFF_SPACE_READ_TEST_READ_BUF_DIMSIZE];
 
-    TESTING("several overwrites to dataset with multiple chunks using differently shaped dataspaces")
+    TESTING("several overwrites to dataset with multiple chunks using differently shaped dataspaces");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -7830,7 +7830,7 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
      * Re-open file on all ranks.
      */
     if ((fapl_id = create_mpi_fapl(MPI_COMM_WORLD, MPI_INFO_NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((file_id = H5Fopen(vol_test_parallel_filename, H5F_ACC_RDWR, fapl_id)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't re-open file '%s'\n", vol_test_parallel_filename);
@@ -8082,15 +8082,15 @@ test_overwrite_multi_chunk_dataset_diff_shape_read(void)
     }
 
     if (H5Sclose(mspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(fapl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 

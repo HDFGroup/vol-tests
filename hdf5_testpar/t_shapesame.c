@@ -28,6 +28,10 @@
 #include "hdf5.h"
 #include "testphdf5.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX 512
+#endif
+
 /* FILENAME and filenames must have the same number of names.
  * Use PARATESTFILE in general and use a separated filename only if the file
  * created in one test is accessed by a different test.
@@ -37,7 +41,8 @@
 const char *FILENAME[NFILENAME] = {"ShapeSameTest.h5", NULL};
 char        filenames[NFILENAME][PATH_MAX];
 hid_t       fapl; /* file access property list */
-uint64_t    vol_cap_flags;
+
+uint64_t vol_cap_flags_g;
 
 /* On Lustre (and perhaps other parallel file systems?), we have severe
  * slow downs if two or more processes attempt to access the same file system
@@ -3968,12 +3973,6 @@ ckrbrd_hs_dr_pio_test(ShapeSameTestMethods sstest_type)
  * Main driver of the Parallel HDF5 tests
  */
 
-#include "testphdf5.h"
-
-#ifndef PATH_MAX
-#define PATH_MAX 512
-#endif /* !PATH_MAX */
-
 /* global variables */
 int dim0;
 int dim1;
@@ -4346,7 +4345,7 @@ main(int argc, char **argv)
     fapl = H5Pcreate(H5P_FILE_ACCESS);
 
     /* Get the capability flag of the VOL connector being used */
-    if (H5Pget_vol_cap_flags(fapl, &vol_cap_flags) < 0) {
+    if (H5Pget_vol_cap_flags(fapl, &vol_cap_flags_g) < 0) {
         if (MAINPROCESS)
             HDprintf("Failed to get the capability flag of the VOL connector being used\n");
 
@@ -4355,9 +4354,9 @@ main(int argc, char **argv)
     }
 
     /* Make sure the connector supports the API functions being tested.  This test only
-     * uses a few VOL functions, such as H5Fcreate/close/delete, H5Dcreate/write/read/close,
+     * uses a few API functions, such as H5Fcreate/close/delete, H5Dcreate/write/read/close,
      */
-    if (!(vol_cap_flags & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags & H5VL_CAP_FLAG_DATASET_BASIC)) {
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC)) {
         if (MAINPROCESS)
             HDprintf("API functions for basic file and dataset aren't supported with this connector\n");
 
@@ -4389,7 +4388,7 @@ main(int argc, char **argv)
                  "===================================\n");
     }
 
-    /* Shape Same tests using contigous hyperslab */
+    /* Shape Same tests using contiguous hyperslab */
 #if 0
     AddTest("sscontig1", sscontig1, NULL,
     "Cntg hslab, ind IO, cntg dsets", filenames[0]);

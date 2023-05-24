@@ -16,7 +16,7 @@ public API and serve as regression tests for HDF5 [VOL Connectors](https://porta
 The following are required to build the HDF5 VOL tests:
 
 - CMake 2.8.12.2 or newer
-- HDF5 1.12.0 or newer
+- HDF5 1.14.0 or newer
 
 Note: The HDF5 VOL tests project is currently unsupported for building on Windows.
 
@@ -58,7 +58,7 @@ and will contain `hdf5-config.cmake`, among other files.
 
 `HDF5_VOL_TEST_ENABLE_PARALLEL` (Default: OFF) - This option enables parallel HDF5 tests and requires that the HDF5 installation used is built with the parallel library enabled.
 
-`HDF5_VOL_TEST_ENABLE_ASYNC` (Default: OFF) - This option enables tests that use HDF5's asynchronous API routines. To enable these tests, the HDF5 installation used must be version 1.13 or newer.
+`HDF5_VOL_TEST_ENABLE_ASYNC` (Default: OFF) - This option enables tests that use HDF5's asynchronous API routines.
 
 `HDF5_VOL_TEST_ENABLE_PART` (Default: OFF) - This option enables building of the main test executable,
 `h5vl_test`, as a set of individual executables, one per HDF5 'interface', rather than as a single executable.

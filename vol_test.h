@@ -18,7 +18,6 @@
 
 #include "h5vl_test_config.h"
 #include "vol_test_util.h"
-#include "vol_tests_disabled.h"
 
 /* Define H5VL_VERSION if not already defined */
 #ifndef H5VL_VERSION
