@@ -38,7 +38,7 @@ test_open_link_without_leading_slash(void)
     hid_t dset_dtype      = H5I_INVALID_HID;
     hid_t space_id        = H5I_INVALID_HID;
 
-    TESTING("opening a link without a leading slash")
+    TESTING("opening a link without a leading slash");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -63,10 +63,10 @@ test_open_link_without_leading_slash(void)
 
     if ((space_id = generate_random_dataspace(OPEN_LINK_WITHOUT_SLASH_DSET_SPACE_RANK, NULL, NULL, FALSE)) <
         0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(container_group, OPEN_LINK_WITHOUT_SLASH_DSET_NAME, dset_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -76,13 +76,13 @@ test_open_link_without_leading_slash(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -104,13 +104,13 @@ test_open_link_without_leading_slash(void)
     }
 
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -142,7 +142,7 @@ test_object_creation_by_absolute_path(void)
     hid_t  dtype_id   = H5I_INVALID_HID;
     hid_t  dset_dtype = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("object creation by absolute path")
+    TESTING_MULTIPART("object creation by absolute path");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -154,7 +154,7 @@ test_object_creation_by_absolute_path(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -197,7 +197,7 @@ test_object_creation_by_absolute_path(void)
     {
         PART_BEGIN(H5Gcreate_using_absolute_path)
         {
-            TESTING_2("creation of group using absolute pathname")
+            TESTING_2("creation of group using absolute pathname");
 
             /* Try to create a group under the container group by using an absolute pathname */
             if ((sub_group_id = H5Gcreate2(file_id,
@@ -232,7 +232,7 @@ test_object_creation_by_absolute_path(void)
 
         PART_BEGIN(H5Dcreate_using_absolute_path)
         {
-            TESTING_2("creation of dataset using absolute pathname")
+            TESTING_2("creation of dataset using absolute pathname");
 
             /* Try to create a dataset nested at the end of this group chain by using an absolute pathname */
             if ((fspace_id = generate_random_dataspace(OBJECT_CREATE_BY_ABSOLUTE_PATH_TEST_DSET_SPACE_RANK,
@@ -282,7 +282,7 @@ test_object_creation_by_absolute_path(void)
 
         PART_BEGIN(H5Tcommit_using_absolute_path)
         {
-            TESTING_2("creation of committed datatype using absolute pathname")
+            TESTING_2("creation of committed datatype using absolute pathname");
 
             /* Try to create a committed datatype in the same fashion as the preceding dataset */
             if ((dtype_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
@@ -325,24 +325,24 @@ test_object_creation_by_absolute_path(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dtype_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(sub_group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -378,7 +378,7 @@ test_absolute_vs_relative_path(void)
           dset_dtype4 = H5I_INVALID_HID, dset_dtype5 = H5I_INVALID_HID, dset_dtype6 = H5I_INVALID_HID;
     hid_t fspace_id = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("absolute vs. relative pathnames")
+    TESTING_MULTIPART("absolute vs. relative pathnames");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -389,7 +389,7 @@ test_absolute_vs_relative_path(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -413,20 +413,20 @@ test_absolute_vs_relative_path(void)
 
     if ((fspace_id = generate_random_dataspace(ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET_SPACE_RANK, NULL, NULL,
                                                FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_dtype1 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((dset_dtype2 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((dset_dtype3 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((dset_dtype4 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((dset_dtype5 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((dset_dtype6 = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -434,7 +434,7 @@ test_absolute_vs_relative_path(void)
     {
         PART_BEGIN(H5Dcreate_absolute_from_root)
         {
-            TESTING_2("dataset creation by absolute path from root group")
+            TESTING_2("dataset creation by absolute path from root group");
 
             /* Create a dataset by absolute path in the form "/group/dataset" starting from the root group */
             if ((dset_id1 = H5Dcreate2(file_id,
@@ -469,7 +469,7 @@ test_absolute_vs_relative_path(void)
 
         PART_BEGIN(H5Dcreate_absolute_from_nonroot)
         {
-            TESTING_2("dataset creation by absolute path from non-root group")
+            TESTING_2("dataset creation by absolute path from non-root group");
 
             /* Create a dataset by absolute path in the form "/group/dataset" starting from the container
              * group */
@@ -505,7 +505,7 @@ test_absolute_vs_relative_path(void)
 
         PART_BEGIN(H5Dcreate_relative_from_root)
         {
-            TESTING_2("dataset creation by relative path from root group")
+            TESTING_2("dataset creation by relative path from root group");
 
             /* TODO: */
 
@@ -516,7 +516,7 @@ test_absolute_vs_relative_path(void)
 
         PART_BEGIN(H5Dcreate_relative_from_nonroot)
         {
-            TESTING_2("dataset creation by relative path from non-root group")
+            TESTING_2("dataset creation by relative path from non-root group");
 
             /* Create a dataset by relative path in the form "dataset" starting from the test container group
              */
@@ -576,7 +576,7 @@ test_absolute_vs_relative_path(void)
 
         PART_BEGIN(H5Dcreate_relative_leading_dot_root)
         {
-            TESTING_2("dataset creation by path with leading '.' from root group")
+            TESTING_2("dataset creation by path with leading '.' from root group");
 
             /* Create a dataset by relative path in the form "./group/dataset" starting from the root group */
             if ((dset_id3 = H5Dcreate2(file_id,
@@ -611,7 +611,7 @@ test_absolute_vs_relative_path(void)
 
         PART_BEGIN(H5Dcreate_relative_leading_dot_nonroot)
         {
-            TESTING_2("dataset creation by path with leading '.' from non-root group")
+            TESTING_2("dataset creation by path with leading '.' from non-root group");
 
             /* Create a dataset by relative path in the form "./dataset" starting from the container group */
             if ((dset_id6 = H5Dcreate2(group_id, "./" ABSOLUTE_VS_RELATIVE_PATH_TEST_DSET6_NAME, dset_dtype6,
@@ -644,40 +644,40 @@ test_absolute_vs_relative_path(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype3) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype4) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype5) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype6) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id3) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id4) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id5) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id6) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -734,7 +734,7 @@ test_dot_for_object_name(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -767,7 +767,7 @@ test_dot_for_object_name(void)
     {
         PART_BEGIN(H5Gcreate_dot_as_name)
         {
-            TESTING_2("invalid creation of group with '.' as name")
+            TESTING_2("invalid creation of group with '.' as name");
 
             /* Create a group with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY
@@ -788,7 +788,7 @@ test_dot_for_object_name(void)
 
         PART_BEGIN(H5Dcreate_dot_as_name)
         {
-            TESTING_2("invalid creation of dataset with '.' as name")
+            TESTING_2("invalid creation of dataset with '.' as name");
 
             /* Create a dataset with the "." as the name.  It should fail. */
             H5E_BEGIN_TRY
@@ -810,7 +810,7 @@ test_dot_for_object_name(void)
 
         PART_BEGIN(H5Tcommit_dot_as_name)
         {
-            TESTING_2("invalid creation of committed datatype with '.' as name")
+            TESTING_2("invalid creation of committed datatype with '.' as name");
 
             if ((dtype_id = H5Tcopy(H5T_NATIVE_INT)) < 0) {
                 H5_FAILED();
@@ -843,16 +843,16 @@ test_dot_for_object_name(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(dspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(subgroup_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -886,7 +886,7 @@ error:
 static int
 test_double_init_term(void)
 {
-    TESTING("double init/term correctness")
+    TESTING("double init/term correctness");
 
     SKIPPED();
 
@@ -912,7 +912,7 @@ test_symbols_in_compound_field_name(void)
     hid_t  type_pool[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES];
     char   member_names[COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES][256];
 
-    TESTING("usage of '{', '}' and '\\\"' symbols in compound field name")
+    TESTING("usage of '{', '}' and '\\\"' symbols in compound field name");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -977,11 +977,11 @@ test_symbols_in_compound_field_name(void)
     }
 
     if (H5Tpack(compound_type) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((fspace_id = generate_random_dataspace(COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_RANK, NULL,
                                                NULL, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_NAME, compound_type,
                               fspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -991,7 +991,7 @@ test_symbols_in_compound_field_name(void)
     }
 
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dopen2(group_id, COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_DSET_NAME, H5P_DEFAULT)) <
         0) {
@@ -1002,20 +1002,20 @@ test_symbols_in_compound_field_name(void)
 
     for (i = 0; i < COMPOUND_WITH_SYMBOLS_IN_MEMBER_NAMES_TEST_NUM_SUBTYPES; i++)
         if (type_pool[i] >= 0 && H5Tclose(type_pool[i]) < 0)
-            TEST_ERROR
+            TEST_ERROR;
 
     if (H5Sclose(fspace_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(compound_type) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 

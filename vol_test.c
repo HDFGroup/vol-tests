@@ -12,16 +12,17 @@
 
 /*
  * A test suite which only makes public HDF5 API calls and which is meant
- * to test a specified HDF5 VOL connector or set of VOL connectors. This
- * test suite must assume that a VOL connector could only implement the File
- * interface. Therefore, the suite should check that a particular piece of
- * functionality is supported by the VOL connector before actually testing
- * it. If the functionality is not supported, the test should simply be
- * skipped, perhaps with a note as to why the test was skipped, if possible.
+ * to test the native VOL connector or a specified HDF5 VOL connector (or
+ * set of connectors stacked with each other). This test suite must assume
+ * that a VOL connector could only implement the File interface. Therefore,
+ * the suite should check that a particular piece of functionality is supported
+ * by the VOL connector before actually testing it. If the functionality is
+ * not supported, the test should simply be skipped, perhaps with a note as
+ * to why the test was skipped, if possible.
  *
  * If the VOL connector being used supports the creation of groups, this
  * test suite will attempt to organize the output of these various tests
- * into groups based on their respective interface.
+ * into groups based on their respective HDF5 interface.
  */
 
 #include "vol_test.h"

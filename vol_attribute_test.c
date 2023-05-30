@@ -130,7 +130,7 @@ test_create_attribute_on_root(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -139,12 +139,12 @@ test_create_attribute_on_root(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_ROOT_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype2 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -152,7 +152,7 @@ test_create_attribute_on_root(void)
     {
         PART_BEGIN(H5Acreate2)
         {
-            TESTING_2("H5Acreate on the root group")
+            TESTING_2("H5Acreate on the root group");
 
             if ((attr_id = H5Acreate2(file_id, ATTRIBUTE_CREATE_ON_ROOT_ATTR_NAME, attr_dtype1, space_id,
                                       H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -182,7 +182,7 @@ test_create_attribute_on_root(void)
 
         PART_BEGIN(H5Acreate_by_name)
         {
-            TESTING_2("H5Acreate_by_name on the root group")
+            TESTING_2("H5Acreate_by_name on the root group");
 
             if ((attr_id2 = H5Acreate_by_name(file_id, "/", ATTRIBUTE_CREATE_ON_ROOT_ATTR_NAME2, attr_dtype2,
                                               space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -211,20 +211,20 @@ test_create_attribute_on_root(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -274,7 +274,7 @@ test_create_attribute_on_dataset(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -297,17 +297,17 @@ test_create_attribute_on_dataset(void)
 
     if ((dset_space_id =
              generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATASET_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_space_id =
              generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATASET_ATTR_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype2 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_CREATE_ON_DATASET_DSET_NAME, dset_dtype, dset_space_id,
                               H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -322,7 +322,7 @@ test_create_attribute_on_dataset(void)
     {
         PART_BEGIN(H5Acreate_on_dataset)
         {
-            TESTING_2("H5Acreate on a dataset")
+            TESTING_2("H5Acreate on a dataset");
 
             if ((attr_id = H5Acreate2(dset_id, ATTRIBUTE_CREATE_ON_DATASET_ATTR_NAME, attr_dtype1,
                                       attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -351,7 +351,7 @@ test_create_attribute_on_dataset(void)
 
         PART_BEGIN(H5Acreate_by_name_on_dataset)
         {
-            TESTING_2("H5Acreate_by_name on a dataset")
+            TESTING_2("H5Acreate_by_name on a dataset");
 
             if ((attr_id2 = H5Acreate_by_name(group_id, ATTRIBUTE_CREATE_ON_DATASET_DSET_NAME,
                                               ATTRIBUTE_CREATE_ON_DATASET_ATTR_NAME2, attr_dtype2,
@@ -381,30 +381,30 @@ test_create_attribute_on_dataset(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(dset_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -458,7 +458,7 @@ test_create_attribute_on_datatype(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -493,12 +493,12 @@ test_create_attribute_on_datatype(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_ON_DATATYPE_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype2 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -506,7 +506,7 @@ test_create_attribute_on_datatype(void)
     {
         PART_BEGIN(H5Acreate_on_datatype)
         {
-            TESTING_2("H5Acreate on a committed datatype")
+            TESTING_2("H5Acreate on a committed datatype");
 
             if ((attr_id = H5Acreate2(type_id, ATTRIBUTE_CREATE_ON_DATATYPE_ATTR_NAME, attr_dtype1, space_id,
                                       H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -533,7 +533,7 @@ test_create_attribute_on_datatype(void)
 
         PART_BEGIN(H5Acreate_by_name_on_datatype)
         {
-            TESTING_2("H5Acreate_by_name on a committed datatype")
+            TESTING_2("H5Acreate_by_name on a committed datatype");
 
             if ((attr_id2 = H5Acreate_by_name(group_id, ATTRIBUTE_CREATE_ON_DATATYPE_DTYPE_NAME,
                                               ATTRIBUTE_CREATE_ON_DATATYPE_ATTR_NAME2, attr_dtype2, space_id,
@@ -562,26 +562,26 @@ test_create_attribute_on_datatype(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(type_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -619,7 +619,7 @@ test_create_attribute_with_null_space(void)
     hid_t  attr_dtype = H5I_INVALID_HID;
     hid_t  space_id   = H5I_INVALID_HID;
 
-    TESTING("attribute creation with a NULL dataspace")
+    TESTING("attribute creation with a NULL dataspace");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -650,10 +650,10 @@ test_create_attribute_with_null_space(void)
     }
 
     if ((space_id = H5Screate(H5S_NULL)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_NULL_DATASPACE_TEST_ATTR_NAME, attr_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -676,7 +676,7 @@ test_create_attribute_with_null_space(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Aopen(group_id, ATTRIBUTE_CREATE_NULL_DATASPACE_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -685,17 +685,17 @@ test_create_attribute_with_null_space(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -730,7 +730,7 @@ test_create_attribute_with_scalar_space(void)
     hid_t  attr_dtype = H5I_INVALID_HID;
     hid_t  space_id   = H5I_INVALID_HID;
 
-    TESTING("attribute creation with a SCALAR dataspace")
+    TESTING("attribute creation with a SCALAR dataspace");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -761,10 +761,10 @@ test_create_attribute_with_scalar_space(void)
     }
 
     if ((space_id = H5Screate(H5S_SCALAR)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_SCALAR_DATASPACE_TEST_ATTR_NAME, attr_dtype,
                               space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -787,7 +787,7 @@ test_create_attribute_with_scalar_space(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Aopen(group_id, ATTRIBUTE_CREATE_SCALAR_DATASPACE_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -796,17 +796,17 @@ test_create_attribute_with_scalar_space(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -843,7 +843,7 @@ test_create_attribute_with_space_in_name(void)
     hid_t  attr_dtype      = H5I_INVALID_HID;
     hid_t  space_id        = H5I_INVALID_HID;
 
-    TESTING("attribute creation with a space in attribute's name")
+    TESTING("attribute creation with a space in attribute's name");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -876,10 +876,10 @@ test_create_attribute_with_space_in_name(void)
 
     if ((space_id =
              generate_random_dataspace(ATTRIBUTE_CREATE_WITH_SPACE_IN_NAME_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_WITH_SPACE_IN_NAME_ATTR_NAME, attr_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -902,17 +902,17 @@ test_create_attribute_with_space_in_name(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -958,7 +958,7 @@ test_create_attribute_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -981,9 +981,9 @@ test_create_attribute_invalid_params(void)
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_CREATE_INVALID_PARAMS_SPACE_RANK, NULL, NULL, TRUE)) <
         0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -991,7 +991,7 @@ test_create_attribute_invalid_params(void)
     {
         PART_BEGIN(H5Acreate_invalid_loc_id)
         {
-            TESTING_2("H5Acreate with invalid loc_id")
+            TESTING_2("H5Acreate with invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -1013,7 +1013,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_invalid_attr_name)
         {
-            TESTING_2("H5Acreate with invalid attribute name")
+            TESTING_2("H5Acreate with invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -1047,7 +1047,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_invalid_datatype)
         {
-            TESTING_2("H5Acreate with an invalid datatype")
+            TESTING_2("H5Acreate with an invalid datatype");
 
             H5E_BEGIN_TRY
             {
@@ -1069,7 +1069,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_invalid_dataspace)
         {
-            TESTING_2("H5Acreate with an invalid dataspace")
+            TESTING_2("H5Acreate with an invalid dataspace");
 
             H5E_BEGIN_TRY
             {
@@ -1091,7 +1091,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_invalid_acpl)
         {
-            TESTING_2("H5Acreate with an invalid ACPL")
+            TESTING_2("H5Acreate with an invalid ACPL");
 
             H5E_BEGIN_TRY
             {
@@ -1113,8 +1113,8 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_invalid_aapl)
         {
-            TESTING_2("H5Acreate with an invalid AAPL")
-#ifndef NO_INVALID_PROPERTY_LIST_TESTS
+            TESTING_2("H5Acreate with an invalid AAPL");
+
             H5E_BEGIN_TRY
             {
                 attr_id = H5Acreate2(group_id, ATTRIBUTE_CREATE_INVALID_PARAMS_ATTR_NAME, attr_dtype,
@@ -1130,16 +1130,12 @@ test_create_attribute_invalid_params(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Acreate_invalid_aapl);
-#endif
         }
         PART_END(H5Acreate_invalid_aapl);
 
         PART_BEGIN(H5Acreate_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Acreate_by_name with an invalid loc_id")
+            TESTING_2("H5Acreate_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -1162,7 +1158,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Acreate_by_name with invalid object name")
+            TESTING_2("H5Acreate_by_name with invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -1199,7 +1195,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_by_name_invalid_attr_name)
         {
-            TESTING_2("H5Acreate_by_name with invalid attribute name")
+            TESTING_2("H5Acreate_by_name with invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -1236,7 +1232,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_by_name_invalid_datatype)
         {
-            TESTING_2("H5Acreate_by_name with invalid datatype")
+            TESTING_2("H5Acreate_by_name with invalid datatype");
 
             H5E_BEGIN_TRY
             {
@@ -1259,7 +1255,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_by_name_invalid_dataspace)
         {
-            TESTING_2("H5Acreate_by_name with invalid dataspace")
+            TESTING_2("H5Acreate_by_name with invalid dataspace");
 
             H5E_BEGIN_TRY
             {
@@ -1282,7 +1278,7 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_by_name_invalid_acpl)
         {
-            TESTING_2("H5Acreate_by_name with invalid ACPL")
+            TESTING_2("H5Acreate_by_name with invalid ACPL");
 
             H5E_BEGIN_TRY
             {
@@ -1305,8 +1301,8 @@ test_create_attribute_invalid_params(void)
 
         PART_BEGIN(H5Acreate_by_name_invalid_aapl)
         {
-            TESTING_2("H5Acreate_by_name with invalid AAPL")
-#ifndef NO_INVALID_PROPERTY_LIST_TESTS
+            TESTING_2("H5Acreate_by_name with invalid AAPL");
+
             H5E_BEGIN_TRY
             {
                 attr_id = H5Acreate_by_name(container_group, ATTRIBUTE_CREATE_INVALID_PARAMS_GROUP_NAME,
@@ -1323,16 +1319,12 @@ test_create_attribute_invalid_params(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Acreate_by_name_invalid_aapl);
-#endif
         }
         PART_END(H5Acreate_by_name_invalid_aapl);
 
         PART_BEGIN(H5Acreate_by_name_invalid_lapl)
         {
-            TESTING_2("H5Acreate_by_name with invalid LAPL")
+            TESTING_2("H5Acreate_by_name with invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -1355,18 +1347,18 @@ test_create_attribute_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1406,12 +1398,12 @@ test_open_attribute(void)
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
-        HDprintf(
-            "    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, or attribute aren't supported "
+                 "with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1431,10 +1423,12 @@ test_open_attribute(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id,
@@ -1445,10 +1439,10 @@ test_open_attribute(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_OPEN_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_type = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Create several attributes */
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_OPEN_TEST_ATTR_NAME, attr_type, space_id, H5P_DEFAULT,
@@ -1459,7 +1453,7 @@ test_open_attribute(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_OPEN_TEST_ATTR_NAME2, attr_type, space_id, H5P_DEFAULT,
                               H5P_DEFAULT)) < 0) {
@@ -1469,7 +1463,7 @@ test_open_attribute(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_OPEN_TEST_ATTR_NAME3, attr_type, space_id, H5P_DEFAULT,
                               H5P_DEFAULT)) < 0) {
@@ -1479,7 +1473,7 @@ test_open_attribute(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1487,7 +1481,7 @@ test_open_attribute(void)
     {
         PART_BEGIN(H5Aopen)
         {
-            TESTING_2("H5Aopen")
+            TESTING_2("H5Aopen");
 
             if ((attr_id = H5Aopen(group_id, ATTRIBUTE_OPEN_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -1507,7 +1501,7 @@ test_open_attribute(void)
 
         PART_BEGIN(H5Aopen_by_name)
         {
-            TESTING_2("H5Aopen_by_name")
+            TESTING_2("H5Aopen_by_name");
 
             if ((attr_id = H5Aopen_by_name(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME,
                                            ATTRIBUTE_OPEN_TEST_ATTR_NAME, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -1529,7 +1523,13 @@ test_open_attribute(void)
 
         PART_BEGIN(H5Aopen_by_idx_crt_order_increasing)
         {
-            TESTING_2("H5Aopen_by_idx by creation order in increasing order")
+            TESTING_2("H5Aopen_by_idx by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking is not supported with this VOL connector\n");
+                PART_EMPTY(H5Aopen_by_idx_crt_order_increasing);
+            }
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
                                           H5_ITER_INC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -1582,7 +1582,13 @@ test_open_attribute(void)
 
         PART_BEGIN(H5Aopen_by_idx_crt_order_decreasing)
         {
-            TESTING_2("H5Aopen_by_idx by creation order in decreasing order")
+            TESTING_2("H5Aopen_by_idx by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking is not supported with this VOL connector\n");
+                PART_EMPTY(H5Aopen_by_idx_crt_order_decreasing);
+            }
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
                                           H5_ITER_DEC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -1635,7 +1641,7 @@ test_open_attribute(void)
 
         PART_BEGIN(H5Aopen_by_idx_name_order_increasing)
         {
-            TESTING_2("H5Aopen_by_idx by alphabetical order in increasing order")
+            TESTING_2("H5Aopen_by_idx by alphabetical order in increasing order");
 
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                                           H5_ITER_INC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -1688,12 +1694,12 @@ test_open_attribute(void)
 
         PART_BEGIN(H5Aopen_by_idx_name_order_decreasing)
         {
-            TESTING_2("H5Aopen_by_idx by alphabetical order in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aopen_by_idx by alphabetical order in decreasing order");
+
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                                           H5_ITER_DEC, 2, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by "
+                HDprintf("    couldn't open attribute '%s' at index %d using H5Aopen_by_idx by "
                          "alphabetical order in decreasing order\n",
                          ATTRIBUTE_OPEN_TEST_ATTR_NAME, 2);
                 PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
@@ -1708,7 +1714,7 @@ test_open_attribute(void)
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                                           H5_ITER_DEC, 1, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by "
+                HDprintf("    couldn't open attribute '%s' at index %d using H5Aopen_by_idx by "
                          "alphabetical order in decreasing order\n",
                          ATTRIBUTE_OPEN_TEST_ATTR_NAME2, 1);
                 PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
@@ -1723,7 +1729,7 @@ test_open_attribute(void)
             if ((attr_id = H5Aopen_by_idx(container_group, ATTRIBUTE_OPEN_TEST_GROUP_NAME, H5_INDEX_NAME,
                                           H5_ITER_DEC, 0, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't open attribute '%s' at index %lld using H5Aopen_by_idx by "
+                HDprintf("    couldn't open attribute '%s' at index %d using H5Aopen_by_idx by "
                          "alphabetical order in decreasing order\n",
                          ATTRIBUTE_OPEN_TEST_ATTR_NAME3, 0);
                 PART_ERROR(H5Aopen_by_idx_name_order_decreasing);
@@ -1736,29 +1742,25 @@ test_open_attribute(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aopen_by_idx_name_order_decreasing);
-#endif
         }
         PART_END(H5Aopen_by_idx_name_order_decreasing);
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_type) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(gcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1804,7 +1806,7 @@ test_open_attribute_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -1827,10 +1829,10 @@ test_open_attribute_invalid_params(void)
 
     if ((space_id =
              generate_random_dataspace(ATTRIBUTE_OPEN_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_type = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_OPEN_INVALID_PARAMS_TEST_ATTR_NAME, attr_type, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -1840,7 +1842,7 @@ test_open_attribute_invalid_params(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -1848,7 +1850,7 @@ test_open_attribute_invalid_params(void)
     {
         PART_BEGIN(H5Aopen_invalid_loc_id)
         {
-            TESTING_2("H5Aopen with an invalid loc_id")
+            TESTING_2("H5Aopen with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -1870,7 +1872,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_invalid_attr_name)
         {
-            TESTING_2("H5Aopen with an invalid attribute name")
+            TESTING_2("H5Aopen with an invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -1906,7 +1908,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_invalid_aapl)
         {
-            TESTING_2("H5Aopen with an invalid AAPL")
+            TESTING_2("H5Aopen with an invalid AAPL");
 
             H5E_BEGIN_TRY
             {
@@ -1928,7 +1930,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Aopen_by_name with an invalid loc_id")
+            TESTING_2("H5Aopen_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -1952,7 +1954,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Aopen_by_name with an invalid object name")
+            TESTING_2("H5Aopen_by_name with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -1991,7 +1993,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_name_invalid_attr_name)
         {
-            TESTING_2("H5Aopen_by_name with an invalid attribute name")
+            TESTING_2("H5Aopen_by_name with an invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -2030,7 +2032,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_name_invalid_aapl)
         {
-            TESTING_2("H5Aopen_by_name with an invalid AAPL")
+            TESTING_2("H5Aopen_by_name with an invalid AAPL");
 
             H5E_BEGIN_TRY
             {
@@ -2054,7 +2056,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_name_invalid_lapl)
         {
-            TESTING_2("H5Aopen_by_name with an invalid LAPL")
+            TESTING_2("H5Aopen_by_name with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -2078,7 +2080,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_idx_invalid_loc_id)
         {
-            TESTING_2("H5Aopen_by_idx with an invalid loc_id")
+            TESTING_2("H5Aopen_by_idx with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -2101,7 +2103,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_idx_invalid_obj_name)
         {
-            TESTING_2("H5Aopen_by_idx with an invalid object name")
+            TESTING_2("H5Aopen_by_idx with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -2140,7 +2142,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_idx_invalid_index_type)
         {
-            TESTING_2("H5Aopen_by_idx with an invalid index type")
+            TESTING_2("H5Aopen_by_idx with an invalid index type");
 
             H5E_BEGIN_TRY
             {
@@ -2180,7 +2182,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_idx_invalid_iter_order)
         {
-            TESTING_2("H5Aopen_by_idx with an invalid iteration order")
+            TESTING_2("H5Aopen_by_idx with an invalid iteration order");
 
             H5E_BEGIN_TRY
             {
@@ -2220,7 +2222,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_idx_invalid_aapl)
         {
-            TESTING_2("H5Aopen_by_idx with an invalid AAPL")
+            TESTING_2("H5Aopen_by_idx with an invalid AAPL");
 
             H5E_BEGIN_TRY
             {
@@ -2243,7 +2245,7 @@ test_open_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aopen_by_idx_invalid_lapl)
         {
-            TESTING_2("H5Aopen_by_idx with an invalid LAPL")
+            TESTING_2("H5Aopen_by_idx with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -2266,18 +2268,18 @@ test_open_attribute_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_type) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -2315,7 +2317,7 @@ test_write_attribute(void)
     hid_t   space_id        = H5I_INVALID_HID;
     void   *data            = NULL;
 
-    TESTING("H5Awrite")
+    TESTING("H5Awrite");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -2346,7 +2348,7 @@ test_write_attribute(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_WRITE_TEST_SPACE_RANK, NULL, dims, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_WRITE_TEST_ATTR_NAME, ATTRIBUTE_WRITE_TEST_ATTR_DTYPE,
                               space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -2373,7 +2375,7 @@ test_write_attribute(void)
     data_size *= ATTRIBUTE_WRITE_TEST_ATTR_DTYPE_SIZE;
 
     if (NULL == (data = HDmalloc(data_size)))
-        TEST_ERROR
+        TEST_ERROR;
 
     for (i = 0; i < data_size / ATTRIBUTE_WRITE_TEST_ATTR_DTYPE_SIZE; i++)
         ((int *)data)[i] = (int)i;
@@ -2397,15 +2399,15 @@ test_write_attribute(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -2456,7 +2458,7 @@ test_write_attribute_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2480,7 +2482,7 @@ test_write_attribute_invalid_params(void)
 
     if ((space_id =
              generate_random_dataspace(ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_SPACE_RANK, NULL, dims, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_ATTR_NAME,
                               ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_ATTR_DTYPE, space_id, H5P_DEFAULT,
@@ -2508,7 +2510,7 @@ test_write_attribute_invalid_params(void)
     data_size *= ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_ATTR_DTYPE_SIZE;
 
     if (NULL == (data = HDmalloc(data_size)))
-        TEST_ERROR
+        TEST_ERROR;
 
     for (i = 0; i < data_size / ATTRIBUTE_WRITE_INVALID_PARAMS_TEST_ATTR_DTYPE_SIZE; i++)
         ((int *)data)[i] = (int)i;
@@ -2519,7 +2521,7 @@ test_write_attribute_invalid_params(void)
     {
         PART_BEGIN(H5Awrite_invalid_attr_id)
         {
-            TESTING_2("H5Awrite with an invalid attr_id")
+            TESTING_2("H5Awrite with an invalid attr_id");
 
             H5E_BEGIN_TRY
             {
@@ -2539,7 +2541,7 @@ test_write_attribute_invalid_params(void)
 
         PART_BEGIN(H5Awrite_invalid_datatype)
         {
-            TESTING_2("H5Awrite with an invalid datatype")
+            TESTING_2("H5Awrite with an invalid datatype");
 
             H5E_BEGIN_TRY
             {
@@ -2559,7 +2561,7 @@ test_write_attribute_invalid_params(void)
 
         PART_BEGIN(H5Awrite_invalid_data_buf)
         {
-            TESTING_2("H5Awrite with an invalid data buffer")
+            TESTING_2("H5Awrite with an invalid data buffer");
 
             H5E_BEGIN_TRY
             {
@@ -2579,7 +2581,7 @@ test_write_attribute_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (data) {
         HDfree(data);
@@ -2587,15 +2589,15 @@ test_write_attribute_invalid_params(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -2636,7 +2638,7 @@ test_read_attribute(void)
     void   *data            = NULL;
     void   *read_buf        = NULL;
 
-    TESTING("H5Aread")
+    TESTING("H5Aread");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -2667,7 +2669,7 @@ test_read_attribute(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_READ_TEST_SPACE_RANK, NULL, dims, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_TEST_ATTR_NAME, ATTRIBUTE_READ_TEST_ATTR_DTYPE,
                               space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -2694,9 +2696,9 @@ test_read_attribute(void)
     data_size *= ATTRIBUTE_READ_TEST_ATTR_DTYPE_SIZE;
 
     if (NULL == (data = HDmalloc(data_size)))
-        TEST_ERROR
+        TEST_ERROR;
     if (NULL == (read_buf = HDcalloc(1, data_size)))
-        TEST_ERROR
+        TEST_ERROR;
 
     for (i = 0; i < data_size / ATTRIBUTE_READ_TEST_ATTR_DTYPE_SIZE; i++)
         ((int *)data)[i] = (int)i;
@@ -2713,7 +2715,7 @@ test_read_attribute(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Aopen(group_id, ATTRIBUTE_READ_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2741,15 +2743,15 @@ test_read_attribute(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -2803,7 +2805,7 @@ test_read_attribute_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2826,7 +2828,7 @@ test_read_attribute_invalid_params(void)
 
     if ((space_id =
              generate_random_dataspace(ATTRIBUTE_READ_INVALID_PARAMS_TEST_SPACE_RANK, NULL, dims, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_NAME,
                               ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_DTYPE, space_id, H5P_DEFAULT,
@@ -2854,9 +2856,9 @@ test_read_attribute_invalid_params(void)
     data_size *= ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_DTYPE_SIZE;
 
     if (NULL == (data = HDmalloc(data_size)))
-        TEST_ERROR
+        TEST_ERROR;
     if (NULL == (read_buf = HDcalloc(1, data_size)))
-        TEST_ERROR
+        TEST_ERROR;
 
     for (i = 0; i < data_size / ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_DTYPE_SIZE; i++)
         ((int *)data)[i] = (int)i;
@@ -2873,7 +2875,7 @@ test_read_attribute_invalid_params(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Aopen(group_id, ATTRIBUTE_READ_INVALID_PARAMS_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -2887,7 +2889,7 @@ test_read_attribute_invalid_params(void)
     {
         PART_BEGIN(H5Aread_invalid_attr_id)
         {
-            TESTING_2("H5Aread with an invalid attr_id")
+            TESTING_2("H5Aread with an invalid attr_id");
 
             H5E_BEGIN_TRY
             {
@@ -2907,7 +2909,7 @@ test_read_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aread_invalid_datatype)
         {
-            TESTING_2("H5Aread with an invalid datatype")
+            TESTING_2("H5Aread with an invalid datatype");
 
             H5E_BEGIN_TRY
             {
@@ -2927,7 +2929,7 @@ test_read_attribute_invalid_params(void)
 
         PART_BEGIN(H5Aread_invalid_read_buf)
         {
-            TESTING_2("H5Aread with an invalid read buffer")
+            TESTING_2("H5Aread with an invalid read buffer");
 
             H5E_BEGIN_TRY
             {
@@ -2947,7 +2949,7 @@ test_read_attribute_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (read_buf) {
         HDfree(read_buf);
@@ -2955,15 +2957,15 @@ test_read_attribute_invalid_params(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3003,7 +3005,7 @@ test_read_empty_attribute(void)
     hid_t   space_id        = H5I_INVALID_HID;
     void   *read_buf        = NULL;
 
-    TESTING("reading an empty attribute")
+    TESTING("reading an empty attribute");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -3034,7 +3036,7 @@ test_read_empty_attribute(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_READ_EMPTY_SPACE_RANK, NULL, dims, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_READ_EMPTY_ATTR_NAME, ATTRIBUTE_READ_EMPTY_DTYPE, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -3057,7 +3059,7 @@ test_read_empty_attribute(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Aopen(group_id, ATTRIBUTE_READ_EMPTY_ATTR_NAME, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3070,7 +3072,7 @@ test_read_empty_attribute(void)
     data_size *= ATTRIBUTE_READ_EMPTY_DTYPE_SIZE;
 
     if (NULL == (read_buf = HDcalloc(1, data_size)))
-        TEST_ERROR
+        TEST_ERROR;
 
     if (H5Aread(attr_id, ATTRIBUTE_READ_EMPTY_DTYPE, read_buf) < 0) {
         H5_FAILED();
@@ -3084,15 +3086,15 @@ test_read_empty_attribute(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3123,7 +3125,7 @@ test_close_attribute_invalid_id(void)
     herr_t err_ret = -1;
     hid_t  file_id = H5I_INVALID_HID;
 
-    TESTING("H5Aclose with an invalid attribute ID")
+    TESTING("H5Aclose with an invalid attribute ID");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
@@ -3151,7 +3153,7 @@ test_close_attribute_invalid_id(void)
     }
 
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3193,12 +3195,12 @@ test_get_attribute_space_and_type(void)
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_MORE)) {
         SKIPPED();
-        HDprintf(
-            "    API functions for basic file, group, or attribute aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, attribute, or attribute aren't supported with "
+                 "this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3221,10 +3223,10 @@ test_get_attribute_space_and_type(void)
 
     if ((attr_space_id =
              generate_random_dataspace(ATTRIBUTE_GET_SPACE_TYPE_TEST_SPACE_RANK, NULL, attr_dims, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_SPACE_TYPE_TEST_ATTR_NAME, attr_dtype, attr_space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -3253,7 +3255,7 @@ test_get_attribute_space_and_type(void)
         /* Retrieve the attribute's datatype and dataspace and verify them */
         PART_BEGIN(H5Aget_type)
         {
-            TESTING_2("H5Aget_type")
+            TESTING_2("H5Aget_type");
 
             if ((tmp_type_id = H5Aget_type(attr_id)) < 0) {
                 H5_FAILED();
@@ -3283,7 +3285,7 @@ test_get_attribute_space_and_type(void)
 
         PART_BEGIN(H5Aget_space)
         {
-            TESTING_2("H5Aget_space")
+            TESTING_2("H5Aget_space");
 
             if ((tmp_space_id = H5Aget_space(attr_id)) < 0) {
                 H5_FAILED();
@@ -3342,7 +3344,7 @@ test_get_attribute_space_and_type(void)
 
         PART_BEGIN(H5Aget_type_reopened)
         {
-            TESTING_2("H5Aget_type after re-opening an attribute")
+            TESTING_2("H5Aget_type after re-opening an attribute");
 
             if ((attr_id = H5Aopen(group_id, ATTRIBUTE_GET_SPACE_TYPE_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -3387,7 +3389,7 @@ test_get_attribute_space_and_type(void)
 
         PART_BEGIN(H5Aget_space_reopened)
         {
-            TESTING_2("H5Aget_space after re-opening an attribute")
+            TESTING_2("H5Aget_space after re-opening an attribute");
 
             if ((attr_id = H5Aopen(group_id, ATTRIBUTE_GET_SPACE_TYPE_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -3434,22 +3436,22 @@ test_get_attribute_space_and_type(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(tmp_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(tmp_type_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3501,7 +3503,7 @@ test_get_attribute_space_and_type_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3525,10 +3527,10 @@ test_get_attribute_space_and_type_invalid_params(void)
 
     if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_GET_SPACE_TYPE_INVALID_PARAMS_TEST_SPACE_RANK,
                                                    NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_SPACE_TYPE_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype,
                               attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -3557,7 +3559,7 @@ test_get_attribute_space_and_type_invalid_params(void)
         /* Retrieve the attribute's datatype and dataspace and verify them */
         PART_BEGIN(H5Aget_type_invalid_attr_id)
         {
-            TESTING_2("H5Aget_type with an invalid attr_id")
+            TESTING_2("H5Aget_type with an invalid attr_id");
 
             H5E_BEGIN_TRY
             {
@@ -3577,7 +3579,7 @@ test_get_attribute_space_and_type_invalid_params(void)
 
         PART_BEGIN(H5Aget_space_invalid_attr_id)
         {
-            TESTING_2("H5Aget_space with an invalid attr_id")
+            TESTING_2("H5Aget_space with an invalid attr_id");
 
             H5E_BEGIN_TRY
             {
@@ -3597,20 +3599,20 @@ test_get_attribute_space_and_type_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3634,9 +3636,9 @@ error:
 }
 
 /*
- * A test to check that a VOL connector stores and can
- * retrieve a valid copy of an ACPL used at attribute
- * creation time.
+ * A test to check that an ACPL used for attribute creation
+ * can be persisted and that a valid copy of that ACPL can
+ * be retrieved later with a call to H5Aget_create_plist.
  */
 static int
 test_attribute_property_lists(void)
@@ -3661,7 +3663,7 @@ test_attribute_property_lists(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3683,12 +3685,12 @@ test_attribute_property_lists(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_PROPERTY_LIST_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype1 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype2 = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((acpl_id1 = H5Pcreate(H5P_ATTRIBUTE_CREATE)) < 0) {
         H5_FAILED();
@@ -3717,7 +3719,7 @@ test_attribute_property_lists(void)
     }
 
     if (H5Pclose(acpl_id1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Verify the attributes have been created */
     if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_PROPERTY_LIST_TEST_ATTRIBUTE_NAME1)) < 0) {
@@ -3750,7 +3752,7 @@ test_attribute_property_lists(void)
     {
         PART_BEGIN(H5Aget_create_plist)
         {
-            TESTING_2("H5Aget_create_plist")
+            TESTING_2("H5Aget_create_plist");
 
             /* Try to retrieve copies of the two property lists, one which has the property set and one which
              * does not */
@@ -3837,7 +3839,7 @@ test_attribute_property_lists(void)
 
         PART_BEGIN(H5Aget_create_plist_reopened)
         {
-            TESTING_2("H5Aget_create_plist after re-opening an attribute")
+            TESTING_2("H5Aget_create_plist after re-opening an attribute");
 
             if ((attr_id1 = H5Aopen(group_id, ATTRIBUTE_PROPERTY_LIST_TEST_ATTRIBUTE_NAME1, H5P_DEFAULT)) <
                 0) {
@@ -3872,28 +3874,28 @@ test_attribute_property_lists(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Pclose(acpl_id1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(acpl_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id1) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -3941,15 +3943,14 @@ test_get_attribute_name(void)
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_MORE) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_MORE)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, attribute, or creation order aren't supported "
+        HDprintf("    API functions for basic file, group, or attribute aren't supported "
                  "with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -3969,10 +3970,12 @@ test_get_attribute_name(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id,
@@ -3983,10 +3986,10 @@ test_get_attribute_name(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_NAME_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Create several attributes */
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, attr_dtype, space_id,
@@ -3997,7 +4000,7 @@ test_get_attribute_name(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME2, attr_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -4007,7 +4010,7 @@ test_get_attribute_name(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME3, attr_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -4017,7 +4020,7 @@ test_get_attribute_name(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Verify the attributes have been created */
     if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME)) < 0) {
@@ -4072,7 +4075,7 @@ test_get_attribute_name(void)
     {
         PART_BEGIN(H5Aget_name)
         {
-            TESTING_2("H5Aget_name")
+            TESTING_2("H5Aget_name");
 
             if ((attr_id = H5Aopen(group_id, ATTRIBUTE_GET_NAME_TEST_ATTRIBUTE_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -4114,7 +4117,13 @@ test_get_attribute_name(void)
 
         PART_BEGIN(H5Aget_name_by_idx_crt_order_increasing)
         {
-            TESTING_2("H5Aget_name_by_idx by creation order in increasing order")
+            TESTING_2("H5Aget_name_by_idx by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aget_name_by_idx_crt_order_increasing);
+            }
 
             *name_buf = '\0';
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
@@ -4176,7 +4185,13 @@ test_get_attribute_name(void)
 
         PART_BEGIN(H5Aget_name_by_idx_crt_order_decreasing)
         {
-            TESTING_2("H5Aget_name_by_idx by creation order in decreasing order")
+            TESTING_2("H5Aget_name_by_idx by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aget_name_by_idx_crt_order_decreasing);
+            }
 
             *name_buf = '\0';
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_CRT_ORDER,
@@ -4238,7 +4253,7 @@ test_get_attribute_name(void)
 
         PART_BEGIN(H5Aget_name_by_idx_name_order_increasing)
         {
-            TESTING_2("H5Aget_name_by_idx by alphabetical order in increasing order")
+            TESTING_2("H5Aget_name_by_idx by alphabetical order in increasing order");
 
             *name_buf = '\0';
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
@@ -4300,13 +4315,13 @@ test_get_attribute_name(void)
 
         PART_BEGIN(H5Aget_name_by_idx_name_order_decreasing)
         {
-            TESTING_2("H5Aget_name_by_idx by alphabetical order in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aget_name_by_idx by alphabetical order in decreasing order");
+
             *name_buf = '\0';
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
                                    H5_ITER_DEC, 2, name_buf, (size_t)name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index "
+                HDprintf("    couldn't retrieve name of attribute at index %d using H5Aget_name_by_index "
                          "by alphabetical order in decreasing order\n",
                          2);
                 PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
@@ -4324,7 +4339,7 @@ test_get_attribute_name(void)
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
                                    H5_ITER_DEC, 1, name_buf, (size_t)name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index "
+                HDprintf("    couldn't retrieve name of attribute at index %d using H5Aget_name_by_index "
                          "by alphabetical order in decreasing order\n",
                          1);
                 PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
@@ -4342,7 +4357,7 @@ test_get_attribute_name(void)
             if (H5Aget_name_by_idx(container_group, ATTRIBUTE_GET_NAME_TEST_GROUP_NAME, H5_INDEX_NAME,
                                    H5_ITER_DEC, 0, name_buf, (size_t)name_buf_size, H5P_DEFAULT) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't retrieve name of attribute at index %lld using H5Aget_name_by_index "
+                HDprintf("    couldn't retrieve name of attribute at index %d using H5Aget_name_by_index "
                          "by alphabetical order in decreasing order\n",
                          0);
                 PART_ERROR(H5Aget_name_by_idx_name_order_decreasing);
@@ -4357,16 +4372,12 @@ test_get_attribute_name(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aget_name_by_idx_name_order_decreasing);
-#endif
         }
         PART_END(H5Aget_name_by_idx_name_order_decreasing);
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (name_buf) {
         HDfree(name_buf);
@@ -4374,17 +4385,17 @@ test_get_attribute_name(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(gcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -4437,7 +4448,7 @@ test_get_attribute_name_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4461,10 +4472,10 @@ test_get_attribute_name_invalid_params(void)
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_NAME_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL,
                                               TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_NAME_INVALID_PARAMS_TEST_ATTRIBUTE_NAME, attr_dtype,
                               space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -4497,7 +4508,7 @@ test_get_attribute_name_invalid_params(void)
     }
 
     if (NULL == (name_buf = (char *)HDmalloc((size_t)name_buf_size + 1)))
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -4505,7 +4516,7 @@ test_get_attribute_name_invalid_params(void)
     {
         PART_BEGIN(H5Aget_name_invalid_attr_id)
         {
-            TESTING_2("H5Aget_name with an invalid attr_id")
+            TESTING_2("H5Aget_name with an invalid attr_id");
 
             H5E_BEGIN_TRY
             {
@@ -4525,7 +4536,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_invalid_name_buf)
         {
-            TESTING_2("H5Aget_name with an invalid name buffer")
+            TESTING_2("H5Aget_name with an invalid name buffer");
 
             H5E_BEGIN_TRY
             {
@@ -4546,7 +4557,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_by_idx_invalid_loc_id)
         {
-            TESTING_2("H5Aget_name_by_idx with an invalid loc_id")
+            TESTING_2("H5Aget_name_by_idx with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -4568,7 +4579,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_by_idx_invalid_obj_name)
         {
-            TESTING_2("H5Aget_name_by_idx with an invalid object name")
+            TESTING_2("H5Aget_name_by_idx with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -4603,7 +4614,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_by_idx_invalid_index_type)
         {
-            TESTING_2("H5Aget_name_by_idx with an invalid index type")
+            TESTING_2("H5Aget_name_by_idx with an invalid index type");
 
             H5E_BEGIN_TRY
             {
@@ -4641,7 +4652,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_by_idx_invalid_iter_order)
         {
-            TESTING_2("H5Aget_name_by_idx with an invalid iteration order")
+            TESTING_2("H5Aget_name_by_idx with an invalid iteration order");
 
             H5E_BEGIN_TRY
             {
@@ -4679,7 +4690,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_by_idx_invalid_name_buf)
         {
-            TESTING_2("H5Aget_name_by_idx with an invalid name buffer")
+            TESTING_2("H5Aget_name_by_idx with an invalid name buffer");
 
             H5E_BEGIN_TRY
             {
@@ -4703,7 +4714,7 @@ test_get_attribute_name_invalid_params(void)
 
         PART_BEGIN(H5Aget_name_by_idx_invalid_lapl)
         {
-            TESTING_2("H5Aget_name_by_idx with an invalid LAPL")
+            TESTING_2("H5Aget_name_by_idx with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -4725,7 +4736,7 @@ test_get_attribute_name_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (name_buf) {
         HDfree(name_buf);
@@ -4733,17 +4744,17 @@ test_get_attribute_name_invalid_params(void)
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -4799,15 +4810,14 @@ test_get_attribute_info(void)
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_MORE) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_MORE)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, attribute, or creation order aren't supported "
+        HDprintf("    API functions for basic file, group, or attribute aren't supported "
                  "with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -4827,10 +4837,12 @@ test_get_attribute_info(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_GET_INFO_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id,
@@ -4841,10 +4853,10 @@ test_get_attribute_info(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_INFO_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Create several attributes */
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_INFO_TEST_ATTR_NAME, attr_dtype, space_id, H5P_DEFAULT,
@@ -4855,7 +4867,7 @@ test_get_attribute_info(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_INFO_TEST_ATTR_NAME2, attr_dtype, space_id, H5P_DEFAULT,
                               H5P_DEFAULT)) < 0) {
@@ -4865,7 +4877,7 @@ test_get_attribute_info(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_INFO_TEST_ATTR_NAME3, attr_dtype, space_id, H5P_DEFAULT,
                               H5P_DEFAULT)) < 0) {
@@ -4875,7 +4887,7 @@ test_get_attribute_info(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Verify the attributes have been created */
     if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_GET_INFO_TEST_ATTR_NAME)) < 0) {
@@ -4920,7 +4932,7 @@ test_get_attribute_info(void)
     {
         PART_BEGIN(H5Aget_info)
         {
-            TESTING_2("H5Aget_info")
+            TESTING_2("H5Aget_info");
 
             if ((attr_id = H5Aopen(group_id, ATTRIBUTE_GET_INFO_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
                 H5_FAILED();
@@ -4969,7 +4981,7 @@ test_get_attribute_info(void)
 
         PART_BEGIN(H5Aget_info_by_name)
         {
-            TESTING_2("H5Aget_info_by_name")
+            TESTING_2("H5Aget_info_by_name");
 
             HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_name(group_id, ".", ATTRIBUTE_GET_INFO_TEST_ATTR_NAME, &attr_info,
@@ -5048,7 +5060,13 @@ test_get_attribute_info(void)
 
         PART_BEGIN(H5Aget_info_by_idx_crt_order_increasing)
         {
-            TESTING_2("H5Aget_info_by_idx by creation order in increasing order")
+            TESTING_2("H5Aget_info_by_idx by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aget_info_by_idx_crt_order_increasing);
+            }
 
             HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, 0, &attr_info,
@@ -5131,7 +5149,13 @@ test_get_attribute_info(void)
 
         PART_BEGIN(H5Aget_info_by_idx_crt_order_decreasing)
         {
-            TESTING_2("H5Aget_info_by_idx by creation order in decreasing order")
+            TESTING_2("H5Aget_info_by_idx by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aget_info_by_idx_crt_order_decreasing);
+            }
 
             HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_DEC, 2, &attr_info,
@@ -5214,7 +5238,7 @@ test_get_attribute_info(void)
 
         PART_BEGIN(H5Aget_info_by_idx_name_order_increasing)
         {
-            TESTING_2("H5Aget_info_by_idx by alphabetical order in increasing order")
+            TESTING_2("H5Aget_info_by_idx by alphabetical order in increasing order");
 
             HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &attr_info, H5P_DEFAULT) <
@@ -5297,13 +5321,13 @@ test_get_attribute_info(void)
 
         PART_BEGIN(H5Aget_info_by_idx_name_order_decreasing)
         {
-            TESTING_2("H5Aget_info_by_idx by alphabetical order in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aget_info_by_idx by alphabetical order in decreasing order");
+
             HDmemset(&attr_info, 0, sizeof(attr_info));
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 2, &attr_info, H5P_DEFAULT) <
                 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by "
+                HDprintf("    couldn't get info for attribute at index %d using H5Aget_info_by_idx by "
                          "alphabetical order in decreasing order\n",
                          2);
                 PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
@@ -5328,7 +5352,7 @@ test_get_attribute_info(void)
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 1, &attr_info, H5P_DEFAULT) <
                 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by "
+                HDprintf("    couldn't get info for attribute at index %d using H5Aget_info_by_idx by "
                          "alphabetical order in decreasing order\n",
                          1);
                 PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
@@ -5353,7 +5377,7 @@ test_get_attribute_info(void)
             if (H5Aget_info_by_idx(group_id, ".", H5_INDEX_NAME, H5_ITER_DEC, 0, &attr_info, H5P_DEFAULT) <
                 0) {
                 H5_FAILED();
-                HDprintf("    couldn't get info for attribute at index %lld using H5Aget_info_by_idx by "
+                HDprintf("    couldn't get info for attribute at index %d using H5Aget_info_by_idx by "
                          "alphabetical order in decreasing order\n",
                          0);
                 PART_ERROR(H5Aget_info_by_idx_name_order_decreasing);
@@ -5375,29 +5399,25 @@ test_get_attribute_info(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aget_info_by_idx_name_order_decreasing);
-#endif
         }
         PART_END(H5Aget_info_by_idx_name_order_decreasing);
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(gcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -5447,7 +5467,7 @@ test_get_attribute_info_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5471,10 +5491,10 @@ test_get_attribute_info_invalid_params(void)
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_INFO_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL,
                                               TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_INFO_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype,
                               space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -5502,7 +5522,7 @@ test_get_attribute_info_invalid_params(void)
     {
         PART_BEGIN(H5Aget_info_invalid_attr_id)
         {
-            TESTING_2("H5Aget_info with an invalid attr_id")
+            TESTING_2("H5Aget_info with an invalid attr_id");
 
             H5E_BEGIN_TRY
             {
@@ -5522,7 +5542,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_invalid_attr_info_pointer)
         {
-            TESTING_2("H5Aget_info with an invalid attribute info pointer")
+            TESTING_2("H5Aget_info with an invalid attribute info pointer");
 
             H5E_BEGIN_TRY
             {
@@ -5542,7 +5562,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Aget_info_by_name with an invalid loc_id")
+            TESTING_2("H5Aget_info_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -5564,7 +5584,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Aget_info_by_name with an invalid object name")
+            TESTING_2("H5Aget_info_by_name with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -5600,7 +5620,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_name_invalid_attr_name)
         {
-            TESTING_2("H5Aget_info_by_name with an invalid attribute name")
+            TESTING_2("H5Aget_info_by_name with an invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -5634,7 +5654,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_name_invalid_attr_info_pointer)
         {
-            TESTING_2("H5Aget_info_by_name with an invalid attribute info pointer")
+            TESTING_2("H5Aget_info_by_name with an invalid attribute info pointer");
 
             H5E_BEGIN_TRY
             {
@@ -5656,7 +5676,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_name_invalid_lapl)
         {
-            TESTING_2("H5Aget_info_by_name with an invalid LAPL")
+            TESTING_2("H5Aget_info_by_name with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -5677,7 +5697,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_idx_invalid_loc_id)
         {
-            TESTING_2("H5Aget_info_by_idx with an invalid loc_id")
+            TESTING_2("H5Aget_info_by_idx with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -5698,7 +5718,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_idx_invalid_obj_name)
         {
-            TESTING_2("H5Aget_info_by_idx with an invalid object name")
+            TESTING_2("H5Aget_info_by_idx with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -5733,7 +5753,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_idx_invalid_index_type)
         {
-            TESTING_2("H5Aget_info_by_idx with an invalid index type")
+            TESTING_2("H5Aget_info_by_idx with an invalid index type");
 
             H5E_BEGIN_TRY
             {
@@ -5769,7 +5789,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_idx_invalid_iter_order)
         {
-            TESTING_2("H5Aget_info_by_idx with an invalid iteration order")
+            TESTING_2("H5Aget_info_by_idx with an invalid iteration order");
 
             H5E_BEGIN_TRY
             {
@@ -5805,7 +5825,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_idx_invalid_attr_info_pointer)
         {
-            TESTING_2("H5Aget_info_by_idx with an invalid attribute info pointer")
+            TESTING_2("H5Aget_info_by_idx with an invalid attribute info pointer");
 
             H5E_BEGIN_TRY
             {
@@ -5826,7 +5846,7 @@ test_get_attribute_info_invalid_params(void)
 
         PART_BEGIN(H5Aget_info_by_idx_invalid_lapl)
         {
-            TESTING_2("H5Aget_info_by_idx with an invalid LAPL")
+            TESTING_2("H5Aget_info_by_idx with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -5847,20 +5867,20 @@ test_get_attribute_info_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -5907,7 +5927,7 @@ test_rename_attribute(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -5929,10 +5949,10 @@ test_rename_attribute(void)
     }
 
     if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_RENAME_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_RENAME_TEST_ATTR_NAME, attr_dtype, attr_space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -5979,7 +5999,7 @@ test_rename_attribute(void)
     {
         PART_BEGIN(H5Arename)
         {
-            TESTING_2("H5Arename")
+            TESTING_2("H5Arename");
 
             if (H5Arename(group_id, ATTRIBUTE_RENAME_TEST_ATTR_NAME, ATTRIBUTE_RENAME_TEST_NEW_NAME) < 0) {
                 H5_FAILED();
@@ -6019,7 +6039,7 @@ test_rename_attribute(void)
 
         PART_BEGIN(H5Arename_by_name)
         {
-            TESTING_2("H5Arename_by_name")
+            TESTING_2("H5Arename_by_name");
 
             if (H5Arename_by_name(container_group, ATTRIBUTE_RENAME_TEST_GROUP_NAME,
                                   ATTRIBUTE_RENAME_TEST_ATTR_NAME2, ATTRIBUTE_RENAME_TEST_NEW_NAME2,
@@ -6061,22 +6081,22 @@ test_rename_attribute(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -6125,7 +6145,7 @@ test_rename_attribute_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -6149,10 +6169,10 @@ test_rename_attribute_invalid_params(void)
 
     if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_SPACE_RANK, NULL,
                                                    NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_RENAME_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype,
                               attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -6199,7 +6219,7 @@ test_rename_attribute_invalid_params(void)
     {
         PART_BEGIN(H5Arename_invalid_loc_id)
         {
-            TESTING_2("H5Arename with an invalid loc_id")
+            TESTING_2("H5Arename with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -6220,7 +6240,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_invalid_old_attr_name)
         {
-            TESTING_2("H5Arename with an invalid old attribute name")
+            TESTING_2("H5Arename with an invalid old attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -6252,7 +6272,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_invalid_new_attr_name)
         {
-            TESTING_2("H5Arename with an invalid new attribute name")
+            TESTING_2("H5Arename with an invalid new attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -6284,7 +6304,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Arename_by_name with an invalid loc_id")
+            TESTING_2("H5Arename_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -6306,7 +6326,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Arename_by_name with an invalid object name")
+            TESTING_2("H5Arename_by_name with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -6341,7 +6361,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_by_name_invalid_old_attr_name)
         {
-            TESTING_2("H5Arename_by_name with an invalid old attribute name")
+            TESTING_2("H5Arename_by_name with an invalid old attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -6376,7 +6396,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_by_name_invalid_new_attr_name)
         {
-            TESTING_2("H5Arename_by_name with an invalid new attribute name")
+            TESTING_2("H5Arename_by_name with an invalid new attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -6411,7 +6431,7 @@ test_rename_attribute_invalid_params(void)
 
         PART_BEGIN(H5Arename_by_name_invalid_lapl)
         {
-            TESTING_2("H5Arename_by_name with an invalid LAPL")
+            TESTING_2("H5Arename_by_name with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -6432,22 +6452,22 @@ test_rename_attribute_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -6493,15 +6513,14 @@ test_attribute_iterate_group(void)
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ITERATE) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ITERATE)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, attribute, iterate, or creation order aren't "
+        HDprintf("    API functions for basic file, group, attribute, or iterate aren't "
                  "supported with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -6521,10 +6540,12 @@ test_attribute_iterate_group(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_ITERATE_TEST_GRP_SUBGROUP_NAME, H5P_DEFAULT,
@@ -6535,10 +6556,10 @@ test_attribute_iterate_group(void)
     }
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_space_id =
              generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Create some attributes with a reverse-ordering naming scheme to test creation order */
     for (i = 0; i < ATTRIBUTE_ITERATE_TEST_NUM_ATTRS; i++) {
@@ -6588,7 +6609,7 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate2_name_increasing)
         {
-            TESTING_2("H5Aiterate by attribute name in increasing order")
+            TESTING_2("H5Aiterate by attribute name in increasing order");
 
             link_counter = 0;
 
@@ -6614,8 +6635,7 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate2_name_decreasing)
         {
-            TESTING_2("H5Aiterate by attribute name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate by attribute name in decreasing order");
             /* Reset the counter to the appropriate value for the next test */
             link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -6635,16 +6655,18 @@ test_attribute_iterate_group(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate2_name_decreasing);
-#endif
         }
         PART_END(H5Aiterate2_name_decreasing);
 
         PART_BEGIN(H5Aiterate2_creation_increasing)
         {
-            TESTING_2("H5Aiterate by creation order in increasing order")
+            TESTING_2("H5Aiterate by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate2_creation_increasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -6670,7 +6692,13 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate2_creation_decreasing)
         {
-            TESTING_2("H5Aiterate by creation order in decreasing order")
+            TESTING_2("H5Aiterate by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate2_creation_decreasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -6696,7 +6724,7 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_increasing)
         {
-            TESTING_2("H5Aiterate_by_name by attribute name in increasing order")
+            TESTING_2("H5Aiterate_by_name by attribute name in increasing order");
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 0;
@@ -6723,8 +6751,8 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing)
         {
-            TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate_by_name by attribute name in decreasing order");
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -6745,16 +6773,18 @@ test_attribute_iterate_group(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_name_decreasing);
-#endif
         }
         PART_END(H5Aiterate_by_name_name_decreasing);
 
         PART_BEGIN(H5Aiterate_by_name_creation_increasing)
         {
-            TESTING_2("H5Aiterate_by_name by creation order in increasing order")
+            TESTING_2("H5Aiterate_by_name by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate_by_name_creation_increasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -6782,7 +6812,13 @@ test_attribute_iterate_group(void)
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing)
         {
-            TESTING_2("H5Aiterate_by_name by creation order in decreasing order")
+            TESTING_2("H5Aiterate_by_name by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate_by_name_creation_decreasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -6810,20 +6846,20 @@ test_attribute_iterate_group(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(gcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -6873,15 +6909,14 @@ test_attribute_iterate_dataset(void)
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ITERATE) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, dataset, attribute, iterate, or creation order "
+        HDprintf("    API functions for basic file, group, dataset, attribute, or iterate "
                  "aren't supported with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -6908,23 +6943,25 @@ test_attribute_iterate_dataset(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(dcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(dcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_space_id =
              generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_DSET_SPACE_RANK, NULL, NULL, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_space_id =
              generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_ITERATE_TEST_DSET_NAME, dset_dtype, dset_space_id,
                               H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0) {
@@ -6981,7 +7018,7 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate2_name_increasing)
         {
-            TESTING_2("H5Aiterate by attribute name in increasing order")
+            TESTING_2("H5Aiterate by attribute name in increasing order");
 
             link_counter = 0;
 
@@ -7007,8 +7044,7 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate2_name_decreasing)
         {
-            TESTING_2("H5Aiterate by attribute name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate by attribute name in decreasing order");
             /* Reset the counter to the appropriate value for the next test */
             link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -7028,16 +7064,18 @@ test_attribute_iterate_dataset(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate2_name_decreasing);
-#endif
         }
         PART_END(H5Aiterate2_name_decreasing);
 
         PART_BEGIN(H5Aiterate2_creation_increasing)
         {
-            TESTING_2("H5Aiterate by creation order in increasing order")
+            TESTING_2("H5Aiterate by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate2_creation_increasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7063,7 +7101,13 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate2_creation_decreasing)
         {
-            TESTING_2("H5Aiterate by creation order in decreasing order")
+            TESTING_2("H5Aiterate by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate2_creation_decreasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7089,7 +7133,7 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_increasing)
         {
-            TESTING_2("H5Aiterate_by_name by attribute name in increasing order")
+            TESTING_2("H5Aiterate_by_name by attribute name in increasing order");
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 0;
@@ -7118,8 +7162,8 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing)
         {
-            TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate_by_name by attribute name in decreasing order");
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -7142,16 +7186,18 @@ test_attribute_iterate_dataset(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_name_decreasing);
-#endif
         }
         PART_END(H5Aiterate_by_name_name_decreasing);
 
         PART_BEGIN(H5Aiterate_by_name_creation_increasing)
         {
-            TESTING_2("H5Aiterate_by_name by creation order in increasing order")
+            TESTING_2("H5Aiterate_by_name by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate_by_name_creation_increasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7180,7 +7226,13 @@ test_attribute_iterate_dataset(void)
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing)
         {
-            TESTING_2("H5Aiterate_by_name by creation order in decreasing order")
+            TESTING_2("H5Aiterate_by_name by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate_by_name_creation_decreasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7209,26 +7261,26 @@ test_attribute_iterate_dataset(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Pclose(dcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(dset_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -7279,15 +7331,14 @@ test_attribute_iterate_datatype(void)
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ITERATE) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_STORED_DATATYPES)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, stored datatype, attribute, iterate, or creation "
-                 "order aren't supported with this connector\n");
+        HDprintf("    API functions for basic file, group, stored datatype, attribute, or iterate "
+                 "aren't supported with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -7314,20 +7365,22 @@ test_attribute_iterate_datatype(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(tcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(tcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((type_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_space_id =
              generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_ATTR_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if (H5Tcommit2(group_id, ATTRIBUTE_ITERATE_TEST_DTYPE_NAME, type_id, H5P_DEFAULT, tcpl_id, H5P_DEFAULT) <
         0) {
@@ -7384,7 +7437,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate2_name_increasing)
         {
-            TESTING_2("H5Aiterate by attribute name in increasing order")
+            TESTING_2("H5Aiterate by attribute name in increasing order");
 
             link_counter = 0;
 
@@ -7410,8 +7463,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate2_name_decreasing)
         {
-            TESTING_2("H5Aiterate by attribute name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate by attribute name in decreasing order");
             /* Reset the counter to the appropriate value for the next test */
             link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -7431,16 +7483,18 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate2_name_decreasing);
-#endif
         }
         PART_END(H5Aiterate2_name_decreasing);
 
         PART_BEGIN(H5Aiterate2_creation_increasing)
         {
-            TESTING_2("H5Aiterate by creation order in increasing order")
+            TESTING_2("H5Aiterate by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate2_creation_increasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7466,7 +7520,13 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate2_creation_decreasing)
         {
-            TESTING_2("H5Aiterate by creation order in decreasing order")
+            TESTING_2("H5Aiterate by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate2_creation_decreasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7492,7 +7552,7 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_increasing)
         {
-            TESTING_2("H5Aiterate_by_name by attribute name in increasing order")
+            TESTING_2("H5Aiterate_by_name by attribute name in increasing order");
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 0;
@@ -7521,8 +7581,8 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate_by_name_name_decreasing)
         {
-            TESTING_2("H5Aiterate_by_name by attribute name in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate_by_name by attribute name in decreasing order");
+
             /* Reset the counter to the appropriate value for the next test */
             link_counter = ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
 
@@ -7545,16 +7605,18 @@ test_attribute_iterate_datatype(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_name_decreasing);
-#endif
         }
         PART_END(H5Aiterate_by_name_name_decreasing);
 
         PART_BEGIN(H5Aiterate_by_name_creation_increasing)
         {
-            TESTING_2("H5Aiterate_by_name by creation order in increasing order")
+            TESTING_2("H5Aiterate_by_name by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate_by_name_creation_increasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 2 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7584,7 +7646,13 @@ test_attribute_iterate_datatype(void)
 
         PART_BEGIN(H5Aiterate_by_name_creation_decreasing)
         {
-            TESTING_2("H5Aiterate_by_name by creation order in decreasing order")
+            TESTING_2("H5Aiterate_by_name by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Aiterate_by_name_creation_decreasing);
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             link_counter = 3 * ATTRIBUTE_ITERATE_TEST_NUM_ATTRS;
@@ -7614,22 +7682,22 @@ test_attribute_iterate_datatype(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Pclose(tcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(type_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -7662,7 +7730,7 @@ error:
 static int
 test_attribute_iterate_index_saving(void)
 {
-    TESTING("attribute iteration index saving capability")
+    TESTING("attribute iteration index saving capability");
 
     SKIPPED();
 
@@ -7697,7 +7765,7 @@ test_attribute_iterate_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -7719,11 +7787,11 @@ test_attribute_iterate_invalid_params(void)
     }
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_SPACE_RANK,
                                                    NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_ITERATE_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype,
                               attr_space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -7808,7 +7876,7 @@ test_attribute_iterate_invalid_params(void)
     {
         PART_BEGIN(H5Aiterate_invalid_loc_id)
         {
-            TESTING_2("H5Aiterate with an invalid loc_id")
+            TESTING_2("H5Aiterate with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -7829,7 +7897,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_invalid_index_type)
         {
-            TESTING_2("H5Aiterate with an invalid index type")
+            TESTING_2("H5Aiterate with an invalid index type");
 
             H5E_BEGIN_TRY
             {
@@ -7864,7 +7932,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_invalid_index_order)
         {
-            TESTING_2("H5Aiterate with an invalid index ordering")
+            TESTING_2("H5Aiterate with an invalid index ordering");
 
             H5E_BEGIN_TRY
             {
@@ -7899,7 +7967,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Aiterate_by_name with an invalid loc_id")
+            TESTING_2("H5Aiterate_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -7920,7 +7988,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Aiterate_by_name with an invalid object name")
+            TESTING_2("H5Aiterate_by_name with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -7955,7 +8023,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_by_name_invalid_index_type)
         {
-            TESTING_2("H5Aiterate_by_name with an invalid index type")
+            TESTING_2("H5Aiterate_by_name with an invalid index type");
 
             H5E_BEGIN_TRY
             {
@@ -7991,7 +8059,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_by_name_invalid_index_order)
         {
-            TESTING_2("H5Aiterate_by_name with an invalid index ordering")
+            TESTING_2("H5Aiterate_by_name with an invalid index ordering");
 
             H5E_BEGIN_TRY
             {
@@ -8027,7 +8095,7 @@ test_attribute_iterate_invalid_params(void)
 
         PART_BEGIN(H5Aiterate_by_name_invalid_lapl)
         {
-            TESTING_2("H5Aiterate_by_name with an invalid LAPL")
+            TESTING_2("H5Aiterate_by_name with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -8048,26 +8116,26 @@ test_attribute_iterate_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(attr_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id3) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id4) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -8105,19 +8173,19 @@ test_attribute_iterate_0_attributes(void)
     hid_t dset_dtype    = H5I_INVALID_HID;
     hid_t dset_space_id = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("attribute iteration on object with 0 attributes")
+    TESTING_MULTIPART("attribute iteration on object with 0 attributes");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ITERATE) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, dataset, attribute, or iterate aren't supported "
-                 "with this connector\n");
+        HDprintf("    API functions for basic file, group, dataset, attribute, or iterate "
+                 "aren't supported with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -8139,11 +8207,11 @@ test_attribute_iterate_0_attributes(void)
     }
 
     if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_space_id = generate_random_dataspace(ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_SPACE_RANK, NULL,
                                                    NULL, FALSE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((dset_id = H5Dcreate2(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, dset_dtype,
                               dset_space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -8158,7 +8226,7 @@ test_attribute_iterate_0_attributes(void)
     {
         PART_BEGIN(H5Aiterate_0_attributes_native)
         {
-            TESTING_2("H5Aiterate (native order)")
+            TESTING_2("H5Aiterate (native order)");
 
             if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, attr_iter_callback2, NULL) < 0) {
                 H5_FAILED();
@@ -8172,7 +8240,7 @@ test_attribute_iterate_0_attributes(void)
 
         PART_BEGIN(H5Aiterate_0_attributes_inc)
         {
-            TESTING_2("H5Aiterate (increasing order)")
+            TESTING_2("H5Aiterate (increasing order)");
 
             if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_INC, NULL, attr_iter_callback2, NULL) < 0) {
                 H5_FAILED();
@@ -8186,8 +8254,8 @@ test_attribute_iterate_0_attributes(void)
 
         PART_BEGIN(H5Aiterate_0_attributes_dec)
         {
-            TESTING_2("H5Aiterate (decreasing order)")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate (decreasing order)");
+
             if (H5Aiterate2(dset_id, H5_INDEX_NAME, H5_ITER_DEC, NULL, attr_iter_callback2, NULL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Aiterate2 on object with 0 attributes failed\n");
@@ -8195,16 +8263,12 @@ test_attribute_iterate_0_attributes(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_0_attributes_dec);
-#endif
         }
         PART_END(H5Aiterate_0_attributes_dec);
 
         PART_BEGIN(H5Aiterate_by_name_0_attributes_native)
         {
-            TESTING_2("H5Aiterate_by_name (native order)")
+            TESTING_2("H5Aiterate_by_name (native order)");
 
             if (H5Aiterate_by_name(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, H5_INDEX_NAME,
                                    H5_ITER_NATIVE, NULL, attr_iter_callback2, NULL, H5P_DEFAULT) < 0) {
@@ -8219,7 +8283,7 @@ test_attribute_iterate_0_attributes(void)
 
         PART_BEGIN(H5Aiterate_by_name_0_attributes_inc)
         {
-            TESTING_2("H5Aiterate_by_name (increasing order)")
+            TESTING_2("H5Aiterate_by_name (increasing order)");
 
             if (H5Aiterate_by_name(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, H5_INDEX_NAME,
                                    H5_ITER_INC, NULL, attr_iter_callback2, NULL, H5P_DEFAULT) < 0) {
@@ -8234,8 +8298,7 @@ test_attribute_iterate_0_attributes(void)
 
         PART_BEGIN(H5Aiterate_by_name_0_attributes_dec)
         {
-            TESTING_2("H5Aiterate_by_name (decreasing order)")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Aiterate_by_name (decreasing order)");
             if (H5Aiterate_by_name(group_id, ATTRIBUTE_ITERATE_TEST_0_ATTRIBUTES_DSET_NAME, H5_INDEX_NAME,
                                    H5_ITER_DEC, NULL, attr_iter_callback2, NULL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
@@ -8244,29 +8307,25 @@ test_attribute_iterate_0_attributes(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Aiterate_by_name_0_attributes_dec);
-#endif
         }
         PART_END(H5Aiterate_by_name_0_attributes_dec);
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(dset_space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(dset_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -8307,14 +8366,14 @@ test_delete_attribute(void)
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
-        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
         SKIPPED();
-        HDprintf("    API functions for basic file, group, attribute, or creation order aren't supported "
+        HDprintf("    API functions for basic file, group, or attribute aren't supported "
                  "with this connector\n");
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -8334,10 +8393,12 @@ test_delete_attribute(void)
         goto error;
     }
 
-    if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
-        H5_FAILED();
-        HDprintf("    couldn't set attribute creation order tracking\n");
-        goto error;
+    if (vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER) {
+        if (H5Pset_attr_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED) < 0) {
+            H5_FAILED();
+            HDprintf("    couldn't set attribute creation order tracking\n");
+            goto error;
+        }
     }
 
     if ((group_id = H5Gcreate2(container_group, ATTRIBUTE_DELETION_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id,
@@ -8348,10 +8409,10 @@ test_delete_attribute(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_DELETION_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -8359,7 +8420,7 @@ test_delete_attribute(void)
     {
         PART_BEGIN(H5Adelete)
         {
-            TESTING_2("H5Adelete")
+            TESTING_2("H5Adelete");
 
             /* Test H5Adelete */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype, space_id,
@@ -8424,7 +8485,7 @@ test_delete_attribute(void)
 
         PART_BEGIN(H5Adelete_by_name)
         {
-            TESTING_2("H5Adelete_by_name")
+            TESTING_2("H5Adelete_by_name");
 
             /* Test H5Adelete_by_name */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype, space_id,
@@ -8490,7 +8551,13 @@ test_delete_attribute(void)
 
         PART_BEGIN(H5Adelete_by_idx_crt_order_increasing)
         {
-            TESTING_2("H5Adelete_by_idx by creation order in increasing order")
+            TESTING_2("H5Adelete_by_idx by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Adelete_by_idx_crt_order_increasing);
+            }
 
             /* Create several attributes */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype, space_id,
@@ -8735,7 +8802,13 @@ test_delete_attribute(void)
 
         PART_BEGIN(H5Adelete_by_idx_crt_order_decreasing)
         {
-            TESTING_2("H5Adelete_by_idx by creation order in decreasing order")
+            TESTING_2("H5Adelete_by_idx by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
+                SKIPPED();
+                HDprintf("    creation order tracking isn't supported with this VOL connector\n");
+                PART_EMPTY(H5Adelete_by_idx_crt_order_decreasing);
+            }
 
             /* Create several attributes */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype, space_id,
@@ -8980,7 +9053,7 @@ test_delete_attribute(void)
 
         PART_BEGIN(H5Adelete_by_idx_name_order_increasing)
         {
-            TESTING_2("H5Adelete_by_idx by alphabetical order in increasing order")
+            TESTING_2("H5Adelete_by_idx by alphabetical order in increasing order");
 
             /* Create several attributes */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype, space_id,
@@ -9225,8 +9298,8 @@ test_delete_attribute(void)
 
         PART_BEGIN(H5Adelete_by_idx_name_order_decreasing)
         {
-            TESTING_2("H5Adelete_by_idx by alphabetical order in decreasing order")
-#ifndef NO_DECREASING_ALPHA_ITER_ORDER
+            TESTING_2("H5Adelete_by_idx by alphabetical order in decreasing order");
+
             /* Create several attributes */
             if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_TEST_ATTR_NAME, attr_dtype, space_id,
                                       H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -9458,10 +9531,6 @@ test_delete_attribute(void)
             }
 
             PASSED();
-#else
-            SKIPPED();
-            PART_EMPTY(H5Adelete_by_idx_name_order_decreasing);
-#endif
         }
         PART_END(H5Adelete_by_idx_name_order_decreasing);
 
@@ -9474,20 +9543,20 @@ test_delete_attribute(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Pclose(gcpl_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -9537,7 +9606,7 @@ test_delete_attribute_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -9561,10 +9630,10 @@ test_delete_attribute_invalid_params(void)
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL,
                                               TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DELETION_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype,
                               space_id, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -9592,7 +9661,7 @@ test_delete_attribute_invalid_params(void)
     {
         PART_BEGIN(H5Adelete_invalid_loc_id)
         {
-            TESTING_2("H5Adelete with an invalid loc_id")
+            TESTING_2("H5Adelete with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -9612,7 +9681,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_invalid_attr_name)
         {
-            TESTING_2("H5Adelete with an invalid attribute name")
+            TESTING_2("H5Adelete with an invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -9644,7 +9713,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Adelete_by_name with an invalid loc_id")
+            TESTING_2("H5Adelete_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -9665,7 +9734,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Adelete_by_name with an invalid object name")
+            TESTING_2("H5Adelete_by_name with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -9700,7 +9769,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_name_invalid_attr_name)
         {
-            TESTING_2("H5Adelete_by_name with an invalid attribute name")
+            TESTING_2("H5Adelete_by_name with an invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -9733,7 +9802,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_name_invalid_lapl)
         {
-            TESTING_2("H5Adelete_by_name with an invalid LAPL")
+            TESTING_2("H5Adelete_by_name with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -9754,7 +9823,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_idx_invalid_loc_id)
         {
-            TESTING_2("H5Adelete_by_idx with an invalid loc_id")
+            TESTING_2("H5Adelete_by_idx with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -9774,7 +9843,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_idx_invalid_obj_name)
         {
-            TESTING_2("H5Adelete_by_idx with an invalid object name")
+            TESTING_2("H5Adelete_by_idx with an invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -9807,7 +9876,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_idx_invalid_index_type)
         {
-            TESTING_2("H5Adelete_by_idx with an invalid index type")
+            TESTING_2("H5Adelete_by_idx with an invalid index type");
 
             H5E_BEGIN_TRY
             {
@@ -9841,7 +9910,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_idx_invalid_index_order)
         {
-            TESTING_2("H5Adelete_by_idx with an invalid index ordering")
+            TESTING_2("H5Adelete_by_idx with an invalid index ordering");
 
             H5E_BEGIN_TRY
             {
@@ -9875,7 +9944,7 @@ test_delete_attribute_invalid_params(void)
 
         PART_BEGIN(H5Adelete_by_idx_invalid_lapl)
         {
-            TESTING_2("H5Adelete_by_idx with an invalid LAPL")
+            TESTING_2("H5Adelete_by_idx with an invalid LAPL");
 
             H5E_BEGIN_TRY
             {
@@ -9895,20 +9964,20 @@ test_delete_attribute_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -9943,7 +10012,7 @@ test_attribute_exists(void)
     hid_t  attr_dtype      = H5I_INVALID_HID;
     hid_t  space_id        = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("attribute existence")
+    TESTING_MULTIPART("attribute existence");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -9954,7 +10023,7 @@ test_attribute_exists(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -9976,10 +10045,10 @@ test_attribute_exists(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_EXISTS_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_EXISTS_TEST_ATTR_NAME, attr_dtype, space_id, H5P_DEFAULT,
                               H5P_DEFAULT)) < 0) {
@@ -9994,7 +10063,7 @@ test_attribute_exists(void)
     {
         PART_BEGIN(H5Aexists)
         {
-            TESTING_2("H5Aexists")
+            TESTING_2("H5Aexists");
 
             if ((attr_exists = H5Aexists(group_id, ATTRIBUTE_EXISTS_TEST_ATTR_NAME)) < 0) {
                 H5_FAILED();
@@ -10014,7 +10083,7 @@ test_attribute_exists(void)
 
         PART_BEGIN(H5Aexists_by_name)
         {
-            TESTING_2("H5Aexists_by_name")
+            TESTING_2("H5Aexists_by_name");
 
             if ((attr_exists = H5Aexists_by_name(container_group, ATTRIBUTE_EXISTS_TEST_GROUP_NAME,
                                                  ATTRIBUTE_EXISTS_TEST_ATTR_NAME, H5P_DEFAULT)) < 0) {
@@ -10035,20 +10104,20 @@ test_attribute_exists(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -10096,7 +10165,7 @@ test_attribute_exists_invalid_params(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -10120,10 +10189,10 @@ test_attribute_exists_invalid_params(void)
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_SPACE_RANK, NULL, NULL,
                                               TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_EXISTS_INVALID_PARAMS_TEST_ATTR_NAME, attr_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -10151,7 +10220,7 @@ test_attribute_exists_invalid_params(void)
     {
         PART_BEGIN(H5Aexists_invalid_loc_id)
         {
-            TESTING_2("H5Aexists with an invalid loc_id")
+            TESTING_2("H5Aexists with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -10171,7 +10240,7 @@ test_attribute_exists_invalid_params(void)
 
         PART_BEGIN(H5Aexists_invalid_attr_name)
         {
-            TESTING_2("H5Aexists with invalid attribute name")
+            TESTING_2("H5Aexists with invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -10203,7 +10272,7 @@ test_attribute_exists_invalid_params(void)
 
         PART_BEGIN(H5Aexists_by_name_invalid_loc_id)
         {
-            TESTING_2("H5Aexists_by_name with an invalid loc_id")
+            TESTING_2("H5Aexists_by_name with an invalid loc_id");
 
             H5E_BEGIN_TRY
             {
@@ -10224,7 +10293,7 @@ test_attribute_exists_invalid_params(void)
 
         PART_BEGIN(H5Aexists_by_name_invalid_obj_name)
         {
-            TESTING_2("H5Aexists_by_name with invalid object name")
+            TESTING_2("H5Aexists_by_name with invalid object name");
 
             H5E_BEGIN_TRY
             {
@@ -10258,7 +10327,7 @@ test_attribute_exists_invalid_params(void)
 
         PART_BEGIN(H5Aexists_by_name_invalid_attr_name)
         {
-            TESTING_2("H5Aexists_by_name with invalid attribute name")
+            TESTING_2("H5Aexists_by_name with invalid attribute name");
 
             H5E_BEGIN_TRY
             {
@@ -10292,7 +10361,7 @@ test_attribute_exists_invalid_params(void)
 
         PART_BEGIN(H5Aexists_by_name_invalid_lapl)
         {
-            TESTING_2("H5Aexists_by_name with an invalid link access property list")
+            TESTING_2("H5Aexists_by_name with an invalid link access property list");
 
             H5E_BEGIN_TRY
             {
@@ -10313,20 +10382,20 @@ test_attribute_exists_invalid_params(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -10364,7 +10433,7 @@ test_attribute_many(void)
     hid_t    space_id        = H5I_INVALID_HID;
     char     attrname[ATTRIBUTE_MANY_NAME_BUF_SIZE]; /* Name of attribute */
 
-    TESTING("creating many attributes")
+    TESTING("creating many attributes");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -10395,10 +10464,10 @@ test_attribute_many(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_MANY_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Create many attributes */
     for (u = 0; u < ATTRIBUTE_MANY_NUMB; u++) {
@@ -10424,19 +10493,19 @@ test_attribute_many(void)
         }
 
         if (H5Aclose(attr_id) < 0)
-            TEST_ERROR
+            TEST_ERROR;
     }
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -10472,7 +10541,7 @@ test_attribute_duplicate_id(void)
     hid_t  attr_dtype = H5I_INVALID_HID;
     hid_t  space_id   = H5I_INVALID_HID;
 
-    TESTING("duplicated IDs for an attribute")
+    TESTING("duplicated IDs for an attribute");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -10503,10 +10572,10 @@ test_attribute_duplicate_id(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_DUPLICATE_ID_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_DUPLICATE_ID_ATTR_NAME, attr_dtype, space_id, H5P_DEFAULT,
                               H5P_DEFAULT)) < 0) {
@@ -10536,19 +10605,19 @@ test_attribute_duplicate_id(void)
     }
 
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id2) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -10588,7 +10657,7 @@ test_get_number_attributes(void)
     hid_t       attr_dtype      = H5I_INVALID_HID;
     hid_t       space_id        = H5I_INVALID_HID;
 
-    TESTING_MULTIPART("retrieval of the number of attributes on an object")
+    TESTING_MULTIPART("retrieval of the number of attributes on an object");
 
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
@@ -10599,7 +10668,7 @@ test_get_number_attributes(void)
         return 0;
     }
 
-    TESTING_2("test setup")
+    TESTING_2("test setup");
 
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
@@ -10621,10 +10690,10 @@ test_get_number_attributes(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_GET_NUM_ATTRS_TEST_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_id = H5Acreate2(group_id, ATTRIBUTE_GET_NUM_ATTRS_TEST_ATTR_NAME, attr_dtype, space_id,
                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
@@ -10652,7 +10721,7 @@ test_get_number_attributes(void)
     {
         PART_BEGIN(H5Oget_info)
         {
-            TESTING_2("H5Oget_info")
+            TESTING_2("H5Oget_info");
 
             /* Now get the number of attributes from the group */
             if (H5Oget_info3(group_id, &obj_info, H5O_INFO_ALL) < 0) {
@@ -10673,7 +10742,7 @@ test_get_number_attributes(void)
 
         PART_BEGIN(H5Oget_info_by_name)
         {
-            TESTING_2("H5Oget_info_by_name")
+            TESTING_2("H5Oget_info_by_name");
 
             if (H5Oget_info_by_name3(container_group, ATTRIBUTE_GET_NUM_ATTRS_TEST_GRP_NAME, &obj_info,
                                      H5O_INFO_ALL, H5P_DEFAULT) < 0) {
@@ -10694,7 +10763,7 @@ test_get_number_attributes(void)
 
         PART_BEGIN(H5Oget_info_by_idx)
         {
-            TESTING_2("H5Oget_info_by_idx")
+            TESTING_2("H5Oget_info_by_idx");
 
             if (H5Oget_info_by_idx3(container_group, ".", H5_INDEX_NAME, H5_ITER_INC, 0, &obj_info,
                                     H5O_INFO_ALL, H5P_DEFAULT) < 0) {
@@ -10715,20 +10784,20 @@ test_get_number_attributes(void)
     }
     END_MULTIPART;
 
-    TESTING_2("test cleanup")
+    TESTING_2("test cleanup");
 
     if (H5Sclose(space_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Aclose(attr_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -10758,7 +10827,6 @@ error:
 static int
 test_attr_shared_dtype(void)
 {
-#ifndef NO_SHARED_DATATYPES
     H5O_info2_t obj_info;
     htri_t      attr_exists;
     hid_t       file_id         = H5I_INVALID_HID;
@@ -10768,11 +10836,9 @@ test_attr_shared_dtype(void)
     hid_t       attr_dtype      = H5I_INVALID_HID;
     hid_t       space_id        = H5I_INVALID_HID;
     hid_t       dset_id         = H5I_INVALID_HID;
-#endif
 
-    TESTING("shared datatype for attributes")
+    TESTING("shared datatype for attributes");
 
-#ifndef NO_SHARED_DATATYPES
     /* Make sure the connector supports the API functions being tested */
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
         !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC) ||
@@ -10804,10 +10870,10 @@ test_attr_shared_dtype(void)
     }
 
     if ((space_id = generate_random_dataspace(ATTRIBUTE_SHARED_DTYPE_SPACE_RANK, NULL, NULL, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     if ((attr_dtype = generate_random_datatype(H5T_NO_CLASS, TRUE)) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     /* Commit datatype to file */
     if (H5Tcommit2(group_id, ATTRIBUTE_SHARED_DTYPE_NAME, attr_dtype, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) <
@@ -10884,15 +10950,15 @@ test_attr_shared_dtype(void)
     }
 
     if (H5Dclose(dset_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Tclose(attr_dtype) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Gclose(container_group) < 0)
-        TEST_ERROR
+        TEST_ERROR;
     if (H5Fclose(file_id) < 0)
-        TEST_ERROR
+        TEST_ERROR;
 
     PASSED();
 
@@ -10910,10 +10976,6 @@ error:
     H5E_END_TRY;
 
     return 1;
-#else
-    SKIPPED();
-    return 0;
-#endif
 }
 
 static herr_t

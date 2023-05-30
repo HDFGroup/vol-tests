@@ -1,12 +1,11 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
  * All rights reserved.                                                      *
  *                                                                           *
  * This file is part of HDF5.  The full HDF5 copyright notice, including     *
  * terms governing use, modification, and redistribution, is contained in    *
  * the COPYING file, which can be found at the root of the source code       *
- * distribution tree, or in https://support.hdfgroup.org/ftp/HDF5/releases.  *
+ * distribution tree, or in https://www.hdfgroup.org/licenses.               *
  * If you do not have access to either file, you may request a copy from     *
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -31,8 +30,11 @@
  * mesg is not an empty string.
  */
 #define MESG(mesg)                                                                                           \
-    if (VERBOSE_MED && *mesg != '\0')                                                                        \
-    printf("%s\n", mesg)
+    do {                                                                                                     \
+        if (VERBOSE_MED && *mesg != '\0') {                                                                  \
+            HDprintf("%s\n", mesg);                                                                          \
+        }                                                                                                    \
+    } while (0)
 
 /*
  * VRFY: Verify if the condition val is true.
@@ -50,13 +52,13 @@
             MESG(mesg);                                                                                      \
         }                                                                                                    \
         else {                                                                                               \
-            printf("Proc %d: ", rankvar);                                                                    \
-            printf("*** Parallel ERROR ***\n");                                                              \
-            printf("    VRFY (%s) failed at line %4d in %s\n", mesg, (int)__LINE__, __FILE__);               \
+            HDprintf("Proc %d: ", rankvar);                                                                  \
+            HDprintf("*** Parallel ERROR ***\n");                                                            \
+            HDprintf("    VRFY (%s) failed at line %4d in %s\n", mesg, (int)__LINE__, __FILE__);             \
             ++nerrors;                                                                                       \
             fflush(stdout);                                                                                  \
             if (!VERBOSE_MED) {                                                                              \
-                printf("aborting MPI processes\n");                                                          \
+                HDprintf("aborting MPI processes\n");                                                        \
                 MPI_Abort(MPI_COMM_WORLD, 1);                                                                \
             }                                                                                                \
         }                                                                                                    \
@@ -76,9 +78,9 @@
             MESG(mesg);                                                                                      \
         }                                                                                                    \
         else {                                                                                               \
-            printf("Proc %d: ", mpi_rank);                                                                   \
-            printf("*** PHDF5 REMARK (not an error) ***\n");                                                 \
-            printf("        Condition (%s) failed at line %4d in %s\n", mesg, (int)__LINE__, __FILE__);      \
+            HDprintf("Proc %d: ", mpi_rank);                                                                 \
+            HDprintf("*** PHDF5 REMARK (not an error) ***\n");                                               \
+            HDprintf("        Condition (%s) failed at line %4d in %s\n", mesg, (int)__LINE__, __FILE__);    \
             fflush(stdout);                                                                                  \
         }                                                                                                    \
     } while (0)
@@ -86,10 +88,10 @@
 #define MPI_BANNER(mesg)                                                                                     \
     do {                                                                                                     \
         if (VERBOSE_MED || MAINPROCESS) {                                                                    \
-            printf("--------------------------------\n");                                                    \
-            printf("Proc %d: ", mpi_rank);                                                                   \
-            printf("*** %s\n", mesg);                                                                        \
-            printf("--------------------------------\n");                                                    \
+            HDprintf("--------------------------------\n");                                                  \
+            HDprintf("Proc %d: ", mpi_rank);                                                                 \
+            HDprintf("*** %s\n", mesg);                                                                      \
+            HDprintf("--------------------------------\n");                                                  \
         }                                                                                                    \
     } while (0)
 

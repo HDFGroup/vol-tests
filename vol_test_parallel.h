@@ -15,8 +15,9 @@
 
 #include <mpi.h>
 
-#include "vol_test.h"
 #include "testpar.h"
+
+#include "vol_test.h"
 
 /* Define H5VL_VERSION if not already defined */
 #ifndef H5VL_VERSION
