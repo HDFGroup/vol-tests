@@ -306,6 +306,10 @@ test_create_hard_link_long_name(void)
     if (strcmp(vol_name, "daos") == 0)
         name_len = 99;
 
+    /* Max total URL length for REST VOL is 2048, leave room for the rest of the URL */
+    if (strcmp(vol_name, "REST") == 0)
+        name_len = 1000;
+
     /* Construct very long file name */
     if ((objname = (char *)HDmalloc((size_t)(name_len + 1))) == NULL)
         TEST_ERROR;
@@ -1490,6 +1494,10 @@ test_create_soft_link_long_name(void)
     /** for DAOS VOL, max link name supported is 99 (Lexical key) */
     if (strcmp(vol_name, "daos") == 0)
         name_len = 99;
+
+    /* Max total URL length for REST VOL is 2048, leave room for the rest of the URL */
+    if (strcmp(vol_name, "REST") == 0)
+        name_len = 1000;
 
     /* Construct very long file name */
     if ((objname = (char *)HDmalloc((size_t)(name_len + 1))) == NULL)
