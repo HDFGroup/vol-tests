@@ -24680,7 +24680,7 @@ test_link_visit_ud_links_cycles(void)
 
     SKIPPED();
 
-    return 1;
+    return 0;
 }
 
 /*
@@ -25962,7 +25962,7 @@ link_iter_external_links_cb(hid_t group_id, const char *name, const H5L_info2_t 
         SKIPPED();
         HDprintf("    API functions for external links aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);
@@ -26027,7 +26027,7 @@ link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info2_t *in
         SKIPPED();
         HDprintf("    API functions for external or user-defined link aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);
@@ -26116,7 +26116,7 @@ link_iter_idx_saving_cb(hid_t group_id, const char *name, const H5L_info2_t *inf
         SKIPPED();
         HDprintf("    API functions for external or user-defined link aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);
@@ -26401,7 +26401,7 @@ link_visit_external_links_no_cycles_cb(hid_t group_id, const char *name, const H
         SKIPPED();
         HDprintf("    API functions for external links aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);
@@ -26516,7 +26516,7 @@ link_visit_mixed_links_no_cycles_cb(hid_t group_id, const char *name, const H5L_
         SKIPPED();
         HDprintf("    API functions for external or user-defined link aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);
@@ -26888,7 +26888,7 @@ link_visit_external_links_cycles_cb(hid_t group_id, const char *name, const H5L_
         SKIPPED();
         HDprintf("    API functions for external links aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);
@@ -27003,7 +27003,7 @@ link_visit_mixed_links_cycles_cb(hid_t group_id, const char *name, const H5L_inf
         SKIPPED();
         HDprintf("    API functions for external or user-defined link aren't supported with this "
                  "connector\n");
-        return 1;
+        return 0;
     }
 
     UNUSED(group_id);

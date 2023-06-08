@@ -395,7 +395,7 @@ VERIFY_LAYOUT_ALL()
 
     #---------------------------------
     # check the layout from a dataset
-    # check if the other layouts still exsit
+    # check if the other layouts still exist
     VERIFY  "layouts"
     (
         echo
