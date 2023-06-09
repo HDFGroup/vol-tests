@@ -20858,6 +20858,13 @@ test_link_iterate_mixed_links(void)
         {
             TESTING_2("H5Literate2 by link name in increasing order");
 
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                        "connector\n");
+                PART_EMPTY(H5Literate_link_name_increasing)
+            }
+
             i = 0;
 
             /* Test basic link iteration capability using both index types and both index orders */
@@ -20874,12 +20881,20 @@ test_link_iterate_mixed_links(void)
             }
 
             PASSED();
+            
         }
         PART_END(H5Literate_link_name_increasing);
 
         PART_BEGIN(H5Literate_link_name_decreasing)
         {
             TESTING_2("H5Literate2 by link name in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                        "connector\n");
+                PART_EMPTY(H5Literate_link_name_decreasing)
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             i = LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
@@ -20897,6 +20912,7 @@ test_link_iterate_mixed_links(void)
             }
 
             PASSED();
+            
         }
         PART_END(H5Literate_link_name_decreasing);
 
@@ -20904,6 +20920,13 @@ test_link_iterate_mixed_links(void)
         {
             TESTING_2("H5Literate2 by creation order in increasing order");
 
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                        "connector\n");
+                PART_EMPTY(H5Literate_link_creation_increasing)
+            }
+    
             if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
                 SKIPPED();
                 HDprintf("    creation order tracking isn't supported with this VOL connector\n");
@@ -20933,6 +20956,13 @@ test_link_iterate_mixed_links(void)
         PART_BEGIN(H5Literate_link_creation_decreasing)
         {
             TESTING_2("H5Literate2 by creation order in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                        "connector\n");
+                PART_EMPTY(H5Literate_link_creation_decreasing)
+            }
 
             if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
                 SKIPPED();
@@ -20964,6 +20994,13 @@ test_link_iterate_mixed_links(void)
         {
             TESTING_2("H5Literate_by_name2 by link name in increasing order");
 
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                    "connector\n");
+                PART_EMPTY(H5Literate_by_name_link_name_increasing)
+            }
+
             i = 0;
 
             if (H5Literate_by_name2(
@@ -20987,6 +21024,13 @@ test_link_iterate_mixed_links(void)
         PART_BEGIN(H5Literate_by_name_link_name_decreasing)
         {
             TESTING_2("H5Literate_by_name2 by link name in decreasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                    "connector\n");
+                PART_EMPTY(H5Literate_by_name_link_name_decreasing)
+            }
 
             /* Reset the counter to the appropriate value for the next test */
             i = LINK_ITER_MIXED_LINKS_TEST_NUM_LINKS;
@@ -21012,6 +21056,13 @@ test_link_iterate_mixed_links(void)
         PART_BEGIN(H5Literate_by_name_creation_increasing)
         {
             TESTING_2("H5Literate_by_name2 by creation order in increasing order");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                    "connector\n");
+                PART_EMPTY(H5Literate_by_name_creation_increasing)
+            }
 
             if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
                 SKIPPED();
@@ -21044,6 +21095,13 @@ test_link_iterate_mixed_links(void)
         {
             TESTING_2("H5Literate_by_name2 by creation order in decreasing order");
 
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                    "connector\n");
+                PART_EMPTY(H5Literate_by_name_creation_decreasing)
+            }
+
             if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
                 SKIPPED();
                 HDprintf("    creation order tracking isn't supported with this VOL connector\n");
@@ -21074,6 +21132,13 @@ test_link_iterate_mixed_links(void)
         PART_BEGIN(H5Literate_index_saving_increasing)
         {
             TESTING_2("H5Literate2 index-saving capabilities in increasing order");
+            
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
+                SKIPPED();
+                HDprintf("    API functions for external or user-defined link aren't supported with this "
+                    "connector\n");
+                PART_EMPTY(H5Literate_index_saving_increasing)
+            }
 
             if (!(vol_cap_flags_g & H5VL_CAP_FLAG_CREATION_ORDER)) {
                 SKIPPED();
@@ -26024,7 +26089,6 @@ link_iter_mixed_links_cb(hid_t group_id, const char *name, const H5L_info2_t *in
     herr_t  ret_val     = 0;
 
     if (!(vol_cap_flags_g & H5VL_CAP_FLAG_EXTERNAL_LINKS) || !(vol_cap_flags_g & H5VL_CAP_FLAG_UD_LINKS)) {
-        SKIPPED();
         HDprintf("    API functions for external or user-defined link aren't supported with this "
                  "connector\n");
         return 1;
