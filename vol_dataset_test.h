@@ -145,10 +145,11 @@ int vol_dataset_test(void);
 #define DATASET_SMALL_READ_TEST_POINT_SELECTION_GROUP_NAME      "dataset_small_read_point_selection_test"
 #define DATASET_SMALL_READ_TEST_POINT_SELECTION_DSET_NAME       "dataset_small_read_point_selection_dset"
 
-#define TEST_MULTI_DATASET_COUNT 50
-#define DATASET_SMALL_MULTI_READ_TEST_ALL_GROUP_NAME "dataset_small_multi_read_all_test"
+#define TEST_MULTI_DATASET_COUNT                           50
+#define DATASET_SMALL_MULTI_READ_TEST_ALL_GROUP_NAME       "dataset_small_multi_read_all_test"
 #define DATASET_SMALL_MULTI_READ_TEST_HYPERSLAB_GROUP_NAME "dataset_small_multi_read_hyperslab_test"
-#define DATASET_SMALL_MULTI_READ_TEST_POINT_SELECTION_GROUP_NAME "dataset_small_multi_read_point_selection_test"
+#define DATASET_SMALL_MULTI_READ_TEST_POINT_SELECTION_GROUP_NAME                                             \
+    "dataset_small_multi_read_point_selection_test"
 
 #define DATASET_IO_POINT_GROUP_NAME        "dataset_io_point_selection_test"
 #define DATASET_IO_POINT_DSET_NAME_NOCHUNK "dataset_io_point_selection_dset_nochunk"
@@ -187,16 +188,18 @@ int vol_dataset_test(void);
 #define DATASET_DATA_VERIFY_WRITE_TEST_DSET_NAME       "dataset_data_write_verification_dset"
 
 #define DATASET_SMALL_MULTI_WRITE_TEST_ALL_GROUP_NAME "dataset_small_multi_write_all_test"
-#define DATASET_SMALL_MULTI_WRITE_TEST_ALL_DSET_NAME "dataset_small_multi_write_all_dset"
+#define DATASET_SMALL_MULTI_WRITE_TEST_ALL_DSET_NAME  "dataset_small_multi_write_all_dset"
 
 #define DATASET_SMALL_MULTI_WRITE_TEST_HYPERSLAB_GROUP_NAME "dataset_small_multi_write_hyperslab_test"
-#define DATASET_SMALL_MULTI_WRITE_TEST_HYPERSLAB_DSET_NAME "dataset_small_multi_write_hyperslab_dset"
+#define DATASET_SMALL_MULTI_WRITE_TEST_HYPERSLAB_DSET_NAME  "dataset_small_multi_write_hyperslab_dset"
 
-#define DATASET_SMALL_MULTI_WRITE_TEST_POINT_SELECTION_GROUP_NAME      "dataset_small_multi_write_point_selection_test"
-#define DATASET_SMALL_MULTI_WRITE_TEST_POINT_SELECTION_DSET_NAME       "dataset_small_multi_write_point_selection_dset"
+#define DATASET_SMALL_MULTI_WRITE_TEST_POINT_SELECTION_GROUP_NAME                                            \
+    "dataset_small_multi_write_point_selection_test"
+#define DATASET_SMALL_MULTI_WRITE_TEST_POINT_SELECTION_DSET_NAME                                             \
+    "dataset_small_multi_write_point_selection_dset"
 
-#define DATASET_DATA_VERIFY_MULTI_WRITE_TEST_GROUP_NAME      "dataset_data_multi_write_verification_test"
-#define DATASET_DATA_VERIFY_MULTI_WRITE_TEST_DSET_NAME       "dataset_data_multi_write_verification_dset"
+#define DATASET_DATA_VERIFY_MULTI_WRITE_TEST_GROUP_NAME "dataset_data_multi_write_verification_test"
+#define DATASET_DATA_VERIFY_MULTI_WRITE_TEST_DSET_NAME  "dataset_data_multi_write_verification_dset"
 
 #define DATASET_WRITE_INVALID_PARAMS_TEST_DSET_SPACE_RANK 3
 #define DATASET_WRITE_INVALID_PARAMS_TEST_DSET_DTYPESIZE  sizeof(int)
