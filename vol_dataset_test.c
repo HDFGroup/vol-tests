@@ -7594,7 +7594,7 @@ error:
 
             H5Dclose(dset_id_arr[i]);
         }
-        
+
         H5Sclose(mspace_id);
         H5Sclose(fspace_id);
         H5Gclose(group_id);
