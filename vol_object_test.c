@@ -51,6 +51,8 @@ static herr_t object_copy_soft_link_expand_callback(hid_t group, const char *nam
                                                     void *op_data);
 static herr_t object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info,
                                     void *op_data);
+static herr_t object_visit_simple_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info,
+void *op_data);
 static herr_t object_visit_dset_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info,
                                          void *op_data);
 static herr_t object_visit_dtype_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info,
@@ -5059,6 +5061,7 @@ test_object_visit(void)
 {
     size_t i;
     hid_t  file_id         = H5I_INVALID_HID;
+    hid_t  file_id2        = H5I_INVALID_HID;
     hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
     hid_t  group_id2  = H5I_INVALID_HID;
     hid_t  gcpl_id    = H5I_INVALID_HID;
@@ -5066,7 +5069,12 @@ test_object_visit(void)
     hid_t  dset_id    = H5I_INVALID_HID;
     hid_t  dset_dtype = H5I_INVALID_HID;
     hid_t  fspace_id  = H5I_INVALID_HID;
-
+    hid_t  attr_id    = H5I_INVALID_HID;
+    hid_t group_id3 = H5I_INVALID_HID;
+    hid_t group_id4 = H5I_INVALID_HID;
+    hid_t group_id5 = H5I_INVALID_HID;
+    char  visit_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    
     TESTING_MULTIPART("object visiting");
 
     /* Make sure the connector supports the API functions being tested */
@@ -5085,6 +5093,15 @@ test_object_visit(void)
     if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    HDsnprintf(visit_filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix,
+            OBJECT_VISIT_TEST_FILE_NAME);
+
+    if ((file_id2 = H5Fcreate(visit_filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", OBJECT_VISIT_TEST_FILE_NAME);
         goto error;
     }
 
@@ -5127,10 +5144,37 @@ test_object_visit(void)
         goto error;
     }
 
+    if ((attr_id = H5Acreate(group_id, OBJECT_VISIT_TEST_ATTR_NAME, dset_dtype, fspace_id, H5P_DEFAULT, H5P_DEFAULT)) == H5I_INVALID_HID) {
+        H5_FAILED();
+        HDprintf("    couldn't create attribute '%s' on group '%s'\n", OBJECT_VISIT_TEST_ATTR_NAME, OBJECT_VISIT_TEST_SUBGROUP_NAME);
+        goto error;
+    }
+
     if ((group_id2 = H5Gcreate2(group_id, OBJECT_VISIT_TEST_GROUP_NAME, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) <
         0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id3 = H5Gcreate2(file_id2, OBJECT_VISIT_TEST_GROUP_NAME3 , H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) <
+        0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME3 );
+        goto error;
+    }
+
+    if ((group_id4 = H5Gcreate2(group_id3, OBJECT_VISIT_TEST_GROUP_NAME4 , H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) <
+        0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME4 );
+        goto error;
+    }
+
+    if ((group_id5 = H5Gcreate2(group_id4, OBJECT_VISIT_TEST_GROUP_NAME5, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) <
+        0) {
+        H5_FAILED();
+        HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME5);
         goto error;
     }
 
@@ -5266,16 +5310,41 @@ test_object_visit(void)
         }
         PART_END(H5Ovisit_create_order_decreasing);
 
+        PART_BEGIN(H5Ovisit_group)
+        {
+            TESTING_2("H5Ovisit on a group");
+
+            if (H5Ovisit3(group_id3, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
+                          H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit on a group failed!\n");
+                PART_ERROR(H5Ovisit_group);
+            }
+
+            PASSED();
+        } 
+        PART_END(H5Ovisit_group);
+
         PART_BEGIN(H5Ovisit_file)
         {
             TESTING_2("H5Ovisit on a file ID");
 
-            /*
-             * XXX:
-             */
+            i = 0;
 
-            SKIPPED();
-            PART_EMPTY(H5Ovisit_file);
+            if (H5Ovisit3(file_id2, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
+                          H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit on a file ID failed!\n");
+                PART_ERROR(H5Ovisit_file);
+            }
+
+            if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
+                H5_FAILED();
+                HDprintf("    some objects were not visited!\n");
+                PART_ERROR(H5Ovisit_file);
+            }
+
+            PASSED();
         }
         PART_END(H5Ovisit_file);
 
@@ -5308,6 +5377,30 @@ test_object_visit(void)
             PASSED();
         }
         PART_END(H5Ovisit_dtype);
+
+        PART_BEGIN(H5Ovisit_attr)
+        {
+            TESTING_2("H5Ovisit on an attribute")
+            
+            i = 0;
+
+            if (H5Ovisit3(attr_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i,
+                          H5O_INFO_ALL) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit on an attribute failed!\n");
+                PART_ERROR(H5Ovisit_attr);
+            }
+
+            /* Should have same effect as calling H5Ovisit on group_id */
+            if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
+                H5_FAILED();
+                HDprintf("    some objects were not visited!\n");
+                PART_ERROR(H5Ovisit_attr);
+            }
+
+            PASSED();
+        }
+        PART_END(H5Ovisit_attr);
 
         PART_BEGIN(H5Ovisit_by_name_obj_name_increasing)
         {
@@ -5489,12 +5582,22 @@ test_object_visit(void)
         {
             TESTING_2("H5Ovisit_by_name on a file ID");
 
-            /*
-             * XXX:
-             */
+            i = 0;
 
-            SKIPPED();
-            PART_EMPTY(H5Ovisit_by_name_file);
+            if (H5Ovisit_by_name3(file_id2, "/", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
+                          H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit on a file ID failed!\n");
+                PART_ERROR(H5Ovisit_by_name_file);
+            }
+
+            if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
+                H5_FAILED();
+                HDprintf("    some objects were not visited!\n");
+                PART_ERROR(H5Ovisit_by_name_file);
+            }
+
+            PASSED();
         }
         PART_END(H5Ovisit_by_name_file);
 
@@ -5527,6 +5630,31 @@ test_object_visit(void)
             PASSED();
         }
         PART_END(H5Ovisit_by_name_dtype);
+
+        PART_BEGIN(H5Ovisit_by_name_attr)
+        {
+            TESTING_2("H5Ovisit_by_name on an attribute")
+            
+            i = 0;
+
+            if (H5Ovisit_by_name(group_id, OBJECT_VISIT_TEST_ATTR_NAME, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_callback, &i,
+                          H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                H5_FAILED();
+                HDprintf("    H5Ovisit_by_name on an attribute failed!\n");
+                PART_ERROR(H5Ovisit_by_name_attr);
+            }
+
+
+            /* Should have same effect as calling H5Ovisit on group_id */
+            if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
+                H5_FAILED();
+                HDprintf("    some objects were not visited!\n");
+                PART_ERROR(H5Ovisit_by_name_attr);
+            }
+
+            PASSED();
+        }
+        PART_END(H5Ovisit_by_name_attr);
     }
     END_MULTIPART;
 
@@ -5544,11 +5672,21 @@ test_object_visit(void)
         TEST_ERROR;
     if (H5Gclose(group_id2) < 0)
         TEST_ERROR;
+    if (H5Gclose(group_id3) < 0)
+        TEST_ERROR;
+    if (H5Gclose(group_id4) < 0)
+        TEST_ERROR;
+    if (H5Gclose(group_id5) < 0)
+        TEST_ERROR;
+    if (H5Aclose(attr_id) < 0)
+        TEST_ERROR;
     if (H5Gclose(group_id) < 0)
         TEST_ERROR;
     if (H5Gclose(container_group) < 0)
         TEST_ERROR;
     if (H5Fclose(file_id) < 0)
+        TEST_ERROR;
+    if (H5Fclose(file_id2) < 0)
         TEST_ERROR;
 
     PASSED();
@@ -5564,9 +5702,14 @@ error:
         H5Dclose(dset_id);
         H5Pclose(gcpl_id);
         H5Gclose(group_id2);
+        H5Gclose(group_id3);
+        H5Gclose(group_id4);
+        H5Gclose(group_id5);
+        H5Aclose(attr_id);
         H5Gclose(group_id);
         H5Gclose(container_group);
         H5Fclose(file_id);
+        H5Fclose(file_id2);
     }
     H5E_END_TRY;
 
@@ -7038,6 +7181,13 @@ object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_in
 
     UNUSED(o_id);
 
+    if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME3 ) || 
+        !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME3 "/" OBJECT_VISIT_TEST_GROUP_NAME4) || 
+        !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME3 "/" OBJECT_VISIT_TEST_GROUP_NAME4 "/" OBJECT_VISIT_TEST_GROUP_NAME5)) {
+        (*i)--;
+        goto done;
+    }
+
     if (!HDstrncmp(name, ".", strlen(".") + 1) &&
         (counter_val == 0 || counter_val == 4 || counter_val == 8 || counter_val == 12)) {
         if (H5O_TYPE_GROUP == object_info->type)
@@ -7068,6 +7218,26 @@ object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_in
     }
     else
         HDprintf("    object '%s' didn't match known names or came in an incorrect order\n", name);
+
+    ret_val = -1;
+
+done:
+    (*i)++;
+
+    return ret_val;
+}
+
+static herr_t
+object_visit_simple_callback(hid_t o_id, const char *name, const H5O_info2_t *object_info, void *op_data)
+{
+    size_t *i           = (size_t *)op_data;
+    herr_t  ret_val     = 0;
+
+    UNUSED(o_id);
+    UNUSED(object_info);
+
+    if (name)
+        goto done;
 
     ret_val = -1;
 
@@ -7176,7 +7346,13 @@ object_visit_noop_callback(hid_t o_id, const char *name, const H5O_info2_t *obje
 static void
 cleanup_files(void)
 {
-    H5Fdelete(OBJECT_COPY_BETWEEN_FILES_TEST_FILE_NAME, H5P_DEFAULT);
+    char filename[VOL_TEST_FILENAME_MAX_LENGTH];
+
+    HDsnprintf(filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, OBJECT_COPY_BETWEEN_FILES_TEST_FILE_NAME);
+    H5Fdelete(filename, H5P_DEFAULT);
+
+    HDsnprintf(filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, OBJECT_VISIT_TEST_FILE_NAME);
+    H5Fdelete(OBJECT_VISIT_TEST_FILE_NAME, H5P_DEFAULT);
 }
 
 int
