@@ -370,12 +370,12 @@ error:
 static int
 test_create_hard_link_many(void)
 {
-    htri_t link_exists;
-    hid_t  file_id         = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID;
-    hid_t  group_id = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
+    htri_t  link_exists;
+    hid_t   file_id         = H5I_INVALID_HID;
+    hid_t   container_group = H5I_INVALID_HID;
+    hid_t   group_id = H5I_INVALID_HID, group_id2 = H5I_INVALID_HID;
     hbool_t valid_name_matched = false;
-    char   objname[HARD_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE]; /* Object name */
+    char    objname[HARD_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE]; /* Object name */
 
     TESTING("hard link creation of many links");
 
@@ -517,16 +517,20 @@ test_create_hard_link_many(void)
     for (size_t i = 1; i < HARD_LINK_TEST_GROUP_MANY_NUM_HARD_LINKS + 1; i++) {
         char name_possibility[VOL_TEST_FILENAME_MAX_LENGTH];
 
-        HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu", "/" LINK_TEST_GROUP_NAME "/" HARD_LINK_TEST_GROUP_MANY_NAME "/hard", i);
+        HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu",
+                   "/" LINK_TEST_GROUP_NAME "/" HARD_LINK_TEST_GROUP_MANY_NAME "/hard", i);
 
         valid_name_matched = !HDstrcmp(objname, name_possibility) || valid_name_matched;
     }
 
-    valid_name_matched = !HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" HARD_LINK_TEST_GROUP_MANY_NAME "/" HARD_LINK_TEST_GROUP_MANY_FINAL_NAME) || valid_name_matched;
+    valid_name_matched = !HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" HARD_LINK_TEST_GROUP_MANY_NAME
+                                            "/" HARD_LINK_TEST_GROUP_MANY_FINAL_NAME) ||
+                         valid_name_matched;
 
     if (!valid_name_matched) {
         H5_FAILED();
-        HDprintf("    H5Iget_name failed to retrieve a valid name for '%s'\n", HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
+        HDprintf("    H5Iget_name failed to retrieve a valid name for '%s'\n",
+                 HARD_LINK_TEST_GROUP_MANY_FINAL_NAME);
         goto error;
     }
 
@@ -1567,13 +1571,13 @@ error:
 static int
 test_create_soft_link_many(void)
 {
-    htri_t link_exists;
+    htri_t  link_exists;
     hbool_t valid_name_matched = false;
-    hid_t  file_id         = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID;
-    hid_t  group_id        = H5I_INVALID_HID;
-    hid_t  object_id       = H5I_INVALID_HID;
-    char   objname[SOFT_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE]; /* Object name */
+    hid_t   file_id            = H5I_INVALID_HID;
+    hid_t   container_group    = H5I_INVALID_HID;
+    hid_t   group_id           = H5I_INVALID_HID;
+    hid_t   object_id          = H5I_INVALID_HID;
+    char    objname[SOFT_LINK_TEST_GROUP_MANY_NAME_BUF_SIZE]; /* Object name */
 
     TESTING("soft link creation of many links");
 
@@ -1723,22 +1727,24 @@ test_create_soft_link_many(void)
         goto error;
     }
 
-    for(size_t i = 1; i < SOFT_LINK_TEST_GROUP_MANY_NAME_SOFT_LINK_COUNT + 1; i++) {
+    for (size_t i = 1; i < SOFT_LINK_TEST_GROUP_MANY_NAME_SOFT_LINK_COUNT + 1; i++) {
         char name_possibility[VOL_TEST_FILENAME_MAX_LENGTH];
 
-        HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu", "/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME "/soft", i);
+        HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu",
+                   "/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME "/soft", i);
 
         valid_name_matched = !HDstrcmp(objname, name_possibility) || valid_name_matched;
-
     }
 
     valid_name_matched = !HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME
-                       "/" SOFT_LINK_TEST_GROUP_MANY_FINAL_NAME) || valid_name_matched;
-                       
+                                            "/" SOFT_LINK_TEST_GROUP_MANY_FINAL_NAME) ||
+                         valid_name_matched;
+
     if (!valid_name_matched) {
         H5_FAILED();
-        HDprintf("    H5Iget_name failed to retrieve a valid name for '%s'\n", "/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME
-                       "/" SOFT_LINK_TEST_GROUP_MANY_FINAL_NAME);
+        HDprintf("    H5Iget_name failed to retrieve a valid name for '%s'\n",
+                 "/" LINK_TEST_GROUP_NAME "/" SOFT_LINK_TEST_GROUP_MANY_NAME
+                 "/" SOFT_LINK_TEST_GROUP_MANY_FINAL_NAME);
         goto error;
     }
 
@@ -2490,11 +2496,8 @@ test_create_external_link_multi(void)
                 PART_ERROR(H5Lcreate_external_final_file);
             }
 
-
-            if (HDstrcmp(objname, "/A/B/C") 
-                && HDstrcmp(objname, "/D/E/F") 
-                && HDstrcmp(objname, "/G/H/I") 
-                && HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" EXTERNAL_LINK_TEST_MULTI_NAME "/ext_link")) {
+            if (HDstrcmp(objname, "/A/B/C") && HDstrcmp(objname, "/D/E/F") && HDstrcmp(objname, "/G/H/I") &&
+                HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" EXTERNAL_LINK_TEST_MULTI_NAME "/ext_link")) {
                 H5_FAILED();
                 HDprintf("    H5Iget_name failed to retrieve a valid name for the object '%s'\n", "/A/B/C");
                 PART_ERROR(H5Lcreate_external_final_file);
@@ -2564,12 +2567,13 @@ test_create_external_link_multi(void)
                 PART_ERROR(H5Lcreate_external_object_created);
             }
 
-            if (HDstrcmp(objname, "/A/B/C/new_group") &&
-                HDstrcmp(objname, "/D/E/F/new_group") &&
+            if (HDstrcmp(objname, "/A/B/C/new_group") && HDstrcmp(objname, "/D/E/F/new_group") &&
                 HDstrcmp(objname, "/G/H/I/new_group") &&
-                HDstrcmp(objname, "/" LINK_TEST_GROUP_NAME "/" EXTERNAL_LINK_TEST_MULTI_NAME "/ext_link/new_group")) {
+                HDstrcmp(objname,
+                         "/" LINK_TEST_GROUP_NAME "/" EXTERNAL_LINK_TEST_MULTI_NAME "/ext_link/new_group")) {
                 H5_FAILED();
-                HDprintf("    H5Iget_name was unable to retrieve a valid name for the object '%s'\n", "/A/B/C/new_group");
+                HDprintf("    H5Iget_name was unable to retrieve a valid name for the object '%s'\n",
+                         "/A/B/C/new_group");
                 PART_ERROR(H5Lcreate_external_object_created);
             }
 
@@ -2622,13 +2626,13 @@ error:
 static int
 test_create_external_link_ping_pong(void)
 {
-    hid_t file_id   = H5I_INVALID_HID;
-    hid_t group_id  = H5I_INVALID_HID;
-    hid_t group_id2 = H5I_INVALID_HID;
+    hid_t   file_id            = H5I_INVALID_HID;
+    hid_t   group_id           = H5I_INVALID_HID;
+    hid_t   group_id2          = H5I_INVALID_HID;
     hbool_t valid_name_matched = false;
-    char  ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
-    char  ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
-    char  objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
+    char    ext_link_filename1[VOL_TEST_FILENAME_MAX_LENGTH];
+    char    ext_link_filename2[VOL_TEST_FILENAME_MAX_LENGTH];
+    char    objname[EXTERNAL_LINK_TEST_MULTI_NAME_BUF_SIZE];
 
     TESTING_MULTIPART("external link creation to an object in ping pong style");
 
@@ -2776,19 +2780,20 @@ test_create_external_link_ping_pong(void)
                 char name_possibility[VOL_TEST_FILENAME_MAX_LENGTH];
 
                 HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu", "/link", i);
-            
+
                 if (!HDstrcmp(name_possibility, objname)) {
                     valid_name_matched = true;
                     break;
                 }
             }
 
-            if (!HDstrcmp(objname, "/final")) 
+            if (!HDstrcmp(objname, "/final"))
                 valid_name_matched = true;
-                
+
             if (!valid_name_matched) {
                 H5_FAILED();
-                HDprintf("    H5Iget_name was unable to retrieve a valid name for the object '%s'\n", "/final");
+                HDprintf("    H5Iget_name was unable to retrieve a valid name for the object '%s'\n",
+                         "/final");
                 PART_ERROR(H5Lcreate_external_verify);
             }
 
@@ -2849,12 +2854,13 @@ test_create_external_link_ping_pong(void)
             for (size_t i = 1; i < EXTERNAL_LINK_TEST_PING_PONG_NUM_LINKS + 1; i++) {
                 char name_possibility[VOL_TEST_FILENAME_MAX_LENGTH];
 
-                HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu%s", "/link", i, "/new_group");
+                HDsnprintf(name_possibility, VOL_TEST_FILENAME_MAX_LENGTH, "%s%zu%s", "/link", i,
+                           "/new_group");
 
-                valid_name_matched = !HDstrcmp(objname, name_possibility) || valid_name_matched;                  
+                valid_name_matched = !HDstrcmp(objname, name_possibility) || valid_name_matched;
             }
 
-            valid_name_matched = !HDstrcmp(objname, "/final/new_group") || valid_name_matched;    
+            valid_name_matched = !HDstrcmp(objname, "/final/new_group") || valid_name_matched;
 
             if (!valid_name_matched) {
                 H5_FAILED();
