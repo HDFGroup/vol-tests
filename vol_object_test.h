@@ -125,13 +125,13 @@ int vol_object_test(void);
 #define OBJECT_VISIT_TEST_SUBGROUP_NAME    "object_visit_test"
 #define OBJECT_VISIT_TEST_SPACE_RANK       2
 #define OBJECT_VISIT_TEST_GROUP_NAME       "object_visit_test_group"
-#define OBJECT_VISIT_TEST_GROUP_NAME3      "object_visit_test_group3"
-#define OBJECT_VISIT_TEST_GROUP_NAME4      "object_visit_test_group4"
-#define OBJECT_VISIT_TEST_GROUP_NAME5      "object_visit_test_group5"
 #define OBJECT_VISIT_TEST_DSET_NAME        "object_visit_test_dset"
 #define OBJECT_VISIT_TEST_TYPE_NAME        "object_visit_test_type"
 #define OBJECT_VISIT_TEST_ATTR_NAME        "object_visit_test_attr"
 #define OBJECT_VISIT_TEST_FILE_NAME        "object_visit_test_file"
+#define OBJECT_VISIT_TEST_GROUP_NAME_PARENT     "object_visit_test_group_parent"
+#define OBJECT_VISIT_TEST_GROUP_NAME_CHILD      "object_visit_test_group_child"
+#define OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD "object_visit_test_group_grandchild"
 
 #define OBJECT_VISIT_SOFT_LINK_TEST_NUM_OBJS_VISITED 1
 #define OBJECT_VISIT_SOFT_LINK_TEST_SUBGROUP_NAME    "object_visit_soft_link"
