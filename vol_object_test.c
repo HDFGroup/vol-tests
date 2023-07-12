@@ -5159,22 +5159,22 @@ test_object_visit(void)
         goto error;
     }
 
-    if ((group_id3 = H5Gcreate2(file_id2, OBJECT_VISIT_TEST_GROUP_NAME_PARENT, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) <
-        0) {
+    if ((group_id3 = H5Gcreate2(file_id2, OBJECT_VISIT_TEST_GROUP_NAME_PARENT, H5P_DEFAULT, gcpl_id,
+                                H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME_PARENT);
         goto error;
     }
 
-    if ((group_id4 =
-             H5Gcreate2(group_id3, OBJECT_VISIT_TEST_GROUP_NAME_CHILD, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    if ((group_id4 = H5Gcreate2(group_id3, OBJECT_VISIT_TEST_GROUP_NAME_CHILD, H5P_DEFAULT, gcpl_id,
+                                H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME_CHILD);
         goto error;
     }
 
-    if ((group_id5 =
-             H5Gcreate2(group_id4, OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD, H5P_DEFAULT, gcpl_id, H5P_DEFAULT)) < 0) {
+    if ((group_id5 = H5Gcreate2(group_id4, OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD, H5P_DEFAULT, gcpl_id,
+                                H5P_DEFAULT)) < 0) {
         H5_FAILED();
         HDprintf("    couldn't create group '%s'\n", OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD);
         goto error;
@@ -5386,8 +5386,8 @@ test_object_visit(void)
 
             i = 0;
 
-            if (H5Ovisit3(attr_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i, H5O_INFO_ALL) <
-                0) {
+            if (H5Ovisit3(attr_id, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
+                          H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit on an attribute failed!\n");
                 PART_ERROR(H5Ovisit_attr);
@@ -5639,8 +5639,8 @@ test_object_visit(void)
 
             i = 0;
 
-            if (H5Ovisit_by_name(attr_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                                 object_visit_simple_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+            if (H5Ovisit_by_name(attr_id, ".", H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback,
+                                 &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit_by_name on an attribute failed!\n");
                 PART_ERROR(H5Ovisit_by_name_attr);
@@ -7185,7 +7185,7 @@ object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_in
     if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT) ||
         !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT "/" OBJECT_VISIT_TEST_GROUP_NAME_CHILD) ||
         !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT "/" OBJECT_VISIT_TEST_GROUP_NAME_CHILD
-                                                      "/" OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD)) {
+                                                            "/" OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD)) {
         (*i)--;
         goto done;
     }
@@ -7313,7 +7313,7 @@ object_visit_soft_link_callback(hid_t o_id, const char *name, const H5O_info2_t 
     if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT) ||
         !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT "/" OBJECT_VISIT_TEST_GROUP_NAME_CHILD) ||
         !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT "/" OBJECT_VISIT_TEST_GROUP_NAME_CHILD
-                                                      "/" OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD)) {
+                                                            "/" OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD)) {
         (*i)--;
         goto done;
     }
