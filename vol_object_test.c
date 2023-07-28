@@ -5059,23 +5059,23 @@ test_object_comments_invalid_params(void)
 static int
 test_object_visit(void)
 {
-    size_t i;
-    hid_t  file_id         = H5I_INVALID_HID;
-    hid_t  file_id2        = H5I_INVALID_HID;
-    hid_t  container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t  group_id2  = H5I_INVALID_HID;
-    hid_t  gcpl_id    = H5I_INVALID_HID;
-    hid_t  type_id    = H5I_INVALID_HID;
-    hid_t  dset_id    = H5I_INVALID_HID;
-    hid_t  dset_dtype = H5I_INVALID_HID;
-    hid_t  fspace_id  = H5I_INVALID_HID;
-    hid_t  attr_id    = H5I_INVALID_HID;
-    hid_t  group_id3  = H5I_INVALID_HID;
-    hid_t  group_id4  = H5I_INVALID_HID;
-    hid_t  group_id5  = H5I_INVALID_HID;
-    hssize_t num_elems = 0;
-    size_t elem_size = 0;
-    char   visit_filename[VOL_TEST_FILENAME_MAX_LENGTH];
+    size_t   i;
+    hid_t    file_id         = H5I_INVALID_HID;
+    hid_t    file_id2        = H5I_INVALID_HID;
+    hid_t    container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t    group_id2  = H5I_INVALID_HID;
+    hid_t    gcpl_id    = H5I_INVALID_HID;
+    hid_t    type_id    = H5I_INVALID_HID;
+    hid_t    dset_id    = H5I_INVALID_HID;
+    hid_t    dset_dtype = H5I_INVALID_HID;
+    hid_t    fspace_id  = H5I_INVALID_HID;
+    hid_t    attr_id    = H5I_INVALID_HID;
+    hid_t    group_id3  = H5I_INVALID_HID;
+    hid_t    group_id4  = H5I_INVALID_HID;
+    hid_t    group_id5  = H5I_INVALID_HID;
+    hssize_t num_elems  = 0;
+    size_t   elem_size  = 0;
+    char     visit_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("object visiting");
 
@@ -5138,7 +5138,7 @@ test_object_visit(void)
     do {
         if (fspace_id != H5I_INVALID_HID)
             H5Sclose(fspace_id);
-        
+
         if (dset_dtype != H5I_INVALID_HID)
             H5Tclose(dset_dtype);
 
@@ -5152,7 +5152,7 @@ test_object_visit(void)
 
         if ((num_elems = H5Sget_simple_extent_npoints(fspace_id)) < 0)
             TEST_ERROR;
-        
+
         if ((elem_size = H5Tget_size(dset_dtype)) == 0)
             TEST_ERROR;
 
@@ -5165,7 +5165,7 @@ test_object_visit(void)
     }
 
     if ((attr_id = H5Acreate2(group_id, OBJECT_VISIT_TEST_ATTR_NAME, dset_dtype, fspace_id, H5P_DEFAULT,
-                             H5P_DEFAULT)) == H5I_INVALID_HID) {
+                              H5P_DEFAULT)) == H5I_INVALID_HID) {
         H5_FAILED();
         HDprintf("    couldn't create attribute '%s' on group '%s'\n", OBJECT_VISIT_TEST_ATTR_NAME,
                  OBJECT_VISIT_TEST_SUBGROUP_NAME);
