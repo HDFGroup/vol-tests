@@ -5073,6 +5073,8 @@ test_object_visit(void)
     hid_t  group_id3  = H5I_INVALID_HID;
     hid_t  group_id4  = H5I_INVALID_HID;
     hid_t  group_id5  = H5I_INVALID_HID;
+    hssize_t num_elems = 0;
+    size_t elem_size = 0;
     char   visit_filename[VOL_TEST_FILENAME_MAX_LENGTH];
 
     TESTING_MULTIPART("object visiting");
@@ -5132,11 +5134,29 @@ test_object_visit(void)
         goto error;
     }
 
-    if ((fspace_id = generate_random_dataspace(OBJECT_VISIT_TEST_SPACE_RANK, NULL, NULL, FALSE)) < 0)
-        TEST_ERROR;
+    /* Make sure not to generate too much data for an attribute to hold */
+    do {
+        if (fspace_id != H5I_INVALID_HID)
+            H5Sclose(fspace_id);
+        
+        if (dset_dtype != H5I_INVALID_HID)
+            H5Tclose(dset_dtype);
 
-    if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0)
-        TEST_ERROR;
+        if ((fspace_id = generate_random_dataspace(OBJECT_VISIT_TEST_SPACE_RANK, NULL, NULL, FALSE)) < 0) {
+            TEST_ERROR;
+        }
+
+        if ((dset_dtype = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
+            TEST_ERROR;
+        }
+
+        if ((num_elems = H5Sget_simple_extent_npoints(fspace_id)) < 0)
+            TEST_ERROR;
+        
+        if ((elem_size = H5Tget_size(dset_dtype)) == 0)
+            TEST_ERROR;
+
+    } while ((num_elems * elem_size) > OBJECT_VISIT_TEST_TOTAL_DATA_SIZE_LIMIT);
 
     if ((type_id = generate_random_datatype(H5T_NO_CLASS, FALSE)) < 0) {
         H5_FAILED();
@@ -5144,7 +5164,7 @@ test_object_visit(void)
         goto error;
     }
 
-    if ((attr_id = H5Acreate(group_id, OBJECT_VISIT_TEST_ATTR_NAME, dset_dtype, fspace_id, H5P_DEFAULT,
+    if ((attr_id = H5Acreate2(group_id, OBJECT_VISIT_TEST_ATTR_NAME, dset_dtype, fspace_id, H5P_DEFAULT,
                              H5P_DEFAULT)) == H5I_INVALID_HID) {
         H5_FAILED();
         HDprintf("    couldn't create attribute '%s' on group '%s'\n", OBJECT_VISIT_TEST_ATTR_NAME,
@@ -5316,10 +5336,18 @@ test_object_visit(void)
         {
             TESTING_2("H5Ovisit on a group");
 
+            i = 0;
+
             if (H5Ovisit3(group_id3, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
                           H5O_INFO_ALL) < 0) {
                 H5_FAILED();
                 HDprintf("    H5Ovisit on a group failed!\n");
+                PART_ERROR(H5Ovisit_group);
+            }
+
+            if (i != OBJECT_VISIT_TEST_SUBGROUP_LAYERS) {
+                H5_FAILED();
+                HDprintf("    some objects were not visited!\n");
                 PART_ERROR(H5Ovisit_group);
             }
 
@@ -7182,14 +7210,6 @@ object_visit_callback(hid_t o_id, const char *name, const H5O_info2_t *object_in
 
     UNUSED(o_id);
 
-    if (!HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT) ||
-        !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT "/" OBJECT_VISIT_TEST_GROUP_NAME_CHILD) ||
-        !HDstrcmp(name, OBJECT_VISIT_TEST_GROUP_NAME_PARENT "/" OBJECT_VISIT_TEST_GROUP_NAME_CHILD
-                                                            "/" OBJECT_VISIT_TEST_GROUP_NAME_GRANDCHILD)) {
-        (*i)--;
-        goto done;
-    }
-
     if (!HDstrncmp(name, ".", strlen(".") + 1) &&
         (counter_val == 0 || counter_val == 4 || counter_val == 8 || counter_val == 12)) {
         if (H5O_TYPE_GROUP == object_info->type)
@@ -7363,7 +7383,7 @@ cleanup_files(void)
     H5Fdelete(filename, H5P_DEFAULT);
 
     HDsnprintf(filename, VOL_TEST_FILENAME_MAX_LENGTH, "%s%s", test_path_prefix, OBJECT_VISIT_TEST_FILE_NAME);
-    H5Fdelete(OBJECT_VISIT_TEST_FILE_NAME, H5P_DEFAULT);
+    H5Fdelete(filename, H5P_DEFAULT);
 }
 
 int
