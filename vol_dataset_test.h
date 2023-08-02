@@ -126,6 +126,16 @@ int vol_dataset_test(void);
 #define DATASET_PROPERTY_LIST_TEST_DSET_NAME3    "property_list_test_dataset3"
 #define DATASET_PROPERTY_LIST_TEST_DSET_NAME4    "property_list_test_dataset4"
 
+#define DATASET_FILL_VALUE_TEST_DSET_NAME1          "dataset_fill_value_test_dataset1"
+#define DATASET_FILL_VALUE_TEST_DSET_NAME2          "dataset_fill_value_test_dataset2"
+#define DATASET_FILL_VALUE_TEST_DSET_NAME3          "dataset_fill_value_test_dataset3"
+#define DATASET_FILL_VALUE_TEST_INT_TYPE            H5T_NATIVE_INT
+#define DATASET_FILL_VALUE_TEST_INT_FILL_VALUE      1
+#define DATASET_FILL_VALUE_TEST_DOUBLE_TYPE         H5T_NATIVE_DOUBLE
+#define DATASET_FILL_VALUE_TEST_DOUBLE_FILL_VALUE   2.002 
+#define DATASET_FILL_VALUE_TEST_STRING_FILL_VALUE   "abcdefgh"
+#define DATASET_FILL_VALUE_TEST_STRING_SIZE         8 /* No null terminator for fixed length string*/
+
 #define DATASET_SMALL_READ_TEST_ALL_DSET_SPACE_RANK 3
 #define DATASET_SMALL_READ_TEST_ALL_DSET_DTYPESIZE  sizeof(int)
 #define DATASET_SMALL_READ_TEST_ALL_DSET_DTYPE      H5T_NATIVE_INT
