@@ -3989,11 +3989,208 @@ error:
 static int
 test_get_dataset_storage_size(void)
 {
-    TESTING("H5Dget_storage_size");
+    hsize_t dims[DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK] = 
+        {DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT, DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT};
+    size_t type_size = 0;
+    hid_t dset_id_contiguous = H5I_INVALID_HID;
+    hid_t dset_id_chunked = H5I_INVALID_HID;
+    hid_t dset_id_filtered = H5I_INVALID_HID;
 
-    SKIPPED();
+    hid_t file_id = H5I_INVALID_HID;
+    hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
+    hid_t type_id = H5I_INVALID_HID;
+    hid_t space_id = H5I_INVALID_HID;
+    hid_t dcpl_id = H5I_INVALID_HID;
+
+    void *write_buf = NULL;
+    
+    TESTING_MULTIPART("H5Dget_storage_size");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC)) {
+        SKIPPED();
+        HDprintf(
+            "    API functions for basic file, group, or dataset aren't supported with this connector\n");
+        return 0;
+    }
+
+    TESTING_2("test setup");
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((group_id = H5Gcreate2(container_group, DATASET_STORAGE_SIZE_TEST_GROUP_NAME, H5P_DEFAULT,
+                               H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create container sub-group '%s'\n", DATASET_STORAGE_SIZE_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((type_id = DATASET_STORAGE_SIZE_TEST_TYPE) < 0)
+        TEST_ERROR;
+
+    if ((space_id = H5Screate_simple(DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK, dims, NULL)) < 0)
+        TEST_ERROR;
+
+    if ((dcpl_id = H5Pcreate(H5P_DATASET_CREATE)) < 0)
+        TEST_ERROR;
+
+    if ((H5Pset_layout(dcpl_id, H5D_CONTIGUOUS)) < 0)
+        TEST_ERROR;
+
+    if ((dset_id_contiguous = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_CONTIGUOUS_NAME, 
+        type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
+        TEST_ERROR;
+
+    if ((H5Pset_layout(dcpl_id, H5D_CHUNKED)) < 0)
+        TEST_ERROR;
+    
+    if ((H5Pset_chunk(dcpl_id, DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK, dims)) < 0)
+        TEST_ERROR;
+
+    if ((dset_id_chunked = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_CHUNKED_NAME,
+        type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
+        TEST_ERROR;
+
+    if ((H5Pset_deflate(dcpl_id, 6)) < 0)
+        TEST_ERROR;
+
+    if ((dset_id_filtered = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_FILTERED_NAME,
+        type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
+        TEST_ERROR;
+
+    if ((type_size = H5Tget_size(type_id)) <= 0)
+        TEST_ERROR;
+
+    if ((write_buf = calloc(DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT * DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT, type_size)) == NULL)
+        TEST_ERROR;
+
+    for (size_t i = 0; i < DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT; i++)
+        for (size_t j = 0; j < DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT; j++)
+            ((int*)write_buf)[i * DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT + j] = j;
+
+    PASSED();
+
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(H5Dget_storage_size_contiguous)
+        {
+            TESTING_2("H5Dget_storage_size on contiguous dataset");
+
+            if (H5Dwrite(dset_id_contiguous, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void*) write_buf) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't write to contiguous dataset\n");
+                PART_ERROR(H5Dget_storage_size_contiguous);
+            }
+
+            if (H5Dget_storage_size(dset_id_contiguous) == 0) {
+                H5_FAILED();
+                HDprintf("    got incorrect storage size for contiguous dataset\n");
+                PART_ERROR(H5Dget_storage_size_contiguous);
+            }
+
+            PASSED();
+        }
+        PART_END(H5Dget_storage_size_contiguous);
+
+        PART_BEGIN(H5Dget_storage_size_chunked)
+        {
+            TESTING_2("H5Dget_storage_size of chunked dataset");
+
+            if (H5Dwrite(dset_id_chunked, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void*) write_buf) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't write to chunked dataset\n");
+                PART_ERROR(H5Dget_storage_size_chunked);
+            }
+
+            if (H5Dget_storage_size(dset_id_chunked) == 0) {
+                H5_FAILED();
+                HDprintf("    got incorrect storage size for chunked dataset\n");
+                PART_ERROR(H5Dget_storage_size_chunked);
+            }
+
+            PASSED();
+        }
+        PART_END(H5Dget_storage_size_chunked);
+
+        PART_BEGIN(H5Dget_storage_size_filtered)
+        {
+            TESTING_2("H5Dget_storage_size of filtered dataset");
+
+            if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILTERS)) {
+                SKIPPED();
+                HDprintf("    dataset filters are not supported by this VOL connector\n");
+                PART_EMPTY(H5Dget_storage_size_filtered);
+            }
+
+            if (H5Dwrite(dset_id_filtered, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void*) write_buf) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't write to filtered dataset\n");
+                PART_ERROR(H5Dget_storage_size_filtered);
+            }
+
+            if (H5Dget_storage_size(dset_id_filtered) == 0) {
+                H5_FAILED();
+                HDprintf("    got incorrect storage size for filtered dataset\n");
+                PART_ERROR(H5Dget_storage_size_filtered);
+            }
+
+            PASSED();
+        }
+        PART_END(H5Dget_storage_size_filtered);
+    }
+    END_MULTIPART;
+
+    free(write_buf);
+    write_buf = NULL;
+
+    if (H5Pclose(dcpl_id) < 0)
+        TEST_ERROR;
+    if (H5Sclose(space_id) < 0)
+        TEST_ERROR;
+    if (H5Dclose(dset_id_contiguous) < 0)
+        TEST_ERROR;
+    if (H5Dclose(dset_id_chunked) < 0)
+        TEST_ERROR
+    if (H5Dclose(dset_id_filtered) < 0)
+        TEST_ERROR;
+    if (H5Gclose(group_id) < 0)
+        TEST_ERROR;
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR;
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR;
+
+    PASSED();
 
     return 0;
+
+error:
+    H5E_BEGIN_TRY
+    {
+        free(write_buf);
+        H5Pclose(dcpl_id);
+        H5Sclose(space_id);
+        H5Dclose(dset_id_contiguous);
+        H5Dclose(dset_id_chunked);
+        H5Dclose(dset_id_filtered);
+        H5Gclose(group_id);
+        H5Gclose(container_group);
+        H5Fclose(file_id);
+    }
+    H5E_END_TRY;
+
+    return 1;
 }
 
 /*
