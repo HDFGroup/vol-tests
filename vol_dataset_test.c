@@ -3989,21 +3989,21 @@ error:
 static int
 test_get_dataset_storage_size(void)
 {
-    hsize_t dims[DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK] = 
-        {DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT, DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT};
-    size_t type_size = 0;
-    hid_t dset_id_contiguous = H5I_INVALID_HID;
-    hid_t dset_id_chunked = H5I_INVALID_HID;
-    hid_t dset_id_filtered = H5I_INVALID_HID;
+    hsize_t dims[DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK] = {DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT,
+                                                                   DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT};
+    size_t  type_size                                           = 0;
+    hid_t   dset_id_contiguous                                  = H5I_INVALID_HID;
+    hid_t   dset_id_chunked                                     = H5I_INVALID_HID;
+    hid_t   dset_id_filtered                                    = H5I_INVALID_HID;
 
-    hid_t file_id = H5I_INVALID_HID;
+    hid_t file_id         = H5I_INVALID_HID;
     hid_t container_group = H5I_INVALID_HID, group_id = H5I_INVALID_HID;
-    hid_t type_id = H5I_INVALID_HID;
+    hid_t type_id  = H5I_INVALID_HID;
     hid_t space_id = H5I_INVALID_HID;
-    hid_t dcpl_id = H5I_INVALID_HID;
+    hid_t dcpl_id  = H5I_INVALID_HID;
 
     void *write_buf = NULL;
-    
+
     TESTING_MULTIPART("H5Dget_storage_size");
 
     /* Make sure the connector supports the API functions being tested */
@@ -4048,36 +4048,38 @@ test_get_dataset_storage_size(void)
     if ((H5Pset_layout(dcpl_id, H5D_CONTIGUOUS)) < 0)
         TEST_ERROR;
 
-    if ((dset_id_contiguous = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_CONTIGUOUS_NAME, 
-        type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
+    if ((dset_id_contiguous = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_CONTIGUOUS_NAME, type_id,
+                                        space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
         TEST_ERROR;
 
     if ((H5Pset_layout(dcpl_id, H5D_CHUNKED)) < 0)
         TEST_ERROR;
-    
+
     if ((H5Pset_chunk(dcpl_id, DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK, dims)) < 0)
         TEST_ERROR;
 
-    if ((dset_id_chunked = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_CHUNKED_NAME,
-        type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
+    if ((dset_id_chunked = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_CHUNKED_NAME, type_id, space_id,
+                                     H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
         TEST_ERROR;
 
     if ((H5Pset_deflate(dcpl_id, 6)) < 0)
         TEST_ERROR;
 
-    if ((dset_id_filtered = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_FILTERED_NAME,
-        type_id, space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
+    if ((dset_id_filtered = H5Dcreate(group_id, DATASET_STORAGE_SIZE_TEST_DSET_FILTERED_NAME, type_id,
+                                      space_id, H5P_DEFAULT, dcpl_id, H5P_DEFAULT)) < 0)
         TEST_ERROR;
 
     if ((type_size = H5Tget_size(type_id)) <= 0)
         TEST_ERROR;
 
-    if ((write_buf = calloc(DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT * DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT, type_size)) == NULL)
+    if ((write_buf =
+             calloc(DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT * DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT,
+                    type_size)) == NULL)
         TEST_ERROR;
 
     for (size_t i = 0; i < DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT; i++)
         for (size_t j = 0; j < DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT; j++)
-            ((int*)write_buf)[i * DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT + j] = j;
+            ((int *)write_buf)[i * DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT + j] = j;
 
     PASSED();
 
@@ -4087,7 +4089,8 @@ test_get_dataset_storage_size(void)
         {
             TESTING_2("H5Dget_storage_size on contiguous dataset");
 
-            if (H5Dwrite(dset_id_contiguous, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void*) write_buf) < 0) {
+            if (H5Dwrite(dset_id_contiguous, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+                         (const void *)write_buf) < 0) {
                 H5_FAILED();
                 HDprintf("    couldn't write to contiguous dataset\n");
                 PART_ERROR(H5Dget_storage_size_contiguous);
@@ -4107,7 +4110,8 @@ test_get_dataset_storage_size(void)
         {
             TESTING_2("H5Dget_storage_size of chunked dataset");
 
-            if (H5Dwrite(dset_id_chunked, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void*) write_buf) < 0) {
+            if (H5Dwrite(dset_id_chunked, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void *)write_buf) <
+                0) {
                 H5_FAILED();
                 HDprintf("    couldn't write to chunked dataset\n");
                 PART_ERROR(H5Dget_storage_size_chunked);
@@ -4133,7 +4137,8 @@ test_get_dataset_storage_size(void)
                 PART_EMPTY(H5Dget_storage_size_filtered);
             }
 
-            if (H5Dwrite(dset_id_filtered, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void*) write_buf) < 0) {
+            if (H5Dwrite(dset_id_filtered, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, (const void *)write_buf) <
+                0) {
                 H5_FAILED();
                 HDprintf("    couldn't write to filtered dataset\n");
                 PART_ERROR(H5Dget_storage_size_filtered);
