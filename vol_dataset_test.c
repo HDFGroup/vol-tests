@@ -2513,7 +2513,8 @@ test_create_dataset_creation_properties(void)
             for (size_t i = 0; i < num_elems; i++) {
                 val = (double *)(read_buf) + i;
 
-                if (!(VL_DBL_REL_EQUAL(*(double*)val, DATASET_FILL_VALUE_TEST_DOUBLE_FILL_VALUE, 0.0000001))) {
+                if (!(VL_DBL_REL_EQUAL(*(double *)val, DATASET_FILL_VALUE_TEST_DOUBLE_FILL_VALUE,
+                                       0.0000001))) {
                     H5_FAILED();
                     HDprintf("    incorrect value read from dataset");
                     PART_ERROR(DCPL_fill_value_test);

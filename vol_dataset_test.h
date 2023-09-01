@@ -24,10 +24,10 @@ int vol_dataset_test(void);
  ************************************************/
 
 /* Check if the relative difference is smaller than a
-*  predefined value M.  See if two values are relatively equal.
-*  It's the developer's responsibility not to pass in the value 0, which
-*  may cause the equation to fail.
-*/
+ *  predefined value M.  See if two values are relatively equal.
+ *  It's the developer's responsibility not to pass in the value 0, which
+ *  may cause the equation to fail.
+ */
 #define VL_DBL_REL_EQUAL(X, Y, M) (fabs(((Y) - (X)) / (X)) < (M))
 
 #define DATASET_CREATE_UNDER_ROOT_DSET_NAME  "/dset_under_root"
