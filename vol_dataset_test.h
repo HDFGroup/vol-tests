@@ -133,6 +133,14 @@ int vol_dataset_test(void);
 #define DATASET_PROPERTY_LIST_TEST_DSET_NAME3    "property_list_test_dataset3"
 #define DATASET_PROPERTY_LIST_TEST_DSET_NAME4    "property_list_test_dataset4"
 
+#define DATASET_STORAGE_SIZE_TEST_ALL_DSET_SPACE_RANK  2
+#define DATASET_STORAGE_SIZE_TEST_ALL_DSET_EXTENT      10
+#define DATASET_STORAGE_SIZE_TEST_GROUP_NAME           "dataset_get_storage_size_test"
+#define DATASET_STORAGE_SIZE_TEST_DSET_CONTIGUOUS_NAME "dataset_contiguous"
+#define DATASET_STORAGE_SIZE_TEST_DSET_CHUNKED_NAME    "dataset_chunked"
+#define DATASET_STORAGE_SIZE_TEST_DSET_FILTERED_NAME   "dataset_filtered"
+#define DATASET_STORAGE_SIZE_TEST_TYPE                 H5T_NATIVE_INT
+
 #define DATASET_FILL_VALUE_TEST_DSET_NAME1        "dataset_fill_value_test_dataset1"
 #define DATASET_FILL_VALUE_TEST_DSET_NAME2        "dataset_fill_value_test_dataset2"
 #define DATASET_FILL_VALUE_TEST_DSET_NAME3        "dataset_fill_value_test_dataset3"
