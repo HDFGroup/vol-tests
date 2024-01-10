@@ -63,6 +63,7 @@ static int test_write_multi_dataset_small_hyperslab(void);
 static int test_write_multi_dataset_small_point_selection(void);
 static int test_write_multi_dataset_data_verification(void);
 static int test_write_dataset_invalid_params(void);
+static int test_dataset_string_encodings(void);
 static int test_dataset_builtin_type_conversion(void);
 static int test_dataset_real_to_int_conversion(void);
 static int test_dataset_compound_partial_io(void);
@@ -143,6 +144,7 @@ static int (*dataset_tests[])(void) = {
     test_write_multi_dataset_small_point_selection,
     test_write_multi_dataset_data_verification,
     test_write_dataset_invalid_params,
+    test_dataset_string_encodings,
     test_dataset_builtin_type_conversion,
     test_dataset_real_to_int_conversion,
     test_dataset_compound_partial_io,
@@ -8465,6 +8467,251 @@ error:
     return 1;
 }
 
+/*
+ * A test to ensure that strings of any encoding
+ * can be written to and read from a dataset
+ */
+static int
+test_dataset_string_encodings(void)
+{
+    hid_t   file_id                             = H5I_INVALID_HID;
+    hid_t   container_group                     = H5I_INVALID_HID;
+    hid_t   dset_id1                            = H5I_INVALID_HID;
+    hid_t   dset_id2                            = H5I_INVALID_HID;
+    hid_t   type_id1                            = H5I_INVALID_HID;
+    hid_t   type_id2                            = H5I_INVALID_HID;
+    hid_t   space_id                            = H5I_INVALID_HID;
+    hsize_t dims[DATASET_STRING_ENCODINGS_RANK] = {DATASET_STRING_ENCODINGS_EXTENT};
+    size_t  ascii_str_size                      = 0;
+    size_t  utf8_str_size                       = 0;
+    char   *write_buf                           = NULL;
+    char   *read_buf                            = NULL;
+
+    TESTING_MULTIPART("string encoding read/write correctness on datasets");
+
+    /* Make sure the connector supports the API functions being tested */
+    if (!(vol_cap_flags_g & H5VL_CAP_FLAG_FILE_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_GROUP_BASIC) ||
+        !(vol_cap_flags_g & H5VL_CAP_FLAG_DATASET_BASIC) || !(vol_cap_flags_g & H5VL_CAP_FLAG_ATTR_BASIC)) {
+        SKIPPED();
+        HDprintf("    API functions for basic file, group, basic or more dataset aren't supported with this "
+                 "connector\n");
+        return 0;
+    }
+
+    TESTING_2("test setup");
+
+    ascii_str_size = strlen(DATASET_STRING_ENCODINGS_ASCII_STRING);
+    utf8_str_size  = strlen(DATASET_STRING_ENCODINGS_UTF8_STRING);
+
+    if ((file_id = H5Fopen(vol_test_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open file '%s'\n", vol_test_filename);
+        goto error;
+    }
+
+    if ((container_group = H5Gopen2(file_id, DATASET_TEST_GROUP_NAME, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't open container group '%s'\n", DATASET_TEST_GROUP_NAME);
+        goto error;
+    }
+
+    if ((space_id = H5Screate_simple(DATASET_STRING_ENCODINGS_RANK, dims, NULL)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataspace\n");
+        goto error;
+    }
+
+    if ((type_id1 = H5Tcopy(H5T_C_S1)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy builtin string datatype\n");
+        goto error;
+    }
+
+    if ((H5Tset_size(type_id1, ascii_str_size)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set size of string datatype\n");
+        goto error;
+    }
+
+    if ((H5Tset_cset(type_id1, H5T_CSET_ASCII)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set character set of string to ASCII\n");
+        goto error;
+    }
+
+    if ((dset_id1 = H5Dcreate(container_group, DATASET_STRING_ENCODINGS_DSET_NAME1, type_id1, space_id,
+                              H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset with ascii string\n");
+        goto error;
+    }
+
+    if ((type_id2 = H5Tcopy(H5T_C_S1)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't copy builtin string datatype\n");
+        goto error;
+    }
+
+    if ((H5Tset_size(type_id2, utf8_str_size)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set size of string datatype\n");
+        goto error;
+    }
+
+    if ((H5Tset_cset(type_id2, H5T_CSET_UTF8)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't set character set of string to UTF-8\n");
+        goto error;
+    }
+
+    if ((dset_id2 = H5Dcreate(container_group, DATASET_STRING_ENCODINGS_DSET_NAME2, type_id2, space_id,
+                              H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't create dataset with UTF-8 string\n");
+        goto error;
+    }
+
+    PASSED();
+
+    BEGIN_MULTIPART
+    {
+        PART_BEGIN(ASCII_cset)
+        {
+            TESTING_2("ASCII character set");
+            /* Dataset with ASCII string datatype */
+            if ((write_buf = calloc(1, ascii_str_size + 1)) == NULL) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate memory for write buffer\n");
+                goto error;
+            }
+
+            memcpy(write_buf, DATASET_STRING_ENCODINGS_ASCII_STRING, ascii_str_size);
+
+            if ((H5Dwrite(dset_id1, type_id1, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't write to dataset with ASCII string\n");
+                goto error;
+            }
+
+            if ((read_buf = calloc(1, ascii_str_size + 1)) == NULL) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate memory for read buffer\n");
+                goto error;
+            }
+
+            if ((H5Dread(dset_id1, type_id1, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_buf)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't read from dataset with ASCII string\n");
+                goto error;
+            }
+
+            if (strncmp(write_buf, read_buf, ascii_str_size)) {
+                H5_FAILED();
+                HDprintf("    incorrect data read from dataset with ASCII string\n");
+                goto error;
+            }
+
+            free(write_buf);
+            write_buf = NULL;
+
+            free(read_buf);
+            read_buf = NULL;
+
+            PASSED();
+        }
+        PART_END(ASCII_cset);
+
+        PART_BEGIN(UTF8_cset)
+        {
+            TESTING_2("UTF-8 character set");
+            /* Dataset with UTF-8 string datatype */
+            if ((write_buf = calloc(1, utf8_str_size + 1)) == NULL) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate memory for write buffer\n");
+                goto error;
+            }
+
+            memcpy(write_buf, DATASET_STRING_ENCODINGS_UTF8_STRING, utf8_str_size);
+
+            if ((H5Dwrite(dset_id2, type_id2, H5S_ALL, H5S_ALL, H5P_DEFAULT, write_buf)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't write to dataset with ASCII string\n");
+                goto error;
+            }
+
+            if ((read_buf = calloc(1, utf8_str_size + 1)) == NULL) {
+                H5_FAILED();
+                HDprintf("    couldn't allocate memory for read buffer\n");
+                goto error;
+            }
+
+            if ((H5Dread(dset_id2, type_id2, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_buf)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't read from dataset with ASCII string\n");
+                goto error;
+            }
+
+            if (strncmp(write_buf, read_buf, utf8_str_size)) {
+                H5_FAILED();
+                HDprintf("    incorrect data read from dataset with ASCII string\n");
+                goto error;
+            }
+
+            free(write_buf);
+            write_buf = NULL;
+
+            free(read_buf);
+            read_buf = NULL;
+
+            PASSED();
+        }
+        PART_END(UTF8_cset);
+
+        PASSED();
+    }
+    END_MULTIPART;
+
+done:
+    TESTING_2("test cleanup");
+
+    if (H5Fclose(file_id) < 0)
+        TEST_ERROR;
+    if (H5Gclose(container_group) < 0)
+        TEST_ERROR;
+    if (H5Dclose(dset_id1) < 0)
+        TEST_ERROR;
+    if (H5Dclose(dset_id2) < 0)
+        TEST_ERROR;
+    if (H5Tclose(type_id1) < 0)
+        TEST_ERROR;
+    if (H5Tclose(type_id2) < 0)
+        TEST_ERROR;
+    if (write_buf)
+        free(write_buf);
+    if (read_buf)
+        free(read_buf);
+    PASSED();
+
+    return 0;
+
+error:
+    H5E_BEGIN_TRY
+    {
+        H5Fclose(file_id);
+        H5Gclose(container_group);
+        H5Dclose(dset_id1);
+        H5Dclose(dset_id2);
+        H5Tclose(type_id1);
+        H5Tclose(type_id2);
+        if (write_buf)
+            free(write_buf);
+        if (read_buf)
+            free(read_buf);
+    }
+    H5E_END_TRY;
+
+    return 1;
+}
 /*
  * A test to ensure that data is read back correctly from a dataset after it has
  * been written, using type conversion with builtin types.

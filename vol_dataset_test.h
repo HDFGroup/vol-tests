@@ -49,6 +49,13 @@ int vol_dataset_test(void);
 #define DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_GROUP_NAME   "anon_dset_creation_invalid_params_test"
 #define DATASET_CREATE_ANONYMOUS_INVALID_PARAMS_SPACE_RANK   2
 
+#define DATASET_STRING_ENCODINGS_RANK         1
+#define DATASET_STRING_ENCODINGS_EXTENT       1
+#define DATASET_STRING_ENCODINGS_DSET_NAME1   "encoding_dset1"
+#define DATASET_STRING_ENCODINGS_DSET_NAME2   "encoding_dset2"
+#define DATASET_STRING_ENCODINGS_ASCII_STRING "asciistr"
+#define DATASET_STRING_ENCODINGS_UTF8_STRING  "αaααaaaα"
+
 #define DATASET_CREATE_NULL_DATASPACE_TEST_SUBGROUP_NAME "dataset_with_null_space_test"
 #define DATASET_CREATE_NULL_DATASPACE_TEST_DSET_NAME     "dataset_with_null_space"
 
