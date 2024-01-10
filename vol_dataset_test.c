@@ -2488,6 +2488,19 @@ test_create_dataset_creation_properties(void)
                 PART_ERROR(DCPL_fill_value_test);
             }
 
+            /* Re-open integer dataset */
+            if ((dset_id = H5Dopen2(group_id, DATASET_FILL_VALUE_TEST_DSET_NAME1, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open integer fill value dataset");
+                PART_ERROR(DCPL_fill_value_test);
+            }
+
+            if (H5Dclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close opened integer fill value dataset");
+                PART_ERROR(DCPL_fill_value_test);
+            }
+
             HDfree(read_buf);
             read_buf = NULL;
 
@@ -2549,6 +2562,19 @@ test_create_dataset_creation_properties(void)
                 PART_ERROR(DCPL_fill_value_test);
             }
 
+            /* Re-open double dataset */
+            if ((dset_id = H5Dopen2(group_id, DATASET_FILL_VALUE_TEST_DSET_NAME2, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open double fill value dataset");
+                PART_ERROR(DCPL_fill_value_test);
+            }
+
+            if (H5Dclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close opened double fill value dataset");
+                PART_ERROR(DCPL_fill_value_test);
+            }
+
             HDfree(read_buf);
             read_buf = NULL;
 
@@ -2606,14 +2632,14 @@ test_create_dataset_creation_properties(void)
 
                 if (strcmp(val_str, DATASET_FILL_VALUE_TEST_STRING_FILL_VALUE)) {
                     H5_FAILED();
-                    HDprintf("    incorrect value read fromstring  dataset");
+                    HDprintf("    incorrect value read from string  dataset");
                     PART_ERROR(DCPL_fill_value_test);
                 }
             }
 
             if (H5Dclose(dset_id) < 0) {
                 H5_FAILED();
-                HDprintf("    couldn't close double fill value dataset");
+                HDprintf("    couldn't close string fill value dataset");
                 PART_ERROR(DCPL_fill_value_test);
             }
 
@@ -2631,6 +2657,19 @@ test_create_dataset_creation_properties(void)
 
             HDfree(read_buf);
             read_buf = NULL;
+
+            /* Re-open string dataset */
+            if ((dset_id = H5Dopen2(group_id, DATASET_FILL_VALUE_TEST_DSET_NAME3, H5P_DEFAULT)) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't open string fill value dataset");
+                PART_ERROR(DCPL_fill_value_test);
+            }
+
+            if (H5Dclose(dset_id) < 0) {
+                H5_FAILED();
+                HDprintf("    couldn't close opened string fill value dataset");
+                PART_ERROR(DCPL_fill_value_test);
+            }
 
             PASSED();
         }
