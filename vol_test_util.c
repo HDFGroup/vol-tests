@@ -166,6 +166,12 @@ roll_datatype:
 
             gen_func = generate_random_datatype_array;
             break;
+#if H5_VERSION_GE(2, 0, 0)
+        case H5T_COMPLEX:
+            /* Complex number datatypes are unsupported, try again */
+            goto roll_datatype;
+            break;
+#endif
         default:
             HDprintf("    invalid datatype class\n");
             goto done;
