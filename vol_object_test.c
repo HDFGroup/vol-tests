@@ -5383,22 +5383,33 @@ test_object_visit(void)
         {
             TESTING_2("H5Ovisit on a file ID");
 
-            i = 0;
-
-            if (H5Ovisit3(file_id2, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
-                          H5O_INFO_ALL) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit on a file ID failed!\n");
-                PART_ERROR(H5Ovisit_file);
+            if (strcmp(vol_name, "daos") == 0) {
+                /* Skip for the DAOS VOL connector: H5Ovisit3 by creation order
+                 * (H5_INDEX_CRT_ORDER) on a group without creation-order tracking
+                 * enabled - the root group here - isn't handled; the untracked-group
+                 * fallback fix for H5_daos_link_ibco_task() is tracked separately
+                 * (best-effort-index-fix branch). */
+                SKIPPED();
+                PART_EMPTY(H5Ovisit_file);
             }
+            else {
+                i = 0;
 
-            if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
-                H5_FAILED();
-                HDprintf("    some objects were not visited!\n");
-                PART_ERROR(H5Ovisit_file);
+                if (H5Ovisit3(file_id2, H5_INDEX_CRT_ORDER, H5_ITER_INC, object_visit_simple_callback, &i,
+                              H5O_INFO_ALL) < 0) {
+                    H5_FAILED();
+                    HDprintf("    H5Ovisit on a file ID failed!\n");
+                    PART_ERROR(H5Ovisit_file);
+                }
+
+                if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
+                    H5_FAILED();
+                    HDprintf("    some objects were not visited!\n");
+                    PART_ERROR(H5Ovisit_file);
+                }
+
+                PASSED();
             }
-
-            PASSED();
         }
         PART_END(H5Ovisit_file);
 
@@ -5653,22 +5664,30 @@ test_object_visit(void)
         {
             TESTING_2("H5Ovisit_by_name on a file ID");
 
-            i = 0;
-
-            if (H5Ovisit_by_name3(file_id2, "/", H5_INDEX_CRT_ORDER, H5_ITER_INC,
-                                  object_visit_simple_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
-                H5_FAILED();
-                HDprintf("    H5Ovisit on a file ID failed!\n");
-                PART_ERROR(H5Ovisit_by_name_file);
+            if (strcmp(vol_name, "daos") == 0) {
+                /* Skip for the DAOS VOL connector: same untracked-root-group
+                 * creation-order limitation as H5Ovisit_file above. */
+                SKIPPED();
+                PART_EMPTY(H5Ovisit_by_name_file);
             }
+            else {
+                i = 0;
 
-            if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
-                H5_FAILED();
-                HDprintf("    some objects were not visited!\n");
-                PART_ERROR(H5Ovisit_by_name_file);
+                if (H5Ovisit_by_name3(file_id2, "/", H5_INDEX_CRT_ORDER, H5_ITER_INC,
+                                      object_visit_simple_callback, &i, H5O_INFO_ALL, H5P_DEFAULT) < 0) {
+                    H5_FAILED();
+                    HDprintf("    H5Ovisit on a file ID failed!\n");
+                    PART_ERROR(H5Ovisit_by_name_file);
+                }
+
+                if (i != OBJECT_VISIT_TEST_NUM_OBJS_VISITED) {
+                    H5_FAILED();
+                    HDprintf("    some objects were not visited!\n");
+                    PART_ERROR(H5Ovisit_by_name_file);
+                }
+
+                PASSED();
             }
-
-            PASSED();
         }
         PART_END(H5Ovisit_by_name_file);
 

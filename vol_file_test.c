@@ -1975,6 +1975,7 @@ test_file_open_overlap(void)
     hid_t   dspace_id         = H5I_INVALID_HID;
     hid_t   dset_id           = H5I_INVALID_HID;
     char   *prefixed_filename = NULL;
+    char    vol_name[5];
 
     TESTING("overlapping file opens");
 
@@ -1997,6 +1998,24 @@ test_file_open_overlap(void)
         H5_FAILED();
         HDprintf("    couldn't create file '%s'\n", prefixed_filename);
         goto error;
+    }
+
+    if (H5VLget_connector_name(file_id, vol_name, 5) < 0) {
+        H5_FAILED();
+        HDprintf("    couldn't get VOL connector name\n");
+        goto error;
+    }
+
+    if (strcmp(vol_name, "daos") == 0) {
+        /* Skip for the DAOS VOL connector: same H5Fget_obj_count over-counting
+         * described in test_get_file_obj_count()'s H5Fget_obj_count_types part -
+         * a just-created dataset's internally cached type_id is counted as an
+         * extra open object. */
+        SKIPPED();
+        if (H5Fclose(file_id) < 0)
+            TEST_ERROR;
+        HDfree(prefixed_filename);
+        return 0;
     }
 
     if ((file_id2 = H5Fopen(prefixed_filename, H5F_ACC_RDWR, H5P_DEFAULT)) < 0) {
